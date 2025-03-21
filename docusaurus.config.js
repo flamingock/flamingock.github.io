@@ -4,26 +4,28 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Test Docs',
-  tagline: 'Test are cool',
+  title: 'Flamingock ',
+  tagline: 'Flamingock rules!',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://davidfrigolet.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
+  organizationName: 'davidfrigolet', // Usually your GitHub org/user name.
   projectName: 'docusaurus', // Usually your repo name.
+  trailingSlash: false,
+  deploymentBranch: 'gh-pages', // Rama donde se desplegará el sitio
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -75,10 +77,17 @@ const config = {
     ({
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
+      algolia: {
+        appId: '5PMADXD49E',
+        apiKey: '75c637346b7b46ab191f9e7a9e039d08',
+        indexName: 'flamingock_docs',
+        contextualSearch: true,
+        searchPagePath: 'search', // Enables the /search page
+      },
       navbar: {
-        title: 'My Site',
+        title: 'Flamingock Docs',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Flamingock',
           src: 'img/flamingock.svg',
         },
         items: [
@@ -86,10 +95,11 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Docs',
           },
-          /*{to: '/blog', label: 'Blog', position: 'left'},
-          {
+          { to: '/nueva-pagina', label: 'Test', position: 'left' },
+          { type: 'search', position: 'right' },
+          /*{
             href: 'https://github.com/facebook/docusaurus',
             label: 'GitHub',
             position: 'right',
