@@ -15,15 +15,15 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://davidfrigolet.github.io',
+  url: 'https://mongock.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'davidfrigolet', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'mongock', // Usually your GitHub org/user name.
+  projectName: 'mongock.github.io', // Usually your repo name.
   trailingSlash: false,
   deploymentBranch: 'gh-pages', // Rama donde se desplegará el sitio
 
@@ -97,13 +97,13 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          { to: '/nueva-pagina', label: 'Test', position: 'left' },
+          /*{ to: '/nueva-pagina', label: 'Test', position: 'left' },*/
           { type: 'search', position: 'right' },
-          /*{
-            href: 'https://github.com/facebook/docusaurus',
+          {
+            href: 'https://github.com/mongock',
             label: 'GitHub',
             position: 'right',
-          },*/
+          },
           {
             type: 'docsVersionDropdown',
             position: 'right',
@@ -154,7 +154,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Flamingock, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
