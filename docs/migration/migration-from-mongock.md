@@ -91,40 +91,20 @@ Once you update the entrypoint, Flamingock provides a familiar yet evolved API d
 - This means that existing changes previously implemented in Mongock need to be incorporated into a stage.
 - New changes can be wrapped in a different stage (with its own package) or together in the same stage with the previous ones.
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```java
-        FlamingockStandalone.cloud()
-                //...
-                .addStage(
-                    new Stage("dynamodb-migration")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.legacyChanges")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.newChanges")
-                )
-                //...
-                .build()
-                .run();
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```java
-        FlamingockStandalone.local()
-                //...
-                .addStage(
-                    new Stage("dynamodb-migration")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.legacyChanges")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.newChanges")
-                )
-                //...
-                .build()
-                .run();
-        ```
-    </TabItem>
-</Tabs>
+```java
+FlamingockStandalone
+        //...
+        .addStage(
+            new Stage("dynamodb-migration")
+                // Your existing changeUnits
+                .addCodePackage("io.flamingock.examples.dynamodb.standalone.legacyChanges")
+                // New Flamingock changeUnits
+                .addCodePackage("io.flamingock.examples.dynamodb.standalone.newChanges")
+        )
+        //...
+        .build()
+        .run();
+```
 
 ### 1.5. Specify the Location of previous ChangeLogs for the Importer
 
@@ -134,30 +114,15 @@ When migrating from Mongock, you must specify the source where Flamingock should
 This data source name refers to the data source (e.g., the MongoDB collection, DynamoDB table, etc.) where Mongock stored its execution history. Flamingock will use this to import the existing ChangeSet metadata and ensure continuity.
 :::
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```java
-        FlamingockStandalone.cloud()
-                //...
-                // Importer with where legacy changeLogs are located
-                .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
-                //...
-                .build()
-                .run();
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```java
-        FlamingockStandalone.local()
-                //...
-                // Importer with where legacy changeLogs are located
-                .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
-                //...
-                .build()
-                .run();
-        ```
-    </TabItem>
-</Tabs>
+```java
+FlamingockStandalone
+        //...
+        // Importer with where legacy changeLogs are located
+        .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
+        //...
+        .build()
+        .run();
+```
 
 ## 2. Spring Boot Migration
 
