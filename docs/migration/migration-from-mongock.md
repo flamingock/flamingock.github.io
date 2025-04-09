@@ -17,83 +17,93 @@ Flamingock offers two migration paths:
 
 :::warning
 
-- Ensure your Mongock setup is updated to version 5 before initiating the migration.
-- It is strongly advised to create a backup of your data prior to migration.
+- It is strongly advised that your Mongock setup is updated to version 5 before initiating the migration.
 - Conduct the migration process within a testing environment.
-- Under no circumstances should you alter your existing ChangeUnits. If they were originally Mongock ChangeUnits, they must remain unchanged.
+- ❗ Important: Under no circumstances should you modify your existing ChangeUnits from Mongock. They must remain intact—especially their annotations and execution logic. Changing them can lead to undesired re-execution and compromise system integrity.
 
 :::
 
 ## 1. Standalone Migration
 
+:::note
+This section will be exampled with a DynamoDB example
+:::
+
 ### 1.1. Replace Mongock Dependencies with Flamingock Dependencies
 
 Update your build configuration to replace Mongock dependencies with Flamingock dependencies.
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        <Tabs groupId="compilers">
-            <TabItem value="gradle" label="Gradle" default>
-                ```kotlin
-                implementation("io.flamingock:flamingock-core:$flamingockVersion")
-                ```
-            </TabItem>
-            <TabItem value="maven" label="Maven">
-                ```xml
-                <dependencies>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>flamingock-core</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                </dependencies>
-                ```
-            </TabItem>
-        </Tabs>
+<Tabs groupId="compilers">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        implementation("io.flamingock:flamingock-core:$flamingockVersion")
+        ```
     </TabItem>
-    <TabItem value="community" label="Community Edition">
-        <Tabs groupId="compilers">
-            <TabItem value="gradle" label="Gradle" default>
-                ```kotlin
-                implementation("io.flamingock:flamingock-core:$flamingockVersion")
-                implementation("io.flamingock:dynamodb-driver:$flamingockVersion")
-                ```
-            </TabItem>
-            <TabItem value="maven" label="Maven">
-                ```xml
-                <dependencies>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>flamingock-core</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>dynamodb-driver</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                </dependencies>
-                ```
-            </TabItem>
-        </Tabs>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <dependencies>
+            [...]
+            <dependency>
+                <groupId>io.flamingock</groupId>
+                <artifactId>flamingock-core</artifactId>
+                <version>${flamingock.latestVersion}</version>
+            </dependency>
+        </dependencies>
+        ```
     </TabItem>
 </Tabs>
 
-### 1.2. Update Code References
+### 1.2. Add Flamingock Driver Dependencies (required only in Community Edition)
 
-Change your `MongockStandalone.builder()` with the `FlamingockStandalone.local()` or `FlamingockStandalone.cloud()` builders. See Standalone Runner documentation for options and parameters.
+<Tabs groupId="compilers">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        implementation("io.flamingock:dynamodb-driver:$flamingockVersion")
+        ```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <dependencies>
+            [...]
+            <dependency>
+                <groupId>io.flamingock</groupId>
+                <artifactId>dynamodb-driver</artifactId>
+                <version>${flamingock.latestVersion}</version>
+            </dependency>
+        </dependencies>
+        ```
+    </TabItem>
+</Tabs>
+
+### 1.3. Update Code References
+
+To begin using Flamingock, you must replace your existing `MongockStandalone.builder()` setup with either:
+
+- `FlamingockStandalone.local()` — for Community Edition usage
+- `FlamingockStandalone.cloud()` — for Cloud Edition usage
+
+This change is the starting point to transition your setup.
+Once you update the entrypoint, Flamingock provides a familiar yet evolved API designed to simplify the migration process. While many method names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required. See [Flamingock Core Concepts](../core-concepts) for further info.
+
+### 1.4. Add Stages
+
+- Before in Mongock we had packages to manage changes. Now, changes must be encapsulated within stages, with each stage comprising a package and a corresponding resource directory.
+- This means that existing changes previously implemented in Mongock need to be incorporated into a stage.
+- New changes can be wrapped in a different stage (with its own package) or together in the same stage with the previous ones.
 
 <Tabs groupId="flavors">
     <TabItem value="cloud" label="Cloud Edition" default>
         ```java
         FlamingockStandalone.cloud()
-                .setApiToken(API_TOKEN)
-                .setEnvironment(ENVIRONMENT_NAME)
-                .setService(SERVICE_NAME)
-                .addStage(new Stage("stage-name")
+                //...
+                .addStage(
+                    new Stage("dynamodb-migration")
                         // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock"))
-                .addDependency(client)
+                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.legacyChanges")
+                        // New Flamingock changeUnits
+                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.newChanges")
+                )
+                //...
                 .build()
                 .run();
         ```
@@ -101,73 +111,37 @@ Change your `MongockStandalone.builder()` with the `FlamingockStandalone.local()
     <TabItem value="community" label="Community Edition" default>
         ```java
         FlamingockStandalone.local()
-                .setDriver(new DynamoDBDriver(client))
-                .addStage(new Stage("stage-name")
+                //...
+                .addStage(
+                    new Stage("dynamodb-migration")
                         // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock"))
-                .addDependency(client)
+                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.legacyChanges")
+                        // New Flamingock changeUnits
+                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.newChanges")
+                )
+                //...
                 .build()
                 .run();
         ```
     </TabItem>
 </Tabs>
 
-### 1.3. Add a New Package (Optional)
+### 1.5. Specify the Location of previous ChangeLogs for the Importer
 
-If you want to organize new changeUnits separately, add a new package for them. Both legacy Mongock changeUnits and Flamingock changeUnits can coexist in the same package.
+When migrating from Mongock, you must specify the source where Flamingock should retrieve the legacy ChangeLogs. This is done passing data source name to the importer configuration.
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```java
-        FlamingockStandalone.cloud()
-                .setApiToken(API_TOKEN)
-                .setEnvironment(ENVIRONMENT_NAME)
-                .setService(SERVICE_NAME)
-                .addStage(new Stage("stage-name")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.changes"))
-                .addDependency(client)
-                .build()
-                .run();
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```java
-        FlamingockStandalone.local()
-                .setDriver(new DynamoDBDriver(client))
-                .addStage(new Stage("stage-name")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.changes"))
-                .addDependency(client)
-                .build()
-                .run();
-        ```
-    </TabItem>
-</Tabs>
-
-### 1.4. Specify the Location of previous ChangeLogs for the Importer
-
-Specify where the legacy Mongock changeLogs are located using the importer. `"mongockChangeLog"` is where Flamingock will retrieve the legacy changeLogs to migrate them into the new structure.
+:::info
+This data source name refers to the data source (e.g., the MongoDB collection, DynamoDB table, etc.) where Mongock stored its execution history. Flamingock will use this to import the existing ChangeSet metadata and ensure continuity.
+:::
 
 <Tabs groupId="flavors">
     <TabItem value="cloud" label="Cloud Edition" default>
         ```java
         FlamingockStandalone.cloud()
-                .setApiToken(API_TOKEN)
-                .setEnvironment(ENVIRONMENT_NAME)
-                .setService(SERVICE_NAME)
-                .addStage(new Stage("stage-name")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.changes"))
-                .addDependency(client)
+                //...
                 // Importer with where legacy changeLogs are located
                 .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
+                //...
                 .build()
                 .run();
         ```
@@ -175,15 +149,10 @@ Specify where the legacy Mongock changeLogs are located using the importer. `"mo
     <TabItem value="community" label="Community Edition" default>
         ```java
         FlamingockStandalone.local()
-                .setDriver(new DynamoDBDriver(client))
-                .addStage(new Stage("stage-name")
-                        // Your existing changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.mongock")
-                        // New Flamingock changeUnits
-                        .addCodePackage("io.flamingock.examples.dynamodb.standalone.changes"))
-                .addDependency(client)
+                //...
                 // Importer with where legacy changeLogs are located
                 .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
+                //...
                 .build()
                 .run();
         ```
@@ -192,60 +161,56 @@ Specify where the legacy Mongock changeLogs are located using the importer. `"mo
 
 ## 2. Spring Boot Migration
 
+:::note
+This section will be exampled with a MongoDB example
+:::
+
 ### 2.1. Replace Mongock Dependencies with Flamingock Dependencies
 
 Update your build configuration to replace Mongock dependencies with Flamingock dependencies.
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        <Tabs groupId="compilers">
-            <TabItem value="gradle" label="Gradle" default>
-                ```kotlin
-                implementation("io.flamingock:flamingock-springboot-v2-runner:$flamingockLatestVersion")
-                ```
-            </TabItem>
-            <TabItem value="maven" label="Maven">
-                ```xml
-                <dependencies>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>flamingock-springboot-v2-runner</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                </dependencies>
-                ```
-            </TabItem>
-        </Tabs>
+<Tabs groupId="compilers">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        implementation("io.flamingock:flamingock-springboot-v2-runner:$flamingockLatestVersion")
+        ```
     </TabItem>
-    <TabItem value="community" label="Community Edition">
-        <Tabs groupId="compilers">
-            <TabItem value="gradle" label="Gradle" default>
-                ```kotlin
-                implementation("io.flamingock:flamingock-springboot-v2-runner:$flamingockLatestVersion")
-                implementation("io.flamingock:mongodb-springdata-v3-driver:$flamingockLatestVersion")
-                ```
-            </TabItem>
-            <TabItem value="maven" label="Maven">
-                ```xml
-                <dependencies>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>flamingock-springboot-v2-runner</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.flamingock</groupId>
-                        <artifactId>mongodb-springdata-v3-driver</artifactId>
-                        <version>${flamingock.latestVersion}</version>
-                    </dependency>
-                </dependencies>
-                ```
-            </TabItem>
-        </Tabs>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <dependencies>
+            <dependency>
+                <groupId>io.flamingock</groupId>
+                <artifactId>flamingock-springboot-v2-runner</artifactId>
+                <version>${flamingock.latestVersion}</version>
+            </dependency>
+        </dependencies>
+        ```
     </TabItem>
 </Tabs>
 
-### 2.2. Update Code References
+### 2.2. Add Flamingock Driver Dependencies (required only in Community Edition)
+
+<Tabs groupId="compilers">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        implementation("io.flamingock:mongodb-springdata-v3-driver:$flamingockLatestVersion")
+        ```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <dependencies>
+            [...]
+            <dependency>
+                <groupId>io.flamingock</groupId>
+                <artifactId>mongodb-springdata-v3-driver</artifactId>
+                <version>${flamingock.latestVersion}</version>
+            </dependency>
+        </dependencies>
+        ```
+    </TabItem>
+</Tabs>
+
+### 2.3. Update Code References
 
 Replace Mongock-specific references in your code with Flamingock equivalents.
 
@@ -255,124 +220,65 @@ For example: `io.mongock.runner.springboot.EnableMongock` with `io.flamingock.sp
 Legacy Mongock annotations will remain supported in Flamingock indefinitely, although they are marked as deprecated.
 :::
 
-### 2.3. Update Configuration File
+### 2.4. Update Configuration File
 
-Update your application's configuration file to match Flamingock's structure.
+To begin using Flamingock, you must replace your existing Mongock configuration with the Flamingock one:
 
-#### Legacy Mongock Configuration
+<Tabs groupId="flavors">
+    <TabItem value="cloud" label="Cloud Edition" default>
+        ```yaml
+        flamingock:
+            api-token: API_TOKEN
+            environment: ENVIRONMENT_NAME
+            service: SERVICE_NAME
+            # ...
+        ```
+    </TabItem>
+    <TabItem value="community" label="Community Edition" default>
+        ```yaml
+        flamingock:
+            # ...
+        ```
+    </TabItem>
+</Tabs>
+
+This change is the starting point to transition your setup.
+Once you update the entrypoint, Flamingock provides a familiar yet evolved configuration structure designed to simplify the migration process. While many property names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required. See [Flamingock Core Concepts](../core-concepts) for further info.
+
+### 2.5. Add Stages
+
+- Before in Mongock we had packages to manage changes. Now, changes must be encapsulated within stages, with each stage comprising a package and a corresponding resource directory.
+- This means that existing changes previously implemented in Mongock need to be incorporated into a stage.
+- New changes can be wrapped in a different stage (with its own package) or together in the same stage with the previous ones.
 
 ```yaml
-mongock:
-  migration-scan-package:
-    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-  transactional: true
+flamingock:
+    # ...
+    stages:
+        - name: mongodb-migration
+        code-packages:
+            # Your existing changeUnits
+            - io.flamingock.examples.mongodb.springboot.springdata.legacyChanges
+            # New Flamingock changeUnits
+            - io.flamingock.examples.mongodb.springboot.springdata.newChanges
+    # ...
 ```
 
-#### Flamingock Equivalent Configuration
+### 2.6. Specify the Location of Legacy ChangeLogs
 
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```yaml
-        flamingock:
-            api-token: API_TOKEN
-            environment: ENVIRONMENT_NAME
-            service: SERVICE_NAME
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-            transactionDisabled: false
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```yaml
-        flamingock:
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-            transactionDisabled: false
-        ```
-    </TabItem>
-</Tabs>
+When migrating from Mongock, you must specify the source where Flamingock should retrieve the legacy ChangeLogs. This is done using the mongockChangeLog property in the Importer configuration.
 
-### 2.4. Add a New Package (Optional)
+:::info
+This property refers to the data source (e.g., the MongoDB collection, DynamoDB table, etc.) where Mongock stored its execution history. Flamingock will use this to import the existing ChangeSet metadata and ensure continuity.
+:::
 
-If you want to organize new changeUnits separately, add a new package for them. Both legacy Mongock changeUnits and Flamingock changeUnits can coexist in the same package.
-
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```yaml
-        flamingock:
-            api-token: API_TOKEN
-            environment: ENVIRONMENT_NAME
-            service: SERVICE_NAME
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-                    # New Flamingock changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.changes
-            transactionDisabled: false
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```yaml
-        flamingock:
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-                    # New Flamingock changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.changes
-            transactionDisabled: false
-        ```
-    </TabItem>
-</Tabs>
-
-### 2.5. Specify the Location of Legacy ChangeLogs
-
-Specify where the legacy Mongock changeLogs are located using the property `legacy-mongock-changelog-source`. This is where Flamingock will retrieve the legacy changeLogs to migrate them into the new structure.
-
-<Tabs groupId="flavors">
-    <TabItem value="cloud" label="Cloud Edition" default>
-        ```yaml
-        flamingock:
-            api-token: API_TOKEN
-            environment: ENVIRONMENT_NAME
-            service: SERVICE_NAME
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-                    # New Flamingock changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.changes
-            transactionDisabled: false
-            # Where legacy changeLogs are located
-            legacy-mongock-changelog-source: mongockChangeLog
-        ```
-    </TabItem>
-    <TabItem value="community" label="Community Edition" default>
-        ```yaml
-        flamingock:
-            stages:
-                - name: mongodb-migration
-                code-packages:
-                    # Your existing changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.mongock
-                    # New Flamingock changeUnits
-                    - io.flamingock.examples.mongodb.springboot.springdata.changes
-            transactionDisabled: false
-            # Where legacy changeLogs are located
-            legacy-mongock-changelog-source: mongockChangeLog
-        ```
-    </TabItem>
-</Tabs>
+```yaml
+flamingock:
+    # ...
+    # Where legacy changeLogs are located
+    legacy-mongock-changelog-source: mongockChangeLog
+    # ...
+```
 
 ## Conclusion
 

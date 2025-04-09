@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+draft: true
 ---
 # From Community Edition to Cloud Edition
 
