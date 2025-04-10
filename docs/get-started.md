@@ -10,9 +10,9 @@ This guide will walk you through the basics of using Flamingock with a step-by-s
 
 ## 1. Add Flamingock Client Dependency
 
-To begin, you need to add the Flamingock client library to your project. You can use either:
+To begin, add the Flamingock client library to your project. You can use either:
 
-- Cloud Edition (works for all systems)
+- Cloud Edition (compatible with all systems)
 - Community Edition (you need to choose the specific driver)
 
 Example for **Cloud Edition**:
@@ -51,8 +51,6 @@ Example for **Community Edition** using MongoDB Sync4:
     </TabItem>
 </Tabs>
 
-
-All Community Edition drivers:
 
 All Community Edition drivers:
 
@@ -112,16 +110,14 @@ This is required at **build time** and supports:
 
 A **Change** is a unit of logic that Flamingock will execute during your application's startup.
 
-Changes can be defined in a **code-based** or **template-based** style, depending on your preferred workflow.
-For a deeper understanding of how changes work, check out the [Concepts → Changes](/docs/concepts#changes) section.
-
-> 💡 You can also check out our [Best Practices](/docs/best-practices) guide for tips on naming conventions and defining changes effectively — including patterns like dependency injection and execution structure.
+Changes can be defined in a **code-based** or **template-based** style, depending on your preferred approach.
+For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → Changes](/docs/concepts#changes) section.
 
  
 <Tabs groupId="change">
     <TabItem value="code_based" label="Code Based" default>
         ```java
-        @Change(id = "create-table", order = "1")
+        @Change(id = "create-table", order = "1", author = "antonio", transactional = false)
         public class CreateTableChange {
         
             @Execution
@@ -150,7 +146,7 @@ For a deeper understanding of how changes work, check out the [Concepts → Chan
     </TabItem>
 </Tabs>
 
-> 🔁 You can combine both styles (code and template) within the same project.
+> 🔁 You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
 
 ---
 
@@ -239,10 +235,10 @@ These logs confirm that:
 
 ---
 
-## 7. Run your application...and flamingock!
+## 7. Run Your Application — Flamingock Handles the Changes!
 Once your project is compiled and Flamingock is configured, you're ready to run the application.
 
-When Flamingock runs as part of your application, it will automatically:
+When your application starts, Flamingock will be executed as part of the startup process:
 - Load the pipeline file(actually the metadata generated from the pipeline file  during the compilation)
 - Evaluate pending changes
 - Execute the changes
