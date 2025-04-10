@@ -27,7 +27,7 @@ You can configure Flamingock using:
 |-----------------------|--------------------------------------------------|
 | 📦 Pipeline & Stages  | Organize changes into ordered stages             |
 | 🔒 Lock               | Distributed locking and timing options           |
-| 🧱 Other              | Metadata, default author, enable/disable         |
+| ⚙️ Other              | Metadata, default author, enable/disable         |
 | ☁️ Cloud Edition      | Cloud-specific setup: token, env, service        |
 | 🧪 Community Edition  | Driver-specific config for MongoDB, DynamoDB...  |
 
@@ -76,7 +76,7 @@ pipeline:
       sourcesPackage: io.flamingock.changes.init
 ```
 
-> 💡 *You can override the default path via compiler options.*
+[//]: # (> 💡 *You can override the default path via compiler options.*)
 
 ---
 
