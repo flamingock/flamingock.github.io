@@ -106,7 +106,7 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 ## Key Features
 
 - **Pre-built, reusable modules**: Each template provides a well-defined structure for managing migrations and configurations.
-- **Declarative Change Units**: Users define changes in YAML, avoiding Java boilerplate.
+- **Declarative ChangeUnits**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock’s change management process.
 - **Built-in best practices**: Ensures correctness and reliability for each integration.
@@ -131,7 +131,7 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 
 | Template Name | Description |
 |--------------|-------------|
-| **SQL Template** | Enables SQL-based migrations using YAML-defined Change Units. |
+| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits. |
 | **Kafka Template** (Upcoming) | Manages Kafka topics and configurations using YAML definitions. |
 | **Twilio Template** (Upcoming) | Simplifies Twilio messaging configurations via YAML. |
 | **Redis Template** (Upcoming) | Allows structured updates to Redis configurations. |

@@ -33,7 +33,7 @@ implementation 'io.flamingock.template:sql-template:1.0.0'
 
 ### Step 2: Define a Template-Based Change
 
-In Flamingock, a **Change** (formerly known as *ChangeUnit*) represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
+In Flamingock, a **ChangeUnit** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
 
 When using Template-Based changes, instead of implementing a Code-Based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 

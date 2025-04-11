@@ -140,7 +140,7 @@ Each template must define the logic for handling ChangeUnits. Using the **SQL Te
 
 ### 3. Write Documentation and Provide Examples
 - Create a **README.md** explaining how the template works.  
-- Provide example **YAML Change Units** that developers can use.  
+- Provide example **YAML ChangeUnits** that developers can use.  
 
 ### 4. Submit a Pull Request to GitHub
 - Fork the **Flamingock repository** and push your changes.  
