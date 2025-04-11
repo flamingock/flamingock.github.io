@@ -6,7 +6,9 @@ sidebar_position: 4
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Configuration Overview
+# Client configuration
+
+## Overview
 
 Flamingock provides flexible configuration options to support a variety of environments and workflows — from local setups to cloud-native distributed systems.
 
