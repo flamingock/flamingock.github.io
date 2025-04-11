@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+title: Client Configuration
+sidebar_position: 4
 ---
 
 import Tabs from '@theme/Tabs';
