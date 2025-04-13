@@ -1,0 +1,7 @@
+🛞 Client Configuration
+├── 🔧 Overview                 # Quick map of what's configurable + structure of the section
+├── 📦 Pipeline & Stages   # Structure of the pipeline file, stages, patterns
+├── 🔒 Lock Configuration # All about locks, defaults, tuning, examples
+├── 🧱Other Cnfiguration   # Metadata,Author, enable/disable and open to add more
+├── ☁️ Cloud Edition Configuration
+└── 🧪 Community Edition Configuration
