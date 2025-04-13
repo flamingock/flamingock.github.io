@@ -2,7 +2,6 @@
 sidebar_position: 4
 ---
 
-# 🧩 Flamingock Editions
 Flamingock offers a range of backend providers and deployment models, allowing users to choose from the following: 
 
 ![](../../static/img/Diagrams-Editions.drawio.png)

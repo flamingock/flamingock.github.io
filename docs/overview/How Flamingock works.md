@@ -2,9 +2,9 @@
 sidebar_position: 5
 ---
 
-# ⚙️ How Flamingock works?
+#  How Flamingock works?
 
-**Code It. Deploy It. Forget It.**  
+**⚙️ Code It. Deploy It. Forget It.**  
 
 With Flamingock, developers define any component changes (database, system changes, SaaS, etc. )  **directly in application code** using familiar programming constructs such as classes and annotations, or template-based formats like YAML. The Flamingock client library then:  
 

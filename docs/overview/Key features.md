@@ -2,7 +2,9 @@
 sidebar_position: 3
 ---
 
-# 🔑 Some key features
+With Flamingock, you can take advantage of the following features:
+
+# Key features
 
 - 🧱 **Change management of any component**: Manage configuration and data changes with your Application code for any component. NoSQL Databases are a first-class citizen, and we've expanded this capability for any type of component that requires configuration.
   :::info
