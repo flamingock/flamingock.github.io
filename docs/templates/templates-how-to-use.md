@@ -14,7 +14,12 @@ Using a Flamingock Template is straightforward. Here’s how you can apply an SQ
 
 Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
 
-<Tabs>
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+implementation("io.flamingock:sql-template:$flamingockSqlTemplateVersion")
+```
+  </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
@@ -22,11 +27,6 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
     <artifactId>sql-template</artifactId>
     <version>1.0.0</version>
 </dependency>
-```
-  </TabItem>
-  <TabItem value="gradle" label="Gradle">
-```gradle
-implementation 'io.flamingock.template:sql-template:1.0.0'
 ```
   </TabItem>
 </Tabs>

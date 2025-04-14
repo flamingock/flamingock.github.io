@@ -14,7 +14,7 @@ Flamingock Templates are pre-built modules designed to streamline the integratio
 
 ## How It Works
 
-Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on Code-Based ChangeUnits to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.). This approach offers:
+Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on Code-Based ChangeUnits to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
 
 ### Who Provides Templates?
 
@@ -42,19 +42,26 @@ Imagine you're working on a Java application that manages users and roles in a d
 public class CreateUsersTableChangeUnit {
 
     @Execution
-    public void execute() {
-        // Java logic to create `users` table
-    }
+    public void execute(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(255))");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create users table", e);
+        }
 }
 
 @ChangeUnit(id = "create-roles-table", order = 2, author = "flamingock")
 public class CreateRolesTableChangeUnit {
 
     @Execution
-    public void execute() {
-        // Java logic to create `roles` table
+    public void execute(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE roles (id INT PRIMARY KEY, role_name VARCHAR(255))");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create roles table", e);
+        }
     }
-}
+}   
 ```
 
 These classes are almost identical — they only differ in the SQL they execute. Over time, these small repetitions add up.
@@ -96,7 +103,7 @@ Behind the scenes, the **template handles the logic**: connection management, ex
 ### What You Gain
 
 - **Less boilerplate**: You don’t need to write 10 near-identical Java classes.
-- **Faster development**: Anyone can create or modify a change by editing a config file.
+- **Faster development**: Anyone can create a change unit by based on an already existing template.
 - **Safer migrations**: Centralized logic makes it easier to test and enforce best practices.
 
 :::info
@@ -116,8 +123,8 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 
 | **Use Case** | **Template-Based ChangeUnit** | **Code-Based ChangeUnit** |
 |-------------|-----------------------------|-------------------------|
-| Simple database migrations (e.g., SQL schema updates) | ✅ | ✅ |
 | Integration with third-party services (e.g., Kafka, Twilio) | ✅ | ✅ |
+| Simple database migrations (e.g., SQL schema updates) | ✅ | ✅ |
 | Custom logic and advanced migrations | ☑️* | ✅ |
 | Complex, dynamic change sequences | ☑️** | ✅ |
 | Low-code, configuration-driven changes | ✅ | ❌ |
