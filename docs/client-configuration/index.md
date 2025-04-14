@@ -6,7 +6,9 @@ sidebar_position: 4
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Configuration Overview
+# Client configuration
+
+## Overview
 
 Flamingock provides flexible configuration options to support a variety of environments and workflows — from local setups to cloud-native distributed systems.
 
@@ -27,7 +29,7 @@ You can configure Flamingock using:
 |-----------------------|--------------------------------------------------|
 | 📦 Pipeline & Stages  | Organize changes into ordered stages             |
 | 🔒 Lock               | Distributed locking and timing options           |
-| 🧱 Other              | Metadata, default author, enable/disable         |
+| ⚙️ Other              | Metadata, default author, enable/disable         |
 | ☁️ Cloud Edition      | Cloud-specific setup: token, env, service        |
 | 🧪 Community Edition  | Driver-specific config for MongoDB, DynamoDB...  |
 
@@ -76,7 +78,7 @@ pipeline:
       sourcesPackage: io.flamingock.changes.init
 ```
 
-> 💡 *You can override the default path via compiler options.*
+[//]: # (> 💡 *You can override the default path via compiler options.*)
 
 ---
 
