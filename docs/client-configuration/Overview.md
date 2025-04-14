@@ -88,7 +88,7 @@ You can apply configuration in **one or both** of the following ways:
 
 
 <Tabs groupId="config">
-    <TabItem value="file" label="Unified YAML" default>
+    <TabItem value="file" label="YAML" default>
 ```yaml
 enabled: true
 defaultAuthor: antonio
