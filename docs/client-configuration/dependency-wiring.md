@@ -3,7 +3,7 @@ title: Dependency Wiring (Advanced)
 sidebar_position: 4
 ---
 
-# 🔌 Dependency Wiring (Advanced)
+# 🔌 Dependency wiring (advanced)
 
 Flamingock allows you to inject dependencies into your change units so they can use services, clients, or utilities during execution. This is especially useful for **standalone applications**, where no dependency injection framework (like Spring) is present.
 
@@ -19,7 +19,7 @@ This injection is handled via the **Flamingock builder** — not via YAML — an
 
 ---
 
-## Registering Dependencies
+## Registering dependencies
 
 Flamingock provides multiple methods to register dependencies with the builder:
 
@@ -35,9 +35,9 @@ Once registered, Flamingock can inject these into your change unit methods or co
 
 ---
 
-## njection Targets
+## Injection targets
 
-### Method Injection
+### Method injection
 
 You can declare dependencies as parameters of `@Execution`, `@RollbackExecution`, etc.
 
@@ -48,7 +48,7 @@ public void run(ClientService clientService) {
 }
 ```
 
-### Constructor Injection
+### Constructor injection
 
 You can inject dependencies through constructors:
 
@@ -73,7 +73,7 @@ public class CreateClientsTable {
 
 ---
 
-## What Happens If a Dependency Isn’t Found?
+## What happens if a dependency isn’t found?
 
 By default, Flamingock will throw a clear exception if it cannot resolve a dependency.
 
@@ -92,7 +92,7 @@ public void run(@Nullable OptionalLogger logger) {
 
 ---
 
-## Skipping Lock Verification
+## Skipping lock verification
 
 By default, injected dependencies are **proxy-wrapped** to check that the lock is still held before each call — this prevents unsafe execution if the lock expires.
 
@@ -107,7 +107,7 @@ public void run(@NonLockGuarded SomeHelper helper) {
 
 ---
 
-## Best Practices
+## Best practices
 
 - Only inject what you need for the current change unit
 - Prefer constructor injection when dependencies are shared across multiple methods
