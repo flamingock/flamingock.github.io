@@ -12,7 +12,7 @@ Welcome to the migration guide for transitioning from Mongock to Flamingock. Thi
 
 - It is strongly advised that your Mongock setup is updated to version 5 before initiating the migration.
 - Conduct the migration process within a testing environment.
-- ❗ Important: Under no circumstances should you modify your existing ChangeUnits from Mongock. They must remain intact—especially their annotations and execution logic. Changing them can lead to undesired re-execution and compromise system integrity.
+- ❗ Important: Under no circumstances should you modify the execution logic from your existing ChangeUnits from Mongock. Changing them can lead to undesired re-execution and compromise system integrity.
 
 :::
 
@@ -59,7 +59,7 @@ Example for **Community Edition** using MongoDB Sync4:
     </TabItem>
 </Tabs>
 
-See [Get Started](../get-started) guide for more drivers and other dependencies.
+See [Get Started](get-started#1-add-flamingock-client-dependency) guide for more drivers and other dependencies.
 
 ## 2. Configure Flamingock
 
@@ -69,7 +69,7 @@ To begin using Flamingock, you must replace your existing `MongockStandalone.bui
 
 :::info
 This change is the starting point to transition your setup.
-Once you update the entrypoint, Flamingock provides a familiar yet evolved API designed to simplify the migration process. While many method names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required. See [Client Configuration](../client-configuration/Overview) section for further info.
+Once you update the entrypoint, Flamingock provides a familiar yet evolved API designed to simplify the migration process. While many method names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required. See [Client Configuration](client-configuration/Overview) section for further info.
 :::
 
 ### 2.2. File-based configuration
@@ -78,13 +78,93 @@ Flamingock expects the configuration file to be located at `resources/flamingock
 
 Remove Mongock-specific references in your code. For example: `@EnableMongock`.
 
+See [Client Configuration](client-configuration/Overview) section for configuration options.
+
+## 3. ChangeUnit preparation
+
+It is important that your ChangeUnits from Mongock been part of the new Flamingock Pipeline.
+
 :::warning
-❗ Remember: Under no circumstances should you modify your existing ChangeUnits from Mongock. Legacy Mongock annotations will remain supported in Flamingock indefinitely, although they are marked as deprecated.
+❗ Remember: Under no circumstances should you modify the execution logic from your existing ChangeUnits from Mongock. Changing them can lead to undesired re-execution and compromise system integrity. Any new change you need, can be done with a new [Change](get-started#3-define-a-change).
 :::
 
-See [Client Configuration](../client-configuration/Overview) section for configuration options.
+If your ChangeUnit ids are uniques across all authors (default behavior):
 
-## 3. Add Stages
+1. Add the [Flamingock Annotation Processor](get-started#2-add-flamingock-annotation-processor).
+2. Replace all `@ChangeUnit` annotations with the new `@Change` annotation.
+
+<Tabs groupId="gradle_maven">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
+        ```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.11.0</version>
+              <configuration>
+                <annotationProcessorPaths>
+                  <path>
+                    <groupId>io.flamingock</groupId>
+                    <artifactId>flamingock-processor</artifactId>
+                    <version>${flamingockVersion}</version>
+                  </path>
+                </annotationProcessorPaths>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+        ```
+    </TabItem>
+</Tabs>
+
+---
+
+If your ChangeUnits have duplicated ids for different authors
+
+1. Add the Flamingock Legacy Annotation Processor.
+2. Keep the `@ChangeUnit` annotation in your ChangeUnits.
+
+<Tabs groupId="gradle_maven">
+    <TabItem value="gradle" label="Gradle" default>
+        ```kotlin
+        annotationProcessor("io.flamingock:flamingock-legacy-processor:$flamingockVersion")
+        ```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+        ```xml
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.11.0</version>
+              <configuration>
+                <annotationProcessorPaths>
+                  <path>
+                    <groupId>io.flamingock</groupId>
+                    <artifactId>flamingock-legacy-processor</artifactId>
+                    <version>${flamingockVersion}</version>
+                  </path>
+                </annotationProcessorPaths>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+        ```
+    </TabItem>
+</Tabs>
+
+:::note
+Use the new `@Change` annotation for all new Changes, maintaining the old `@ChangeUnit` only for your legacy ones.
+:::
+
+## 4. Add Stages
 
 - Before in Mongock we had packages to manage changes. Now, changes must be encapsulated within stages, with each stage comprising a package and a corresponding resource directory.
 - This means that existing changes previously implemented in Mongock need to be incorporated into a stage.
@@ -102,9 +182,9 @@ pipeline:
       sourcesPackage: io.flamingock.examples.mongodb.springboot.springdata.mongodbMigration
 ```
 
-You can see [Pipeline & Stages](../client-configuration/pipeline-and-stages) for more information about Flamingock Pipeline
+You can see [Pipeline & Stages](client-configuration/pipeline-and-stages) for more information about Flamingock Pipeline
 
-## 4. Specify the Location of Legacy ChangeLogs
+## 5. Specify the Location of Legacy ChangeLogs
 
 When migrating from Mongock, you must specify the source where Flamingock should retrieve the legacy ChangeLogs.
 
@@ -114,27 +194,23 @@ The DataSource name ("mongockChangeLog" in this example) refers to the data sour
 
 <Tabs groupId="config">
     <TabItem value="file" label="Unified YAML" default>
-This is done using the `legacy-mongock-changelog-source` property in the Flamingock configuration.
-
-```yaml
-flamingock:
-    # ...
-    legacy-mongock-changelog-source: mongockChangeLog
-    # ...
-```
-
-</TabItem>
-<TabItem value="builder" label="Builder">
-This is done passing the DataSource name to the importer configuration.
-
-```java
-FlamingockStandalone
-        //...
-        .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
-        //...
-```
-
-</TabItem>
+        This is done using the `legacy-mongock-changelog-source` property in the Flamingock configuration.
+        ```yaml
+        flamingock:
+            # ...
+            legacy-mongock-changelog-source: mongockChangeLog
+            # ...
+        ```
+    </TabItem>
+    <TabItem value="builder" label="Builder">
+        This is done passing the DataSource name to the importer configuration.
+        ```java
+        FlamingockStandalone
+                //...
+                .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
+                //...
+        ```
+    </TabItem>
 </Tabs>
 
 ## Conclusion
