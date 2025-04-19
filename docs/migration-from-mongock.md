@@ -89,7 +89,7 @@ See [Client Configuration](../client-configuration/Overview) section for configu
 - Before in Mongock we had packages to manage changes. Now, changes must be encapsulated within stages, with each stage comprising a package and a corresponding resource directory.
 - This means that existing changes previously implemented in Mongock need to be incorporated into a stage.
 - New changes can be wrapped in a different stage (with its own package) or together in the same stage with the previous ones.
-- This all needs to be defined in a Pipeline yaml file. By default, Flamingock expects the pipeline file to be located at `resources/flamingock/pipeline.yaml`.
+- This all needs to be defined in a Pipeline yaml file. By default, Flamingock expects the pipeline file to be located at `resources/flamingock.yaml`.
 
 ```yaml
 pipeline:
