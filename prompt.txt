@@ -1,0 +1,606 @@
+I am jumping now to the "templates"section. Specifically to how to create(and why) a template.
+I don't know what you remember about our templates, but I am providing information about. Actually this is the documentation we have added so far in the the documentation(in markdown, we are using docsaurus).
+
+File: templates-overview.md
+---
+sidebar_position: 1
+title: Overview
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Templates
+
+## Introduction
+
+Flamingock Templates are pre-built modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define configuration changes in declarative format (such as **YAML** files), reducing the need for custom Code-Based ChangeUnits while ensuring seamless execution and versioning of changes.
+
+## How It Works
+
+Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on Code-Based ChangeUnits to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
+
+### Who Provides Templates?
+
+Templates can be:
+- **Provided by the Flamingock core team** (e.g., SQL, Kafka, Redis)
+- **Offered by the community**
+- **Created internally by teams** to address common patterns in their own systems
+
+This makes them highly adaptable: whether you're integrating a database, messaging system, or internal service, templates give you a low-code mechanism to structure your changes cleanly and consistently.
+
+### Why Do Templates Exist?
+
+Templates exist to solve a common problem in traditional, code-based migrations: **duplicated logic across ChangeUnits**.
+
+Instead of repeating the same boilerplate code over and over, templates let you **externalize the logic** into a reusable definition and **parameterize** what’s different.
+
+---
+
+### 🔁 A Simple Example
+
+Imagine you're working on a Java application that manages users and roles in a database. You’re using Code-based ChangeUnits like this:
+
+```java
+@ChangeUnit(id = "create-users-table", order = 1, author = "flamingock")
+public class CreateUsersTableChangeUnit {
+
+    @Execution
+    public void execute(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(255))");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create users table", e);
+        }
+}
+
+@ChangeUnit(id = "create-roles-table", order = 2, author = "flamingock")
+public class CreateRolesTableChangeUnit {
+
+    @Execution
+    public void execute(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE roles (id INT PRIMARY KEY, role_name VARCHAR(255))");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create roles table", e);
+        }
+    }
+}
+```
+
+These classes are almost identical — they only differ in the SQL they execute. Over time, these small repetitions add up.
+
+---
+
+### 💡 Now with Templates
+
+Instead of duplicating logic, you could define a single template (e.g. `sql-template`) that handles SQL execution generically. Then you just pass the SQL via configuration:
+
+```yaml
+id: create-users-table
+order: 1
+templateName: sql-template
+templateConfiguration:
+  executionSql: |
+    CREATE TABLE users (
+      id INT PRIMARY KEY,
+      name VARCHAR(255)
+    )
+```
+
+```yaml
+id: create-roles-table
+order: 2
+templateName: sql-template
+templateConfiguration:
+  executionSql: |
+    CREATE TABLE roles (
+      id INT PRIMARY KEY,
+      role_name VARCHAR(255)
+    )
+```
+
+Behind the scenes, the **template handles the logic**: connection management, execution, rollback, etc.
+
+---
+
+### What You Gain
+
+- **Less boilerplate**: You don’t need to write 10 near-identical Java classes.
+- **Faster development**: Anyone can create a change unit by based on an already existing template.
+- **Safer migrations**: Centralized logic makes it easier to test and enforce best practices.
+
+:::info
+Templates let you think in terms of ***what*** you want to do — not ***how*** you implement it every time.
+:::
+
+## Key Features
+
+- **Pre-built, reusable modules**: Each template provides a well-defined structure for managing migrations and configurations.
+- **Declarative ChangeUnits**: Users define changes in YAML, avoiding Java boilerplate.
+- **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
+- **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock’s change management process.
+- **Built-in best practices**: Ensures correctness and reliability for each integration.
+- **Extensible by the community**: Developers can contribute new templates to expand Flamingock’s ecosystem.
+
+## When to Use Template-Based ChangeUnits vs. Code-Based ChangeUnits
+
+| **Use Case** | **Template-Based ChangeUnit** | **Code-Based ChangeUnit** |
+|-------------|-----------------------------|-------------------------|
+| Integration with third-party services (e.g., Kafka, Twilio) | ✅ | ✅ |
+| Simple database migrations (e.g., SQL schema updates) | ✅ | ✅ |
+| Custom logic and advanced migrations | ☑️* | ✅ |
+| Complex, dynamic change sequences | ☑️** | ✅ |
+| Low-code, configuration-driven changes | ✅ | ❌ |
+
+☑️* Templates can handle custom logic if it can be abstracted and reused. Users can create custom templates to manage these scenarios.
+
+☑️** While templates may support complex change sequences, full control and dynamic logic might be easier to implement in code when the scenario is highly specific or non-repetitive.
+
+
+## List of Current Flamingock Templates
+
+| Template Name | Description |
+|--------------|-------------|
+| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits. |
+| **Kafka Template** (Upcoming) | Manages Kafka topics and configurations using YAML definitions. |
+| **Twilio Template** (Upcoming) | Simplifies Twilio messaging configurations via YAML. |
+| **Redis Template** (Upcoming) | Allows structured updates to Redis configurations. |
+
+---
+
+Flamingock Templates unlock new possibilities for seamless application evolution. Whether you’re managing **databases, configurations, or third-party services**, templates simplify the process, ensuring **faster, safer, and more standardised migrations**. Join the **Flamingock community** and start building your own templates today! 🚀
+
+
+File: templates-how-to-use.md
+
+---
+sidebar_position: 2
+title: How to use
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# How to use Flamingock Templates
+
+Using a Flamingock Template is straightforward. Here’s how you can apply an SQL-based migration using the **SQL Template**.
+
+### Step 1: Add the Template Dependency
+
+Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+implementation("io.flamingock:sql-template:$flamingockSqlTemplateVersion")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>io.flamingock.template</groupId>
+    <artifactId>sql-template</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+### Step 2: Define a Template-Based Change
+
+In Flamingock, a **ChangeUnit** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
+
+When using Template-Based changes, instead of implementing a Code-Based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
+
+Create a **YAML file** (e.g., `_0001__create_persons_table.yaml`) inside your application’s resources directory:
+
+```yaml
+id: create-persons-table-from-template
+order: 1
+templateName: sql-template
+templateConfiguration:
+  executionSql: |
+    CREATE TABLE Persons (
+      PersonID int,
+      LastName varchar(255),
+      FirstName varchar(255),
+      Address varchar(255),
+      City varchar(255)
+    )
+```
+
+:::info
+Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock. Please see the [Dependencies](https://docs.flamingock.io) section for more details.
+:::
+
+#### 🔍 Understanding the Fields
+
+- **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
+- **`order`**: Execution order relative to other changes (also shared with code-based).
+- **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
+- **`templateConfiguration`**: Section where you define the input parameters for the selected template. These parameters vary depending on the template.
+  - In this example, the template expects an `executionSql` field.
+- **Other fields**: Some templates may define additional, custom configuration fields (e.g., `rollbackSql` for SQL template).
+
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but introduce a flexible configuration model where each template defines its own behavior through external parameters.
+
+### Step 3: Config Flamingock to use the template file
+
+:::warning
+TODO: FLAMINGOCK CONFIGURATION (BUILDER / SPRINGBOOT) AND STAGE WITH YAML TEMPLATE PATH.
+:::
+
+### Step 4: Run Flamingock
+
+At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same execution flow as code-based changes.
+
+---
+
+## Real-World Use Case: SQL Database Migration
+
+Let’s compare how an SQL migration is handled using a **Template-Based ChangeUnit** vs. a **traditional Code-Based ChangeUnit**.
+
+### Approach 1: Using a Traditional Code-Based ChangeUnit
+
+```java
+import io.flamingock.api.annotations.ChangeUnit;
+import io.flamingock.api.annotations.Execution;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.sql.DataSource;
+
+@ChangeUnit(id = "create-persons-table", order = 1, author = "developer")
+public class CreatePersonsTableChangeUnit {
+
+    private final DataSource dataSource;
+
+    public CreatePersonsTableChangeUnit(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    @Execution
+    public void execute() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+
+            statement.executeUpdate("""
+                CREATE TABLE Persons (
+                    PersonID int PRIMARY KEY,
+                    LastName varchar(255),
+                    FirstName varchar(255),
+                    Address varchar(255),
+                    City varchar(255)
+                )
+            """);
+        }
+    }
+}
+
+```
+
+### Approach 2: Using a Flamingock SQL Template
+
+With the **SQL Template**, users define the same migration in **YAML** instead of Java:
+
+```yaml
+id: create-persons-table-from-template
+order: 1
+templateName: sql-template
+templateConfiguration:
+    executionSql: |
+        CREATE TABLE Persons (
+            PersonID int,
+            LastName varchar(255),
+            FirstName varchar(255),
+            Address varchar(255),
+            City varchar(255)
+        )
+```
+
+### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
+- **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL execution manually.
+- **Faster onboarding**: YAML is easier for non-Java developers.
+- **Standardised migrations**: Ensures best practices and avoids custom implementation errors.
+- **Improved readability**: Easier to review and version control.
+
+
+
+These are two pages in the templates section in our docsaurus documentation proyect.
+
+Now I want to add the page to create a template.
+At this point I assume you understand what a template is and why is useful. I think it has been alreay mentioned, but templates can be created and released by us(as Flamingock team) as an aretefact, by some contributor that want to
+provide his template(which will be potentially validated, and certificated, by us. Obviously nothing stops a user to create a template in his own repository without our supervision) and can be also developed internally
+by a team for its internal use, without the rest of the world knowing about it. (Do you have any dobut about this or everything clear?)
+
+To develop and distribute a template, there are some steps:
+- development: It needs to create some clases  inheriting from some abstract classes/interfaces we have provided.
+- Package and release(probably not the best terms): In case the template is to be distributed, it needs be packaged and distributed as a jar in maven or anything like that. In case its internal in a team/proyect, they decide how to do this. It can be inside a java application and this step is not needed.
+
+I proceed to explain the clases and provide an example:
+
+/**
+ * Interface representing a reusable change template with configuration of type {@code CONFIG}.
+ * <p>
+ * This interface is commonly implemented by classes that act as templates for Change Units
+ * where a specific configuration needs to be injected and managed independently.
+ *
+ * @param <CONFIG> The type of configuration this template works with.
+ */
+public interface ChangeTemplate<CONFIG extends ChangeTemplateConfig<?, ?>> extends ReflectionMetadataProvider {
+
+    /**
+     * Injects the configuration for this template.
+     *
+     * @param configuration Configuration instance of type {@code CONFIG}.
+     */
+    void setConfiguration(CONFIG configuration);
+
+    /**
+     * Returns the {@link Class} representing the configuration type {@code CONFIG} that this template is bound to.
+     * <p>
+     * This method uses Java Reflection to inspect the actual generic type argument used in the concrete
+     * implementation of {@code ChangeTemplate<CONFIG>}. This allows the framework or caller to determine
+     * the expected configuration class without the need to explicitly pass it.
+     *
+     * <p><strong>Usage example:</strong>
+     * <pre>{@code
+     * class MyTemplate implements ChangeTemplate<MyConfig> {
+     *     ...
+     * }
+     * ChangeTemplate<?> template = new MyTemplate();
+     * Class<?> configClass = template.getConfigClass(); // returns MyConfig.class
+     * }</pre>
+     *
+     * <p><strong>Limitations:</strong>
+     * <ul>
+     *   <li>This method relies on Java's generic type information being available at runtime.
+     *       Due to type erasure, it only works if the concrete class directly implements
+     *       {@code ChangeTemplate<CONFIG>} with an actual type (e.g., {@code MyTemplate implements ChangeTemplate<MyConfig>}).
+     *   </li>
+     *   <li>If the generic type {@code CONFIG} is declared or inferred indirectly (e.g., via abstract superclasses
+     *       or through anonymous classes), the returned type may be {@code Object.class} or throw an exception.</li>
+     *   <li>In some complex scenarios (e.g., proxy classes, lambdas, or advanced frameworks like Spring AOP),
+     *       the actual generic interface may not be directly visible on {@code this.getClass()}, and this method
+     *       may fail to resolve the correct type.</li>
+     * </ul>
+     *
+     * <p>In cases where the type cannot be reliably resolved, consider overriding this method
+     * in the concrete implementation to return the expected {@link Class} explicitly.
+     *
+     * @return The {@link Class} object representing the configuration type {@code CONFIG}.
+     * @throws IllegalStateException if the configuration type cannot be determined.
+     */
+    @SuppressWarnings("unchecked")
+    default Class<CONFIG> getConfigClass() {
+        for (Type type : this.getClass().getGenericInterfaces()) {
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pType = (ParameterizedType) type;
+                if (pType.getRawType() instanceof Class &&
+                        ChangeTemplate.class.isAssignableFrom((Class<?>) pType.getRawType())) {
+                    return (Class<CONFIG>) pType.getActualTypeArguments()[0];
+                }
+            }
+        }
+        throw new IllegalStateException("Cannot determine generic type");
+    }
+}
+
+
+
+/**
+ * Provides metadata about classes that require reflective access.
+ * <p>
+ * Implementations of this interface declare a collection of classes that should be registered
+ * for reflection at build time—commonly used in native image generation processes such as GraalVM.
+ * </p>
+ */
+public interface ReflectionMetadataProvider {
+
+    /**
+     * Returns a collection of classes that should be registered for reflective access.
+     * <p>
+     * This method does not perform any registration itself—it only declares the classes
+     * that need to be registered. The returned collection does not require a specific
+     * ordering and may contain any number of class references.
+     * </p>
+     *
+     * @return a collection of classes to be registered for reflection
+     */
+    Collection<Class<?>> getReflectiveClasses();
+
+}
+
+
+public class ChangeTemplateConfig<EXECUTION, ROLLBACK> {
+    protected EXECUTION execution;
+    protected ROLLBACK rollback;
+
+    public ChangeTemplateConfig() {
+    }
+
+    public ChangeTemplateConfig(EXECUTION execution, ROLLBACK rollback) {
+        this.execution = execution;
+        this.rollback = rollback;
+    }
+
+    public EXECUTION getExecution() {
+        return execution;
+    }
+
+    public void setExecution(EXECUTION execution) {
+        this.execution = execution;
+    }
+
+    public ROLLBACK getRollback() {
+        return rollback;
+    }
+
+    public void setRollback(ROLLBACK rollback) {
+        this.rollback = rollback;
+    }
+
+    @Override
+    public String toString() {
+        return "ChangeTemplateConfig{" + "execution=" + execution +
+                ", rollback=" + rollback +
+                '}';
+    }
+}
+
+
+I also provide an abstract class AbstractChangeTemplate, to make it easier, so the basic implementation is already done and the user only needs
+to implement directly the interface ChangeTemplate exceptionally in corner cases
+
+public abstract class AbstractChangeTemplate<CONFIG extends ChangeTemplateConfig<?, ?>> implements ChangeTemplate<CONFIG> {
+
+    private final Logger logger = LoggerFactory.getLogger("AbstractChangeTemplate");
+
+
+    private final Class<CONFIG> configClass;
+
+    protected CONFIG configuration;
+
+    private final Set<Class<?>> reflectiveClasses;
+
+
+    public AbstractChangeTemplate(Class<CONFIG> configClass, Class<?>... additionalReflectiveClass) {
+        if (configClass == null || additionalReflectiveClass == null) {
+            throw new IllegalArgumentException("additionalReflectiveClass must not be null");
+        }
+        this.configClass = configClass;
+        reflectiveClasses = new HashSet<>(Arrays.asList(additionalReflectiveClass));
+        reflectiveClasses.add( this.configClass);
+
+    }
+
+    @Override
+    public final Collection<Class<?>> getReflectiveClasses() {
+        return reflectiveClasses;
+    }
+
+    @Override
+    public void setConfiguration(CONFIG configuration) {
+        logger.trace("setting {} config[{}]: {}", getClass(), getConfigClass(), configuration);
+        this.configuration = configuration;
+    }
+
+
+    @Override
+    public Class<CONFIG> getConfigClass() {
+        return configClass;
+    }
+}
+
+
+EXAMPLE:
+
+public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTemplateConfig> {
+
+    //avoids static loading at building time to keep GraalVM happy
+    protected final Logger logger = LoggerFactory.getLogger("MongoChangeTemplate");
+
+    public MongoChangeTemplate() {
+        super(MongoChangeTemplateConfig.class, MongoOperation.class);
+    }
+
+    @Execution
+    public void execute(MongoDatabase db, @Nullable ClientSession clientSession) {
+        logger.debug("MongoChangeTemplate changes with transaction[{}]", clientSession != null);
+        executeOp(db, configuration.getExecution(), clientSession);
+    }
+
+    @RollbackExecution
+    public void rollback(MongoDatabase db, @Nullable ClientSession clientSession) {
+        logger.debug("MongoChangeTemplate changes with transaction[{}]", clientSession != null);
+        executeOp(db, configuration.getRollback(), clientSession);
+    }
+
+
+    private void executeOp(MongoDatabase db, MongoOperation op, ClientSession clientSession) {
+        op.getOperator(db).apply(clientSession);
+    }
+
+}
+
+@NonLockGuarded(NonLockGuardedType.NONE)
+public class MongoChangeTemplateConfig  extends ChangeTemplateConfig<MongoOperation, MongoOperation> {
+    private MongoOperation execution;
+    private MongoOperation rollback;
+
+    public MongoChangeTemplateConfig(MongoOperation execution, MongoOperation rollback) {
+        super(execution, rollback);
+    }
+
+    public MongoChangeTemplateConfig() {
+        super();
+    }
+
+    public MongoOperation getExecution() { return execution; }
+
+    public void setExecution(MongoOperation execution) { this.execution = execution; }
+
+    public MongoOperation getRollback() { return rollback; }
+
+    public void setRollback(MongoOperation rollback) {
+        this.rollback = rollback;
+    }
+
+    public void validate() {
+        //TODO implement validation
+        // we probably want 3 validations
+        // config generic
+        // and operation validation in execution and rollback
+    }
+
+    @Override
+    public String toString() {
+        return "MongoChangeTemplateConfig{" + "changes=" + execution +
+                ", rollbacks=" + rollback +
+                '}';
+    }
+}
+
+The previous classes are the implementation template, the following ilustrate how to create a changeUnit with the template
+id: create-users-collection-with-index
+order: 4
+transactional: false
+template: MongoChangeTemplate
+templateConfiguration:
+    execution:
+      type: createCollection
+      collection: users
+    rollback:
+      type: createIndex
+      collection: users
+      parameters:
+        keys: { email: 1 }
+        options: { unique: true }
+
+
+Notes:
+Apart of the implementing this interface/abstract class, the Template is very similar to a changeUnit, with the following:
+- It needs to have the execution method annotated with @Execution, as a changeUnit. This method, like in a changeUnit, is the main execution which, as shown in the example, it's supposed to take the "getExecution" from the config
+- It needs to have the rollback method annotated with @RollbackExecution, as a changeUnit. This method, like in a changeUnit, it's the one that will be executed in rolbacks(in non-transactional systems) on when executing the undo operation(this operation is to undo the operation, in another moment, once has been applied and comitted)
+- As you can see when the user uses the template to create the change unit, under the "templateConfiguration", it provides "execution" and "rollback". The execution is mandatory, of course, but the rollback isn't. If the rollback
+  is not provided in the yaml by the user the method is never executed. That's important because, imagine we are running flamingock and the changeUnit fails, the framework will try ro rollback; if it's a transactional system.
+  is fine, it won't even try to execute the rollback method of the template, as it will be rolled back automatically. However, if not, it will try to execute the method. The challenge here is that , if the rollback is not provided
+  in the yaml, the rollback method has two options: either throw an execption and it will look in our audit as the rollback fails(status=FROLLBACK_AILED), which is not correct, or it just doesn't do nothing and appear in our audit log as if
+  the rollback was successfully executed(status=ROLLED_BACK), which is even worse. The right thing is, if the rollback section in the yaml is not provided, the framework doesn't execute the rollback method
+  and log in our audit that the execution was failed(status=FAILED).
+- As a note as well, not sure if it's worth mentioning, if the rollback section in the yaml is provided, but the template doens't have a rollback(a method annotated with @RollbackExecution) it will log a warning, but
+  will carry on normally, without implementing the rollback method(because doens't exist)
+
+
+
+I believe I have provided everything that I can think you need, as always, ASK ANYTHING YOU NEED to provide the best, most professional, easy to understand and to follow. Before providing the markdown file to download, lets
+iterate over the content and format, showing me how it will look first
+
+Again, ask anything you need
+
+
+
+
+
