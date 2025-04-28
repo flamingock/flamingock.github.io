@@ -26,10 +26,9 @@ Flamingock supports **transactional consistency** where possible:
 - For non-transactional systems (e.g., HTTP APIs), Flamingock uses compensating actions (rollbacks) and auditing to maintain integrity.
 
 ### 🔙 Rollbacks
-Each ChangeUnit can optionally define rollback logic:
-- For automatic reversion in case of failure
-- For manual invocation when reverting environments
-- Rollbacks can be defined via code, templates, or external scripts
+Each ChangeUnit can define rollback logic:
+- For providing safe reversion in the case of non-transactional operations
+- For reverting to a previous version of the software ('UNDO'), invoked via the CLI
 
 ### 🧩 Templates
 Flamingock introduces **change templates** for low-code/no-code use cases. These are YAML or JSON-based definitions that let teams describe changes declaratively—especially useful for config changes and SaaS integrations.
@@ -37,10 +36,9 @@ Flamingock introduces **change templates** for low-code/no-code use cases. These
 Templates are:
 - Extensible and version-controlled
 - Friendly to non-developer users
-- Compatible with CI/CD pipelines
 
 ### 🔄 Workflows
-Workflows group and coordinate multiple ChangeUnits. In future releases, they will support:
+Workflows group and coordinate multiple ChangeUnits, grouped into stages. In future releases, they will support:
 - **Sequential** or **parallel** execution
 - **Conditional branching** (e.g., only run if previous unit succeeded)
 
@@ -48,8 +46,8 @@ This will enable advanced orchestration logic during deployments or upgrades.
 
 ### 🔒 Distributed Locking
 To ensure safe execution in multi-instance deployments, Flamingock uses a distributed lock mechanism. This guarantees:
-- One active runner at a time per target system
 - Avoidance of duplicate execution or race conditions
+- Synchronisation between multiple runners
 - Coordination across microservices in distributed environments
 
 It supports multiple lock implementations (e.g., MongoDB, Redis, DynamoDB).
