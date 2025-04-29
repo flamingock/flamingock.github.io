@@ -10,11 +10,11 @@ At a high level, here’s how Flamingock works:
 
 ```mermaid
 flowchart LR
-    A[1. Define Changes as ChangeUnits] --> B[2. Organize into Workflows]
-    B --> C[3. Execute at Startup or On Demand]
-    C --> D[4. Acquire Distributed Lock]
-    D --> E[5. Apply ChangeUnits Sequentially]
-    E --> F[6. Audit Changes]
+    A[1: Define Changes as ChangeUnits] --> B[2: Organize into Workflows]
+    B --> C[3: Execute at Startup or On Demand]
+    C --> D[4: Acquire Distributed Lock]
+    D --> E[5: Apply ChangeUnits Sequentially]
+    E --> F[6: Audit Changes]
     F --> G{Success?}
     G -- Yes --> H[Finish Deployment]
     G -- No --> I[Invoke Rollback Logic]
