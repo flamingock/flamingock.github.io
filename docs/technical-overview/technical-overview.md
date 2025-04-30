@@ -21,7 +21,7 @@ In a nutshell, the Flamingock process takes all the pending changes and executes
 5. **Distributed Locking** ensures safe execution in distributed environments.
 6. All executions are **audited** and can be **rolled backed**.
 
-Flamingock is designed to run successfully the entire migration or fail. And the next time is executed, it will continue from where the migration was left(the failed ChangeUnit).
+Flamingock is designed to either apply all defined changes successfully or fail early. On the next run, it will resume from the last failed change.
 
 ![Flamingock Architecture Diagram](../../static/img/Flamingock%20Arch%20HLD.png)
 
