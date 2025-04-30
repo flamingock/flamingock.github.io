@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-Flamingock Templates allow you to encapsulate common logic and reduce boilerplate when defining system changes.  
+Flamingock Templates allow you to encapsulate common logic and reduce boilerplate when defining change units.  
 This page explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
 > Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-overview.md).
@@ -30,7 +30,7 @@ To create a template, you need:
 
 ---
 
-## :one: Create a Configuration Class
+## 1. Create a Configuration Class
 
 You must create a config class that extends `ChangeTemplateConfig<EXECUTION, ROLLBACK>`.
 
@@ -50,7 +50,7 @@ public class MongoChangeTemplateConfig  extends ChangeTemplateConfig<MongoOperat
 ```
 ---
 
-## :two: Implement the Template Class
+## 2. Implement the Template Class
 
 You have two options:
 
@@ -89,7 +89,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTempl
 
 ---
 
-## 3️⃣ Define Execution and Rollback Methods
+## 3. Define Execution and Rollback Methods
 Each template must include an `@Execution` method, and may optionally include a `@RollbackExecution` method.
 These methods define the core logic that will be executed when Flamingock runs the corresponding change.
 
@@ -159,7 +159,7 @@ The `execution` and `rollback` sections inside your template-base changeUnit dir
 
 ---
 
-## 4️⃣ Register the Template with ServiceLoader
+## 4. Register the Template with ServiceLoader
 
 Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
 
@@ -182,7 +182,7 @@ io.flamingock.template.kafka.DeleteTopicTemplate
 
 ---
 
-## 5️⃣ Package and Distribute the Template
+## 5. Package and Distribute the Template
 
 Depending on your target:
 
