@@ -85,11 +85,57 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTempl
 - If needed, validate your configuration inside the overridden `setConfiguration()` method.
 - If your config class references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass both the config class and any referenced types to the superclass constructor to ensure proper reflection support.
 
+> :pushpin: See **3️⃣ Define Execution and Rollback Methods** for how to implement the core logic inside your template class using the provided configuration and dependency injection
 
 ---
 
 ## 3️⃣ Define Execution and Rollback Methods
+Each template must include an `@Execution` method, and may optionally include a `@RollbackExecution` method.
+These methods define the core logic that will be executed when Flamingock runs the corresponding change.
 
+Inside these methods, it’s expected that you use the configuration values provided by the user in the template-based change unit.
+These values are accessible via:
+
+- `configuration.getExecution()` — for the logic/data to apply during execution
+- `configuration.getRollback()` — for the logic/data to apply during rollback or undo
+
+An example of a template for SQL:
+```java
+@Execution
+public void execute(Connection connection) throws SQLException {
+  String sql = configuration.getExecution();
+  try (Statement stmt = connection.createStatement()) {
+    stmt.execute(sql);
+  }
+}
+
+@RollbackExecution
+public void rollback(Connection connection) throws SQLException {
+  String rollbackSql = configuration.getRollback();
+  try (Statement stmt = connection.createStatement()) {
+    stmt.execute(rollbackSql);
+  }
+}
+
+```
+
+### Injecting Dependencies into Template Methods
+Template methods (such as those annotated with `@Execution` and `@RollbackExecution`) support method-level dependency injection using the same mechanism as change units.
+
+Template classes do not support constructor injection.
+All dependencies must be injected as parameters in the `@Execution` and `@RollbackExecution` methods.
+
+You can inject any registered dependency as a method parameter:
+
+```java
+@Execution
+public void execute(MongoDatabase db, ClientService clientService) {
+  clientService.doSomething();
+}
+```
+
+> :pushpin: Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
+> 
 ### Mapping Between template-base changeUnit file and Template Methods
 
 The `execution` and `rollback` sections inside your template-base changeUnit directly map to the `@Execution` and `@RollbackExecution` methods in your template:
@@ -163,7 +209,7 @@ Depending on your target:
 - Use `AbstractChangeTemplate` unless your case requires full customization.
 - Always provide an `@RollbackExecution` method if rollback or undo is expected.
 - Document configuration fields clearly for users.
-- Ensure all reflective classes are registered when targeting native builds.
+- Ensure all reflective classes are registered, specially when targeting native builds.
 - Group multiple templates by domain when packaging a library.
 
 ---
