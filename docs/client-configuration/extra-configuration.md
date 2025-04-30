@@ -16,7 +16,7 @@ This section includes additional settings for customizing defaults and adding co
 | `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
 | `enabled`       | Globally enable/disable Flamingock            | `true`             |
 
-> :warning: These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
+> :pushpin: These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
 
 ---
 

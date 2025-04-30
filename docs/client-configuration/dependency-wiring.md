@@ -3,7 +3,7 @@ title: Dependency Wiring (Advanced)
 sidebar_position: 4
 ---
 
-# 🔌 Dependency wiring (advanced)
+# Dependency wiring (advanced)
 
 Flamingock allows you to inject dependencies into your change units so they can use services, clients, or utilities during execution. This is especially useful for **standalone applications**, where no dependency injection framework (like Spring) is present.
 
@@ -11,11 +11,15 @@ If you're using **Spring Boot**, Flamingock can integrate with the Spring contex
 
 This injection is handled via the **Flamingock builder** — not via YAML — and supports:
 
-- Method-level injection (e.g. `@Execution`, `@RollbackExecution`)
-- Constructor injection
-- Injection by type, name, or both
-- Nullable support
-- Lock-guard opt-out for non-critical components
+| Feature                                                    |  Supported?  |
+|------------------------------------------------------------|:------------:|
+| Injection by type                                          |      ✅       |
+| Injection by name                                          |      ✅       |
+| Constructor-level injection                                |      ✅       |
+| Method-level injection(`@Execution`, `@RollbackExecution`) |      ✅       |
+| Nullable parameters                                        |      ✅       |
+| Lock-safe proxying                                         |      ✅       |
+| Opt-out via `@NonLockGuarded` for non-critical components  |      ✅       |
 
 ---
 
@@ -88,7 +92,7 @@ public void run(@Nullable OptionalLogger logger) {
 }
 ```
 
-> 🔍 Uses `jakarta.annotation.Nullable`
+> :pushpin: Uses `jakarta.annotation.Nullable`
 
 ---
 
@@ -104,26 +108,11 @@ public void run(@NonLockGuarded SomeHelper helper) {
   helper.doLocalStuff();
 }
 ```
-
 ---
 
-## Best practices
+## :white_check_mark: Best practices
 
 - Only inject what you need for the current change unit
 - Prefer constructor injection when dependencies are shared across multiple methods
 - Use `@NonLockGuarded` only when you're certain no side effects are involved
 - Document your dependencies to avoid confusion in large pipelines
-
----
-
-## Summary
-
-| Feature                         | Supported? |
-|---------------------------------|------------|
-| Injection by type               | ✅         |
-| Injection by name               | ✅         |
-| Constructor injection           | ✅         |
-| Method injection                | ✅         |
-| Nullable parameters             | ✅         |
-| Lock-safe proxying              | ✅         |
-| Opt-out via `@NonLockGuarded`   | ✅         |
