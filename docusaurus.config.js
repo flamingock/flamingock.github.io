@@ -100,7 +100,6 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          /*{ to: '/nueva-pagina', label: 'Test', position: 'left' },*/
           { type: 'search', position: 'right' },
           {
             href: 'https://github.com/mongock',
@@ -120,10 +119,6 @@ const config = {
           {
             title: 'Docs',
             items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
             ],
           },
           {
@@ -146,10 +141,6 @@ const config = {
           {
             title: 'More',
             items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
               {
                 label: 'GitHub',
                 href: 'https://github.com/facebook/docusaurus',
