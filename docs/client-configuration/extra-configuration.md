@@ -1,23 +1,28 @@
 ---
-title: Other configuration
+title: Extra configuration
 sidebar_position: 5
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🧱 Other Configuration
+#  Extra Configuration
 
-This section covers a few additional core settings that control how Flamingock behaves during execution. These options can be defined in either:
+This section includes additional settings for customizing defaults and adding contextual information to your Flamingock setup. 
 
-- The **builder**
-- The **`flamingock.yaml`** configuration file
+| Setting         | Purpose                                      | Default            |
+|-----------------|-----------------------------------------------|--------------------|
+| `metadata`      | Attach tags and labels for audit tracking     | _empty map_        |
+| `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
+| `enabled`       | Globally enable/disable Flamingock            | `true`             |
+
+> :warning: These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
 
 ---
 
 ## Metadata
 
-A flexible `Map<String, Object>` that allows you to attach custom information to your Flamingock process.
+Flamingock provides a Metadata object - which is a flexible `Map<String, Object>` that allows you to attach custom information to your Flamingock process.
 
 The metadata is stored as part of the **audit log**, and can be used for labeling, traceability, and future reporting.
 
@@ -105,12 +110,3 @@ FlamingockStandalone
     </TabItem>
 </Tabs>
 
----
-
-## Summary
-
-| Setting         | Purpose                                      | Default            |
-|-----------------|-----------------------------------------------|--------------------|
-| `metadata`      | Attach tags and labels for audit tracking     | _empty map_        |
-| `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
-| `enabled`       | Globally enable/disable Flamingock            | `true`             |

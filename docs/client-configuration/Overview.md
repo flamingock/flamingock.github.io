@@ -23,7 +23,7 @@ You can configure Flamingock using:
 
 ---
 
-## 🔍 What You Can Configure
+## What You Can Configure
 
 | Area                  | Description                                      |
 |-----------------------|--------------------------------------------------|
@@ -38,11 +38,10 @@ Each of these topics is explained in its own section.
 
 ---
 
-## 🧭 Configuration Scopes and Layers
+## Configuration Scopes and Layers
 
 Flamingock configuration is organized in two main scopes:
-
-### 1. Core Configuration (shared by all editions)
+### :one: Core Configuration (shared by all editions)
 Includes:
 - Pipeline definition
 - Lock settings
@@ -51,7 +50,7 @@ Includes:
 - Enable/disable flag
 - etc.
 
-### 2. Edition-Specific Configuration
+### :two: Edition-Specific Configuration
 Based on the edition of Flamingock you import:
 - **Cloud Edition**: Related settings to configure Flamingock Cloud.
 - **Community Edition**: MongoDB, DynamoDB, Couchbase drivers and related settings.
@@ -62,7 +61,7 @@ Each of these can be used in two environments:
 
 ---
 
-## 📁 Configuration File: `flamingock.yaml`
+## Configuration File: `flamingock.yaml`
 
 Flamingock expects the configuration file to be located at **`src/main/resources/flamingock.yaml`**
 
@@ -82,7 +81,7 @@ pipeline:
 
 ---
 
-## ➕ How to Apply Configuration
+## How to Apply Configuration
 
 You can apply configuration in **one or both** of the following ways:
 
@@ -115,12 +114,12 @@ FlamingockStandalone
 
 ---
 
-## ✅ Next Steps
+## Next Steps
 
 Explore the rest of the configuration section to tune Flamingock for your system:
 
 - 📦 Pipeline & Stages
 - 🔒 Lock Configuration
-- 🧱 Other Configuration
+- ⚙  Other Configuration
 - ☁️ Cloud Edition
 - 🧪 Community Edition
