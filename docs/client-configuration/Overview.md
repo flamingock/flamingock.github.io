@@ -17,9 +17,13 @@ You can configure Flamingock using:
 - **Builder-based configuration** — via code (Java/Kotlin standalone setup)
 - **File-based configuration** — using a unified `flamingock.yaml` file placed in your resources folder
 
-> :pushpin: *When a property is defined in both the builder and the YAML file, the builder value takes precedence.*
+:::info
+When a property is defined in both the builder and the YAML file, the builder value takes precedence.
+:::
 
-> :warning: The **pipeline definition must always be provided in the YAML file**. Configuration can be fully declared in the file, or split between YAML and the builder.
+:::warning
+The **pipeline definition must always be provided in the YAML file**. Configuration can be fully declared in the file, or split between YAML and the builder.
+:::
 
 ---
 
@@ -76,9 +80,9 @@ pipeline:
     - name: init
       sourcesPackage: io.flamingock.changes.init
 ```
-
-> :pushpin: *You can override the default path via compiler options.*
-
+:::info
+*You can override the default path via compiler options.*
+:::
 ---
 
 ## How to Apply Configuration

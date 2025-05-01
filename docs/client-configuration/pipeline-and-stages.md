@@ -5,48 +5,68 @@ sidebar_position: 2
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Pipeline & Stages
+
+# Pipeline & stages
 
 The **pipeline** defines how Flamingock organizes and executes your changes across one or more **stages**. Each stage groups related changes and determines the order of execution.
 
-Flamingock processes stages **sequentially**, in the order they appear in the pipeline file.
+Flamingock processes stages sequentially, in the order they appear in the pipeline file.
 
-> :pushpin: *Parallel stage execution is coming soon* (Coming Soon)
+> :pushpin: Parallel stage execution is coming soon.
 
 ---
 
-## Defining the Pipeline
+## The pipeline file
 
-The pipeline is declared in your configuration file **`src/main/resources/flamingock.yaml`**
+The pipeline is defined in a dedicated file located at:
+
+```
+src/main/resources/flamingock/pipeline.yaml
+```
+
+This file is required for all environments — whether you're using the standalone runner or Spring Boot integration.  
+It is **only** used for defining the pipeline (stages and their sources). No other configuration should be placed here.
+
+:::info
+The location of the resources directory can be customized using the `resources` compiler option.
+:::
+
+---
+
+## Defining the pipeline
+
+Here's an example of the pipeline file:
 
 ```yaml
 pipeline:
   stages:
-    - name: mysql-init
-      description: Initial MySQL setup
+    - name: mysql-stage
+      description: Mysql stage
       sourcesPackage: com.yourcompany.flamingock.mysql
 ```
 
 ---
 
-## Required Fields
+## Required fields
 
 Each stage must define:
-- `name`: a unique identifier
-- at least one of `sourcesPackage` or `resourcesDir`
+- `name`: A unique identifier
+- At least one of `sourcesPackage` or `resourcesDir`
 
 ---
 
-## Stage Fields
+## Stage fields
 
 | Field            | Required | Description                                                                 |
 |------------------|----------|-----------------------------------------------------------------------------|
-| `name`           | ✅       | Unique identifier for the stage                                             |
-| `description`    | ❌       | Optional text explaining the stage's purpose                                |
-| `sourcesPackage` | ✅*      | Scanned for both code-based and template-based changes                      |
-| `resourcesDir`   | ✅*      | Used for template-based changes in the resources directory                  |
+| `name`           | :white_check_mark: | Unique identifier for the stage                                             |
+| `description`    | :x:      | Optional text explaining the stage's purpose                                |
+| `sourcesPackage` | :white_check_mark:* | Scanned for both code-based and template-based changes                      |
+| `resourcesDir`   | :white_check_mark:* | Used for template-based changes in the resources directory                  |
 
-> ⚠️ *You must provide either `sourcesPackage`, `resourcesDir`, or both.*
+:::info
+You must provide at least one of `sourcesPackage`, `resourcesDir`, or both.
+:::
 
 ---
 
