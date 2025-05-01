@@ -97,9 +97,12 @@ You can combine both approaches. If a property is defined in both, the builder v
 
 Explore the rest of the configuration section to tune Flamingock for your system:
 
+### Shared configuration
 - [📦 Pipeline & Stages](pipeline-and-stages.md)
 - [🔒 Lock Configuration](lock-configuration.md)
 - [⚙  Extra Configuration](extra-configuration.md)
 - [🔌 Dependency wiring](dependency-wiring.md)
-- ☁️ Cloud Edition
-- 🧪 Community Edition
+
+### Pick an edition
+- [☁️ Cloud Edition(Fully-featured)](../cloud-edition.md)
+- 🧪 Community Edition(feature-limited)

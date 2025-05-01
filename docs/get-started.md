@@ -13,7 +13,7 @@ This guide will walk you through the basics of using Flamingock with a step-by-s
 To begin, add the Flamingock client library to your project. You can use either:
 
 - Cloud Edition (compatible with all systems)
-- Community Edition (you need to choose the specific driver)
+- Community Edition (you need to choose the specific storage: MongoDB, DynamoDB, etc.)
 
 Example for **Cloud Edition**:
 <Tabs groupId="gradle_maven">
@@ -52,7 +52,7 @@ Example for **Community Edition** using MongoDB Sync4:
 </Tabs>
 
 
-All Community Edition drivers:
+All Community Editions:
 
 - **flamingock-ce-mongodb-v3**
 - **flamingock-ce-mongodb-sync4**
@@ -62,6 +62,7 @@ All Community Edition drivers:
 - **flamingock-ce-dynamodb**
 - **flamingock-ce-couchbase**
 
+> :pushpin: For configuration details specific to the Community Edition, see the [community edition section](community-edition.md)
 ---
 
 ## 2. Add Flamingock Annotation Processor
@@ -146,7 +147,9 @@ For a deeper understanding of how changes work and **when to choose one approach
     </TabItem>
 </Tabs>
 
-> 🔁 You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
+:::info
+You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
+:::
 
 ---
 
