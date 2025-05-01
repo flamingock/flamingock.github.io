@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 Flamingock Templates allow you to encapsulate common logic and reduce boilerplate when defining change units.  
 This page explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
-> Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-overview.md).
+> :pushpin: Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-overview.md).
 
 ---
 
@@ -133,29 +133,42 @@ public void execute(MongoDatabase db, ClientService clientService) {
   clientService.doSomething();
 }
 ```
+:::info
+Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
+:::
 
-> :pushpin: Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
-> 
-### Mapping Between template-base changeUnit file and Template Methods
+### Mapping between template-base changeUnit file and template Methods
 
-The `execution` and `rollback` sections inside your template-base changeUnit directly map to the `@Execution` and `@RollbackExecution` methods in your template:
+In a template-based change unit (declarative format), Flamingock uses the `execution` and `rollback` sections to determine which methods to invoke in your template class.
 
-- If `execution` is present in the template-base changeUnit:
-  - Flamingock will call the `@Execution` method.
-  - If `execution` is missing, Flamingock **throws an exception** at startup.
+#### :small_blue_diamond: Execution
 
-- If `rollback` is present in the template-base changeUnit:
-  - Flamingock will attempt to call the `@RollbackExecution` method.
-  - Behavior depends on context:
-    - During **normal execution failures**:
-      - Only called if the system is **non-transactional**.
-      - In transactional systems (e.g., MySQL), the rollback method is skipped because the database transaction handles it.
-    - During **Undo Operations**:
-      - Called even if the original change was successful, allowing manual reversal.
+- The method annotated with `@Execution` is **mandatory** for the template developer.
+- The `execution` section in the declarative change unit is **mandatory** for the user.
+- If the `execution` section is missing, Flamingock throws an exception at startup.
 
-- If `rollback` is missing in the template-base changeUnit:
-  - Flamingock does not call the rollback method.
-  - If an execution failure occurs, Flamingock logs the change as **FAILED**.
+#### :small_blue_diamond: Rollback
+
+- The method annotated with `@RollbackExecution` is **mandatory** for the template developer.
+- The `rollback` section in the declarative changeUnit is **optional** for the user.
+
+The behavior of rollback varies depending on context:
+
+**Rollback during execution failure**
+
+- If the system is **transactional** (e.g., MySQL), Flamingock relies on the system’s native transaction handling. It will not call the rollback method.
+- If the system is **non-transactional**, Flamingock will:
+  - Attempt to call the `@RollbackExecution` method only if the user provides a `rollback` section in the declarative file.
+  - If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
+
+**Rollback during Undo operations (manual reversion)**
+
+- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method — even if the change was previously applied successfully.
+- If no `rollback` is provided, Flamingock skips the rollback logic, but still marks the change as **ROLLED_BACK** in the audit.
+
+:::info
+In undo operations, if rollback is not defined in the declarative file, the change is marked as reverted even though no actual rollback was executed. It’s up to the user to ensure reversibility when needed.
+:::
 
 ---
 
