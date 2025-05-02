@@ -5,52 +5,72 @@ sidebar_position: 2
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Pipeline & Stages
+
+# Pipeline & stages
 
 The **pipeline** defines how Flamingock organizes and executes your changes across one or more **stages**. Each stage groups related changes and determines the order of execution.
 
-Flamingock processes stages **sequentially**, in the order they appear in the pipeline file.
+Flamingock processes stages sequentially, in the order they appear in the pipeline file.
 
-> 🚧 *Parallel stage execution is coming soon* (Coming Soon)
+> :pushpin: Parallel stage execution is coming soon.
 
 ---
 
-## 📁 Defining the Pipeline
+## The pipeline file
 
-The pipeline is declared in your configuration file **`src/main/resources/flamingock.yaml`**
+The pipeline is defined in a dedicated file located at:
+
+```
+src/main/resources/flamingock/pipeline.yaml
+```
+
+This file is required for all environments — whether you're using the standalone runner or Spring Boot integration.  
+It is **only** used for defining the pipeline (stages and their sources). No other configuration should be placed here.
+
+:::info
+The location of the resources directory can be customized using the `resources` compiler option.
+:::
+
+---
+
+## Defining the pipeline
+
+Here's an example of the pipeline file:
 
 ```yaml
 pipeline:
   stages:
-    - name: mysql-init
-      description: Initial MySQL setup
+    - name: mysql-stage
+      description: Mysql stage
       sourcesPackage: com.yourcompany.flamingock.mysql
 ```
 
 ---
 
-## 🔑 Required Fields
+## Required fields
 
 Each stage must define:
-- `name`: a unique identifier
-- at least one of `sourcesPackage` or `resourcesDir`
+- `name`: A unique identifier
+- At least one of `sourcesPackage` or `resourcesDir`
 
 ---
 
-## 🗂 Stage Fields
+## Stage fields
 
 | Field            | Required | Description                                                                 |
 |------------------|----------|-----------------------------------------------------------------------------|
-| `name`           | ✅       | Unique identifier for the stage                                             |
-| `description`    | ❌       | Optional text explaining the stage's purpose                                |
-| `sourcesPackage` | ✅*      | Scanned for both code-based and template-based changes                      |
-| `resourcesDir`   | ✅*      | Used for template-based changes in the resources directory                  |
+| `name`           | :white_check_mark: | Unique identifier for the stage                                             |
+| `description`    | :x:      | Optional text explaining the stage's purpose                                |
+| `sourcesPackage` | :white_check_mark:* | Scanned for both code-based and template-based changes                      |
+| `resourcesDir`   | :white_check_mark:* | Used for template-based changes in the resources directory                  |
 
-> ⚠️ *You must provide either `sourcesPackage`, `resourcesDir`, or both.*
+:::info
+You must provide at least one of `sourcesPackage`, `resourcesDir`, or both.
+:::
 
 ---
 
-## 📦 Where Changes Are Located
+## Where Changes Are Located
 
 - **`sourcesPackage`** refers to a source package (e.g., `com.company.init`).  
   - Template-based and code-based changes can co-exist here.
@@ -95,41 +115,7 @@ tasks.withType<JavaCompile> {
 
 ---
 
-## ✅ Recommended Practice
-
-We strongly recommend placing all your changes — code-based and template-based — in a **single `sourcesPackage`**.
-
-### Why?
-- Ensures changes are always scanned, regardless of type
-- Avoids needing two locations if one template-based change requires fallback to code
-- Keeps everything in one logical location
-
----
-
-## 🔤 Naming Convention for Changes
-
-To ensure clarity and enforce ordering, we recommend naming changes using the following format:
-
-```
-_001_CREATE_CLIENTS_TABLE.java
-_002_ADD_INDEX_TO_EMAIL.yaml
-```
-
-- `XXX`: The execution order of the change
-- `CHANGE_NAME`: Descriptive name of what the change does
-
-This convention:
-- Works across both code-based and template-based formats
-- Makes the execution order obvious at a glance
-- Ensures consistent naming and project hygiene
-
-> 💡 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
-
-📚 *See our [Best Practices](/docs/best-practices) guide for broader recommendations on naming, structure, and change design.*
-
----
-
-## 📌 Example Pipeline
+## Example Pipeline
 
 ```yaml
 pipeline:
@@ -157,12 +143,46 @@ src/
 
 ## 🛠 Troubleshooting
 
-### 🔍 My stage isn't picked up
+### My stage isn't picked up
 - Make sure the stage has a `name` and **at least one** of `sourcesPackage` or `resourcesDir`
 - Check the file path is correct and uses `/` as a separator, not `.` in YAML
 - If using `resourcesDir`, make sure the file is placed under `src/main/resources/your-dir`
 
-### 📁 No changes found in stage
+### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
 - For template-based changes, check file names and YAML formatting
+
+---
+
+## ✅ Best Practices
+
+### Placing your changes
+We strongly recommend placing all your changes — code-based and template-based — in a **single `sourcesPackage`**.
+  - Ensures changes are always scanned, regardless of type
+  - Avoids needing two locations if one template-based change requires fallback to code
+  - Keeps everything in one logical location
+
+---
+
+### Naming Convention for Changes
+To ensure clarity and enforce ordering, we recommend naming changes using the following format:
+
+```
+_001_CREATE_CLIENTS_TABLE.java
+_002_ADD_INDEX_TO_EMAIL.yaml
+```
+
+- `XXX`: The execution order of the change
+- `CHANGE_NAME`: Descriptive name of what the change does
+
+This convention:
+- Works across both code-based and template-based formats
+- Makes the execution order obvious at a glance
+- Ensures consistent naming and project hygiene
+
+> 💡 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
+
+📚 *See our [Best Practices](/docs/best-practices) guide for broader recommendations on naming, structure, and change design.*
+
+---

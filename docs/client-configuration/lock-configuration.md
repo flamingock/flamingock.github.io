@@ -3,7 +3,7 @@ title: Lock
 sidebar_position: 3
 ---
 
-# 🔒 Lock Configuration
+# Lock Configuration
 
 Flamingock uses a distributed lock to ensure that changes are only applied **once and only once**, even when multiple instances of your application start simultaneously in a distributed system.
 
@@ -14,7 +14,7 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 
 ---
 
-## ⚙️ Configurable Properties
+## Configurable Properties
 
 | Property                             | Default        | Description                                                                 |
 |--------------------------------------|----------------|-----------------------------------------------------------------------------|
@@ -26,7 +26,7 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 
 ---
 
-## 🛡 Why Locking Matters
+## Why Locking Matters
 
 In distributed systems, multiple app instances may start simultaneously — but only **one** should apply pending changes. Flamingock uses locking to:
 
@@ -34,11 +34,11 @@ In distributed systems, multiple app instances may start simultaneously — but 
 - Ensure consistent and safe state transitions
 - Guarantee single execution of each change
 
-> ❗️If no pending changes exist, the lock is not acquired and startup proceeds normally.
+> :warning: ️If no pending changes exist, the lock is not acquired and startup proceeds normally.
 
 ---
 
-## 🔁 Refresh Daemon (Safety Net)
+## Refresh Daemon (Safety Net)
 
 The **refresh daemon** is a background thread that extends the lock before it expires.  
 It’s critical for **long-running changes** that might exceed the lock duration.
@@ -48,13 +48,13 @@ Without the daemon:
 - A long-running change (e.g., 90s) could outlive a default lock (e.g., 60s)
 - Another instance might acquire the lock prematurely, causing conflict
 
-> 🔒 By default, Flamingock uses proxy-based injection guards. Before executing any injected dependency, Flamingock verifies that the lock is still valid.
+> :pushpin: By default, Flamingock uses proxy-based injection guards. Before executing any injected dependency, Flamingock verifies that the lock is still valid.
 
 If you're injecting **non-critical components** (e.g., a local list or stateless helper), you can annotate them with `@NonLockGuarded` to avoid the proxy overhead.
 
 ---
 
-## 🛠 Configuration Examples
+## Configuration Examples
 
 ### YAML (`flamingock.yaml`)
 ```yaml
@@ -78,7 +78,7 @@ FlamingockStandalone
 
 ---
 
-## 🧠 When to Tweak Lock Settings
+## When to Tweak Lock Settings
 
 Most projects can use the default configuration. You may need to adjust values if:
 
@@ -93,3 +93,5 @@ Most projects can use the default configuration. You may need to adjust values i
 - Keep the refresh daemon **enabled**, especially for distributed or slow-processing environments
 - Avoid setting `lockAcquiredForMillis` too short if any changes might run longer
 - Use `@NonLockGuarded` sparingly — only when you're sure no side-effects will occur
+
+[//]: # (TODO: Add "🛠 Troubleshooting" section)
