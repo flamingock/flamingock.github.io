@@ -105,10 +105,12 @@ See the [GraalVM resource configuration documentation](https://www.graalvm.org/l
 ./gradlew clean build
 ```
 
-### Expected build output
+#### Expected build output
 
 During the build process, Flamingock will emit logs similar to the following — indicating successful annotation processing and metadata generation.
 
+<details>
+<summary>Click to see the expected logs</summary>
 <Tabs groupId="gradle_maven">
 <TabItem value="gradle" label="Gradle" default>
 
@@ -145,6 +147,8 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 
 </TabItem>
 </Tabs>
+</details>
+
 
 ---
 
@@ -160,41 +164,19 @@ native-image \
   -jar build/libs/your-app.jar
 ```
 
-### What these options do:
+#### What these options do:
 
 - `--features=io.flamingock.graalvm.RegistrationFeature`: Registers all Flamingock-related classes for reflection using metadata gathered during build time.
 - `-H:ResourceConfigurationFiles=resource-config.json`: Informs GraalVM of required static resource files to include.
 - `--initialize-at-build-time=...`: Ensures specific classes are initialized during image build rather than at runtime. Useful for frameworks and logging libraries.
 
-:::tip
-For more information on image creation and options, refer to the [GraalVM build overview documentation](https://www.graalvm.org/latest/reference-manual/native-image/overview/Build-Overview/).
-:::
-
----
-
-## 6. Run the native image
-
-```bash
-./your-app
-```
-
----
-
-## Example project
-
-Try it out using our working example:
-
-**→ [GraalVM example on GitHub](https://github.com/mongock/flamingock-examples/tree/master/graalvm)**
-
-
----
-
-## Expected native image output
+#### Expected native image output
 
 When creating the native image, you should see log output from Flamingock's GraalVM `RegistrationFeature`, confirming that Flamingock successfully scanned and registered internal classes, templates, system modules, and user-defined change units. 
 
 The actual output may differ slightly depending on the modules you’ve included, but it should look similar to the following:
-
+<details>
+<summary>Click to see the expected logs</summary>
 ```
  - io.flamingock.graalvm.RegistrationFeature
 [Flamingock] Starting GraalVM classes registration
@@ -236,4 +218,28 @@ The actual output may differ slightly depending on the modules you’ve included
 [Flamingock] Completed user classes
 [Flamingock] Completed GraalVM classes registration
 ```
+</details>
+
+:::tip
+For more information on image creation and options, refer to the [GraalVM build overview documentation](https://www.graalvm.org/latest/reference-manual/native-image/overview/Build-Overview/).
+:::
+
+---
+
+## 6. Run the native image
+
+```bash
+./your-app
+```
+
+---
+
+## Example project
+
+Try it out using our working example:
+
+**→ [GraalVM example on GitHub](https://github.com/mongock/flamingock-examples/tree/master/graalvm)**
+
+
+---
 
