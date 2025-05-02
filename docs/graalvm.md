@@ -117,16 +117,14 @@ During the build process, Flamingock will emit logs similar to the following —
 ```bash
 > Task :compileJava
 Note:    [Flamingock] Starting Flamingock annotation processor initialization.
-warning: [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
-warning: [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
-warning: Supported source version 'RELEASE_8' from annotation processor 'org.gradle.api.internal.tasks.compile.processing.TimeTrackingProcessor' less than -source '17'
 Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
-3 warnings
 ```
 
 </TabItem>
@@ -134,11 +132,10 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 
 ```bash
 [INFO]   [Flamingock] Starting Flamingock annotation processor initialization.
-[WARNING] [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
-[WARNING] [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+[INFO]   [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+[INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
-[WARNING] Supported source version 'RELEASE_8' from annotation processor 'io.flamingock.core.processor.ChangesPreProcessor' less than -source '17'
 [INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
