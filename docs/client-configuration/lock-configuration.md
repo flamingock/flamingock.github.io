@@ -1,6 +1,6 @@
 ---
 title: Lock
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 # Lock Configuration
@@ -34,7 +34,7 @@ In distributed systems, multiple app instances may start simultaneously — but 
 - Ensure consistent and safe state transitions
 - Guarantee single execution of each change
 
-:::warning
+:::info
 If no pending changes exist, the lock is not acquired and startup proceeds normally.
 :::
 ---
