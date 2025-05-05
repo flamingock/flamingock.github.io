@@ -59,15 +59,6 @@ If you're injecting **non-critical components** (e.g., a local list or stateless
 
 ## Configuration Examples
 
-### YAML (`flamingock.yaml`)
-```yaml
-lockAcquiredForMillis: 120000
-lockQuitTryingAfterMillis: 300000
-lockTryFrequencyMillis: 2000
-throwExceptionIfCannotObtainLock: true
-enableRefreshDaemon: true
-```
-
 ### Builder
 ```java
 FlamingockStandalone
