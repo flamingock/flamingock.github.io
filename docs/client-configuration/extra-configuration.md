@@ -16,8 +16,9 @@ This section includes additional settings for customizing defaults and adding co
 | `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
 | `enabled`       | Globally enable/disable Flamingock            | `true`             |
 
-> :pushpin: These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
-
+:::note
+These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
+:::
 ---
 
 ## Metadata
@@ -92,7 +93,9 @@ This global toggle allows you to enable or disable Flamingock.
 - A log message will appear in the **application logs**, indicating that Flamingock is disabled
 - No changes will be applied and no audit entries will be created
 
-> Useful in test environments, local runs, or cases where you want to conditionally skip changes.
+:::note 
+Useful in test environments, local runs, or cases where you want to conditionally skip changes.
+:::
 
 ### Examples
 

@@ -34,8 +34,9 @@ In distributed systems, multiple app instances may start simultaneously — but 
 - Ensure consistent and safe state transitions
 - Guarantee single execution of each change
 
-> :warning: ️If no pending changes exist, the lock is not acquired and startup proceeds normally.
-
+:::warning
+If no pending changes exist, the lock is not acquired and startup proceeds normally.
+:::
 ---
 
 ## Refresh Daemon (Safety Net)
@@ -48,7 +49,9 @@ Without the daemon:
 - A long-running change (e.g., 90s) could outlive a default lock (e.g., 60s)
 - Another instance might acquire the lock prematurely, causing conflict
 
-> :pushpin: By default, Flamingock uses proxy-based injection guards. Before executing any injected dependency, Flamingock verifies that the lock is still valid.
+:::note
+By default, Flamingock uses proxy-based injection guards. Before executing any injected dependency, Flamingock verifies that the lock is still valid.
+:::
 
 If you're injecting **non-critical components** (e.g., a local list or stateless helper), you can annotate them with `@NonLockGuarded` to avoid the proxy overhead.
 

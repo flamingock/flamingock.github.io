@@ -12,8 +12,9 @@ The **pipeline** defines how Flamingock organizes and executes your changes acro
 
 Flamingock processes stages sequentially, in the order they appear in the pipeline file.
 
-> :pushpin: Parallel stage execution is coming soon.
-
+:::note
+Parallel stage execution is coming soon.
+:::
 ---
 
 ## The pipeline file
@@ -181,8 +182,9 @@ This convention:
 - Makes the execution order obvious at a glance
 - Ensures consistent naming and project hygiene
 
-> 💡 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
-
+:::tip
+While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
+:::
 📚 *See our [Best Practices](/docs/best-practices) guide for broader recommendations on naming, structure, and change design.*
 
 ---
