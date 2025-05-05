@@ -73,8 +73,8 @@ public class CreateClientsTable {
 }
 ```
 
-> If the class has only one constructor, the `@FlamingockConstructor` annotation is optional.
-
+:::note If the class has only one constructor, the `@FlamingockConstructor` annotation is optional.
+:::
 ---
 
 ## What happens if a dependency isn’t found?
@@ -92,8 +92,9 @@ public void run(@Nullable OptionalLogger logger) {
 }
 ```
 
-> :pushpin: Uses `jakarta.annotation.Nullable`
-
+:::note
+Uses `jakarta.annotation.Nullable`
+:::
 ---
 
 ## Skipping lock verification

@@ -85,7 +85,9 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTempl
 - If needed, validate your configuration inside the overridden `setConfiguration()` method.
 - If your config class references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass both the config class and any referenced types to the superclass constructor to ensure proper reflection support.
 
-> :pushpin: See **3️⃣ Define Execution and Rollback Methods** for how to implement the core logic inside your template class using the provided configuration and dependency injection
+:::note 
+See ** 3. Define Execution and Rollback Methods** for how to implement the core logic inside your template class using the provided configuration and dependency injection
+:::
 
 ---
 
@@ -191,7 +193,9 @@ io.flamingock.template.kafka.UpdateTopicConfigTemplate
 io.flamingock.template.kafka.DeleteTopicTemplate
 ```
 
-> Group templates by domain or technology for better maintainability.
+:::tip 
+Group templates by domain or technology for better maintainability.
+:::
 
 ---
 

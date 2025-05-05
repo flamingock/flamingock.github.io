@@ -62,7 +62,9 @@ All Community Editions:
 - **flamingock-ce-dynamodb**
 - **flamingock-ce-couchbase**
 
-> :pushpin: For configuration details specific to the Community Edition, see the [community edition section](community-edition.md)
+:::note
+For configuration details specific to the Community Edition, see the [community edition section](community-edition.md)
+:::
 ---
 
 ## 2. Add Flamingock Annotation Processor
@@ -208,7 +210,9 @@ public class App {
 }
 ```
 
-> ⚙️ If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
+:::info 
+If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
+:::
 ---
 
 ## 6. Compile the Project
@@ -227,14 +231,18 @@ Note:    [Flamingock] Searching for code-based changes (Java classes annotated w
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Finished processing annotated classes and generating metadata
 ```
-> 🔍 The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
+:::note 
+The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
+:::
 
 These logs confirm that:
 - Flamingock found your pipeline
 - Template and code-based changes were processed
 - Metadata was generated for execution
 -
-> 💡 If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
+:::tip
+If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
+:::
 
 ---
 

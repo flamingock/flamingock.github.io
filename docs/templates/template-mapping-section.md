@@ -28,4 +28,6 @@ The behavior of rollback varies depending on context:
 - If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method — even if the change was previously applied successfully.
 - If no `rollback` is provided, Flamingock skips the rollback logic, but still marks the change as **ROLLED_BACK** in the audit.
 
-> :information_source: In undo operations, if rollback is not defined in the declarative file, the change is marked as reverted even though no actual rollback was executed. It’s up to the user to ensure reversibility when needed.
+:::note 
+In undo operations, if rollback is not defined in the declarative file, the change is marked as reverted even though no actual rollback was executed. It’s up to the user to ensure reversibility when needed.
+:::
