@@ -44,6 +44,7 @@ Includes:
 - Metadata
 - Default author
 - Enable/disable flag
+- Dependency injection via addDependency(...) for ChangeUnits and framework components
 - etc.
 
 ### Edition-Specific Configuration
