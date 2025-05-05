@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 Flamingock Templates allow you to encapsulate common logic and reduce boilerplate when defining change units.  
 This page explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
-> :pushpin: Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-overview.md).
+> :pushpin: Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-introduction.md).
 
 ---
 
