@@ -70,6 +70,7 @@ message
 Lets jump now to the builder based setup
 
 - I guess is good to start with an introduction, briefly giving the context
+
 - also reminding the dependencies to import with gradle and maven
 
 - with the builder base setup the user is responsible for injecting the ApplicationContext and ApplicationEventPublisher, as platform component(with addDependency),
@@ -82,6 +83,7 @@ SpringbootUtil.toInitializingBean(builder) and SpringbootUtil.toApplicationRunne
 As always Remember
 - Act as a great communicator, highly skilled and experienced writing technical documentation that is useful, professional and asy to follow and understand
 - Avoid using unnecessary emojis, specially in titles
+- In titles use capital only in the starting character and in names(like Flamingock)
 - for note messages use
 :::note
 message
@@ -102,5 +104,67 @@ message
 :::danger
 message
 :::
+
+- show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download
+
+
+
+---------------------
+
+let's jump now to the "@EnableFlamingock setup (automatic)" page
+
+- I guess is good to start with an introduction, briefly giving the context
+
+- also reminding the dependencies to import with gradle and maven
+
+- with this setup
+> the user needs to annotate the main class with @EnableFlamingock
+> with this, flamingock does the magic, to find the ApplicationContext(in which the bean and profiles resolution is based on) and ApplicationEventPublisher
+> also picks the flamingock configuration(as you already know: lock, etc.) , that instead of being injected manually via builder, it's provided via native springboot file configuration under the section "flamingock"
+> also in the same file config the user can specify the runner strategy(runner-type property): ApplicationRunner(default if nothing is declared) or InitializingBean
+
+Example of file configuration
+in yaml,would be something like
+//some previous spring config
+flamingock:
+    lockAcquiredForMillis: 1200
+    runnerType: InitializingBean
+    //more
+//more spring config
+
+
+
+
+
+As always Remember
+
+- Act as a great communicator, highly skilled and experienced writing technical documentation that is useful, professional and asy to follow and understand
+
+- Avoid using unnecessary emojis, specially in titles
+
+- In titles use capital only in the starting character and in names(like Flamingock)
+
+- for note messages use
+:::note
+message
+:::
+- for tip messages use
+:::tip
+message
+:::
+- for info messages use
+:::info
+message
+:::
+- for warning messages use
+:::warning
+message
+:::
+- for danger messages use
+:::danger
+message
+:::
+
+- important, if you have any doubt, about anything, ask anything you need,as  many times you need.
 
 - show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download

@@ -14,7 +14,7 @@ It’s especially useful when integrating Flamingock alongside other frameworks,
 
 ---
 
-## Importing the springboot integration library
+## Import the springboot integration library
 
 Add the appropriate Flamingock Spring Boot integration dependency, depending on your version:
 
