@@ -62,3 +62,45 @@ message
 :::
 
 - show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download
+
+
+
+-------------
+
+Lets jump now to the builder based setup
+
+- I guess is good to start with an introduction, briefly giving the context
+- also reminding the dependencies to import with gradle and maven
+
+- with the builder base setup the user is responsible for injecting the ApplicationContext and ApplicationEventPublisher, as platform component(with addDependency),
+teh flamingock configuration needs to be injected with the flamingock builder, as with the standalone, and profiles needs to be set with .setProfiles(String[] activeProfiles) method in the builder
+
+- then the user can manually run flamingock or can inject it as bean to the Springboot context(creating a normal bean) as ApplicationRunner or InitializingBean with the help or our utility class SpringbootUtil, that has two method
+SpringbootUtil.toInitializingBean(builder) and SpringbootUtil.toApplicationRunner()
+
+
+As always Remember
+- Act as a great communicator, highly skilled and experienced writing technical documentation that is useful, professional and asy to follow and understand
+- Avoid using unnecessary emojis, specially in titles
+- for note messages use
+:::note
+message
+:::
+- for tip messages use
+:::tip
+message
+:::
+- for info messages use
+:::info
+message
+:::
+- for warning messages use
+:::warning
+message
+:::
+- for danger messages use
+:::danger
+message
+:::
+
+- show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download

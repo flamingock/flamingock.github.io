@@ -33,7 +33,9 @@ Flamingock offers **two ways to integrate with Spring Boot**, depending on how m
 ### Builder-based setup (manual)
 
 This approach gives you full control and uses the standard Flamingock builder.  
-You manually inject the required Spring Boot components as well as any Flamingock configuration (core or driver).
+You manually inject the required Spring Boot components(ApplicationContext and ApplicationEventPublisher) as well as any Flamingock core configuration.
+
+In addition, you can register other dependencies manually — these will take precedence over beans from the Spring context when resolving what to inject into change units.
 
 This is recommended for advanced users or highly customized environments.
 
@@ -90,17 +92,10 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 <!-- For springboot 2.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>sringboot-integration-v2</artifactId>
+    <artifactId>springboot-integration-v2</artifactId> <!-- or  springboot-integration-v3 For springboot 3.x-->
     <version>${flamingock.version}</version>
 </dependency>
 
-<!-- For springboot 3.x -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>sringboot-integration-v3</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
 ```
   </TabItem>
 </Tabs>
-
