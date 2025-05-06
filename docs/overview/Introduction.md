@@ -2,9 +2,6 @@
 sidebar_position: 1
 ---
 
-# Introduction
-
-## What is Flamingock?
 **Flamingock** (*formerly Mongock*) – enables you to seamlessly track, manage and audit Configuration and Data changes of any components or systems with your Application. 
 
 It is a powerful tool that manages the evolution of changes with a Change-as-Code (CaC) approach.
