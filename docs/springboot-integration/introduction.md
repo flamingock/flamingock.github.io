@@ -115,12 +115,23 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 
 ---
 
-## Additional integration features
+## :white_check_mark: Best practices
 
-Once Flamingock is running in a Spring Boot context, you can benefit from:
+Consider the following recommendations to get the most out of Flamingock’s Spring Boot integration:
 
-- **Profile-based execution**: Run change units conditionally based on Spring profiles.  
-  > See: [Profiles](./profiles.md)
+- **Prefer `ApplicationRunner` as your runner strategy**  
+  It ensures Flamingock runs after the application context is fully initialized, giving it access to all beans, profiles, and configuration. It also integrates more safely with event publishing and external monitoring tools like Actuator or Prometheus.
 
-- **Event publishing**: Listen to change execution events in your Spring components.  
-  > See: [Event handling](./events.md)
+- **Use `@EnableFlamingock` for simpler setups**  
+  Unless you have advanced needs (such as injecting non-Spring-managed dependencies), the automatic setup provides a clean and reliable integration path.
+
+- **Use Spring profiles to scope change units**  
+  Profiles let you control when specific change units execute, avoiding the need for environment-specific pipelines.
+
+- **Avoid manual execution unless absolutely necessary**  
+  Letting Spring handle the execution via `ApplicationRunner` or `InitializingBean` ensures Flamingock runs at the appropriate time in your application lifecycle.
+
+- **Register custom platform components using `.addDependency(...)` only when required**  
+  Most applications using `@EnableFlamingock` will not need to register components manually.
+
+
