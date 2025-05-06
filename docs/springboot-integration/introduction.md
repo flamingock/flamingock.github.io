@@ -58,18 +58,33 @@ Ideal for most users who prefer convention over configuration.
 
 ---
 
-## Additional integration features
+## Runner strategy: ApplicationRunner vs InitializingBean
 
-Once Flamingock is running in a Spring Boot context, you can benefit from:
+Flamingock supports two strategies for executing its process during Spring Boot startup. You can control this via the `runnerType` property in your Spring configuration (`flamingock.runnerType`), or programmatically if using the manual builder.
 
-- **Profile-based execution**: Run change units conditionally based on Spring profiles.  
-  > See: [Profiles](./profiles.md)
+### Comparison
 
-- **Lifecycle integration**: Choose how and when Flamingock runs (e.g., at app startup).  
-  > See: [Runner strategy](./runner-strategy.md)
+|                                            | `ApplicationRunner`                                                        | `InitializingBean`                                                |
+|--------------------------------------------|----------------------------------------------------------------------------|-------------------------------------------------------------------|
+| **Phase**                                  | After all beans are initialized — just before the app is marked as started | During bean initialization — before the app is considered started |
+| **Context availability**                   | ✅ Full — all Spring beans and profiles available                           | ⚠️ Limited — not all beans may be available                       |
+| **Typical use case**                       | Most common — recommended for production environments                      | For lightweight internal logic or strict startup ordering         |
+| **Events fully supported?**                | ✅ Yes                                                                      | ⚠️ Risky — context may not be fully ready                         |
+| **Spring beans available in change units** | ✅ Yes                                                                      | ⚠️ May fail or be incomplete                                      |
+| **Spring beans available in change units** | ✅ Yes                                                                      | ⚠️ May fail or be incomplete                                      |
 
-- **Event publishing**: Listen to change execution events in your Spring components.  
-  > See: [Event handling](./events.md)
+
+### Startup failure behavior
+
+If Flamingock encounters an error during execution — whether using `ApplicationRunner` or `InitializingBean` — the Spring Boot application **will fail to start**.
+
+This is intentional: Flamingock runs before the application is marked as ready. In deployment platforms such as **Kubernetes**, a failure at this stage will:
+
+- Prevent the container from reaching a *Ready* state
+- Trigger restart policies, health checks, or rollbacks as configured
+- Ensure that the system is never exposed in a partially initialized or inconsistent state
+
+This behavior ensures your application only starts when all change units have been applied successfully.
 
 ---
 
@@ -99,3 +114,15 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 ```
   </TabItem>
 </Tabs>
+
+---
+
+## Additional integration features
+
+Once Flamingock is running in a Spring Boot context, you can benefit from:
+
+- **Profile-based execution**: Run change units conditionally based on Spring profiles.  
+  > See: [Profiles](./profiles.md)
+
+- **Event publishing**: Listen to change execution events in your Spring components.  
+  > See: [Event handling](./events.md)

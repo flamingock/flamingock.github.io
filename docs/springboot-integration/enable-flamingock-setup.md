@@ -74,23 +74,8 @@ flamingock:
   # other configuration...
 ```
 
-### Runner strategy
-The `runnerType` property controls how Flamingock is executed during Spring Boot startup.
-
-You can choose between two strategies:
-
-| Option              | Description                                                                         |
-|---------------------|-------------------------------------------------------------------------------------|
-| `ApplicationRunner` | Executes Flamingock after the application context has started. This is the default. |
-| `InitializingBean`  | Executes Flamingock earlier in the lifecycle, during bean initialization.           |
-
-```yaml
-flamingock:
-  runnerType: InitializingBean
-```
-
 :::info
-If no `runnerType` is specified, Flamingock defaults to `ApplicationRunner`.
+If the `runnerType` property is not provided, Flamingock defaults to using `ApplicationRunner`.
 :::
 
 ---

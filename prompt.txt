@@ -20,7 +20,6 @@ I want to split the section in the following pages
 - introduction(this page should serves an overview, explaining the motivation, briefly the two approaches and as precursor of the following pages, that are a bit more detailed)
 - manual approach with builder(I want you to suggest a name for this approach)
 - automatic approach with @EnableFlamingock
-- Application runner vs initializingBean(I also want you to suggest a name for this page)
 - profiles
 - events
 
@@ -168,3 +167,6 @@ message
 - important, if you have any doubt, about anything, ask anything you need,as  many times you need.
 
 - show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download
+
+
+-----
