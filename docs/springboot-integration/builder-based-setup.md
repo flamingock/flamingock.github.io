@@ -1,5 +1,5 @@
 ---
-title: Builder-based(manual)
+title: Builder-based (manual)
 sidebar_position: 2
 ---
 
