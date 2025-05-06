@@ -1,0 +1,64 @@
+Ok, as extension of the configuration, we have an entire section(folder with pages) for springboot integration.
+
+
+The springboot integration in flamingock has this main benefits
+- allows property injection via native springboot configuration files
+- allows dependency injection via springboot ApplicationContext
+- Allows events handling based on ApplicationEvenPublisher
+- ChangeUnit executions can benefit from springboot profiles
+- Run flamingock as springboot ApplicationRunner or InitializingBean
+
+As explained in the client-configuration briefly, when using springboot, Flamingock provides two approaches
+- manually with the builder, which requires the user to setup manually with the builder(injecting all the flamingock properties,
+   the ApplicationContext and ApplicationEventPublisher and the profiles with the builder.
+
+- Automatically, triggered via annotating the main class with @EnableFlamingock. With this approach Flamingock automatically takes the ApplicationContext
+  , ApplicationEventPublisher and profiles.
+
+
+I want to split the section in the following pages
+- introduction(this page should serves an overview, explaining the motivation, briefly the two approaches and as precursor of the following pages, that are a bit more detailed)
+- manual approach with builder(I want you to suggest a name for this approach)
+- automatic approach with @EnableFlamingock
+- Application runner vs initializingBean(I also want you to suggest a name for this page)
+- profiles
+- events
+
+
+Before starting with the introduction page, how would you call the two approaches
+
+
+-----------------------
+
+Ok, lets go for
+
+- Builder-based setup (manual)
+- @EnableFlamingock setup (automatic)
+- Runner strategy
+
+Now let's jump to the first page: introduction.
+Remember
+- Act as a great communicator, highly skilled and experienced writing technical documentation that is useful, professional and asy to follow and understand
+- Avoid using unnecessary emojis, specially in titles
+- for note messages use
+:::note
+message
+:::
+- for tip messages use
+:::tip
+message
+:::
+- for info messages use
+:::info
+message
+:::
+- for warning messages use
+:::warning
+message
+:::
+- for danger messages use
+:::danger
+message
+:::
+
+- show me first how the content will look like, We'll iterate until I approve. Once approved you will generate the markdown file for me to download
