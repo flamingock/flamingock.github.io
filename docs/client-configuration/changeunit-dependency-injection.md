@@ -1,9 +1,7 @@
 ---
-title: Dependency Wiring (Advanced)
-sidebar_position: 4
+title: ChangeUnit dependency injection
+sidebar_position: 3
 ---
-
-# Dependency wiring (advanced)
 
 Flamingock allows you to inject dependencies into your change units so they can use services, clients, or utilities during execution. This is especially useful for **standalone applications**, where no dependency injection framework (like Spring) is present.
 
@@ -25,17 +23,56 @@ This injection is handled via the **Flamingock builder** — not via YAML — an
 
 ## Registering dependencies
 
-Flamingock provides multiple methods to register dependencies with the builder:
-
+Platform changeUnit dependencies  are registered using the method `addDependency(...)` :
 ```java
 builder
-  .addDependency(clientService);                         // by type
-  .addDependency("clientService", clientService);        // by name
-  .addDependency(ClientService.class, clientService);    // by explicit type
-  .addDependency("cs", ClientService.class, clientService); // by name and type
+  .addDependency(clientService);                         
+```
+Once registered, Flamingock can inject the requested dependency into your change unit methods or constructors.
+```java
+@Execution
+public void execute(ClientService clientService) {
+    // ChangeUnit's logic
+}
+```
+### Using name and explicit type
+Let’s say you have a base class `PaymentProcessor`, with two implementations: `StripePaymentProcessor` and `PaypalPaymentProcessor`.
+
+Now imagine you're injecting both implementations like this:
+```java
+addDependency(new StripePaymentProcessor());
+addDependency(new PaypalPaymentProcessor());
 ```
 
-Once registered, Flamingock can inject these into your change unit methods or constructors.
+If a change unit method requests either `StripePaymentProcessor` or `PaypalPaymentProcessor` specifically, Flamingock will inject the correct one.
+
+But if the method requests the general type `PaymentProcessor`, Flamingock cannot guarantee which of the two will be used.
+
+To solve this, Flamingock provides two mechanisms:
+
+#### Named dependency
+You can register each implementation with a name:
+```java
+builder
+  .addDependency("stripe", new StripePaymentProcessor())
+  .addDependency("paypal", new PaypalPaymentProcessor());
+```
+
+Then use the `javax.inject.@Named` annotation in your method:
+```java
+@Execution
+public void execute(@Named("stripe") PaymentProcessor processor) {
+  processor.charge(...);
+}
+```
+
+#### Explicit typing the dependency
+Alternatively, you can register a specific instance for the general type, to ensure the right one is used by default:
+```java
+builder.addDependency(PaymentProcessor.class, new StripePaymentProcessor());
+```
+Now, any method requesting a `PaymentProcessor` will receive the Stripe implementation — unless a named one is requested instead.
+
 
 ---
 
@@ -73,7 +110,8 @@ public class CreateClientsTable {
 }
 ```
 
-:::note If the class has only one constructor, the `@FlamingockConstructor` annotation is optional.
+:::note 
+If the class has only one constructor, the `@FlamingockConstructor` annotation is optional.
 :::
 ---
 
@@ -84,6 +122,8 @@ By default, Flamingock will throw a clear exception if it cannot resolve a depen
 You can override this by marking the parameter as `@Nullable`:
 
 ```java
+import io.flamingock.core.api.annotations.Nullable;
+
 @Execution
 public void run(@Nullable OptionalLogger logger) {
   if (logger != null) {
@@ -92,9 +132,6 @@ public void run(@Nullable OptionalLogger logger) {
 }
 ```
 
-:::note
-Uses `jakarta.annotation.Nullable`
-:::
 ---
 
 ## Skipping lock verification

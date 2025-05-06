@@ -20,14 +20,15 @@ Configuration is divided into two distinct scopes:
 
 ## What You Can Configure
 
-| Area                 | Description                                         |
-|----------------------|-----------------------------------------------------|
-| 📦 Pipeline & Stages | Organize changes into ordered stages                |
-| 🔒 Lock              | Distributed locking and timing options              |
-| 🔌 Dependency wiring | Dependency injection to changeUnits and environment |
-| ⚙️ Extra             | Metadata, default author, enable/disable            |
-| ☁️ Cloud Edition     | Cloud-specific setup: token, env, service           |
-| 🧪 Community Edition | Driver-specific config for MongoDB, DynamoDB...     |
+| Area                                | Description                                         |
+|-------------------------------------|-----------------------------------------------------|
+| 📦 Pipeline & Stages                | Organize changes into ordered stages                |
+| 🔌 ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
+| 🔌 Platform component injection     | Platform-level components injection                 |
+| 🔒 Lock                             | Distributed locking and timing options              |
+| ⚙️ Extra                            | Metadata, default author, enable/disable            |
+| ☁️ Cloud Edition                    | Cloud-specific setup: token, env, service           |
+| 🧪 Community Edition                | Driver-specific config for MongoDB, DynamoDB...     |
 
 
 Each of these topics is explained in its own section.
@@ -101,7 +102,7 @@ Explore the rest of the configuration section to tune Flamingock for your system
 - [📦 Pipeline & Stages](pipeline-and-stages.md)
 - [🔒 Lock Configuration](lock-configuration.md)
 - [⚙  Extra Configuration](extra-configuration.md)
-- [🔌 Dependency wiring](dependency-wiring.md)
+- [🔌 Dependency wiring](changeunit-dependency-injection.md)
 
 ### Pick an edition
 - [☁️ Cloud Edition(Fully-featured)](../cloud-edition.md)
