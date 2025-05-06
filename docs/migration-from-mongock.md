@@ -77,7 +77,7 @@ For more storage packages and other dependencies, check the [Get Started](get-st
 
 ### 2.1. Builder-based configuration (Standalone)
 
-To begin using Flamingock, you must replace your existing `MongockStandalone.builder()` setup with the `FlamingockStandalone` builder.
+To begin using Flamingock, you must replace your existing `MongockStandalone.builder()` setup with the `Flamingock.builder()` builder.
 
 This change is the starting point to transition your setup.
 Once you update the entrypoint, Flamingock provides a familiar yet evolved API designed to simplify the migration process. While many method names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required.
@@ -196,7 +196,7 @@ The DataSource name ("mongockChangeLog" in this example) refers to the data sour
     <TabItem value="builder" label="Builder">
         This is done passing the DataSource name to the importer configuration.
         ```java
-        FlamingockStandalone
+        Flamingock.builder()
                 //...
                 .withImporter(CoreConfiguration.ImporterConfiguration.withSource("mongockChangeLog"))
                 //...
