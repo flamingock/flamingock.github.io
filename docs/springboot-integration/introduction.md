@@ -71,8 +71,6 @@ Flamingock supports two strategies for executing its process during Spring Boot 
 | **Typical use case**                       | Most common — recommended for production environments                      | For lightweight internal logic or strict startup ordering         |
 | **Events fully supported?**                | ✅ Yes                                                                      | ⚠️ Risky — context may not be fully ready                         |
 | **Spring beans available in change units** | ✅ Yes                                                                      | ⚠️ May fail or be incomplete                                      |
-| **Spring beans available in change units** | ✅ Yes                                                                      | ⚠️ May fail or be incomplete                                      |
-
 
 ### Startup failure behavior
 
