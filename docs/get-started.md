@@ -13,7 +13,7 @@ This guide will walk you through the basics of using Flamingock with a step-by-s
 To begin, add the Flamingock client library to your project. You can use either:
 
 - Cloud Edition (compatible with all systems)
-- Community Edition (you need to choose the specific driver)
+- Community Edition (you need to choose the specific storage: MongoDB, DynamoDB, etc.)
 
 Example for **Cloud Edition**:
 <Tabs groupId="gradle_maven">
@@ -52,7 +52,7 @@ Example for **Community Edition** using MongoDB Sync4:
 </Tabs>
 
 
-All Community Edition drivers:
+All Community Editions:
 
 - **flamingock-ce-mongodb-v3**
 - **flamingock-ce-mongodb-sync4**
@@ -62,6 +62,9 @@ All Community Edition drivers:
 - **flamingock-ce-dynamodb**
 - **flamingock-ce-couchbase**
 
+:::note
+For configuration details specific to the Community Edition, see the [community edition section](community-edition.md)
+:::
 ---
 
 ## 2. Add Flamingock Annotation Processor
@@ -146,7 +149,9 @@ For a deeper understanding of how changes work and **when to choose one approach
     </TabItem>
 </Tabs>
 
-> 🔁 You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
+:::info
+You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
+:::
 
 ---
 
@@ -205,7 +210,9 @@ public class App {
 }
 ```
 
-> ⚙️ If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
+:::info 
+If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
+:::
 ---
 
 ## 6. Compile the Project
@@ -214,24 +221,55 @@ Now that you’ve defined your changes and configured Flamingock, it’s time to
 
 If everything is correctly set up, Flamingock’s annotation processor will kick in and you’ll see diagnostic messages during compilation:
 
+<details>
+<summary>Click to see the expected logs</summary>
+<Tabs groupId="gradle_maven">
+<TabItem value="gradle" label="Gradle" default>
+
 ```bash
-Note:    [Flamingock] Starting Flamingock annotation processor initialization
-warning: [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
-warning: [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+> Task :compileJava
+Note:    [Flamingock] Starting Flamingock annotation processor initialization.
+Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
-Note:    [Flamingock] Initialization completed. Processed templated-based changes
+Note:    [Flamingock] Initialization completed. Processed templated-based changes.
 Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
-Note:    [Flamingock] Finished processing annotated classes and generating metadata
+Note:    [Flamingock] Finished processing annotated classes and generating metadata.
+Note:    [Flamingock] Final processing round detected - skipping execution.
 ```
-> 🔍 The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+```bash
+[INFO]   [Flamingock] Starting Flamingock annotation processor initialization.
+[INFO]   [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+[INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
+[INFO]   [Flamingock] Final processing round detected - skipping execution.
+```
+
+</TabItem>
+</Tabs>
+</details>
+
+:::note 
+The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
+:::
 
 These logs confirm that:
 - Flamingock found your pipeline
 - Template and code-based changes were processed
 - Metadata was generated for execution
 -
-> 💡 If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
+:::tip
+If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
+:::
 
 ---
 
