@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Features
+# Flamingock versions
 
 Let's discover **Docusaurus in less than 5 minutes**.
 
