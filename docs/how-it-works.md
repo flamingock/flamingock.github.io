@@ -98,7 +98,7 @@ Here’s how Flamingock helps:
   - Executes all ChangeUnits safely and atomically
   - Logs every detail in the audit system
 
-If step 2 fails, Flamingock rolls back step 1 automatically (if defined), ensuring the system doesn’t end up in a partial state.
+Flamingock rolls back automatically in case of failure(if defined), ensuring the system doesn’t end up in a partial state.
 
 The result? Faster deployments, consistent environments, and complete traceability.
 
@@ -126,7 +126,7 @@ Here’s how Flamingock makes this seamless:
   - Acquires a distributed lock to avoid concurrent modifications
   - Audits the entire process for traceability and compliance
 
-This ensures that API, messaging, and gateway changes are synchronized, reducing integration errors and deployment friction across microservices.
+This ensures that changes in the Database, messaging, and APIs exposed in the gateway are synchronized, reducing integration errors and deployment friction across microservices.
 
 ---
 
