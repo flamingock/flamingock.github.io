@@ -221,16 +221,43 @@ Now that you’ve defined your changes and configured Flamingock, it’s time to
 
 If everything is correctly set up, Flamingock’s annotation processor will kick in and you’ll see diagnostic messages during compilation:
 
+<details>
+<summary>Click to see the expected logs</summary>
+<Tabs groupId="gradle_maven">
+<TabItem value="gradle" label="Gradle" default>
+
 ```bash
-Note:    [Flamingock] Starting Flamingock annotation processor initialization
-warning: [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
-warning: [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+> Task :compileJava
+Note:    [Flamingock] Starting Flamingock annotation processor initialization.
+Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
-Note:    [Flamingock] Initialization completed. Processed templated-based changes
+Note:    [Flamingock] Initialization completed. Processed templated-based changes.
 Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
-Note:    [Flamingock] Finished processing annotated classes and generating metadata
+Note:    [Flamingock] Finished processing annotated classes and generating metadata.
+Note:    [Flamingock] Final processing round detected - skipping execution.
 ```
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+```bash
+[INFO]   [Flamingock] Starting Flamingock annotation processor initialization.
+[INFO]   [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
+[INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
+[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
+[INFO]   [Flamingock] Final processing round detected - skipping execution.
+```
+
+</TabItem>
+</Tabs>
+</details>
+
 :::note 
 The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
 :::
