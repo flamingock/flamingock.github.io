@@ -1,6 +1,6 @@
 ---
 title: Lock
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 # Lock Configuration
@@ -16,13 +16,13 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 
 ## Configurable Properties
 
-| Property                             | Default        | Description                                                                 |
-|--------------------------------------|----------------|-----------------------------------------------------------------------------|
-| `lockAcquiredForMillis`              | `60000` (1 min)| Time the lock remains valid once acquired. Automatically released if not refreshed. |
-| `lockQuitTryingAfterMillis`          | `180000` (3 min)| How long to retry acquiring the lock if another instance holds it.         |
-| `lockTryFrequencyMillis`             | `1000` (1 sec) | Interval between attempts while waiting for the lock.                      |
-| `throwExceptionIfCannotObtainLock`   | `true`         | Whether Flamingock should fail if the lock can't be acquired.              |
-| `enableRefreshDaemon`                | `true`         | Whether to run a background thread that periodically extends the lock.     |
+| Property                             | Default          | Description                                                                         |
+|--------------------------------------|------------------|-------------------------------------------------------------------------------------|
+| `lockAcquiredForMillis`              | `60000` (1 min)  | Time the lock remains valid once acquired. Automatically released if not refreshed. |
+| `lockQuitTryingAfterMillis`          | `180000` (3 min) | How long to retry acquiring the lock if another instance holds it.                  |
+| `lockTryFrequencyMillis`             | `1000` (1 sec)   | Interval between attempts while waiting for the lock.                               |
+| `throwExceptionIfCannotObtainLock`   | `true`           | Whether Flamingock should fail if the lock can't be acquired.                       |
+| `enableRefreshDaemon`                | `true`           | Whether to run a background thread that periodically extends the lock.              |
 
 ---
 
@@ -34,7 +34,7 @@ In distributed systems, multiple app instances may start simultaneously — but 
 - Ensure consistent and safe state transitions
 - Guarantee single execution of each change
 
-:::warning
+:::info
 If no pending changes exist, the lock is not acquired and startup proceeds normally.
 :::
 ---
