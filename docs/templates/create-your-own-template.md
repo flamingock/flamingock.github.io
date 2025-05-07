@@ -3,9 +3,6 @@ sidebar_position: 3
 title: Create your template
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Create Your Own Flamingock Template
 
 ## Introduction

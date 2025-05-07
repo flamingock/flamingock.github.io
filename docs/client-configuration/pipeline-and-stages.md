@@ -58,10 +58,10 @@ Each stage must define:
 
 ## Stage fields
 
-| Field            | Required | Description                                                                 |
-|------------------|----------|-----------------------------------------------------------------------------|
-| `name`           | :white_check_mark: | Unique identifier for the stage                                             |
-| `description`    | :x:      | Optional text explaining the stage's purpose                                |
+| Field            | Required            | Description                                                                 |
+|------------------|---------------------|-----------------------------------------------------------------------------|
+| `name`           | :white_check_mark:  | Unique identifier for the stage                                             |
+| `description`    | :x:                 | Optional text explaining the stage's purpose                                |
 | `sourcesPackage` | :white_check_mark:* | Scanned for both code-based and template-based changes                      |
 | `resourcesDir`   | :white_check_mark:* | Used for template-based changes in the resources directory                  |
 
