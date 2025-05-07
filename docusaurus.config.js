@@ -157,11 +157,7 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
-<<<<<<< HEAD
         additionalLanguages: ['java', 'kotlin', 'yaml', 'sql', 'groovy', 'json']
-=======
-        additionalLanguages: ['java'],
->>>>>>> 9776a9f (graalvm, events, transactions, partial custom injection)
       },
     }),
 };
