@@ -28,3 +28,9 @@
   --ifm-color-primary-lightest: #FAB6B3; /* Softest shade */
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+.responsive-table td, 
+.responsive-table th {
+  white-space: normal;
+  word-break: break-word;
+}

@@ -121,6 +121,8 @@ This minimal setup is sufficient to execute changes and track progress. For adva
 
 The following table lists all configuration properties supported by the Flamingock Community Edition for MongoDB when using the Java driver. These properties can be set programmatically via the `setProperty(...)` method of the `FlamingockBuilder`. Some properties are mandatory, such as `databaseName`, while others are optional and have default values.
 
+<div class="responsive-table">
+
 | Property                       | Type                     | Default Value                             | Description                                                           |
 |--------------------------------|--------------------------|-------------------------------------------|-----------------------------------------------------------------------|
 | `databaseName`                 | `String`                 |                                           | Name of the database ***(mandatory)***                                |
@@ -132,6 +134,8 @@ The following table lists all configuration properties supported by the Flamingo
 | `readPreference`               | `ReadPreference`         | `ReadPreference.primary()`                | Specifies which MongoDB node to read from                             |
 
 ---
+
+</div>
 
 ## Advanced configuration sample code
 
