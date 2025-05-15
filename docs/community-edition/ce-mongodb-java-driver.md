@@ -106,7 +106,7 @@ MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
 FlamingockBuilder builder = Flamingock.builder()
           .addDependency(mongoClient)
-          .setProperty("databaseName", "flamingock-database")
+          .setProperty("mongodb.databaseName", "flamingock-database")
           // other common configurations
           ;
 ```
@@ -121,21 +121,21 @@ This minimal setup is sufficient to execute changes and track progress. For adva
 
 The following table lists all configuration properties supported by the Flamingock Community Edition for MongoDB when using the Java driver. These properties can be set programmatically via the `setProperty(...)` method of the `FlamingockBuilder`. Some properties are mandatory, such as `databaseName`, while others are optional and have default values.
 
-<div class="responsive-table">
 
 | Property                       | Type                     | Default Value                             | Description                                                           |
 |--------------------------------|--------------------------|-------------------------------------------|-----------------------------------------------------------------------|
-| `databaseName`                 | `String`                 |                                           | Name of the database ***(mandatory)***                                |
-| `migrationRepositoryName`      | `String`                 | `"flamingockEntries"`                     | Name of the collection used to store applied changes                  |
-| `lockRepositoryName`           | `String`                 | `"flamingockLock"`                        | Name of the collection used for distributed locking                   |
-| `indexCreation`                | `boolean`                | `true`                                    | Whether Flamingock should automatically create required indexes       |
-| `writeConcern`                 | `WriteConcern`           | `WriteConcern.MAJORITY.withJournal(true)` | Controls write durability and acknowledgement                         |
-| `readConcern`                  | `ReadConcern`            | `ReadConcern.MAJORITY`                    | Controls the level of isolation for read operations                   |
-| `readPreference`               | `ReadPreference`         | `ReadPreference.primary()`                | Specifies which MongoDB node to read from                             |
+| `mongodb.databaseName`         | `String`                 |                                           | Name of the database ***(mandatory)***                                |
+| `mongodb.auditRepositoryName`  | `String`                 | `"flamingockEntries"`                     | Name of the collection used to store applied changes                  |
+| `mongodb.lockRepositoryName`   | `String`                 | `"flamingockLock"`                        | Name of the collection used for distributed locking                   |
+| `mongodb.autoCreate`           | `boolean`                | `true`                                    | Whether Flamingock should automatically create required collections and indexes       |
+| `mongodb.readConcern`          | `String`                 | `"MAJORITY"`                              | Controls the level of isolation for read operations                   |
+| `mongodb.writeConcern.w`       | `String`                 | `"MAJORITY"`                              | Write acknowledgement. Specifies the number of nodes that must acknowledge the write before it's considered successful.|
+| `mongodb.writeConcern.journal` | `boolean`                 | `true`                                   | Specifies whether the write must be written to the on-disk journal before acknowledgment.|
+| `mongodb.writeConcern.wTimeout`| `String`                 |                                           | Sets the maximum time (in milliseconds) to wait for the write concern to be fulfilled.|
+| `mongodb.readPreference`       | `String`                 | `"PRIMARY"`                               | Specifies which MongoDB node to read from                             |
 
 ---
 
-</div>
 
 ## Advanced configuration sample code
 
@@ -148,14 +148,16 @@ MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 FlamingockBuilder builder = Flamingock.builder()
           // mandatory configuration
           .addDependency(mongoClient)
-          .setProperty("databaseName", "flamingock-database")
+          .setProperty("mongodb.databaseName", "flamingock-database")
           // optional configuration (with default values)
-          .setProperty("migrationRepositoryName", "flamingockEntries")
-          .setProperty("lockRepositoryName", "flamingockLock")
-          .setProperty("indexCreation", true)
-          .setProperty("writeConcern", WriteConcern.MAJORITY.withJournal(true))
-          .setProperty("readConcern", ReadConcern.MAJORITY)
-          .setProperty("readPreference", ReadPreference.primary())
+          .setProperty("mongodb.auditRepositoryName", "flamingockEntries")
+          .setProperty("mongodb.lockRepositoryName", "flamingockLock")
+          .setProperty("mongodb.autoCreate", true)
+          .setProperty("mongodb.readConcern", ReadConcern.MAJORITY)
+          .setProperty("mongodb.writeConcern.w", WriteConcern.MAJORITY)
+          .setProperty("mongodb.writeConcern.journal", true)
+          .setProperty("mongodb.writeConcern.wTimeout", 0)
+          .setProperty("mongodb.readPreference", ReadPreference.primary())
           // other common configurations
           ;
 ```
@@ -180,23 +182,21 @@ public void execute(ClientSession session, MongoDatabase db) {
 
 ## Spring Boot integration
 
-Flamingock Community Edition for MongoDB can be seamlessly integrated into Spring Boot applications, even when using the Java Driver directly (without Spring Data).
+Flamingock Community Edition for MongoDB can be used within Spring Boot applications, even when working directly with the Java Driver (without Spring Data).
 
-Spring Boot support is provided through Flamingock’s general Spring Boot integration module, which automatically wires required components and supports configuration through standard Spring properties.
-
-If your application uses the Java driver (`MongoClient`) to connect to MongoDB and runs within a Spring Boot context, you can take advantage of this integration to simplify setup and lifecycle management.
+Unlike other editions, this one is best integrated using the **manual builder setup**, which gives you full control over how Flamingock is configured and executed. This is because the MongoDB connection (`MongoClient`) is typically created manually and injected into Flamingock via `.addDependency(...)`.
 
 ---
 
 ### 1. Add required dependencies
 
-You’ll need to include the **Flamingock MongoDB specific edition** with the corresponding **MongoDB Java driver**, and the **Spring Boot integration** module for your Spring Boot version.
+You’ll need to include the **Flamingock MongoDB edition**, the **MongoDB Java driver**, and the **Spring Boot integration module**.
 
 <Tabs groupId="build">
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-// MongoDB v4 edition (Java driver)
+// MongoDB v4 edition
 implementation("io.flamingock:flamingock-ce-mongodb-sync4:$flamingockVersion")
 implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 
@@ -233,39 +233,52 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion") // 
 
 ---
 
-### 2. Enable Flamingock
+### 2. Configure Flamingock using the Builder
 
-Use the automatic integration with `@EnableFlamingock` in your main application class:
+In a Spring Boot context, you can define Flamingock as a Spring Bean using the builder and execute it automatically as part of the startup phase using `ApplicationRunner` or `InitializingBean`.
 
 ```java
-@EnableFlamingock
-@SpringBootApplication
-public class MyApp {
-  public static void main(String[] args) {
-    SpringApplication.run(MyApp.class, args);
+@Configuration
+public class FlamingockConfig {
+
+  @Bean
+  public MongoClient mongoClient() {
+    return MongoClients.create("mongodb://localhost:27017");
+  }
+
+  @Bean
+  public ApplicationRunner flamingockRunner(MongoClient mongoClient,
+                                            ApplicationContext applicationContext,
+                                            ApplicationEventPublisher applicationEventPublisher) {
+
+    FlamingockBuilder builder = Flamingock.builder()
+      .addDependency(mongoClient)
+      .addDependency(applicationContext)
+      .addDependency(applicationEventPublisher)
+      .setProperty("mongodb.databaseName", "flamingock-database")
+      // other properties
+      ;
+
+    return SpringbootUtil.toApplicationRunner(builder.build());
   }
 }
 ```
 
 ---
 
-### 3. Provide configuration
+### 3. Provide configuration (optional)
 
-In your `application.yml` or `application.properties`, define the MongoDB connection and Flamingock properties:
+You can hardcode configuration as shown above, or inject values using `@Value`, `@ConfigurationProperties`, or external config.
 
-```yaml
-flamingock:
-  databaseName: flamingock-database
-  # other properties
-```
-
-> The `MongoClient` must be declared as a Spring bean in your application context. Flamingock will automatically detect and use it.
+If preferred, you can externalise the setup by reading Spring properties and applying them using `setProperty(...)`.
 
 ---
 
-### 4. For advanced setups
+### 4. About `@EnableFlamingock`
 
-If you need more control (e.g. setting properties programmatically or registering dependencies manually), you can use the [builder-based Spring Boot integration](/docs/springboot-integration/builder-based-setup) instead of `@EnableFlamingock`.
+Although technically compatible, `@EnableFlamingock` is not recommended for this edition because property-based configuration is not sufficient to support all MongoDB driver options. The builder API provides full flexibility and is the preferred approach.
+
+If your project uses **Spring Data MongoDB**, or you want to rely on autowiring for all dependencies, see [Spring Boot Integration](../springboot-integration/introduction) for general guidance.
 
 ---
 
