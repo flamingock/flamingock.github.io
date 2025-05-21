@@ -82,7 +82,7 @@ implementation("software.amazon.awssdk:url-connection-client:2.x.x")
 
 ### 2. Configure Flamingock
 
-Once dependencies are added, initialize Flamingock with a `DynamoDbClient` and the required table names:
+Once dependencies are added, initialize Flamingock with a `DynamoDbClient` and the desired properties:
 
 ```java
 DynamoDbClient dynamoClient = DynamoDbClient.builder()
@@ -105,13 +105,13 @@ The following table lists all configuration properties supported by this edition
 
 <div class="responsive-table">
 
-| Property                        | Type              | Default Value            | Description                                                                 |
-|---------------------------------|-------------------|--------------------------|-----------------------------------------------------------------------------|
-| `autoCreate`                   | `Boolean`         | `true`                   | Automatically create required tables if they do not exist                   |
-| `auditRepositoryName`          | `String`          | `"flamingockAuditLogs"`  | Table name used to store audit records                                      |
-| `lockRepositoryName`           | `String`          | `"flamingockLock"`       | Table name used for distributed locking                                     |
-| `readCapacityUnits`            | `Long`            | `5L`                     | Read capacity units (only relevant for **PROVISIONED** billing mode)        |
-| `writeCapacityUnits`           | `Long`            | `5L`                     | Write capacity units (only relevant for **PROVISIONED** billing mode)       |
+| Property                | Type      | Required | Default Value           | Description                                                                 |
+|-------------------------|-----------|----------|--------------------------|-----------------------------------------------------------------------------|
+| `autoCreate`            | `Boolean` | false    | `true`                   | Automatically create required tables if they do not exist                   |
+| `auditRepositoryName`   | `String`  | false    | `"flamingockAuditLogs"`  | Table name used to store audit records                                      |
+| `lockRepositoryName`    | `String`  | false    | `"flamingockLock"`       | Table name used for distributed locking                                     |
+| `readCapacityUnits`     | `Long`    | false    | `5L`                     | Read capacity units (only relevant for **PROVISIONED** billing mode)        |
+| `writeCapacityUnits`    | `Long`    | false    | `5L`                     | Write capacity units (only relevant for **PROVISIONED** billing mode)       |
 
 </div>
 
