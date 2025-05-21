@@ -125,14 +125,14 @@ The following table lists all configuration properties supported by the Flamingo
 | Property                       | Type                     | Default Value                             | Description                                                           |
 |--------------------------------|--------------------------|-------------------------------------------|-----------------------------------------------------------------------|
 | `mongodb.databaseName`         | `String`                 |                                           | Name of the database ***(mandatory)***                                |
-| `mongodb.auditRepositoryName`  | `String`                 | `"flamingockEntries"`                     | Name of the collection used to store applied changes                  |
+| `mongodb.auditRepositoryName`  | `String`                 | `"flamingockAuditLogs"`                     | Name of the collection used to store applied changes                  |
 | `mongodb.lockRepositoryName`   | `String`                 | `"flamingockLock"`                        | Name of the collection used for distributed locking                   |
 | `mongodb.autoCreate`           | `boolean`                | `true`                                    | Whether Flamingock should automatically create required collections and indexes       |
 | `mongodb.readConcern`          | `String`                 | `"MAJORITY"`                              | Controls the level of isolation for read operations                   |
-| `mongodb.writeConcern.w`       | `String`                 | `"MAJORITY"`                              | Write acknowledgement. Specifies the number of nodes that must acknowledge the write before it's considered successful.|
-| `mongodb.writeConcern.journal` | `boolean`                 | `true`                                   | Specifies whether the write must be written to the on-disk journal before acknowledgment.|
-| `mongodb.writeConcern.wTimeout`| `String`                 |                                           | Sets the maximum time (in milliseconds) to wait for the write concern to be fulfilled.|
-| `mongodb.readPreference`       | `String`                 | `"PRIMARY"`                               | Specifies which MongoDB node to read from                             |
+| `mongodb.writeConcern.w`       | `String or int`          | `"MAJORITY"`                              | Write acknowledgement. Specifies the number of nodes that must acknowledge the write before it's considered successful.|
+| `mongodb.writeConcern.journal` | `boolean`                | `true`                                    | Specifies whether the write must be written to the on-disk journal before acknowledgment.|
+| `mongodb.writeConcern.wTimeout`| `Duration`               | `Duration.ofSeconds(1)`                   | Sets the maximum time (in milliseconds) to wait for the write concern to be fulfilled.|
+| `mongodb.readPreference`       | `ReadPreferenceLevel`    | `ReadPreferenceLevel.PRIMARY`             | Specifies which MongoDB node to read from                             |
 
 ---
 
@@ -150,14 +150,14 @@ FlamingockBuilder builder = Flamingock.builder()
           .addDependency(mongoClient)
           .setProperty("mongodb.databaseName", "flamingock-database")
           // optional configuration (with default values)
-          .setProperty("mongodb.auditRepositoryName", "flamingockEntries")
+          .setProperty("mongodb.auditRepositoryName", "flamingockAuditLogs")
           .setProperty("mongodb.lockRepositoryName", "flamingockLock")
           .setProperty("mongodb.autoCreate", true)
-          .setProperty("mongodb.readConcern", ReadConcern.MAJORITY)
-          .setProperty("mongodb.writeConcern.w", WriteConcern.MAJORITY)
+          .setProperty("mongodb.readConcern", "MAJORITY")
+          .setProperty("mongodb.writeConcern.w", "MAJORITY")
           .setProperty("mongodb.writeConcern.journal", true)
-          .setProperty("mongodb.writeConcern.wTimeout", 0)
-          .setProperty("mongodb.readPreference", ReadPreference.primary())
+          .setProperty("mongodb.writeConcern.wTimeout", Duration.ofSeconds(1))
+          .setProperty("mongodb.readPreference", ReadPreferenceLevel.PRIMARY)
           // other common configurations
           ;
 ```
