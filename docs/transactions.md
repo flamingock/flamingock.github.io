@@ -113,12 +113,12 @@ You are responsible for writing reliable rollback logic. Flamingock cannot guara
 
 ## Summary: when to use `transactional = false`
 
-| Type of change                                                  | Targets Flamingock audit DB? | System supports transactions? | `transactional = false`? |
-|-----------------------------------------------------------------|:----------------------------:|:-----------------------------:|:------------------------:|
-| Operation allowed in transaction (same DB as audit log)         |              ✅               |               ✅               |            No            |
-| Operation not allowed inside transaction (same DB as audit log) |              ✅               |               ❌               |            ✅             |
-| Change targets different DB than audit log                      |              ❌               |               ❌ or ✅          |            ✅             |
-| Change targets non-database system                              |              ❌               |               ❌               |            ✅             |
+| Type of change                                                                      | `transactional = false`? |
+|-------------------------------------------------------------------------------------|:------------------------:|
+| Operation allowed in transaction - same DB as audit log (transactional)             |            ❌             |
+| Operation not allowed inside transaction (e.g., DDL operations in Mysql or MongoDB) |            ✅             |
+| ChangeUnit targets different DB than audit log                                      |            ✅             |
+| ChangeUnit targets non-database system or a non-transactional                       |            ✅             |
 
 ---
 
