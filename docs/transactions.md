@@ -9,6 +9,8 @@ Flamingock supports transactional execution for change units **when the underlyi
 
 In this context, **transactional execution means wrapping both the user-defined change and the corresponding audit record** in a single, atomic operation. This ensures that either both the change and the audit log are committed together, or neither are.
 
+Flamingock logs each change unit execution in an audit store. In transactional scenarios, the change and the audit record are persisted together.
+
 This page explains:
 - What Flamingock considers transactional
 - When transactions apply and when they don’t
@@ -16,7 +18,7 @@ This page explains:
 
 ---
 
-## What counts as "transactional"?
+## What Flamingock considers transactional
 
 A change unit is considered transactional when:
 
@@ -45,6 +47,10 @@ Transactions do **not** apply in the following scenarios:
 In all these cases, mark the change unit with `@ChangeUnit(transactional = false)` to disable transaction wrapping.
 
 To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section.
+:::
+
+:::warning
+If a change unit is marked as transactional (`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock assumes the database rolled back the change, and skips the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
 :::
 
 ---
@@ -103,21 +109,15 @@ This fallback allows Flamingock to support non-transactional systems like:
 You are responsible for writing reliable rollback logic. Flamingock cannot guarantee full recovery unless your rollback method safely restores the previous state.
 :::
 
-:::warning
-If a change unit is marked as transactional(`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock will assume the database's transaction rolled back successfully and will not call the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
-:::
-
 ---
 
-## Summary
-
-When to use `transactional = false`
+## Summary: when to use `transactional = false`
 
 | Type of change                                                  | Targets Flamingock audit DB? | System supports transactions? | `transactional = false`? |
 |-----------------------------------------------------------------|:----------------------------:|:-----------------------------:|:------------------------:|
-| Operation not allowed in transaction (same DB as audit log)     |              ✅               |               ✅               |            No            |
+| Operation allowed in transaction (same DB as audit log)         |              ✅               |               ✅               |            No            |
 | Operation not allowed inside transaction (same DB as audit log) |              ✅               |               ❌               |            ✅             |
-| Change targets different DB than audit log                      |              ❌               |               ❌               |            ✅             |
+| Change targets different DB than audit log                      |              ❌               |               ❌ or ✅          |            ✅             |
 | Change targets non-database system                              |              ❌               |               ❌               |            ✅             |
 
 ---
@@ -130,20 +130,21 @@ Documentation will be added when this feature is released.
 :::
 
 ---
-## Best practices
 
-:white_check_mark: Use transactional = false for changes that cannot run in a transaction
+## :white_check_mark: Best practices
+
+-  **Use `transactional = false` for changes that cannot run in a transaction**
 
 Some database drivers (e.g., MongoDB Sync) don’t support all operations inside transactions (such as DDL or index creation). In those cases, explicitly set `transactional = false` to avoid runtime errors.
 
-:white_check_mark: Always set transactional = false for non-database change units
+- **Always set `transactional = false` for non-database change units**
 
 If your change interacts with a message queue, API, file system, or another external system, it should **not** be marked as transactional. Flamingock will treat it as non-transactional and enable manual rollback instead.
 
-:white_check_mark: Keep change unit scope narrow and isolated
+-  **Keep change unit scope narrow and isolated**
 
 Avoid combining transactional and non-transactional logic within the same change unit. If part of the logic targets a non-transactional system, isolate that logic in a dedicated change unit and mark it appropriately.
 
-:white_check_mark: Prefer automatic rollback (via transaction) when available
+- **Prefer automatic rollback (via transaction) when available**
 
 Transactional change units offer stronger guarantees. Use them when the system supports them to ensure atomic execution and safe rollback on failure.
