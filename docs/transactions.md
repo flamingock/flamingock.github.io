@@ -34,17 +34,15 @@ If these conditions are met, Flamingock wraps the execution of:
 
 ## When transactions don’t apply
 
-Transactions **do not** apply in the following cases:
+Transactions do **not** apply in the following scenarios:
 
-| Scenario                                                                               | Action                      |
-|----------------------------------------------------------------------------------------|-----------------------------|
-| The change targets a non-transactional system (e.g., Kafka, S3, APIs)                  | Set `transactional = false` |
-| The change targets a different database from the one used for Flamingock audit         | Set `transactional = false` |
-| The change uses database features that cannot run in a transaction (e.g., MongoDB DDL) | Set `transactional = false` |
-| The driver or database version doesn’t support transactions                            | Set `transactional = false` |
+- The change targets a **non-transactional system** (e.g., Kafka, S3, external APIs)
+- The change targets a **different database** than the one used for Flamingock’s audit log
+- The change performs **operations that are not allowed in transactions** (e.g., DDL operations in Mysql or MongoDB)
+- The driver or underlying **database doesn’t support transactions**
 
-:::warning
-If a change unit is marked as transactional but targets a system or operation that doesn’t support transactions, Flamingock will assume the database's transaction rolled back successfully and will not call the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
+:::tip
+In all these cases, mark the change unit with `@ChangeUnit(transactional = false)` to disable transaction wrapping.
 
 To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section.
 :::
@@ -103,8 +101,10 @@ This fallback allows Flamingock to support non-transactional systems like:
 
 :::info
 You are responsible for writing reliable rollback logic. Flamingock cannot guarantee full recovery unless your rollback method safely restores the previous state.
+:::
 
-If you forget to mark a non-transactional change unit as `transactional = false`, Flamingock will not invoke the rollback logic even if the operation fails.
+:::warning
+If a change unit is marked as transactional(`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock will assume the database's transaction rolled back successfully and will not call the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
 :::
 
 ---
