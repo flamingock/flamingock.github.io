@@ -131,6 +131,26 @@ Documentation will be added when this feature is released.
 
 ---
 
+## Edition-specific transaction behavior
+The examples and recommendations on this page apply to Flamingock generally, but each Community Edition (CE) driver has its own transactional capabilities and constraints.
+
+Refer to the relevant edition page for detailed behavior, including:
+- Whether transactions are supported
+- How they are initiated and managed
+- Known limitations (e.g., unsupported operations)
+
+**Supported transactional CE editions:**
+- [flamingock-ce-mongodb-sync](/broken_link_need_to_be_updated)
+- [flamingock-ce-mongodb-springdata](/broken_link_need_to_be_updated)
+- [flamingock-ce-dynamodb](/broken_link_need_to_be_updated)
+- [flamingock-ce-couchbase](/broken_link_need_to_be_updated)
+
+:::info
+Cloud Edition transactional support will be explained in its own section once released.
+:::
+
+---
+
 ## :white_check_mark: Best practices
 
 -  **Use `transactional = false` for changes that cannot run in a transaction**
