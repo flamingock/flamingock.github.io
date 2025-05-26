@@ -72,23 +72,34 @@ implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 ```
 </TabItem> </Tabs>
 
-
-### 2. Set up MongoDB with Flamingock builder
+### 2. Enable Flamingock runner
 
 At minimum, you must provide:
 - A MongoClient instance (as a **dependency**)
 - A mongodb.databaseName (as a **property**)
+- 
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
-FlamingockBuilder builder = Flamingock.builder()
+Runner runner  = Flamingock.builder()
           .addDependency(mongoClient)
           .setProperty("mongodb.databaseName", "flamingock-database")
           // other common configurations
+          .build()
           ;
 ```
 
 For production, we strongly recommend using the default MongoDB configuration values unless you fully understand the implications.
+
+### 3. Execute Flamingock
+Once the Flamingock runner is configured and built, you can trigger Flamingock’s execution:
+
+```java
+runner.execute();
+```
+
+
+
 
 ---
 
@@ -120,14 +131,14 @@ These must be set using `.setProperty(...)`
 | `mongodb.auditRepositoryName`   | `String`              | `"flamingockAuditLogs"`       |    No    | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
 | `mongodb.lockRepositoryName`    | `String`              | `"flamingockLock"`            |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
-
+:::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
-
+:::
 Overriding them is only appropriate in limited cases (e.g., testing or local development). If you choose to modify these settings, you assume full responsibility for maintaining the integrity and consistency of your system.
 
 ### Full configuration example
 
-The following example shows how to configure Flamingock with both required and optional properties. It demonstrates how to override defaults for collection names, index creation, and read/write behaviour. This level of configuration is useful when you need to customise Flamingock's behaviour to match the consistency and durability requirements of your deployment.
+The following example shows how to configure Flamingock with both required and optional properties. It demonstrates how to override  index creation, and read/write behaviour. This level of configuration is useful when you need to customise Flamingock's behaviour to match the consistency and durability requirements of your deployment.
 
 
 ```java
