@@ -145,16 +145,16 @@ In most cases, **Spring Boot will automatically configure `MongoTemplate`** base
 
 These can be set using `.setProperty(...)` with the builder or via the Spring Boot configuration file.
 
-| Property                        | Type                  | Default Value                 | Required | Description                                                                                     |
-|---------------------------------|-----------------------|-------------------------------|:--------:|-------------------------------------------------------------------------------------------------|
-| `mongodb.autoCreate`            | `boolean`             | `true`                        |    No    | Whether Flamingock should automatically create required collections and indexes.                |
-| `mongodb.readConcern`           | `String`              | `"MAJORITY"`                  |    No    | Controls the level of isolation for read operations.                                            |
-| `mongodb.writeConcern.w`        | `String or int`       | `"MAJORITY"`                  |    No    | Write acknowledgment. Specifies how many MongoDB nodes must confirm the write.                  |
-| `mongodb.writeConcern.journal`  | `boolean`             | `true`                        |    No    | Whether the write must be written to the on-disk journal before acknowledgment.                 |
-| `mongodb.writeConcern.wTimeout` | `Duration`            | `Duration.ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                     |
-| `mongodb.readPreference`        | `ReadPreferenceLevel` | `ReadPreferenceLevel.PRIMARY` |    No    | Specifies which MongoDB node to read from.                                                      |
-| `mongodb.auditRepositoryName`   | `String`              | `"flamingockAuditLogs"`       |    No    | Name of the collection used to store applied changes. Most users should keep the default value. |
-| `mongodb.lockRepositoryName`    | `String`              | `"flamingockLock"`            |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |
+| Property                         | Type                   | Default Value                  | Required | Description                                                                                     |
+|----------------------------------|------------------------|--------------------------------|:--------:|-------------------------------------------------------------------------------------------------|
+| `mongodb.autoCreate`             | `boolean`              | `true`                         |    No    | Whether Flamingock should automatically create required collections and indexes.                |
+| `mongodb.readConcern`            | `String`               | `"MAJORITY"`                   |    No    | Controls the level of isolation for read operations.                                            |
+| `mongodb. writeConcern.w`        | `String or int`        | `"MAJORITY"`                   |    No    | Write acknowledgment. Specifies how many MongoDB nodes must confirm the write.                  |
+| `mongodb. writeConcern.journal`  | `boolean`              | `true`                         |    No    | Whether the write must be written to the on-disk journal before acknowledgment.                 |
+| `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration. ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                     |
+| `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel. PRIMARY` |    No    | Specifies which MongoDB node to read from.                                                      |
+| `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection used to store applied changes. Most users should keep the default value. |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |
 
 :::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.

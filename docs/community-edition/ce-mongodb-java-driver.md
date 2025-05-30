@@ -119,17 +119,17 @@ These must be registered using `.addDependency(...)`
 
 These must be set using `.setProperty(...)`
 
-| Property                        | Type                  | Default Value                 | Required | Description                                                                                                           |
-|---------------------------------|-----------------------|-------------------------------|:--------:|-----------------------------------------------------------------------------------------------------------------------|
-| `mongodb.databaseName`          | `String`              | n/a                           |   Yes    | Name of the MongoDB database. This is required to store audit logs and acquire distributed locks.                     |
-| `mongodb.autoCreate`            | `boolean`             | `true`                        |    No    | Whether Flamingock should automatically create required collections and indexes.                                      |
-| `mongodb.readConcern`           | `String`              | `"MAJORITY"`                  |    No    | Controls the isolation level for read operations.                                                                     |
-| `mongodb.writeConcern.w`        | `String or int`       | `"MAJORITY"`                  |    No    | Write acknowledgment level. Specifies how many MongoDB nodes must confirm the write for it to succeed.                |
-| `mongodb.writeConcern.journal`  | `boolean`             | `true`                        |    No    | Whether the write must be committed to the journal before acknowledgment.                                             |
-| `mongodb.writeConcern.wTimeout` | `Duration`            | `Duration.ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                                           |
-| `mongodb.readPreference`        | `ReadPreferenceLevel` | `ReadPreferenceLevel.PRIMARY` |    No    | Defines which MongoDB node to read from.                                                                              |
-| `mongodb.auditRepositoryName`   | `String`              | `"flamingockAuditLogs"`       |    No    | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
-| `mongodb.lockRepositoryName`    | `String`              | `"flamingockLock"`            |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
+| Property                         | Type                   | Default Value                  | Required | Description                                                                                                           |
+|----------------------------------|------------------------|--------------------------------|:--------:|-----------------------------------------------------------------------------------------------------------------------|
+| `mongodb. databaseName`          | `String`               | n/a                            |   Yes    | Name of the MongoDB database. This is required to store audit logs and acquire distributed locks.                     |
+| `mongodb.autoCreate`             | `boolean`              | `true`                         |    No    | Whether Flamingock should automatically create required collections and indexes.                                      |
+| `mongodb.readConcern`            | `String`               | `"MAJORITY"`                   |    No    | Controls the isolation level for read operations.                                                                     |
+| `mongodb. writeConcern.w`        | `String or int`        | `"MAJORITY"`                   |    No    | Write acknowledgment level. Specifies how many MongoDB nodes must confirm the write for it to succeed.                |
+| `mongodb. writeConcern.journal`  | `boolean`              | `true`                         |    No    | Whether the write must be committed to the journal before acknowledgment.                                             |
+| `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration .ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                                           |
+| `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel .PRIMARY` |    No    | Defines which MongoDB node to read from.                                                                              |
+| `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
