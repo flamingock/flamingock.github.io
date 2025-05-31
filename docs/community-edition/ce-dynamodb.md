@@ -114,13 +114,13 @@ These must be registered using `.addDependency(...)`
 
 These must be set using `.setProperty(...)`
 
-| Property              | Type      | Required | Default Value         | Description                                                                  |
-|-----------------------|-----------|:--------:|-----------------------|------------------------------------------------------------------------------|
-| `readCapacityUnits`   | `Long`    |    No    | `5L`                  | Read capacity units (for **PROVISIONED** billing mode only).                 |
-| `writeCapacityUnits`  | `Long`    |    No    | `5L`                  | Write capacity units (for **PROVISIONED** billing mode only).                |
-| `autoCreate`          | `Boolean` |    No    | `true`                | Automatically creates the required tables if they do not exist.              |
-| `auditRepositoryName` | `String`  |    No    | `flamingockAuditLogs` | Table used to store audit records. Most users should keep the default name.  |
-| `lockRepositoryName`  | `String`  |    No    | `flamingockLock`      | Table used for distributed locking. Most users should keep the default name. |
+| Property                        | Type      | Required | Default Value         | Description                                                                  |
+|---------------------------------|-----------|:--------:|-----------------------|------------------------------------------------------------------------------|
+| `dynamodb. readCapacityUnits`   | `Long`    |    No    | `5L`                  | Read capacity units (for **PROVISIONED** billing mode only).                 |
+| `dynamodb. writeCapacityUnits`  | `Long`    |    No    | `5L`                  | Write capacity units (for **PROVISIONED** billing mode only).                |
+| `dynamodb.autoCreate`           | `Boolean` |    No    | `true`                | Automatically creates the required tables if they do not exist.              |
+| `dynamodb. auditRepositoryName` | `String`  |    No    | `flamingockAuditLogs` | Table used to store audit records. Most users should keep the default name.  |
+| `dynamodb. lockRepositoryName`  | `String`  |    No    | `flamingockLock`      | Table used for distributed locking. Most users should keep the default name. |
 
 :::warning
 In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
