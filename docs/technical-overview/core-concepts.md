@@ -58,6 +58,12 @@ Flamingock includes built-in **auditing** for full traceability of executed chan
 - Useful for compliance, debugging, and visibility
 - Can be extended to external observability platforms (e.g., ELK, Prometheus, Datadog)
 
+### 🗄️ Audit Store vs. Target System
+
+- **Audit Store**: The dedicated location where Flamingock records metadata about change executions. Its sole purpose is to track which ChangeUnits ran, when, and with what outcome—ensuring idempotency, rollbacks, and distributed coordination. This might be a user-provided database (Community Edition) or Flamingock’s cloud backend (Cloud Edition).
+
+- **Target System**: The external resource that ChangeUnits operate upon (e.g., a database schema, S3 bucket, Kafka topic, or configuration service). Flamingock’s ChangeUnits apply changes to these systems in an ordered, auditable fashion. When a database serves as both target and audit store, Flamingock can wrap change and audit insert in one transaction; otherwise, auditing and execution occur separately.
+
 ---
 
 Stay tuned for deeper dives into each of these areas, including advanced usage, customization, and integration guides.
