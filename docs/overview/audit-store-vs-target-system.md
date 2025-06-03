@@ -26,7 +26,7 @@ The audit store is the dedicated persistence layer where Flamingock records meta
 Depending on your setup, the audit store may be:
 
 - A user-provided database (for Community Edition). For example, if you run CE with MongoDB, Flamingock writes audit records into a MongoDB collection.
-- Flamingock’s own cloud backend (for Cloud Edition). In that case, the audit store is a managed, multi-tenant service that you never host yourself.
+- Flamingock’s own cloud backend (for Cloud Edition). In that case, the audit store is a managed that you never host yourself.
 
 In summary, the audit store exists solely to record what happened—and to ensure consistency and idempotency across deployments.
 
@@ -45,51 +45,67 @@ The key point is that the target system is where changes must actually be applie
 
 ## Why the Distinction Matters
 
+## Why the Distinction Matters
+
 Because Flamingock originated from Mongock (which treated the database both as audit store and change target), it’s common to conflate these two roles. In practice:
 
+- **In Cloud Edition with distributed transaction protocol (for a transactionally-capable target like an RDBMS)**:
+  - Flamingock writes a small “intent” or “flag” record in your own database before it writes the audit entry to the cloud store.
+  - After successfully committing your database change, Flamingock finalizes the audit record in the cloud. If anything fails at any step, Flamingock can roll everything back or clean up partial intent entries. This protocol ensures that, even though the audit store lives in the cloud, your RDBMS change and the audit record remain effectively atomic from Flamingock’s perspective.
+
 - **When a relational or NoSQL database serves as both audit store and change target** (for example, CE running on MongoDB):
-    - Flamingock writes an audit-entry document into the same database where your data resides.
-    - For DML or DDL change units that modify that same database, Flamingock can wrap both the change and the audit insert in a single transaction—ensuring “all-or-nothing” consistency.
+  - Flamingock writes an audit-entry document into the same database where your data resides.
+  - For DML or DDL change units that modify that same database, Flamingock can wrap both the change and the audit insert in a single transaction—ensuring “all-or-nothing” consistency.
 
 - **When the change target is a different system** (for example, creating S3 buckets or updating Kafka topics):
-    - The audit store remains your chosen audit database or Flamingock’s cloud backend.
-    - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
-    - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
-
-- **In Cloud Edition with distributed transaction protocol (for a transactionally-capable target like an RDBMS)**:
-    - Flamingock writes a small “intent” or “flag” record in your own database before it writes the audit entry to the cloud store.
-    - After successfully committing your database change, Flamingock finalizes the audit record in the cloud. If anything fails at any step, Flamingock can roll everything back or clean up partial intent entries. This protocol ensures that, even though the audit store lives in the cloud, your RDBMS change and the audit record remain effectively atomic from Flamingock’s perspective.
+  - The audit store remains your chosen audit database or Flamingock’s cloud backend.
+  - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
+  - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
 
 ### Illustration
 
-Consider an application with these two change units:
+#### Transactional target with Cloud as audit store (Cloud Edition)
 
-- **_0001_CreateUserTableChange**
-    - **Targets:** Relational database (PostgreSQL)
-    - **Audit store:** Same PostgreSQL instance (CE) or Flamingock Cloud (Cloud Edition)
-    - **Transactional behavior (CE):** Wrapped in a single DB transaction—so both the table creation and the audit insert happen or fail together.
-    - **Transactional behavior (Cloud):** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store, achieving the same effect as a traditional transaction.
+  📄 **_0001_CreateUserTableChange**
+    - **Targets:** Transactional database (e.g., PostgreSQL)
+    - **Audit store:** Flamingock Cloud (Cloud Edition)
+    - **Transactional behavior:** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store, achieving the same effect as a traditional transaction.
 
-- **_0002_ConfigureS3BucketChange**
+#### Target and audit store are the same transactional database
+
+  📄 **_0002_CreateUserTableChange**
+    - **Targets:** Transactional database (e.g., MongoDB)
+    - **Audit store:** Same MongoDB instance (Community Edition)
+    - **Transactional behavior:** Wrapped in a single DB transaction—so both the schema change (or data change) and the audit insert happen or fail together.
+
+#### Non-transactional target with Cloud as audit store
+
+  📄 **_0003_ConfigureS3BucketChange**
     - **Targets:** Amazon S3 (creating a bucket)
-    - **Audit store:** MongoDB (CE) or Flamingock Cloud
-    - **Transactional behavior:** `@ChangeUnit(transactional = false)`
-        - Flamingock calls S3’s `createBucket`.
-        - If that succeeds, Flamingock writes an audit entry to your MongoDB audit collection (or to the cloud audit store).
-        - If the S3 call fails, Flamingock invokes your `@RollbackExecution` (deleting the bucket or cleaning up) and does not record an audit entry.
+    - **Audit store:** Flamingock Cloud (Cloud Edition)
+    - **Transactional behavior:**
+      1. Flamingock calls S3’s `createBucket`.
+      2. If that succeeds, Flamingock writes an audit entry to the **cloud** audit store.
+      3. If the S3 call fails, Flamingock invokes your `@RollbackExecution` (deleting or cleaning up) and then writes an audit entry marking the change as “rolled back.”
 
-In this example, the PostgreSQL instance is both a change target (for the first change) and an audit store (for CE). Meanwhile, S3 is only a change target—and must be paired with the audit store in a separate system.
+:::note
+All change units within a single application must use the same audit store. You cannot mix multiple audit backends in the same application.
+:::
+
 
 ## Key Takeaways
 
 - **Audit Store**
-    - Record of “what ran when and by whom”
+    - Record of “what ran when and by whom”
     - Used to prevent duplicates, drive rollbacks, and coordinate distributed execution
-    - Hosted in your chosen database (CE) or Flamingock’s cloud backend (Cloud Edition)
+    - Hosted in Flamingock’s cloud backend (Cloud Edition) or your chosen database (CE) 
 
 - **Target System**
-    - The actual resource being modified (database tables, S3 buckets, Kafka topics, config services, and so on)
+    - The actual resource being modified (S3 buckets, Kafka topics, database tables, config services, and so on)
     - Change units call external APIs or drivers against this system
-    - May or may not support transactions; if it does, Flamingock can co-ordinate with the audit store (via CE’s DB transaction or Cloud’s distributed protocol)
+    - May or may not support transactions; if it does, Flamingock can co-ordinate with the audit store (via Cloud’s distributed protocol or CE’s DB transaction)
 
+
+:::tip
 Distinguishing these two roles makes it clear that Flamingock’s core value lies in coordinating audit and execution—across arbitrary target systems—rather than assuming both duties are performed by the same database. This clarity ensures you can design your change units and architecture with the proper expectations around consistency, rollback, and idempotency.
+:::

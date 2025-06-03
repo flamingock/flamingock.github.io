@@ -19,4 +19,4 @@ With Flamingock, developers define any component changes (database, system chang
 
 *Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
 
-👉 **Dive deeper:** | [How it works?](../how-it-works.md)  | [Technical Overview](../technical-overview/technical-overview.md) | [Quickstart Guide](../get-started.md)  
+👉 **Dive deeper:** | [How it works?](../how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../get-started.md)  
