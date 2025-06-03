@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 10
 ---
 
 **Flamingock** (*formerly Mongock*) – enables you to seamlessly track, manage and audit Configuration and Data changes of any components or systems with your Application. 
