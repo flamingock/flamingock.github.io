@@ -1,5 +1,5 @@
 ---
-title: Audit Store vs. Target System
+title: Audit store vs. target system
 sidebar_position: 15
 ---
 
@@ -42,8 +42,6 @@ A target system is any external resource or service upon which a change unit’s
 - Even another microservice’s REST API
 
 The key point is that the target system is where changes must actually be applied—and those changes must occur exactly once (or be rolled back) to keep your application and its ecosystem in sync. Flamingock orchestrates these operations in a deterministic, ordered fashion, but the target system itself is whatever resource or service your change unit code touches.
-
-## Why the Distinction Matters
 
 ## Why the Distinction Matters
 
