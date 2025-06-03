@@ -38,6 +38,11 @@ const config = {
     locales: ['en'],
   },
 
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   presets: [
     [
       'classic',
@@ -104,7 +109,6 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          /*{ to: '/nueva-pagina', label: 'Test', position: 'left' },*/
           { type: 'search', position: 'right' },
           {
             href: 'https://github.com/mongock',
@@ -124,10 +128,6 @@ const config = {
           {
             title: 'Docs',
             items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
             ],
           },
           {
@@ -166,6 +166,7 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        additionalLanguages: ['java', 'kotlin', 'yaml', 'sql', 'groovy', 'json']
       },
     }),
 };
