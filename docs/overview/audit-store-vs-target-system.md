@@ -34,11 +34,11 @@ In summary, the audit store exists solely to record what happened—and to ensur
 
 A target system is any external resource or service upon which a change unit’s logic operates. When you write a change unit, you define `@Execution` and `@RollbackExecution` methods that perform actions against a target system—such as:
 
-- A database schema (e.g., creating a new column in your relational database)
-- A NoSQL data store (e.g., creating a new collection or index in MongoDB)
 - A cloud service (e.g., creating an S3 bucket or configuring a CloudFormation stack)
 - A messaging backbone (e.g., creating a new Kafka topic, configuring permissions, or updating an existing schema)
 - A configuration service (e.g., updating a feature-flag in Consul or Vault)
+- A database schema (e.g., creating a new column in your relational database)
+- A NoSQL data store (e.g., creating a new collection or index in MongoDB)
 - Even another microservice’s REST API
 
 The key point is that the target system is where changes must actually be applied—and those changes must occur exactly once (or be rolled back) to keep your application and its ecosystem in sync. Flamingock orchestrates these operations in a deterministic, ordered fashion, but the target system itself is whatever resource or service your change unit code touches.
@@ -54,7 +54,7 @@ Because Flamingock originated from Mongock (which treated the database both as a
 - **When the change target is a different system** (for example, creating S3 buckets or updating Kafka topics):
     - The audit store remains your chosen audit database or Flamingock’s cloud backend.
     - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
-    - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution` (when you set `transactional = false`). The audit store entry is only written once you confirm the change succeeded.
+    - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
 
 - **In Cloud Edition with distributed transaction protocol (for a transactionally-capable target like an RDBMS)**:
     - Flamingock writes a small “intent” or “flag” record in your own database before it writes the audit entry to the cloud store.
@@ -68,7 +68,7 @@ Consider an application with these two change units:
     - **Targets:** Relational database (PostgreSQL)
     - **Audit store:** Same PostgreSQL instance (CE) or Flamingock Cloud (Cloud Edition)
     - **Transactional behavior (CE):** Wrapped in a single DB transaction—so both the table creation and the audit insert happen or fail together.
-    - **Transactional behavior (Cloud):** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store.
+    - **Transactional behavior (Cloud):** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store, achieving the same effect as a traditional transaction.
 
 - **_0002_ConfigureS3BucketChange**
     - **Targets:** Amazon S3 (creating a bucket)
