@@ -34,7 +34,7 @@ Every change — whether it’s a database migration, a feature flag update, or 
 
 ## 2. Organize changes into Workflows
 
-ChangeUnits are grouped into stages and structured into a [**Workflow**](../docs/technical-overview/core-concepts.md?#🔄Workflows) pipeline to represent a coordinated sequence of changes.
+ChangeUnits are grouped into stages and structured into a [**Workflow**](overview/core-concepts.md?#🔄Workflows) pipeline to represent a coordinated sequence of changes.
 
 - Workflows allow you to define how changes should be applied: sequentially or (in future releases) in parallel or conditionally.
 - This logical grouping simplifies the orchestration and order of changes across systems / services / components.

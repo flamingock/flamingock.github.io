@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 30
 ---
 
 With Flamingock, you can take advantage of the following features:
@@ -12,9 +12,9 @@ With Flamingock, you can take advantage of the following features:
   :::
 - 🔗 **Extended integrations and custom use case support**: Flamingock enables one-time or repeatable operational processes — such as fetching external data, initializing third-party services, or executing custom logic — ensuring they run safely, just once, and in the right context. It expands on Mongock's support to manage Database changes to all systems, databases, technologies and configurations  (ie. Kafka, Twilio, Auth0, etc) or any user-defined scenario.
 
-- 🚀 **Seamless deployment**: Deploy your application and systems together, ensuring version compatibility and reducing deployment friction.
-  
 - 🧩 **Flexible migration Templates**: New mechanisms for defining changes, offering a no-code option to streamline and simplify change management.
+
+- 🚀 **Seamless deployment**: Deploy your application and systems together, ensuring version compatibility and reducing deployment friction.
 
 - ⚡ **GraalVM support**: Enables the compilation of Java applications into native executables for improved performance.
 
