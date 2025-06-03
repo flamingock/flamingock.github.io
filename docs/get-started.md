@@ -73,9 +73,8 @@ Flamingock uses an annotation processor to scan and collect metadata from your c
 
 This is required at **build time** and supports:
 
-- `@Change` (Flamingock-native, recommended)
-- `@ChangeUnit` (legacy support for Mongock users)
-- Template-based (declarative YAML)
+- **Code-based** with`@ChangeUnit` (Flamingock-native, recommended)
+- **Template-based** (declarative YAML)
 
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
@@ -109,31 +108,30 @@ This is required at **build time** and supports:
 
 ---
 
-## 3. Define a Change
+## 3. Define a ChangeUnit
 
-A **Change** is a unit of logic that Flamingock will execute during your application's startup.
+A **ChangeUnit** is a unit of logic that Flamingock will execute during your application's startup.
 
 Changes can be defined in a **code-based** or **template-based** style, depending on your preferred approach.
-For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → Changes](/docs/concepts#changes) section.
+For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → ChangeUnits](./overview/core-concepts.md#-changeunits) section.
 
  
 <Tabs groupId="change">
     <TabItem value="code_based" label="Code Based" default>
-        ```java
-        @Change(id = "create-table", order = "1", author = "antonio", transactional = false)
-        public class CreateTableChange {
-        
-            @Execution
-            public void execute(Connection connection) throws SQLException {
-                connection.createStatement().executeUpdate("CREATE TABLE clients (id INT, name VARCHAR(255))");
-            }
-            
-            @RollbackExecution
-            public void rollback(Connection connection) throws SQLException {
-                connection.createStatement().executeUpdate("DROP TABLE clients");
-            }
-        }
-        ```
+```java
+@Change(id = "create-table", order = "1", author = "antonio", transactional = false)
+public class CreateTableChange {
+    @Execution
+    public void execute(Connection connection) throws SQLException {
+        connection.createStatement().executeUpdate("CREATE TABLE clients (id INT, name VARCHAR(255))");
+    }
+
+    @RollbackExecution
+    public void rollback(Connection connection) throws SQLException {
+        connection.createStatement().executeUpdate("DROP TABLE clients");
+    }
+}
+```
     </TabItem>
     <TabItem value="template_based" label="Template Based">
         ```yaml
