@@ -95,7 +95,7 @@ public class _0005_EnableAutoSaveFeature {
 <Tabs groupId="config">
 <TabItem value="code-base" label="Code" default>
 ```java
-@ChangeUnit(id = "0001_provision-bucket", order = "0001", author = "team-a", transactional = false)
+@ChangeUnit(id = "provision-bucket", order = "0001", author = "team-a", transactional = false)
 public class _0001_ProvisionBucketChange {
 
     @Execution
@@ -113,7 +113,7 @@ public class _0001_ProvisionBucketChange {
     }
 }
 
-@ChangeUnit(id = "0002_create-kafka-topics", order = "0002", author = "devops", transactional = false)
+@ChangeUnit(id = "create-kafka-topics", order = "0002", author = "devops", transactional = false)
 public class _0002_CreateKafkaTopicsChange {
 
     @Execution
@@ -129,7 +129,7 @@ public class _0002_CreateKafkaTopicsChange {
     }
 }
 
-@ChangeUnit(id = "0003_setup-iam-roles", order = "0003", author = "devops", transactional = false)
+@ChangeUnit(id = "setup-iam-roles", order = "0003", author = "devops", transactional = false)
 public class _0003_SetupIamRolesChange {
 
     @Execution
@@ -148,7 +148,7 @@ public class _0003_SetupIamRolesChange {
     }
 }
 
-@ChangeUnit(id = "0004_seed-database", order = "0004", author = "devops", transactional = true)
+@ChangeUnit(id = "seed-database", order = "0004", author = "devops", transactional = true)
 public class _0004_SeedTenantDataChange {
 
     @Execution
@@ -175,7 +175,7 @@ public class _0004_SeedTenantDataChange {
     }
 }
 
-@ChangeUnit(id = "0005_update-bucket-settings", order = "0005", author = "team-a", transactional = false)
+@ChangeUnit(id = "update-bucket-settings", order = "0005", author = "team-a", transactional = false)
 public class _0005_UpdateBucketSettingsChange {
 
     @Execution
@@ -207,8 +207,8 @@ public class _0005_UpdateBucketSettingsChange {
 
 ```yaml
 
-# File: 0001_provision-bucket.yaml
-id: "0001_provision-bucket"
+# File: _0001_provision-bucket.yaml
+id: "provision-bucket"
 order: 0001
 author: "team-a"
 transactional: false
@@ -220,8 +220,8 @@ templateConfiguration:
 
 ---
 
-# File: 0002_create-kafka-topics.yaml
-id: "0002_create-kafka-topics"
+# File: _0002_create-kafka-topics.yaml
+id: "create-kafka-topics"
 order: 0002
 author: "devops"
 transactional: false
@@ -243,8 +243,8 @@ templateConfiguration:
 
 ---
 
-# File: 0003_setup-iam-roles.yaml
-id: "0003_setup-iam-roles"
+# File: _0003_setup-iam-roles.yaml
+id: "setup-iam-roles"
 order: 0003
 author: "devops"
 transactional: false
@@ -266,8 +266,8 @@ templateConfiguration:
 
 ---
 
-# File: 0004_seed-database.yaml
-id: "0004_seed-database"
+# File: _0004_seed-database.yaml
+id: "seed-database"
 order: 0004
 author: "devops"
 transactional: true
@@ -281,8 +281,8 @@ templateConfiguration:
 
 ---
 
-# File: 0005_update-bucket-settings.yaml
-id: "0005_update-bucket-settings"
+# File: _0005_update-bucket-settings.yaml
+id: "update-bucket-settings"
 order: 0005
 author: "team-a"
 transactional: false
