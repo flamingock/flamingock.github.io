@@ -37,7 +37,7 @@ In Flamingock, a **ChangeUnit** represents a single unit of work that needs to b
 
 When using Template-Based changes, instead of implementing a Code-Based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 
-Create a **YAML file** (e.g., `_0001__create_persons_table.yaml`) inside your application’s resources directory:
+Create a **YAML file** (e.g., `_0001_create_persons_table.yaml`) inside your application’s resources directory:
 
 ```yaml
 id: create-persons-table-from-template
