@@ -12,7 +12,7 @@ A **ChangeUnit** is the atomic, versioned unit of change in Flamingock. It encap
   Each ChangeUnit includes:
   - A unique `id` (unique across the entire application)
   - An `order` determining execution sequence
-  - An `author` and optional `description`
+  - An optional `author` and `description`
   - An `@Execution` method (or template) with the change logic
   - A `@RollbackExecution` method (or template) with compensating logic
   - A `transactional` flag (default `true`) indicating if Flamingock will attempt to wrap execution and audit in a single transaction
@@ -51,7 +51,7 @@ Code-based ChangeUnits are written in Java (or Kotlin/Groovy) with annotations:
 
 ```java
 @ChangeUnit(
-        id = "0001_create_s3_bucket", 
+        id = "create_s3_bucket", 
         order = "0001", 
         author = "dev-team", 
         transactional = false,
@@ -80,7 +80,7 @@ Template-based ChangeUnits use YAML or JSON definitions. Example (SQL DDL):
 
 ```yaml
 # /src/main/resources/_0003_add_status_column.yml
-id: _0003_add_status_column
+id: add_status_column
 order: 0003
 author: "db-team"
 description: "Add 'status' column to 'orders' table"
@@ -122,7 +122,7 @@ templateConfiguration:
 
 ### Transactional behavior
 - **Transactional changes (default)**: When the target system and audit store share a transactional context (e.g., MongoDB CE), Flamingock wraps both in a single transaction.
-- **Non-transactional changes**: `transactional = false`. Flamingock executes `@Execution` and, upon success, writes to the audit store. If `@Execution` throws, Flamingock invokes `@RollbackExecution`. See [transactions page](../transactions.md)
+- **Non-transactional changes**: `transactional = false`. Flamingock executes `@Execution` and, upon success, writes to the audit store. If `@Execution` fails, Flamingock invokes `@RollbackExecution`. See [transactions page](../transactions.md)
     
 
 ### Immutability
@@ -131,7 +131,7 @@ templateConfiguration:
 
 ### Audit store constraints
 - **Single audit store per application**: All ChangeUnits in one application write to the same audit store.
-- **Audit store integrity**: Do not manually modify audit records in CE; this can corrupt Flamingock’s state. Use CLI/UI for supported modifications.
+- **Audit store integrity**: Do not manually modify audit records in the audit store; this can corrupt Flamingock’s state. Use CLI/UI for supported modifications.
 
 ### Idempotency
 - ChangeUnits should be idempotent or safe to re-run. Flamingock retries failed ChangeUnits on next startup. If a non-transactional ChangeUnit partially succeeded, ensure it can handle multiple executions or include appropriate guards.
@@ -150,7 +150,7 @@ templateConfiguration:
 - **Template-based changeUnits for simplicity and immutability**  
   Favor templated ChangeUnits (YAML/JSON) for routine, repeatable tasks—such as SQL DDL, configuration toggles, or small API calls. Templates are inherently immutable (being a static file), making it easier to adhere to versioning best practices.
 
-- **Use Flamingock’s batching feature for long-running operations**  
+- **Use Flamingock’s batching feature for long-running operations**(coming soon)  
   For ChangeUnits that process large workloads (e.g., migrating millions of rows), leverage Flamingock’s built-in batching mechanism. Define a single ChangeUnit that iterates through data in batches; Flamingock will mark it as complete only when all batches succeed, and will resume from the last processed batch on retry.
 
 - **Inject minimal dependencies**  
@@ -158,9 +158,6 @@ templateConfiguration:
 
 - **Write clear descriptions**  
   Use the `description` property to explain the purpose and impact of each ChangeUnit.
-
-- **Use template-based for simple tasks**  
-  For routine tasks (SQL DDL, config toggles, small API calls), templates ensure immutability and readability.
 
 - **Implement idempotency**  
   For non-transactional operations (e.g., deleting an S3 bucket), wrap calls in checks (e.g., “if exists”) to handle re-runs gracefully.
@@ -172,7 +169,7 @@ templateConfiguration:
   Declare a clear, numeric `order` for each ChangeUnit. Relying on implicit or alphabetical ordering can introduce hidden dependencies and make debugging deployment issues difficult.
 
 - **Audit store hygiene**  
-  Never manually edit or delete records in your CE audit store (e.g., the MongoDB or DynamoDB tables Flamingock uses). Direct modifications can corrupt Flamingock’s internal state and lead to unpredictable behavior or data loss. If you need to correct audit data, use Flamingock’s supported operations (CLI or UI) or follow documented recovery procedures.
-- 
+  Never manually edit or delete records in the audit store. Direct modifications can corrupt Flamingock’s internal state and lead to unpredictable behavior or data loss. If you need to correct audit data, use Flamingock’s supported operations (CLI or UI) or follow documented recovery procedures.
+
 - **Documentation and metadata**  
   Use the `author` and `description` (if available) fields to document the intent of each ChangeUnit. This metadata helps teams understand why a change was made and by whom—critical for code reviews and compliance audits.

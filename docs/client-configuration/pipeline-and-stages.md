@@ -136,8 +136,8 @@ src/
         yourapp/
           flamingock/
             users/
-              _001_CREATE_USERS_TABLE.java
-              _002_ADD_INDEX.yaml
+              _0001_CREATE_USERS_TABLE.java
+              _0002_ADD_INDEX.yaml
 ```
 
 ---
@@ -170,11 +170,11 @@ We strongly recommend placing all your changes — code-based and template-based
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
 
 ```
-_001_CREATE_CLIENTS_TABLE.java
-_002_ADD_INDEX_TO_EMAIL.yaml
+_0001_CREATE_CLIENTS_TABLE.java
+_0002_ADD_INDEX_TO_EMAIL.yaml
 ```
 
-- `XXX`: The execution order of the change
+- `XXXX`: The execution order of the change
 - `CHANGE_NAME`: Descriptive name of what the change does
 
 This convention:

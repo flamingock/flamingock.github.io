@@ -54,7 +54,7 @@ Flamingock’s CaC approach solves these problems by treating every external-sys
 Imagine you need to toggle a feature flag in a downstream service (not a database). In Flamingock, you’d write:
 
 ```java
-@Change(id = "0005_enable-autosave", order = "0005", author = "ops-team")
+@Change(id = "enable-autosave", order = "0005", author = "ops-team")
 public class _0005_EnableAutoSaveFeature {
 
   @Execution
