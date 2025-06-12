@@ -1,5 +1,5 @@
 ---
-sidebar_position: 40
+sidebar_position: 60
 ---
 
 Flamingock offers a range of backend providers and deployment models, allowing users to choose from the following: 

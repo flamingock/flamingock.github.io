@@ -1,6 +1,6 @@
 ---
 title: GraalVM
-sidebar_position: 6
+sidebar_position: 80
 ---
 
 import Tabs from '@theme/Tabs';
@@ -76,7 +76,7 @@ pluginManagement {
 
 ---
 
-## 3. Add GraalVM resource config
+### 3. Add GraalVM resource config
 
 Create a file named `resource-config.json` in your project root:
 
@@ -99,7 +99,7 @@ See the [GraalVM resource configuration documentation](https://www.graalvm.org/l
 
 ---
 
-## 4. Build the application
+### 4. Build the application
 
 ```bash
 ./gradlew clean build
@@ -149,7 +149,7 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 
 ---
 
-## 5. Create the native image
+### 5. Create the native image
 
 ```bash
 native-image \
@@ -223,7 +223,7 @@ For more information on image creation and options, refer to the [GraalVM build 
 
 ---
 
-## 6. Run the native image
+### 6. Run the native image
 
 ```bash
 ./your-app
@@ -233,10 +233,11 @@ For more information on image creation and options, refer to the [GraalVM build 
 
 ## Example project
 
-Try it out using our working example:
+We have built a [complete example project for GraalVM](https://github.com/mongock/flamingock-examples/tree/master/graalvm) that demonstrates:
+- A working Flamingock configuration with GraalVM
+- Sample change units
+- Proper resource configuration
+- Native image generation process
 
-**→ [GraalVM example on GitHub](https://github.com/mongock/flamingock-examples/tree/master/graalvm)**
-
-
----
+You can use this example as a reference implementation while following the steps in this guide.
 
