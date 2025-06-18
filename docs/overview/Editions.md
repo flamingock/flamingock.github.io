@@ -1,4 +1,5 @@
 ---
+title: Flamingock editions
 sidebar_position: 60
 ---
 

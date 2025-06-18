@@ -1,4 +1,5 @@
 ---
+title: Introduction
 sidebar_position: 10
 ---
 
@@ -46,3 +47,22 @@ Our tool offers managing configuration changes to any system/component in a safe
 We are not an Infrastructure provider (neither intend to be). We believe that there are multiple good widely adopted solutions within the infrastrucuture space. 
 
 We provide Application developers the ability to configure Application domain-specific resources within those infrastructure components. This enables following a Domain-driven ownership for Application developers, provisioning them with self-serve capabilities and autonomy for configuring their resources within the boundaries of an existing infrastructure.
+
+# How Flamingock works?
+
+**⚙️ Code It. Deploy It. Forget It.**  
+
+With Flamingock, developers define any component changes (database, system changes, SaaS, etc. )  **directly in application code** using familiar programming constructs such as classes and annotations, or template-based formats like YAML. The Flamingock client library then:  
+
+✅ **Automatically executes** changes during application startup  
+✅ **Generates audit trails** for full transparency and compliance  
+✅ **Keeps changes version-locked** to your application releases  
+
+**Benefits:**  
+🔹 **No more out-of-band scripts** - Changes travel with your app code  
+🔹 **Cluster-safe execution** - Designed for distributed systems from the ground up  
+🔹 **Native version control** - Every change is code-reviewed alongside feature development  
+
+*Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
+
+👉 **Dive deeper:** | [How it works?](../how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../get-started.md)  

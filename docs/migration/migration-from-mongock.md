@@ -1,5 +1,5 @@
 ---
-sidebar_position: 999
+sidebar_position: 1
 ---
 # Migration: From Mongock to Flamingock
 

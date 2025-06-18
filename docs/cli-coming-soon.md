@@ -1,6 +1,6 @@
 ---
 title: CLI (Coming Soon)
-sidebar_position: 110
+sidebar_position: 999
 ---
 
 # CLI (Coming Soon)

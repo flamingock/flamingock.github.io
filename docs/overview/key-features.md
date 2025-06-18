@@ -1,4 +1,5 @@
 ---
+title: Key features
 sidebar_position: 50
 ---
 

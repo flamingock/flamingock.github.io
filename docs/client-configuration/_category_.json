@@ -1,7 +1,7 @@
 {
-  "label": "Client Configuration",
+  "label": "Flamingock client library configuration",
   "position": 40,
   "link": {
-    "description": "Flamingock Templates."
+    "description": "Flamingock client configuration."
   }
 }

@@ -1,12 +1,12 @@
 ---
-title: Extra configuration
+title: Additional configurations
 sidebar_position: 6
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-#  Extra Configuration
+#  Additional Configuration
 
 This section includes additional settings for customizing defaults and adding contextual information to your Flamingock setup. 
 

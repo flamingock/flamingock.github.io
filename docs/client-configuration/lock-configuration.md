@@ -1,5 +1,5 @@
 ---
-title: Lock
+title: Distributed lock
 sidebar_position: 5
 ---
 
