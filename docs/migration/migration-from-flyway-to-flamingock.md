@@ -2,4 +2,4 @@
 sidebar_position: 2
 ---
 
-# Migration: From Flyway to Flamingock (To-Do)
+# Migrating from Flyway to Flamingock (To-Do)

@@ -4,13 +4,15 @@ sidebar_position: 90
 
 # Flamingock Technical Overview
 
-Welcome to the **Technical Overview** of Flamingock. Built as a cloud-native system change management and changes audit framework, Flamingock extends the robust foundations of Mongock beyond NoSQL databases to a broader set of systems and services.
+Welcome to the **Technical Overview** of Flamingock — a flexible framework designed to help you manage and audit changes of any kind across your systems and services.
 
-This document defines Flamingock's core concepts and provides a high-level architecture overview to help you get up and running with confidence.
+Building on the foundations of Mongock, Flamingock goes beyond traditional database migrations to support a wide range of change types, including data updates, configuration adjustments, API evolutions, and system integrations — all with a consistent, traceable, and repeatable approach.
+
+This document introduces Flamingock’s core concepts and outlines its architecture to help you understand how it simplifies the orchestration of system changes.
 
 ---
 
-## 🏗️ Architectural Overview
+## Architectural Overview
 
 In a nutshell, the Flamingock process takes all the pending changes and executes them in order during your Application startup process.
 
@@ -27,7 +29,7 @@ Flamingock is designed to either apply all defined changes successfully or fail 
 
 ![Flamingock Architecture Diagram](../../static/img/Flamingock%20Arch%20HLD.png)
 
-### 🔍 A more detailed process steps
+### A more detailed process steps
 Flamingock process follows the next steps:
 
 1. The runner/builder loads the pipeline of execution of changes.
@@ -40,6 +42,3 @@ Flamingock process follows the next steps:
 - If the ChangeUnit fails, the runner rolls back the change. If the driver supports transactions and transactions are enabled, the rollback is done natively. When the driver does not support transactions or transactions are disabled, the method @RollbackExecution is executed. In both cases the ChangeUnit failed, whereas in the latter option, and entry is added in the changelog that a change has been rolled back.
 - If the runner acomplished to execute the entire migration with no failures, it's considered successful. It releases the lock and finishes the migration.
 On the other hand, if any ChangeUnit fails, the runner stops the migration at that point and throws an exception. When Flamingock is executed again, it will continue from the failure ChangeUnit(included).
-
---- 
-Stay tuned for deeper dives into each of these areas, including advanced usage, customization, and integration guides.

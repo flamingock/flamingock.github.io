@@ -1,3 +1,7 @@
+---
+sidebar_position: 10
+title: Template mapping
+---
 
 ### :small_blue_diamond: How Execution and Rollback Mapping Works
 

@@ -3,11 +3,28 @@ title: Introduction
 sidebar_position: 10
 ---
 
-**Flamingock** (*formerly Mongock*) – enables you to seamlessly track, manage and audit Configuration and Data changes of any components or systems with your Application. 
+# Introducing Flamingock
+*The evolution of Mongock — reimagined for the modern enterprise*
 
-It is a powerful tool that manages the evolution of changes with a Change-as-Code (CaC) approach.
+![Flamingock logo](../../static/img/Flamingock-04.png)
 
-Ready to streamline your system’s evolution? [Get started](../get-started.md) to see Flamingock in action! 
+Managing change across today’s distributed systems is complex — from database migrations to API evolution and SaaS configuration updates.
+
+**Flamingock** provides a unified, auditable, and version-controlled approach to managing these changes with confidence.
+
+Built on the principles of **Change-as-Code**, Flamingock enables your teams to:
+
+- Version and document system changes  
+- Maintain compliance with full traceability  
+- Accelerate deployments with safe, coordinated rollouts
+
+Flamingock ensures your systems changes evolve reliably — at scale.
+
+**Ready to modernize your change management?**  
+[Get started](../get-started.md) and see how Flamingock can power your release lifecycle.
+
+
+![Flamingock gif](../../static/img/Flamingock%20process%20animation%20(1).gif)
 
 ## Why Flamingock?
 Our objective is to reduce software release overhead by providing a tool that can be enable tracking configuration changes  programatically (change-as-code), with the language of choice of the Application developer.  This reduces the dependency on infrastructure engineers to maintain configuration changes that are led/introduced by the Application developer, simplifying the release process, reducing risk during deployments, and reducing time to market and skills required for developing and maintaining Configuration changes.
@@ -26,18 +43,14 @@ Synchronise system dependency changes with your Application changes, as they shi
 
 ## Some example use cases
 
-> Todo: section WIP, expand on it by providing more descriptive examples
-
 Some examples of these use cases (but not limited to) are:
 
 - Persistent storage management
 - Manage deployment dependencies
 - Configuration of external cloud SaaS providers
-- Deployment dependencies
-- Database migrations - supported by our legacy Mongock engine.
+- Database migrations - supported by our legacy Mongock engine, but extended to any Database (NoSQL and SQL).
 - API Gateway configurations
-- Message broker configurations
-- Custom operational tasks
+- Message broker configurations + *many more!*
 
 Our tool offers managing configuration changes to any system/component in a safe and audited manner within the Application context.
 
@@ -54,14 +67,14 @@ We provide Application developers the ability to configure Application domain-sp
 
 With Flamingock, developers define any component changes (database, system changes, SaaS, etc. )  **directly in application code** using familiar programming constructs such as classes and annotations, or template-based formats like YAML. The Flamingock client library then:  
 
-✅ **Automatically executes** changes during application startup  
-✅ **Generates audit trails** for full transparency and compliance  
-✅ **Keeps changes version-locked** to your application releases  
+- **Automatically executes** changes during application startup  
+- **Generates audit trails** for full transparency and compliance  
+- **Keeps changes version-locked** to your application releases  
 
 **Benefits:**  
-🔹 **No more out-of-band scripts** - Changes travel with your app code  
-🔹 **Cluster-safe execution** - Designed for distributed systems from the ground up  
-🔹 **Native version control** - Every change is code-reviewed alongside feature development  
+- **No more out-of-band scripts** - Changes travel with your app code  
+- **Cluster-safe execution** - Designed for distributed systems from the ground up  
+- **Native version control** - Every change is code-reviewed alongside feature development  
 
 *Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
 

@@ -3,9 +3,9 @@ title: Key features
 sidebar_position: 50
 ---
 
-With Flamingock, you can take advantage of the following features:
-
 # Key features
+
+With Flamingock, you can take advantage of the following features:
 
 - 🧱 **Change management of any component**: Manage configuration and data changes with your Application code for any component. NoSQL Databases are a first-class citizen, and we've expanded this capability for any type of component that requires configuration.
   :::info
@@ -25,9 +25,9 @@ With Flamingock, you can take advantage of the following features:
 
 - 🔄 **Auditing & Rollback**: Comprehensive auditing capabilities with support for rollback of changes to ensure consistency and control.
 
-- ☁️ **Cloud offering**: Offers a fully managed service by hosting Flamingock’s operational data on our servers, removing the need for users to set up and manage their own infrastructure whilst unlocking the full Flamingock suite of features.
+- ☁️ **Cloud offering (coming soon!)**: Offers a fully managed service by hosting Flamingock’s operational data on our servers, removing the need for users to set up and manage their own infrastructure whilst unlocking the full Flamingock suite of features.
 
-- 💻 **Management Operations via a Dashboard and CLI**: Flamingock offers tools to simplify Operational management tasks. Some of these example are: List history of changes, execute Rollbacks, Undo deployment, Audit, etc. Additionally, offers a Dashboard with metrics and alerts.
+- 💻 **Management Operations via a Dashboard and CLI (coming soon!)**: Flamingock offers tools to simplify Operational management tasks. Some of these example are: List history of changes, execute Rollbacks, Undo deployment, Audit, etc. Additionally, offers a Dashboard with metrics and alerts.
 
 - 🛠️ **Advanced Workflow Management**: Enables multiple streams of change units that can be organized to execute sequentially, in parallel, or as a combination, providing flexibility in managing complex processes.
 

@@ -1,5 +1,5 @@
 ---
-title: Cloud edition
+title: Cloud edition (coming soon)
 sidebar_position: 60
 ---
 

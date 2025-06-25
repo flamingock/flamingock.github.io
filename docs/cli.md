@@ -1,5 +1,5 @@
 ---
-title: CLI (Coming Soon)
+title: CLI (coming Soon)
 sidebar_position: 999
 ---
 

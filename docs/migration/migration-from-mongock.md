@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 ---
-# Migration: From Mongock to Flamingock
+# Migrating from Mongock to Flamingock
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
