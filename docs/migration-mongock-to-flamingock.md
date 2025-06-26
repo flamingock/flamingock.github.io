@@ -40,12 +40,13 @@ Update these imports in each ChangeUnit:
 | `io.mongock.api.annotations.Execution`         | `io.flamingock.api.annotations.Execution`         |
 | `io.mongock.api.annotations.RollbackExecution` | `io.flamingock.api.annotations.RollbackExecution` |
 
-Legacy annotations (`@BeforeExecution`, `@RollbackBeforeExecution`) remain supported—keep them as-is for backward compatibility.
+### Legacy support
+
+- `@BeforeExecution` and `@RollbackBeforeExecution` from `io.mongock.api` are supported for backward compatibility
+- **For migrated change units**: Keep them **exactly as they are** - do not split or modify beyond import changes to maintain immutability
+- **For new change units**: Avoid using `@BeforeExecution` and `@RollbackBeforeExecution`. Instead, use dedicated `@Execution` and `@RollbackExecution` methods for better separation of concerns
 
 ## Step 2: update application code
-
-**Before (Mongock):**
-
 
 <Tabs groupId="migration">
   <TabItem value="flamingock" label="Flamingock(new)" default>
@@ -70,7 +71,7 @@ MongockStandalone.builder()
 </Tabs>
 
 
-Key changes:
+### Key changes:
 - Replace `MongockStandalone` with `Flamingock.builder()`
 - Remove explicit driver setup (Flamingock auto-configures it)
 - Remove package scanning in favor of pipeline config
@@ -78,9 +79,27 @@ Key changes:
 
 For Spring Boot integration, see the [Spring Boot guide](springboot-integration/introduction).
 
-## Step 3: create system stage
+## Step 3: Create system stage
 
-Under `src/main/resources/flamingock/pipeline.yaml` add:
+You must create a template-based change unit in the system stage package to handle the migration from Mongock. Create a YAML file (e.g., `_0001_migration_from_mongock.yaml`) with the following structure:
+
+```yaml
+id: migration-from-mongock
+order: 0001
+template: MongoDbImporterChangeTemplate
+configuration:
+  origin: mongockChangeLog
+```
+
+**Configuration parameters:**
+- **id**: Choose how you want to identify this change unit
+- **order**: Should be the first one (0001) as this is typically the first system stage change unit
+- **template**: Must be `MongoDbImporterChangeTemplate`
+- **origin**: The collection/table where Mongock's audit log is stored (typically `mongockChangeLog`)
+
+## Step 4: Configure pipeline
+
+The Flamingock pipeline configuration (`resources/flamingock/pipeline.yaml`) requires two key stages:
 
 ```yaml
 pipeline:
@@ -95,22 +114,11 @@ pipeline:
       sourcesPackage: "io.flamingock.examples.importer.flamingock.mongodb"
 ```
 
-Then in the `system` package, create `_0001_migration_from_mongock.yaml`:
+### Key configuration elements:
 
-```yaml
-id: migration-from-mongock
-order: 0001
-template: MongoDbImporterChangeTemplate
-configuration:
-  origin: mongockChangeLog
-```
-
-## Configure your pipeline
-
-Ensure your `pipeline.yaml` matches the example above. Flamingock will:
-1. Run the system-stage importer  
-2. Execute your migrated legacy ChangeUnits  
-3. Apply any new ChangeUnits in subsequent stages  
+1. **System Stage**: Contains the migration change unit that imports Mongock change logs and transforms them to Flamingock audit logs
+2. **Legacy Stage**: Contains your migrated change units from Mongock (type: "legacy")
+3. **Regular Stages**: For new Flamingock-native change units
 
 ## Run and validate
 
