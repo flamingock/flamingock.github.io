@@ -84,6 +84,10 @@ const config = {
     ],
   ],
 
+  customFields: {
+    homepageRedirect: '/docs/1.0.0/overview/Introduction',
+  },
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
