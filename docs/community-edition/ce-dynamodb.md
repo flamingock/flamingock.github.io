@@ -1,6 +1,6 @@
 ---
 title: DynamoDB
-sidebar_position: 5
+sidebar_position: 4
 ---
 
 import Tabs from '@theme/Tabs';
@@ -44,7 +44,8 @@ You must include both the **Flamingock DynamoDB edition** and the **AWS SDK v2 f
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-dynamodb:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-dynamodb")
 implementation("software.amazon.awssdk:dynamodb-enhanced:2.x.x")
 implementation("software.amazon.awssdk:url-connection-client:2.x.x")
 ```

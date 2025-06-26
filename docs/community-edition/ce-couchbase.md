@@ -1,6 +1,6 @@
 ---
 title: Couchbase
-sidebar_position: 6
+sidebar_position: 5
 ---
 
 import Tabs from '@theme/Tabs';
@@ -40,7 +40,8 @@ To get started with the Flamingock Community Edition for Couchbase, follow these
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-couchbase:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-couchbase")
 implementation("com.couchbase.client:java-client:3.x.x")
 ```
 

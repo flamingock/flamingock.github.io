@@ -19,10 +19,12 @@ Add the appropriate Flamingock Spring Boot integration dependency, depending on 
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 // For Spring Boot 2.x
-implementation("io.flamingock:springboot-integration-v2:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:springboot-integration-v2-legacy")
 
 // For Spring Boot 3.x
-implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:springboot-integration")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
@@ -30,7 +32,7 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 <!-- For springboot 2.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>springboot-integration-v2</artifactId> <!-- or  springboot-integration-v3 For springboot 3.x-->
+    <artifactId>springboot-integration-v2-legacy</artifactId> <!-- or  springboot-integration For springboot 3.x-->
     <version>${flamingock.version}</version>
 </dependency>
 ```

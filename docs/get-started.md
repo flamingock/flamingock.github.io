@@ -15,11 +15,13 @@ To begin, add the Flamingock client library to your project. You can use either:
 - Cloud Edition (compatible with all systems)
 - Community Edition (you need to choose the specific storage: MongoDB, DynamoDB, etc.)
 
+Flamingock supports BOM (Bill of Materials), which simplifies dependency management by allowing you to declare the version once and avoid mismatches across related modules. This is especially useful when working with multiple Flamingock artifacts.
+
 Example for **Cloud Edition**:
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
-        implementation("io.flamingock:flamingock-cloud:$flamingockVersion")
+        implementation(platform("io.flamingock:flamingock-cloud-bom:$flamingockVersion"))
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">
@@ -37,7 +39,8 @@ Example for **Community Edition** using MongoDB Sync4:
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
-        implementation("io.flamingock:flamingock-ce-mongodb-sync4:$flamingockVersion")
+        implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+        implementation("io.flamingock:flamingock-ce-mongodb-sync-v4")
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">

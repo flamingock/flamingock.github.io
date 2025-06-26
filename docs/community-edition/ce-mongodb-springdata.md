@@ -1,6 +1,6 @@
 ---
 title: MongoDB (Spring Data)
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 import Tabs from '@theme/Tabs';
@@ -54,8 +54,8 @@ By annotating your main class with `@EnableFlamingock`, Flamingock will:
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-mongodb-springdata-v4:$flamingockVersion")
-implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-springdata-v4")
 ```
 
 </TabItem>

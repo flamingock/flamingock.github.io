@@ -1,6 +1,6 @@
 ---
 title: MongoDB (Java Driver)
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
@@ -50,7 +50,8 @@ You must include both the **Flamingock MongoDB specific edition** and the corres
 
 ```kotlin
 // MongoDB v4
-implementation("io.flamingock:flamingock-ce-mongodb-sync4:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-sync-v4")
 implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 ```
 

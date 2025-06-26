@@ -17,7 +17,8 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:sql-template:$flamingockSqlTemplateVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-sql-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">

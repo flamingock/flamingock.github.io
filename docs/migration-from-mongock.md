@@ -39,7 +39,7 @@ Example for **Cloud Edition**:
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
-        implementation("io.flamingock:flamingock-cloud:$flamingockVersion")
+        implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">
@@ -57,7 +57,8 @@ Example for **Community Edition** using MongoDB Sync4:
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
-        implementation("io.flamingock:flamingock-ce-mongodb-sync4:$flamingockVersion")
+        implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+        implementation("io.flamingock:flamingock-ce-mongodb-sync-v4")
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">
