@@ -1,6 +1,6 @@
 ---
 title: Transactions
-sidebar_position: 100
+sidebar_position: 90
 ---
 
 # Transactions
@@ -45,9 +45,9 @@ Transactions do **not** apply in the following scenarios:
 
 :::tip
 In all these cases, mark the change unit with `@ChangeUnit(transactional = false)` to disable transaction wrapping.
-
-To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section.
+<!--  To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section. -->
 :::
+
 
 :::warning
 If a change unit is marked as transactional (`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock assumes the database rolled back the change, and skips the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
@@ -111,7 +111,7 @@ You are responsible for writing reliable rollback logic. Flamingock cannot guara
 
 ---
 
-## Summary: when to use `transactional = false`
+## When to use `transactional = false`
 
 | Type of change                                                                      | `transactional = false`? |
 |-------------------------------------------------------------------------------------|:------------------------:|
@@ -140,10 +140,10 @@ Refer to the relevant edition page for detailed behavior, including:
 - Known limitations (e.g., unsupported operations)
 
 **Supported transactional CE editions:**
-- [flamingock-ce-mongodb-sync](/broken_link_need_to_be_updated)
-- [flamingock-ce-mongodb-springdata](/broken_link_need_to_be_updated)
-- [flamingock-ce-dynamodb](/broken_link_need_to_be_updated)
-- [flamingock-ce-couchbase](/broken_link_need_to_be_updated)
+- [flamingock-ce-mongodb-sync](../community-edition/ce-mongodb-java-driver.md)
+- [flamingock-ce-mongodb-springdata](../community-edition/ce-mongodb-springdata.md)
+- [flamingock-ce-dynamodb](../community-edition/ce-dynamodb.md)
+- [flamingock-ce-couchbase](../community-edition/ce-couchbase.md)
 
 :::info
 Cloud Edition transactional support will be explained in its own section once released.

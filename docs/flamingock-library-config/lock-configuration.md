@@ -1,9 +1,9 @@
 ---
-title: Distributed lock
+title: Distributed lock configuration
 sidebar_position: 5
 ---
 
-# Lock Configuration
+# Distributed lock configuration
 
 Flamingock uses a distributed lock to ensure that changes are only applied **once and only once**, even when multiple instances of your application start simultaneously in a distributed system.
 
@@ -14,7 +14,7 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 
 ---
 
-## Configurable Properties
+## Configurable properties
 
 | Property                             | Default          | Description                                                                         |
 |--------------------------------------|------------------|-------------------------------------------------------------------------------------|
@@ -26,7 +26,7 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 
 ---
 
-## Why Locking Matters
+## Why locking matters
 
 In distributed systems, multiple app instances may start simultaneously — but only **one** should apply pending changes. Flamingock uses locking to:
 
@@ -39,7 +39,7 @@ If no pending changes exist, the lock is not acquired and startup proceeds norma
 :::
 ---
 
-## Refresh Daemon (Safety Net)
+## Refresh Daemon (safety net)
 
 The **refresh daemon** is a background thread that extends the lock before it expires.  
 It’s critical for **long-running changes** that might exceed the lock duration.
@@ -72,7 +72,7 @@ FlamingockStandalone
 
 ---
 
-## When to Tweak Lock Settings
+## When to tweak Lock settings
 
 Most projects can use the default configuration. You may need to adjust values if:
 

@@ -2,7 +2,7 @@
 sidebar_position: 30
 ---
 
-# How It Works?
+# How it works?
 
 Flamingock provides a structured, auditable, and version-controlled approach to managing changes across your systems, services, and configurations — simplifying the release process and reducing the risk of failure.
 
@@ -20,6 +20,8 @@ flowchart LR
     G -- No --> I[Invoke Rollback Logic]
     I --> H
 ```
+:::tip Flamingock helps development teams **release faster**, **with confidence**, and **without surprises**. It provides an auditable traceable system where all Changes are centrally managed.
+:::
 
 ---
 
@@ -34,7 +36,7 @@ Every change — whether it’s a database migration, a feature flag update, or 
 
 ## 2. Organize changes into Workflows
 
-ChangeUnits are grouped into stages and structured into a [**Workflow**](overview/core-concepts.md?#🔄Workflows) pipeline to represent a coordinated sequence of changes.
+ChangeUnits are grouped into stages and structured into a [**Workflow**](overview/core-concepts.md?#-workflows) pipeline to represent a coordinated sequence of changes.
 
 - Workflows allow you to define how changes should be applied: sequentially or (in future releases) in parallel or conditionally.
 - This logical grouping simplifies the orchestration and order of changes across systems / services / components.
@@ -64,7 +66,7 @@ Using **distributed locking**, Flamingock ensures only one instance (or one node
 
 ---
 
-## 5. Audit Everything, Rollback When Needed
+## 5. Audit everything, rollback when needed
 
 Every change applied is **fully audited**:
 
@@ -76,9 +78,9 @@ In case of failure or rollback scenario, Flamingock uses defined compensating lo
 
 ---
 
-## 🧪 Example Use Cases
+## Example Use Cases
 
-### Example 1: Versioning Made Simple
+### Example 1: Versioning made simple
 
 Imagine a developer needs to introduce the following system changes as part of a release:
 
@@ -104,7 +106,7 @@ The result? Faster deployments, consistent environments, and complete traceabili
 
 ---
 
-### Example 2: Synchronizing Changes Across Domain Services
+### Example 2: Synchronizing Changes across domain services
 
 In a Domain-Driven Design (DDD) environment, a change to a domain model often requires updates across several components:
 
@@ -130,4 +132,3 @@ This ensures that changes in the Database, messaging, and APIs exposed in the ga
 
 ---
 
-Flamingock helps development teams **release faster**, **with confidence**, and **without surprises**. It provides an auditable traceable system where all Changes are centrally managed.

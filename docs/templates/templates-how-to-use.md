@@ -1,6 +1,6 @@
 ---
 sidebar_position: 2
-title: How to use
+title: How to use Templates
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,9 +8,9 @@ import TabItem from '@theme/TabItem';
 
 # How to use Flamingock Templates
 
-Using a Flamingock Template is straightforward. Here’s how you can apply an SQL-based migration using the **SQL Template**.
+Using a Flamingock Template is straightforward. Here’s an example of how you can apply an SQL-based migration using the **SQL Template**.
 
-### Step 1: Add the Template Dependency
+### Step 1: Add the Template dependency
 
 Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
 
@@ -31,11 +31,11 @@ implementation("io.flamingock:sql-template:$flamingockSqlTemplateVersion")
   </TabItem>
 </Tabs>
 
-### Step 2: Define a Template-Based Change
+### Step 2: define a Template-based change
 
 In Flamingock, a **ChangeUnit** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
 
-When using Template-Based changes, instead of implementing a Code-Based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
+When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 
 Create a **YAML file** (e.g., `_0001_create_persons_table.yaml`) inside your application’s resources directory:
 
@@ -55,10 +55,10 @@ templateConfiguration:
 ```
 
 :::info
-Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock. Please see the [Dependencies](https://docs.flamingock.io) section for more details.
+Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock. 
 :::
 
-#### 🔍 Understanding the Fields
+#### 🔍 Understanding the configuration attributes
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
 - **`order`**: Execution order relative to other changes (also shared with code-based).
@@ -69,7 +69,7 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 
 Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but introduce a flexible configuration model where each template defines its own behavior through external parameters.
 
-### Step 3: Config Flamingock to use the template file
+### Step 3: Configure Flamingock to use the template file
 
 :::warning
 TODO: FLAMINGOCK CONFIGURATION (BUILDER / SPRINGBOOT) AND STAGE WITH YAML TEMPLATE PATH.
@@ -81,9 +81,9 @@ At application startup, Flamingock will automatically detect the YAML file and p
 
 ---
 
-## Real-World Use Case: SQL Database Migration
+## Use case: SQL database migration
 
-Let’s compare how an SQL migration is handled using a **Template-Based ChangeUnit** vs. a **traditional Code-Based ChangeUnit**.
+Let’s compare how an SQL migration is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
 
 ### Approach 1: Using a Traditional Code-Based ChangeUnit
 

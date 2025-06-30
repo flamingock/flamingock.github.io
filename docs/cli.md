@@ -7,9 +7,8 @@ sidebar_position: 999
 
 Flamingock’s Command-Line Interface (CLI) will enable operational and maintenance tasks outside your application’s normal startup cycle. You’ll be able to run change units, inspect or repair the audit log, and manage locks—all from a standalone command.
 
-:::info
-**Status:** The CLI is under development and will be released soon.  
-This page provides a high-level overview of the features you can expect.
+:::info **Status:** UNDER DEVELOPMENT
+ The CLI is under development and will be released soon. This page provides a high-level overview of expected upcoming features.
 :::
 
 ---
@@ -93,7 +92,7 @@ fcli clear-locks \
 
 ```
 
-## Getting Started (Once Available)
+## Getting Started 
 
 **Install the CLI**  
 Download and install the platform-specific `fcli` binary for Linux, macOS, or Windows.
@@ -104,6 +103,6 @@ Build your project so that all `@ChangeUnit` classes are packaged into a single 
 **Run CLI commands**  
 Use the commands shown above—supplying `--app-jar` only when running or rolling back change units that depend on application-specific classes.
 
-## Feedback & Contributions
+## Feedback & contributions
 
 We welcome your feedback on the CLI design. As the CLI nears release, feel free to open issues or submit pull requests to the Flamingock CLI repository.

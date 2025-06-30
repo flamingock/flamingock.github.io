@@ -138,3 +138,6 @@ FlamingockBuilder builder = Flamingock.builder()
 > ⚠️ Couchbase transactions are not currently managed automatically by Flamingock.  
 > However, Flamingock guarantees safe, idempotent changes through internal locking, auditing, and execution guarantees.
 
+
+You can find some practical examples in the official GitHub repository:  
+👉 [Flamingock Couchbase example](https://github.com/mongock/mongock-examples/tree/master/couchbase)

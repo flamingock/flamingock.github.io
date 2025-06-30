@@ -72,6 +72,7 @@ Templates are:
 - Friendly to non-developer users
 
 For a deeper dive around Templates, see the [Templates](../templates/templates-introduction.md) section.
+
 ---
 
 ### 🔄 Workflows

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 120
+sidebar_position: 90
 ---
 
 import Tabs from '@theme/Tabs';
@@ -24,9 +24,9 @@ Flamingock offers event handling capabilities for both Pipelines and Stages.
 
 Flamingock emits three types of events:
 
-- Start Event: Triggered just before the migration process begins, following successful validation.
-- Success Event: Emitted upon successful completion of the migration. This indicates that no unhandled exceptions occurred, or that any errors were either properly handled or associated changeLogs were marked with 'Fail' as false.
-- Failure Event: Emitted when a change log fails and the failure is not handled, as described above.
+- **Start Event**: Triggered just before the migration process begins, following successful validation.
+- **Success Event**: Emitted upon successful completion of the migration. This indicates that no unhandled exceptions occurred, or that any errors were either properly handled or associated changeLogs were marked with 'Fail' as false.
+- **Failure Event**: Emitted when a change log fails and the failure is not handled, as described above.
 
 :::warning
 The Success and Failure events are mutually exclusive, only one of them will be raised for a given migration execution.

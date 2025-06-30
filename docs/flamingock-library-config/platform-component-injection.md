@@ -26,10 +26,10 @@ You may need to register platform components when:
 
 - **Custom modules or platform bridges**  
   If you're building your own Flamingock modules or integrating with external systems, you might need to provide platform services explicitly.
-- 
-  :::info
+
+:::info
   Each integration (e.g., Spring Boot, database integration, etc.) will clearly document if and how platform components need to be registered. You don’t need to guess — check the relevant integration section for guidance.
-  :::
+:::
 
 ---
 
@@ -52,4 +52,4 @@ If a component is relevant for both Flamingock internal operations and for injec
 ## See also
 
 - [ChangeUnit dependency injection](changeunit-dependency-injection.md) — for injecting services directly into change units  
-- [Spring Boot integration](../springboot-integration.md) — for automated platform wiring in Spring apps
+- [Spring Boot integration](../frameworks/springboot-integration/introduction.md) — for automated platform wiring in Spring apps

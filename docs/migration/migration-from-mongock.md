@@ -24,7 +24,7 @@ The migration process will require the following steps:
 - It is strongly advised that your Mongock setup is updated to version 5 before initiating the migration.
 - Initially, conduct the migration process in a testing environment.
 
-:::danger[❗ Important]
+:::danger Important
 Under no circumstances should you modify the execution logic from your existing ChangeUnits from Mongock. Changing them can lead to undesired re-execution and compromise system integrity.
 :::
 
@@ -71,7 +71,7 @@ Example for **Community Edition** using MongoDB Sync4:
     </TabItem>
 </Tabs>
 
-For more storage packages and other dependencies, check the [Get Started](get-started#1-add-flamingock-client-dependency) guide.
+For more storage packages and other dependencies, check the [Get Started](../get-started#1-add-flamingock-client-dependency) guide.
 
 ## 2. Configure Flamingock
 
@@ -82,7 +82,7 @@ To begin using Flamingock, you must replace your existing `MongockStandalone.bui
 This change is the starting point to transition your setup.
 Once you update the entrypoint, Flamingock provides a familiar yet evolved API designed to simplify the migration process. While many method names remain intuitive for existing users, keep in mind that Flamingock introduces enhanced capabilities, so further changes in your setup may still be required.
 
-For additional details, please refer to the [Client Configuration](client-configuration/Overview) section.
+For additional details, please refer to the [Client Configuration](../flamingock-library-config/introduction.md) section.
 
 ### 2.2. File-based configuration (Spring Boot or others frameworks)
 
@@ -90,14 +90,14 @@ All Flamingock configuration is expected to be located by default at `resources/
 
 In your app main class, change the annotation `@EnableMongock` by `@EnableFlamingock`.
 
-For further guidance on configuration options, consult the [Client Configuration](client-configuration/Overview) section.
+For further guidance on configuration options, consult the [Client Configuration](../flamingock-library-config/introduction.md) section.
 
 ## 3. ChangeUnit preparation
 
 Flamingock introduces the concepts of workflows. This implies that all change units are required to be wrapped up in a Flamingock Pipeline.
 
-:::danger[❗ Important]
-Under no circumstances should you modify the execution logic from your existing ChangeUnits from Mongock. Changing them can lead to undesired re-execution and compromise system integrity. Any new change you need, can be done with a new [Change](get-started#3-define-a-change).
+:::danger[Important]
+Under no circumstances should you modify the execution logic from your existing ChangeUnits from Mongock. Changing them can lead to undesired re-execution and compromise system integrity. Any new change you need, can be done with a new [Change](../get-started#3-define-a-change).
 :::
 
 Flamingock introduces the enforcement of having unique id's for ChangeUnits as part of this release. This could introduce a breaking change in your existing code. In order to mitigate any risks, Flamingock supports the following 2 scenarios:
@@ -173,7 +173,7 @@ pipeline:
       sourcesPackage: io.flamingock.examples.mongodb.springboot.springdata.mongodbMigration
 ```
 
-For more information about Flamingock pipeline, you can see [Pipeline & Stages](client-configuration/pipeline-and-stages) section.
+For more information about Flamingock pipeline, you can see [Pipeline & Stages](../flamingock-library-config/pipeline-and-stages.md) section.
 
 ## 5. Specify the location of legacy change logs
 
@@ -223,4 +223,4 @@ Additionally, perform the following checks:
 
 ## Conclusion
 
-Congratulations! You've successfully migrated from Mongock to Flamingock. For further assistance, refer to the comprehensive Flamingock documentation or reach out to our support team.
+Congratulations! You've successfully migrated from Mongock to Flamingock. For further assistance, refer to the comprehensive Flamingock documentation or reach out to our support team at support@flamingock.io

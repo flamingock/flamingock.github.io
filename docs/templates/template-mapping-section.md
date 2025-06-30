@@ -3,7 +3,7 @@ sidebar_position: 10
 title: Template mapping
 ---
 
-### :small_blue_diamond: How Execution and Rollback Mapping Works
+### How Execution and Rollback Mapping Works
 
 In a template-based change unit (declarative format), Flamingock uses the `execution` and `rollback` sections to determine which methods to invoke in your template class.
 

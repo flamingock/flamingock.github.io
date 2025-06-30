@@ -22,7 +22,7 @@ Using Flamingock with Spring Boot allows you to:
 - Configure Flamingock via Spring Boot's native configuration files
 - Use Spring profiles to control when specific change units run
 - Receive execution lifecycle events using `ApplicationEventPublisher`
-- Choose between Spring Boot lifecycle hooks (`ApplicationRunner` or `InitializingBean`) to run Flamingock
+- Choose between Spring Boot lifecycle hooks (`ApplicationRunner` or `InitializingBean`) to run Flamingock.
 
 ---
 

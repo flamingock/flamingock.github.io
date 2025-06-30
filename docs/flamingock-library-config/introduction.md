@@ -6,7 +6,7 @@ sidebar_position: 1
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Client configuration
+# Flamingock library configuration
 
 Flamingock provides flexible configuration options to support a variety of environments and workflows — from local setups to cloud-native distributed systems.
 
@@ -18,15 +18,15 @@ Configuration is divided into two distinct scopes:
 
 ---
 
-## What You Can Configure
+## What you can configure
 
 | Area                                | Description                                         |
 |-------------------------------------|-----------------------------------------------------|
-| 📦 Pipeline & Stages                | Organize changes into ordered stages                |
-| 🔌 ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
-| 🔌 Platform component injection     | Platform-level components injection                 |
-| 🔒 Lock                             | Distributed locking and timing options              |
-| ⚙️ Extra                            | Metadata, default author, enable/disable            |
+| Pipeline & Stages                | Organize changes into ordered stages                |
+| ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
+| Platform component injection     | Platform-level components injection                 |
+| Lock                             | Distributed locking and timing options              |
+| Extra                            | Metadata, default author, enable/disable            |
 | ☁️ Cloud Edition                    | Cloud-specific setup: token, env, service           |
 | 🧪 Community Edition                | Driver-specific config for MongoDB, DynamoDB...     |
 
@@ -35,10 +35,10 @@ Each of these topics is explained in its own section.
 
 ---
 
-## Configuration Scopes and Layers
+## Configuration scopes and layers
 
 Flamingock configuration is organized in two main scopes:
-### Core Configuration (shared by all editions)
+### Core configuration (shared by all editions)
 Includes:
 - Pipeline definition
 - Lock settings
@@ -48,7 +48,7 @@ Includes:
 - Dependency injection via addDependency(...) for ChangeUnits and framework components
 - etc.
 
-### Edition-Specific Configuration
+### Edition-specific configuration
 Based on the edition of Flamingock you import:
 - **Cloud Edition**: Related settings to configure Flamingock Cloud.
 - **Community Edition**: MongoDB, DynamoDB, Couchbase drivers and related settings.
@@ -71,11 +71,11 @@ The location of the `resources` directory can be customized using the `resources
 
 :::info
 - The pipeline definition should remain the same across environments.
-- To conditionally include or exclude changes, Flamingock supports [profiles](../profiles.md).
+- To conditionally include or exclude changes, Flamingock supports [profiles](../frameworks/springboot-integration/profiles.md).
 - Profile support for stages is planned but not yet available.
 :::
 
-See the [Pipeline & stages](pipeline-and-stages.md) page for full details and examples.
+See the [Pipeline & stages](./pipeline-and-stages.md) page for full details and examples.
 
 
 ---
@@ -94,15 +94,15 @@ You can combine both approaches. If a property is defined in both, the builder v
 
 ---
 
-## Next Steps
+## Next steps
 
 Explore the rest of the configuration section to tune Flamingock for your system:
 
 ### Shared configuration
-- [📦 Pipeline & Stages](pipeline-and-stages.md)
-- [🔒 Lock Configuration](lock-configuration.md)
-- [⚙  Extra Configuration](extra-configuration.md)
-- [🔌 Dependency wiring](changeunit-dependency-injection.md)
+- [Pipeline & Stages](./pipeline-and-stages.md)
+- [Lock Configuration](./lock-configuration.md)
+- [Extra Configuration](./xtra-configuration.md)
+- [Dependency wiring](./changeunit-dependency-injection.md)
 
 ### Pick an edition
 - [☁️ Cloud Edition(Fully-featured)](../cloud-edition.md)

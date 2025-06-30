@@ -8,8 +8,6 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-## Introduction
-
 This section explains how to use the **Flamingock Community Edition for MongoDB** in applications that rely on **Spring Data MongoDB**.
 
 This edition is designed for teams that already use Spring Data to manage their database access and want to include Flamingock as part of their change tracking and execution model. It integrates with **Spring Boot** and **MongoTemplate**, handling auditing, distributed locking, and transactional coordination.
@@ -223,14 +221,14 @@ Internally, Flamingock will manage the transaction lifecycle and ensure all oper
 There is no need to manually manage a `ClientSession` when using Spring Data.
 Flamingock integrates with Spring’s transaction management infrastructure to coordinate the session for you.
 
-> See the [Transactions](../transactions.md) page for general behavior and when to use `transactional = false`.
+> See the [Transactions](../flamingock-library-config/transactions.md) page for general behavior and when to use `transactional = false`.
 
 ---
 
 ## Examples
 
 You can find practical examples in the official GitHub repository:  
-👉 [github.com/flamingock/flamingock-examples/mongodb](https://github.com/flamingock/flamingock-examples/mongodb)
+👉 [Flamingock MongoDB example](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
 
 ---
 

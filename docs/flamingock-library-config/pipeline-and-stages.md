@@ -71,7 +71,7 @@ You must provide at least one of `sourcesPackage`, `resourcesDir`, or both.
 
 ---
 
-## Where Changes Are Located
+## Where Changes are located
 
 - **`sourcesPackage`** refers to a source package (e.g., `com.company.init`).  
   - Template-based and code-based changes can co-exist here.
@@ -156,7 +156,7 @@ src/
 
 ---
 
-## ✅ Best Practices
+## Best Practices
 
 ### Placing your changes
 We strongly recommend placing all your changes — code-based and template-based — in a **single `sourcesPackage`**.
@@ -184,7 +184,3 @@ This convention:
 
 :::tip
 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
-:::
-📚 *See our [Best Practices](/docs/best-practices) guide for broader recommendations on naming, structure, and change design.*
-
----

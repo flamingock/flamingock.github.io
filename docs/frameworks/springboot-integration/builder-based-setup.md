@@ -121,5 +121,4 @@ This ensures Flamingock executes automatically as part of the Spring Boot startu
 
 ## Next steps
 
-Want to avoid manual setup?  
-Explore the [`@EnableFlamingock` setup](./enable-flamingock-setup.md) for automatic integration with minimal code.
+**Want to avoid manual setup?**   Explore the [`@EnableFlamingock` setup](./enable-flamingock-setup.md) for automatic integration with minimal code.
