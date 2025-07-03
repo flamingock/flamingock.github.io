@@ -1,6 +1,6 @@
 ---
 title: ChangeUnits Deep Dive
-sidebar_position: 20
+sidebar_position: 3
 ---
 
 ## Clarifying changeUnits
@@ -122,7 +122,7 @@ templateConfiguration:
 
 ### Transactional behavior
 - **Transactional changes (default)**: When the target system and audit store share a transactional context (e.g., MongoDB CE), Flamingock wraps both in a single transaction.
-- **Non-transactional changes**: `transactional = false`. Flamingock executes `@Execution` and, upon success, writes to the audit store. If `@Execution` fails, Flamingock invokes `@RollbackExecution`. See [transactions page](../transactions.md)
+- **Non-transactional changes**: `transactional = false`. Flamingock executes `@Execution` and, upon success, writes to the audit store. If `@Execution` fails, Flamingock invokes `@RollbackExecution`. See [transactions page](../flamingock-library-config/transactions.md)
     
 
 ### Immutability

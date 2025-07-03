@@ -1,6 +1,6 @@
 ---
 title: Audit store vs. target system
-sidebar_position: 30
+sidebar_position: 100
 ---
 
 # Audit Store vs. Target System
@@ -43,7 +43,7 @@ A target system is any external resource or service upon which a change unit’s
 
 The key point is that the target system is where changes must actually be applied—and those changes must occur exactly once (or be rolled back) to keep your application and its ecosystem in sync. Flamingock orchestrates these operations in a deterministic, ordered fashion, but the target system itself is whatever resource or service your change unit code touches.
 
-## Why the Distinction Matters
+## Why the distinction matters
 
 Because Flamingock originated from Mongock (which treated the database both as audit store and change target), it’s common to conflate these two roles. In practice:
 
@@ -59,6 +59,8 @@ Because Flamingock originated from Mongock (which treated the database both as a
   - The audit store remains your chosen audit database or Flamingock’s cloud backend.
   - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
   - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
+
+![Audit store](../../static/img/Diagrams-TargetAndAuditStore.drawio.png)
 
 ### Illustration
 

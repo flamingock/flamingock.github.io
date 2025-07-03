@@ -84,4 +84,4 @@ If the `runnerType` property is not provided, Flamingock defaults to using `Appl
 
 - Want full control over the builder? See [Builder-based setup](builder-based-setup.md)
 - Explore [Spring Boot profile support](profiles.md)
-- Learn about [Flamingock lifecycle events](events.md)
+- Learn about [Flamingock lifecycle events](../../flamingock-library-config/events.md)

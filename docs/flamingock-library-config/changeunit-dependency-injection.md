@@ -1,11 +1,11 @@
 ---
 title: ChangeUnit dependency injection
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 Flamingock allows you to inject dependencies into your change units so they can use services, clients, or utilities during execution. This is especially useful for **standalone applications**, where no dependency injection framework (like Spring) is present.
 
-If you're using **Spring Boot**, Flamingock can integrate with the Spring context to resolve dependencies automatically — Please refer to the [Spring Boot Integration](/docs/springboot-integration) section for details.
+If you're using **Spring Boot**, Flamingock can integrate with the Spring context to resolve dependencies automatically — Please refer to the [Spring Boot Integration](../frameworks/springboot-integration/introduction.md) section for details.
 
 This injection is handled via the **Flamingock builder** — not via YAML — and supports:
 

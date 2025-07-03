@@ -10,11 +10,11 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-Flamingock Templates are pre-built modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define configuration changes in declarative format (such as **YAML** files), reducing the need for custom Code-Based ChangeUnits while ensuring seamless execution and versioning of changes.
+Flamingock Templates are pre-built modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define configuration changes in declarative format (such as **YAML** files), reducing the need for custom code-based ChangeUnits while ensuring seamless execution and versioning of changes.
 
 ## How It Works
 
-Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on Code-Based ChangeUnits to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
+Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on code-based ChangeUnits to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
 
 ### Who Provides Templates?
 
@@ -33,9 +33,9 @@ Instead of repeating the same boilerplate code over and over, templates let you 
 
 ---
 
-### 🔁 A Simple Example
+### A simple example
 
-Imagine you're working on a Java application that manages users and roles in a database. You’re using Code-based ChangeUnits like this:
+Imagine you're working on a Java application that manages users and roles in a database. You’re using code-based ChangeUnits like this:
 
 ```java
 @ChangeUnit(id = "create-users-table", order = 1, author = "flamingock")
@@ -119,7 +119,7 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 - **Built-in best practices**: Ensures correctness and reliability for each integration.
 - **Extensible by the community**: Developers can contribute new templates to expand Flamingock’s ecosystem.
 
-## When to Use Template-Based ChangeUnits vs. Code-Based ChangeUnits
+## When to use Template-based ChangeUnits vs. code-based ChangeUnits
 
 | **Use Case** | **Template-Based ChangeUnit** | **Code-Based ChangeUnit** |
 |-------------|-----------------------------|-------------------------|
@@ -134,7 +134,7 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 ☑️** While templates may support complex change sequences, full control and dynamic logic might be easier to implement in code when the scenario is highly specific or non-repetitive.
 
 
-## List of Current Flamingock Templates
+## List of current Flamingock templates
 
 | Template Name | Description |
 |--------------|-------------|
@@ -145,4 +145,8 @@ Templates let you think in terms of ***what*** you want to do — not ***how*** 
 
 ---
 
-Flamingock Templates unlock new possibilities for seamless application evolution. Whether you’re managing **databases, configurations, or third-party services**, templates simplify the process, ensuring **faster, safer, and more standardised migrations**. Join the **Flamingock community** and start building your own templates today! 🚀
+Flamingock Templates unlock new possibilities for seamless application evolution. Whether you’re managing **databases, configurations, or third-party services**, templates simplify the process, ensuring **faster, safer, and more standardised migrations**. 
+
+:::tip 
+Join the [**Flamingock community**](https://github.com/flamingock/flamingock-project/discussions) and start building your own templates today! 🚀
+:::

@@ -1,13 +1,13 @@
 ---
 title: Examples
-sidebar_position: 140
+sidebar_position: 150
 ---
 
 ## Introduction
 
 The **Flamingock Examples** repository showcases a growing collection of real-world use cases demonstrating how to use Flamingock in different environments, integrations, and technologies. Each top-level folder represents a target technology and contains one or more self-contained example projects. Each project is designed to be cloned, explored, and run as a reference or foundation for your own implementation.
 
-👉 **GitHub Repository**: [github.com/mongock/flamingock-examples](https://github.com/mongock/flamingock-examples)
+👉 **GitHub Repository**: [github.com/flamingock/flamingock-examples](https://github.com/flamingock/flamingock-examples)
 
 ---
 
@@ -17,9 +17,9 @@ Within each technology folder, you’ll find one or more example ​projects tha
 
 | Technology Folder                                                                 | Description                                                                                                                                                               |
 |-----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [mongodb](https://github.com/mongock/flamingock-examples/tree/master/mongodb)     | Folder containing Flamingock CE projects using MongoDB as the audit‐log backend. Each project shows different integration scenarios (standalone Java, Spring Boot, etc.). |
-| [dynamodb](https://github.com/mongock/flamingock-examples/tree/master/dynamodb)   | Folder containing Flamingock CE projects using Amazon DynamoDB for audit logging. Includes both standalone and Spring Boot examples.                                      |
-| [couchbase](https://github.com/mongock/flamingock-examples/tree/master/couchbase) | Folder containing Flamingock CE projects using Couchbase as the audit‐log backend.                                                                                        |
+| [mongodb](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)     | Folder containing Flamingock CE projects using MongoDB as the audit‐log backend. Each project shows different integration scenarios (standalone Java, Spring Boot, etc.). |
+| [dynamodb](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)   | Folder containing Flamingock CE projects using Amazon DynamoDB for audit logging. Includes both standalone and Spring Boot examples.                                      |
+| [couchbase](https://github.com/flamingock/flamingock-examples/tree/master/couchbase) | Folder containing Flamingock CE projects using Couchbase as the audit‐log backend.                                                                                        |
 
 More examples are planned — including PostgreSQL, Redis, LocalStack, Kafka, Spring Native, multi‐module projects, and custom runners.
 
@@ -76,4 +76,4 @@ We welcome community contributions to expand this repository! Please consider:
 - Fixing or modernizing existing examples
 - Improving documentation and setup instructions
 
-See the [CONTRIBUTING.md](https://github.com/mongock/flamingock-examples/blob/master/CONTRIBUTING.md) for detailed guidelines.
+See the [CONTRIBUTING.md](https://github.com/flamingock/flamingock-examples/blob/master/CONTRIBUTING.md) for detailed guidelines.

@@ -4,11 +4,11 @@ sidebar_position: 20
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get Started
+# Get started
 
 This guide will walk you through the basics of using Flamingock with a step-by-step example, so you can get up and running quickly—whether you're using the **Cloud Edition** or one of the **Community Edition** variants.
 
-## 1. Add Flamingock Client Dependency
+## 1. Add Flamingock client dependency
 
 To begin, add the Flamingock client library to your project. You can use either:
 
@@ -63,17 +63,17 @@ All Community Editions:
 - **flamingock-ce-couchbase**
 
 :::note
-For configuration details specific to the Community Edition, see the [community edition section](community-edition.md)
+For configuration details specific to the Community Edition, see the [community edition section](./community-edition/Introduction.md)
 :::
 ---
 
-## 2. Add Flamingock Annotation Processor
+## 2. Add Flamingock annotation processor
 
 Flamingock uses an annotation processor to scan and collect metadata from your changes—whether defined through code or templates.
 
 This is required at **build time** and supports:
 
-- **Code-based** with`@ChangeUnit` (Flamingock-native, recommended)
+- **Code-based** with`@ChangeUnit` 
 - **Template-based** (declarative YAML)
 
 <Tabs groupId="gradle_maven">
@@ -148,7 +148,7 @@ public class CreateTableChange {
 </Tabs>
 
 :::info
-You can combine both styles in the same project. See our [Best Practices](/docs/best-practices)  for guidance on when and how to do it effectively.
+You can combine both styles in the same project. See our [Examples](/docs/examples.md)  to see these in action.
 :::
 
 ---
@@ -178,17 +178,17 @@ pipeline:
 - `resourcesDir`: Directory inside `resources/` that holds only template-based changes.
 - You can use either or both, depending on how you organize your changes.
 
-Recommended patterns:
+:::tip Recommended patterns:
 - Use `sourcesPackage` alone for co-located code and templates.
 - Use both `sourcesPackage` and `resourcesDir` if you want to separate templates.
 - It’s valid to have template files in both places.
+:::
 
 ---
 
 ## 5. Configure Flamingock
 
-Before running your application, make sure Flamingock is properly configured, depending on the edition and setup you are using:
-(More information about Flamingock editions [here](/overview/editions))
+Before running your application, make sure Flamingock is properly configured, depending on the [edition](./overview/editions.md) and setup you are using:
 
 - **Cloud Edition**: Set your API token, service name, and environment.
 - **Community Edition**: Provide connection details for your storage system (e.g., connection for MongoDB, DynamoDB, CouchBase, etc.).
@@ -213,7 +213,7 @@ If you're using some frameworks, like Spring Boot, Flamingock may run automatica
 :::
 ---
 
-## 6. Compile the Project
+## 6. Compile the project
 
 Now that you’ve defined your changes and configured Flamingock, it’s time to compile your project.
 
@@ -264,14 +264,14 @@ These logs confirm that:
 - Flamingock found your pipeline
 - Template and code-based changes were processed
 - Metadata was generated for execution
--
+
 :::tip
 If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
 :::
 
 ---
 
-## 7. Run Your Application — Flamingock Handles the Changes!
+## 7. Run your Application — Flamingock handles the changes!
 Once your project is compiled and Flamingock is configured, you're ready to run the application.
 
 When your application starts, Flamingock will be executed as part of the startup process:
@@ -294,8 +294,8 @@ Stage: mysql_stage
 
 ```
 ---
-## ✅ Next Steps
+## Next Steps
 
-- Dive into [Spring Boot Integration](/docs/springboot-integration)
-- Learn more about [Configuration Options](/docs/configuration)
-- Understand [Rollback & Auditing](/docs/concepts#rollback)
+- Dive into [Spring Boot Integration](./frameworks/springboot-integration/introduction.md)
+- Learn more about [Configuration Options](./flamingock-library-config/introduction.md)
+- Understand [Rollback & Auditing](./overview/core-concepts.md#-rollbacks)

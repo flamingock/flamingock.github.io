@@ -6,16 +6,16 @@ sidebar_position: 1
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Editions (Community Edition)
+# Community Edition
 
 Flamingock follows a modular architecture that allows users to work with multiple database technologies through specialized components.
 In the context of the **Community Edition**, each *Edition* represents support for a specific database technology—such as MongoDB, DynamoDB, CosmosDB, or Couchbase—packaged.
 
-Each edition encapsulates all the logic necessary to integrate Flamingock with a given database: handling of changeUnit executions, locking mechanisms, transaction support (when available), and compatibility with database-specific features and limitations. This structure allows you to select and include only the edition relevant to your application, keeping your dependency footprint clean and your integration precise.
+Each edition encapsulates all the logic necessary to integrate Flamingock with a given database: handling of ChangeUnit executions, locking mechanisms, transaction support (when available), and compatibility with database-specific features and limitations. This structure allows you to select and include only the edition relevant to your application, keeping your dependency footprint clean and your integration precise.
 
 All editions under the Community umbrella share a consistent developer experience and follow the same core changeUnit executions principles, but are tailored to the constraints and capabilities of their respective databases. This ensures that developers get the best possible behavior—whether using a transactional system like MongoDB or an eventually consistent NoSQL database like MongoDB or DynamoDB.
 
-## Available Editions
+## Available editions
 
 Below is a summary of the available editions in the Flamingock Community Edition:
 
@@ -42,10 +42,5 @@ It includes limited access to premium features, which are fully available in the
 
 Each edition has its own documentation page with setup instructions, configuration parameters, and usage examples. Use the sidebar or links below to navigate to a specific edition.
 
-:::caution TODO
-
-Add detailed documentation for each edition, including setup, configuration, and changeUnit executions examples.
-
-:::
 
 

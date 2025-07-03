@@ -6,14 +6,14 @@ sidebar_position: 20
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-**Automate. Version. Control.**  
+**Automate changes. Version changes. Control changes.**  
 Change-as-Code (CaC) means every system change—whether it’s an S3 bucket toggle, a new database schema, or a Kafka topic configuration—is authored, versioned, and audited just like application code.
 
 At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual “clicks” in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
 
 ---
 
-## Why CaC Matters Today
+## Why CaC matters today
 
 Modern applications increasingly span dozens of external systems—ranging from relational and NoSQL databases to SaaS feature flags, message buses, and infrastructure APIs. Managing these changes manually or with ad-hoc scripts leads to:
 
@@ -322,8 +322,6 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 
 ## Next Steps
 
-- **Quickstart Guide** → Learn how to create your first ChangeUnit and run Flamingock.
-- **Core Concepts** → Dive deeper into auditing, drivers, transactions, and distributed locking.
-- **Examples Repository** → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.
-- **CLI Reference** → Coming soon: run or rollback ChangeUnits without embedding in your application.
-
+- [Quickstart Guide](../get-started.md) → Learn how to create your first ChangeUnit and run Flamingock. 
+- [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
+- [Real use case examples](../examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.

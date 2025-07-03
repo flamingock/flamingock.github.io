@@ -1,6 +1,6 @@
 ---
-title: Cloud edition
-sidebar_position: 50
+title: Cloud edition (coming soon)
+sidebar_position: 60
 ---
 
 # Cloud Edition

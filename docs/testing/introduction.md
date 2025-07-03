@@ -3,7 +3,7 @@ title: Testing Flamingock
 sidebar_position: 1
 ---
 
-## Testing Flamingock
+## Introduction
 
 This section provides guidance on how to test applications that use **Flamingock**, including strategies for validating your change logic, ensuring proper execution coordination, and maintaining audit and rollback guarantees.
 
@@ -24,7 +24,7 @@ Isolate and test the logic inside your `@Execution` and `@RollbackExecution` met
 - Focus on business correctness and expected side effects
 - No audit logs or locking are involved
 
-👉 See [Unit testing your change units](./unit-test.md)
+👉 See [Unit testing your change units](./unit-testing.md)
 
 ---
 
@@ -37,7 +37,7 @@ Run Flamingock end-to-end in a controlled environment to verify:
 
 This usually requires a real or containerized backend system (e.g., using **Testcontainers**).
 
-👉 See [Integration testing Flamingock](./integration-test.md)
+👉 See [Integration testing Flamingock](./integration-testing.md)
 
 ---
 
@@ -48,4 +48,4 @@ For applications using **Spring Boot**, test how Flamingock integrates with your
 - Confirm that changes run on startup
 - Optionally inject mocks to verify execution paths
 
-👉 See [Testing with Spring Boot](./spring-boot.md)
+👉 See [Testing with Spring Boot](./springboot-integration-testing.md)

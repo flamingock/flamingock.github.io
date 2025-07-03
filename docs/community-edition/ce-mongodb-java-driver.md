@@ -1,5 +1,5 @@
 ---
-title: MongoDB (Java Driver)
+title: MongoDB (Java driver)
 sidebar_position: 2
 ---
 
@@ -77,7 +77,7 @@ implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 At minimum, you must provide:
 - A MongoClient instance (as a **dependency**)
 - A mongodb.databaseName (as a **property**)
-- 
+
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
@@ -181,7 +181,7 @@ The session lifecycle is managed automatically by Flamingock.  If you omit the C
 ## Examples
 
 You can find practical examples in the official GitHub repository:  
-👉 [github.com/flamingock/flamingock-examples/mongodb](https://github.com/flamingock/flamingock-examples/mongodb)
+👉 [Flamingock MongoDB example](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
 
 ---
 

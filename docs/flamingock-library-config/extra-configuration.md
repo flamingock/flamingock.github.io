@@ -1,12 +1,12 @@
 ---
-title: Extra configuration
-sidebar_position: 6
+title: Additional configurations
+sidebar_position: 100
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-#  Extra Configuration
+#  Additional Configuration
 
 This section includes additional settings for customizing defaults and adding contextual information to your Flamingock setup. 
 
@@ -33,7 +33,7 @@ You can use metadata to:
 - Include a **deployment ID**, **build number**, or **triggering user**
 - Attach **comments** or **labels** for easier traceability
 
-### Examples
+### Example
 
 <Tabs groupId="config">
     <TabItem value="file" label="YAML" default>
@@ -67,7 +67,7 @@ If a change unit does not specify an `author`, Flamingock will use this value as
 - Default value: `"default_author"`
 - Ignored if the change itself defines an explicit author
 
-### Examples
+### Example
 
 <Tabs groupId="config">
     <TabItem value="file" label="YAML" default>
@@ -97,7 +97,7 @@ This global toggle allows you to enable or disable Flamingock.
 Useful in test environments, local runs, or cases where you want to conditionally skip changes.
 :::
 
-### Examples
+### Example
 
 <Tabs groupId="config">
     <TabItem value="file" label="YAML" default>
