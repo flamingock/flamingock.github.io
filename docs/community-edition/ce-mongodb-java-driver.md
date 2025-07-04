@@ -68,15 +68,16 @@ implementation("org.mongodb:mongodb-driver-sync:5.5.1") // or any version betwee
 ### 2. Enable Flamingock runner
 
 At minimum, you must provide:
+- A MongoDatabase (as a **dependency**)
 - A MongoClient instance (as a **dependency**)
-- A mongodb.databaseName (as a **property**)
 
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+MongoDatabase mongoDatabase = mongoClient.getDatabase("YOUR_DATABASE");
 
 Runner runner = Flamingock.builder()
+          .addDependency(mongoDatabase)
           .addDependency(mongoClient)
-          .setProperty("mongodb.databaseName", "flamingock-database")
           // other optional configurations
           .build();
 ```
@@ -95,9 +96,10 @@ Flamingock requires both dependencies and configuration properties, set via the 
 
 ### Dependencies
 
-| Type                             | Required | Description                     |
-|----------------------------------|:--------:|---------------------------------|
-| `com.mongodb.client.MongoClient` |   Yes    | Required to connect to MongoDB. |
+| Type                               | Required | Description                                   |
+|------------------------------------|:--------:|-----------------------------------------------|
+| `com.mongodb.client.MongoDatabase` |   Yes    | Required to connect to your MongoDB database. |
+| `com.mongodb.client.MongoClient`   |   Yes    | Required for transactional support.           |
 
 ### Properties
 
@@ -105,7 +107,6 @@ These must be set using `.setProperty(...)`
 
 | Property                         | Type                   | Default Value                  | Required | Description                                                                                                           |
 |----------------------------------|------------------------|--------------------------------|:--------:|-----------------------------------------------------------------------------------------------------------------------|
-| `mongodb. databaseName`          | `String`               | n/a                            |   Yes    | Name of the MongoDB database. This is required to store audit logs and acquire distributed locks.                     |
 | `mongodb.autoCreate`             | `boolean`              | `true`                         |    No    | Whether Flamingock should automatically create required collections and indexes.                                      |
 | `mongodb.readConcern`            | `String`               | `"MAJORITY"`                   |    No    | Controls the isolation level for read operations.                                                                     |
 | `mongodb. writeConcern.w`        | `String or int`        | `"MAJORITY"`                   |    No    | Write acknowledgment level. Specifies how many MongoDB nodes must confirm the write for it to succeed.                |
@@ -125,10 +126,11 @@ The following example shows how to configure Flamingock with both required and o
 
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+MongoDatabase mongoDatabase = mongoClient.getDatabase("YOUR_DATABASE");
 
 FlamingockBuilder builder = Flamingock.builder()
+          .addDependency(mongoDatabase)
           .addDependency(mongoClient)
-          .setProperty("mongodb.databaseName", "flamingock-database")
           .setProperty("mongodb.autoCreate", true)
           .setProperty("mongodb.readConcern", "MAJORITY")
           .setProperty("mongodb.writeConcern.w", "MAJORITY")
