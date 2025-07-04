@@ -21,26 +21,35 @@ Add the appropriate Flamingock Spring Boot integration dependency, depending on 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 2.x
-implementation("io.flamingock:springboot-integration-v2:$flamingockVersion")
-
 // For Spring Boot 3.x
-implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
+implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
+
+// For Spring Boot 2.x (legacy)
+implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For springboot 2.x -->
+<!-- For Spring Boot 3.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>springboot-integration-v2</artifactId> <!-- or  springboot-integration-v3 For springboot 3.x-->
+    <artifactId>flamingock-springboot-integration</artifactId>
+    <version>${flamingock.version}</version>
+</dependency>
+
+<!-- For Spring Boot 2.x (legacy) -->
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
   </TabItem>
 </Tabs>
 
----
+### Version Compatibility
+
+Check [Version Compatibility](introduction.md#version-compatibility)
 
 ## Building Flamingock manually
 
