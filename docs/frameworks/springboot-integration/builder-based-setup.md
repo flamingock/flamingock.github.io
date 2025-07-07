@@ -51,7 +51,26 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 Check [Version Compatibility](introduction.md#version-compatibility)
 
-## Building Flamingock manually
+## Configure setup and build Flamingock manually
+
+With the manual setup, you first need to configure Flamingock using `@Flamingock` annotation with `setup = SetupType.BUILDER`, then manually configure and run Flamingock using the builder API.
+
+### 1. Configure the annotation
+
+```java
+@Flamingock(
+    setup = SetupType.BUILDER,
+    stages = {
+        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+    }
+)
+@Configuration
+public class FlamingockConfig {
+    // Configuration class
+}
+```
+
+### 2. Manual builder configuration
 
 With the manual setup, you are responsible for configuring and running Flamingock using the builder API. This includes:
 
@@ -130,4 +149,4 @@ This ensures Flamingock executes automatically as part of the Spring Boot startu
 
 ## Next steps
 
-**Want to avoid manual setup?**   Explore the [`@EnableFlamingock` setup](./enable-flamingock-setup.md) for automatic integration with minimal code.
+**Want to avoid manual setup?** Explore the [Automatic Setup](./enable-flamingock-setup.md) for automatic integration with minimal code.

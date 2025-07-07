@@ -6,44 +6,70 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Pipeline & stages
+# Setup & Stages
 
-The **pipeline** defines how Flamingock organizes and executes your changes across one or more **stages**. Each stage groups related changes and determines the order of execution.
+The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Flamingock processes stages sequentially, in the order they appear in the pipeline file.
+Flamingock processes system and legacy stages first, then user stages. Changes within a stage are executed sequentially, but execution order between user stages is not guaranteed.
 
 :::note
 Parallel stage execution is coming soon.
 :::
 ---
 
-## The pipeline file
+## Setup configuration
 
-The pipeline is defined in a dedicated file located at:
+Flamingock is configured using the `@Flamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
-```
-src/main/resources/flamingock/pipeline.yaml
-```
-
-This file is required for all environments — whether you're using the standalone runner or Spring Boot integration.  
-It is **only** used for defining the pipeline (stages and their sources). No other configuration should be placed here.
+The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
 
 :::info
-The location of the resources directory can be customized using the `resources` compiler option.
+Alternatively, you can use a YAML file by specifying `pipelineFile` in the annotation.
 :::
 
 ---
 
-## Defining the pipeline
+## Defining the setup
 
-Here's an example of the pipeline file:
+Here's the default single-stage configuration:
 
+```java
+@Flamingock(
+    stages = {
+        @Stage(name = "main", 
+               sourcesPackage = "com.yourcompany.changes")
+    }
+)
+public class FlamingockConfig {
+    // Configuration class
+}
+```
+
+:::info Multiple stages (advanced)
+For complex scenarios requiring independent change sets, you can define multiple stages:
+```java
+@Flamingock(
+    stages = {
+        @Stage(name = "setup", sourcesPackage = "com.yourcompany.setup"),
+        @Stage(name = "main", sourcesPackage = "com.yourcompany.changes")
+    }
+)
+```
+:::
+
+Alternatively, using a YAML file:
+
+```java
+@Flamingock(pipelineFile = "config/setup.yaml")
+public class FlamingockConfig {}
+```
+
+Where `config/setup.yaml` contains:
 ```yaml
 pipeline:
   stages:
-    - name: mysql-stage
-      description: Mysql stage
-      sourcesPackage: com.yourcompany.flamingock.mysql
+    - name: main
+      sourcesPackage: com.yourcompany.changes
 ```
 
 ---

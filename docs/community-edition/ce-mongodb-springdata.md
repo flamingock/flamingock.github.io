@@ -42,13 +42,14 @@ Choose the artifact that matches the JDK level of your application today; switch
 
 ## Get Started
 
-If you're using **Spring Boot**, the recommended approach is the **automatic setup** with `@EnableFlamingock`.
+If you're using **Spring Boot**, the recommended approach is the **automatic setup** with `@Flamingock`.
 
-By annotating your main class with `@EnableFlamingock`, Flamingock will:
+By annotating your main class with `@Flamingock`, Flamingock will:
 
 - Automatically detect and inject Spring components (`ApplicationContext`, `ApplicationEventPublisher`, etc.)
 - Pick up configuration from the native Spring Boot config file
 - Create and register a runner bean (either `ApplicationRunner` or `InitializingBean`)
+- Process the pipeline configuration from the annotation
 
 ### 1. Add the required dependencies
 
@@ -83,15 +84,20 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 If your project uses **Spring Data 3.x** and **Spring Boot 2.x**, use the `flamingock-ce-mongodb-springdata-v3-legacy` edition instead.
 :::
 
-### 2. Enable Flamingock runner
+### 2. Configure setup and enable Flamingock runner
 Choose one of the following options based on your preferred integration style:
-- **Automatic setup** (recommended): Just annotate your main class with `@EnableFlamingock`
-- **Manual builder-based setup**: Manually register the Flamingock runner bean
+- **Automatic setup** (recommended): Annotate your main class with `@Flamingock`
+- **Manual builder-based setup**: Use `@Flamingock` with `setup = SetupType.BUILDER` and manually register the Flamingock runner bean
+
 <Tabs groupId="automatic_builder">
 <TabItem value="automatic" label="Automatic">
 
 ```java
-@EnableFlamingock
+@Flamingock(
+    stages = {
+        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+    }
+)
 @SpringBootApplication
 public class MyApp {
   public static void main(String[] args) {
@@ -104,16 +110,26 @@ public class MyApp {
 <TabItem value="builder" label="Builder">
 
 ```java
-@Bean
-public ApplicationRunner flamingockRunner(ApplicationContext context,
-                                           ApplicationEventPublisher publisher,
-                                           MongoTemplate template) {
-  FlamingockBuilder builder = Flamingock.builder()
-      .addDependency(context)
-      .addDependency(publisher)
-      .addDependency(template)
-      .setProperty("mongodb.databaseName", "flamingock-db");
-  return SpringbootUtil.toApplicationRunner(builder.build());
+@Flamingock(
+    setup = SetupType.BUILDER,
+    stages = {
+        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+    }
+)
+@Configuration
+public class FlamingockConfig {
+
+    @Bean
+    public ApplicationRunner flamingockRunner(ApplicationContext context,
+                                               ApplicationEventPublisher publisher,
+                                               MongoTemplate template) {
+        FlamingockBuilder builder = Flamingock.builder()
+            .addDependency(context)
+            .addDependency(publisher)
+            .addDependency(template)
+            .setProperty("mongodb.databaseName", "flamingock-db");
+        return SpringbootUtil.toApplicationRunner(builder.build());
+    }
 }
 ```
 
@@ -130,7 +146,7 @@ Flamingock’s MongoDB Spring Data edition requires two types of inputs:
 
 ### Dependencies
 
-These must be available in the Spring context (when using `@EnableFlamingock`) or registered via `.addDependency(...)` when using the builder.
+These must be available in the Spring context (when using automatic setup with `@Flamingock`) or registered via `.addDependency(...)` when using the builder setup.
 
 | Type                                                    | Required | Notes                                                                                                              |
 |---------------------------------------------------------|:--------:|--------------------------------------------------------------------------------------------------------------------|

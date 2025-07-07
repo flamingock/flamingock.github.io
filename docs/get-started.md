@@ -153,35 +153,39 @@ You can combine both styles in the same project. See our [Examples](/docs/exampl
 
 ---
 
-## 4. Define the Pipeline
+## 4. Configure the Setup
 
-The **pipeline** defines how Flamingock organizes and executes your changes across one or more **stages**.
+Flamingock organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Each stage groups a set of changes and executes them sequentially (parallel execution is coming soon).
-Stages are processed in the order they appear in the pipeline.
-
-By default, Flamingock expects the pipeline file to be located at `resources/flamingock/pipeline.yaml`
+Configure Flamingock using the `@Flamingock` annotation on any class in your application:
 
 Here’s a basic structure:
 
-```yaml
-pipeline:
-  stages:
-    - name: mysql_stage
-      description: Initial stage for MySQL setup
-      sourcesPackage: com.yourcompany.flamingock.mysql
-      resourcesDir: flamingock/stages/mysql
+```java
+@Flamingock(
+    stages = {
+        @Stage(name = "main", 
+               sourcesPackage = "com.yourcompany.changes")
+    }
+)
+public class FlamingockConfig {
+    // Configuration class
+}
 ```
 
-###  Changes resolution:
-- `sourcesPackage`: Path to Java packages that may contain both code-based and template-based changes.
-- `resourcesDir`: Directory inside `resources/` that holds only template-based changes.
-- You can use either or both, depending on how you organize your changes.
+### Stage configuration:
+- `sourcesPackage`: Path to Java packages containing your changes (both code-based and template-based)
+- `resourcesDir`: (Optional) Directory inside `resources/` for template-based changes only
 
-:::tip Recommended patterns:
-- Use `sourcesPackage` alone for co-located code and templates.
-- Use both `sourcesPackage` and `resourcesDir` if you want to separate templates.
+:::tip Default approach:
+Most applications use a single stage with `sourcesPackage` pointing to their changes package. This is the recommended default setup.
 - It’s valid to have template files in both places.
+:::
+
+:::info Advanced options:
+- **Multiple stages**: For complex scenarios requiring independent change sets
+- **File-based configuration**: Use `pipelineFile` parameter for YAML configuration
+- **Resource directories**: Separate templates using `resourcesDir`
 :::
 
 ---
@@ -229,10 +233,10 @@ If everything is correctly set up, Flamingock’s annotation processor will kick
 Note:    [Flamingock] Starting Flamingock annotation processor initialization.
 Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
 Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
-Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+Note:    [Flamingock] Reading flamingock setup from annotation configuration
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
 Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
-Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+Note:    [Flamingock] Reading flamingock setup from annotation configuration
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
 ```
@@ -244,10 +248,10 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 [INFO]   [Flamingock] Starting Flamingock annotation processor initialization.
 [INFO]   [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/resources'
 [INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
-[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Reading flamingock setup from annotation configuration
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
 [INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
-[INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
+[INFO]   [Flamingock] Reading flamingock setup from annotation configuration
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
 [INFO]   [Flamingock] Final processing round detected - skipping execution.
 ```
@@ -266,7 +270,7 @@ These logs confirm that:
 - Metadata was generated for execution
 
 :::tip
-If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your pipeline file is reachable.
+If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your @Flamingock annotation is properly configured.
 :::
 
 ---
@@ -275,7 +279,7 @@ If you don’t see this output, ensure the annotation processor is correctly inc
 Once your project is compiled and Flamingock is configured, you're ready to run the application.
 
 When your application starts, Flamingock will be executed as part of the startup process:
-- Load the pipeline file(actually the metadata generated from the pipeline file  during the compilation)
+- Load the setup configuration (actually the metadata generated from the annotation configuration during the compilation)
 - Evaluate pending changes
 - Execute the changes
 - Audit the execution status

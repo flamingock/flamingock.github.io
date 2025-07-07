@@ -99,24 +99,24 @@ configuration:
 - **origin**: The collection/table where Mongock's audit log is stored (typically `mongockChangeLog`)
 - **failOnEmptyOrigin**: (Optional) Set to `false` to disable the security check that ensures the origin contains data. By default, Flamingock verifies the origin collection/table has content to prevent importing from the wrong source
 
-## Step 4: Configure pipeline
+## Step 4: Configure setup
 
-The Flamingock pipeline configuration (`resources/flamingock/pipeline.yaml`) requires two key stages:
+Configure Flamingock using the `@Flamingock` annotation. Add this annotation to any class in your application:
 
-```yaml
-pipeline:
-  systemStage:
-    sourcesPackage: "com.yourapp.flamingock.system"
-  stages:
-    - name: "Existing changes from Mongock"
-      type: "legacy"
-      sourcesPackage: "com.yourapp.mongock"
-    - name: "Application Changes"
-      description: "New changes using Flamingock"
-      sourcesPackage: "com.yourapp.flamingock.changes"
+```java
+@Flamingock(
+    systemStage = @SystemStage(sourcesPackage = "com.yourapp.flamingock.system"),
+    stages = {
+        @Stage(name = "Existing changes from Mongock", type = StageType.LEGACY, sourcesPackage = "com.yourapp.mongock"),
+        @Stage(name = "Application Changes", sourcesPackage = "com.yourapp.flamingock.changes")
+    }
+)
+public class FlamingockConfig {
+    // Configuration class
+}
 ```
 
-### Pipeline configuration explained:
+### Configuration explained:
 
 **Stage types and usage:**
 
@@ -129,7 +129,7 @@ pipeline:
 **Important notes:**
 - **System and Legacy stages** are special stages handled by Flamingock itself
 - **User stages** are where you add your application changes. In most cases, you'll have just one user stage for all your new changeUnits
-- For advanced stage configurations and multi-stage scenarios, see the [pipeline & stages guide](client-configuration/pipeline-and-stages)
+- For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](client-configuration/pipeline-and-stages)
 
 ## Run and validate
 
