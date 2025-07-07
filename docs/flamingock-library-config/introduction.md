@@ -40,7 +40,7 @@ Each of these topics is explained in its own section.
 Flamingock configuration is organized in two main scopes:
 ### Core configuration (shared by all editions)
 Includes:
-- Pipeline definition
+- Setup and stages definition
 - Lock settings
 - Metadata
 - Default author
@@ -59,7 +59,7 @@ Each of these can be used in two runtime environments:
 
 ---
 
-## Defining pipeline configuration
+## Setup and stages configuration
 
 Stages are configured using the `@Flamingock` annotation on any class in your application:
 
@@ -89,7 +89,7 @@ The annotation should contain **only** the pipeline and stage definitions — no
 - Profile support for stages is planned but not yet available.
 :::
 
-See the [Pipeline & stages](./pipeline-and-stages.md) page for full details and examples.
+See the [Pipeline & stages](setup-and-stages.md) page for full details and examples.
 
 
 ---
@@ -113,7 +113,7 @@ You can combine both approaches. If a property is defined in both, the builder v
 Explore the rest of the configuration section to tune Flamingock for your system:
 
 ### Shared configuration
-- [Pipeline & Stages](./pipeline-and-stages.md)
+- [Setup & Stages](./setup-and-stages.md)
 - [Lock Configuration](./lock-configuration.md)
 - [Extra Configuration](./xtra-configuration.md)
 - [Dependency wiring](./changeunit-dependency-injection.md)

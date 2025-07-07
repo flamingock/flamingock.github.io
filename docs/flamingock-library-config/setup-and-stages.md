@@ -12,9 +12,6 @@ The Flamingock **setup** organizes and executes your changes using **stages**. B
 
 Flamingock processes system and legacy stages first, then user stages. Changes within a stage are executed sequentially, but execution order between user stages is not guaranteed.
 
-:::note
-Parallel stage execution is coming soon.
-:::
 ---
 
 ## Setup configuration
