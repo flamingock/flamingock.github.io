@@ -113,7 +113,7 @@ pipeline:
       sourcesPackage: "com.yourapp.mongock"
     - name: "Application Changes"
       description: "New changes using Flamingock"
-sourcesPackage: "com.yourapp.flamingock.changes"
+      sourcesPackage: "com.yourapp.flamingock.changes"
 ```
 
 ### Pipeline configuration explained:
