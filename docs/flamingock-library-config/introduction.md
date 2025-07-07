@@ -12,7 +12,7 @@ Flamingock provides flexible configuration options to support a variety of envir
 
 Configuration is divided into two distinct scopes:
 
-- **Pipeline configuration** defines how Flamingock discovers and organizes change units. This must always be defined in a dedicated file.
+- **Setup configuration** defines how Flamingock discovers and organizes change units. This is configured using the `@Flamingock` annotation.
 
 - **Runtime configuration** includes optional parameters such as locking, metadata, author, etc., and can be provided via builder or (depending on the environment) a file.
 
@@ -20,15 +20,15 @@ Configuration is divided into two distinct scopes:
 
 ## What you can configure
 
-| Area                                | Description                                         |
-|-------------------------------------|-----------------------------------------------------|
-| Pipeline & Stages                | Organize changes into ordered stages                |
+| Area                             | Description                                         |
+|----------------------------------|-----------------------------------------------------|
+| Setup & Stages                   | Organize changes into ordered stages                |
 | ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
 | Platform component injection     | Platform-level components injection                 |
 | Lock                             | Distributed locking and timing options              |
 | Extra                            | Metadata, default author, enable/disable            |
-| ☁️ Cloud Edition                    | Cloud-specific setup: token, env, service           |
-| 🧪 Community Edition                | Driver-specific config for MongoDB, DynamoDB...     |
+| Cloud Edition                    | Cloud-specific setup: token, env, service           |
+| Community Edition                | Driver-specific config for MongoDB, DynamoDB...     |
 
 
 Each of these topics is explained in its own section.
@@ -40,7 +40,7 @@ Each of these topics is explained in its own section.
 Flamingock configuration is organized in two main scopes:
 ### Core configuration (shared by all editions)
 Includes:
-- Pipeline definition
+- Setup and stages definition
 - Lock settings
 - Metadata
 - Default author
@@ -59,23 +59,37 @@ Each of these can be used in two runtime environments:
 
 ---
 
-## Defining pipeline configuration
+## Setup and stages configuration
 
-The pipeline must be defined in its own dedicated file located at:
-```js
-src/main/resources/flamingock/pipeline.yaml
+Stages are configured using the `@Flamingock` annotation on any class in your application:
+
+```java
+@Flamingock(
+    stages = {
+        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+    }
+)
+public class FlamingockConfig {
+    // Configuration class
+}
 ```
-This file is required for all runners and all environments. It should contain **only** the pipeline and stage definitions — no runtime configuration should be placed here.
 
-The location of the `resources` directory can be customized using the `resources` compiler option.
+Alternatively, you can use a dedicated file by specifying `pipelineFile` in the annotation:
+```java
+@Flamingock(pipelineFile = "config/pipeline.yaml")
+public class FlamingockConfig {}
+```
+
+The annotation should contain **only** the pipeline and stage definitions — no runtime configuration should be placed here.
 
 :::info
+- The `@Flamingock` annotation is required for all runners and all environments.
 - The pipeline definition should remain the same across environments.
 - To conditionally include or exclude changes, Flamingock supports [profiles](../frameworks/springboot-integration/profiles.md).
 - Profile support for stages is planned but not yet available.
 :::
 
-See the [Pipeline & stages](./pipeline-and-stages.md) page for full details and examples.
+See the [Pipeline & stages](setup-and-stages.md) page for full details and examples.
 
 
 ---
@@ -99,7 +113,7 @@ You can combine both approaches. If a property is defined in both, the builder v
 Explore the rest of the configuration section to tune Flamingock for your system:
 
 ### Shared configuration
-- [Pipeline & Stages](./pipeline-and-stages.md)
+- [Setup & Stages](./setup-and-stages.md)
 - [Lock Configuration](./lock-configuration.md)
 - [Extra Configuration](./xtra-configuration.md)
 - [Dependency wiring](./changeunit-dependency-injection.md)

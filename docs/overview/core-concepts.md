@@ -82,7 +82,7 @@ Workflows group and coordinate multiple ChangeUnits into stages. In future relea
 
 This will enable advanced orchestration logic during deployments or upgrades.
 
-For a deeper dive around Workflows, see the [Pipelines and stages](../flamingock-library-config/pipeline-and-stages.md) section.
+For a deeper dive around Workflows, see the [Pipelines and stages](../flamingock-library-config/setup-and-stages.md) section.
 
 ---
 

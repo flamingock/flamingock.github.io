@@ -1,13 +1,13 @@
 ---
-title: EnableFlamingock (automatic)
+title: Automatic Setup
 sidebar_position: 2
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# @EnableFlamingock (automatic)
+# Automatic Setup
 
-Flamingock provides a convenient automatic integration with Spring Boot using the `@EnableFlamingock` annotation. This setup is ideal when you want Flamingock to automatically detect and wire required components without writing explicit builder logic.
+Flamingock provides a convenient automatic integration with Spring Boot using the `@Flamingock` annotation. This setup is ideal when you want Flamingock to automatically detect and wire required components without writing explicit builder logic.
 
 ---
 
@@ -48,14 +48,19 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 Check [Version Compatibility](introduction.md#version-compatibility)
 
-## Annotate your main class
+## Configure setup and activate integration
 
-To activate the integration, add `@EnableFlamingock` to your Spring Boot application entry point:
+To activate the integration, add `@Flamingock` to any class in your application (commonly on your main class or a configuration class):
 
 ```java
-import io.flamingock.springboot.v2.EnableFlamingock;
+import io.flamingock.core.api.annotations.Flamingock;
+import io.flamingock.core.api.annotations.Stage;
 
-@EnableFlamingock
+@Flamingock(
+    stages = {
+        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+    }
+)
 @SpringBootApplication
 public class MyApplication {
   public static void main(String[] args) {
@@ -64,11 +69,12 @@ public class MyApplication {
 }
 ```
 
-This enables Flamingock to:
+The `@Flamingock` annotation enables automatic Spring Boot integration, which:
 
 - Detect and use Spring’s `ApplicationContext` and `ApplicationEventPublisher`
-- Load Flamingock configuration directly from your Spring Boot config file
-- Automatically configure the runner (e.g., ApplicationRunner or InitializingBean)
+- Loads Flamingock configuration directly from your Spring Boot config file
+- Automatically configures the runner (e.g., ApplicationRunner or InitializingBean)
+- Processes the setup configuration from the annotation
 
 ---
 

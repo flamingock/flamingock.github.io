@@ -32,7 +32,7 @@ Flamingock offers **two ways to integrate with Spring Boot**, depending on how m
 
 ### Builder-based setup (manual)
 
-This approach gives you full control and uses the standard Flamingock builder.  
+This approach gives you full control and uses the standard Flamingock builder with `@Flamingock(setup = SetupType.BUILDER)`.  
 You manually inject the required Spring Boot components(ApplicationContext and ApplicationEventPublisher) as well as any Flamingock core configuration.
 
 In addition, you can register other dependencies manually — these will take precedence over beans from the Spring context when resolving what to inject into change units.
@@ -43,18 +43,19 @@ This is recommended for advanced users or highly customized environments.
 
 ---
 
-### @EnableFlamingock setup (automatic)
+### Automatic setup
 
 This is the simplest way to enable Flamingock in Spring Boot.  
-Just annotate your main application class with `@EnableFlamingock`, and Flamingock will:
+Just annotate any class with `@Flamingock` (commonly your main application class), and Flamingock will:
 
 - Auto-detect the application context and event publisher
 - Read configuration from Spring Boot config files
 - Automatically wire the `FlamingockRunner` bean
+- Process the pipeline configuration from the annotation
 
 Ideal for most users who prefer convention over configuration.
 
-> See: [@EnableFlamingock setup](./enable-flamingock-setup.md)
+> See: [Automatic setup](./enable-flamingock-setup.md)
 
 ---
 
@@ -146,7 +147,7 @@ Consider the following recommendations to get the most out of Flamingock’s Spr
 - **Prefer `ApplicationRunner` as your runner strategy**  
   It ensures Flamingock runs after the application context is fully initialized, giving it access to all beans, profiles, and configuration. It also integrates more safely with event publishing and external monitoring tools like Actuator or Prometheus.
 
-- **Use `@EnableFlamingock` for simpler setups**  
+- **Use automatic setup (`@Flamingock`) for simpler setups**  
   Unless you have advanced needs (such as injecting non-Spring-managed dependencies), the automatic setup provides a clean and reliable integration path.
 
 - **Use Spring profiles to scope change units**  
@@ -156,6 +157,6 @@ Consider the following recommendations to get the most out of Flamingock’s Spr
   Letting Spring handle the execution via `ApplicationRunner` or `InitializingBean` ensures Flamingock runs at the appropriate time in your application lifecycle.
 
 - **Register custom platform components using `.addDependency(...)` only when required**  
-  Most applications using `@EnableFlamingock` will not need to register components manually.
+  Most applications using automatic setup will not need to register components manually.
 
 
