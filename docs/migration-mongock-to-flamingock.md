@@ -79,7 +79,9 @@ For Spring Boot integration, see the [Spring Boot guide](springboot-integration/
 
 ## Step 3: Create system stage
 
-Create a template-based change unit in a new system stage package to handle the upgrade from Mongock. Create a YAML file (e.g., `_0001_upgrade_from_mongock.yaml`) with the following structure:
+The system stage is a special stage handled by Flamingock for system-level operations. In this migration context, you'll create a template-based change unit in the system stage package to handle the upgrade from Mongock. 
+
+Create a YAML file (e.g., `_0001_upgrade_from_mongock.yaml`) with the following structure:
 
 ```yaml
 id: upgrade-from-mongock
@@ -87,13 +89,15 @@ order: 0001
 template: MongoDbImporterChangeTemplate
 configuration:
   origin: mongockChangeLog
+  failOnEmptyOrigin: true
 ```
 
 **Configuration parameters:**
 - **id**: Choose how you want to identify this change unit
 - **order**: Should be the first one (0001) as this is typically the first system stage change unit
-- **template**: Must be `MongoDbImporterChangeTemplate`
+- **template**: Available templates: `MongoDbImporterChangeTemplate`, `DynamoDbImporterChangeTemplate`, `CouchbaseImporterChangeTemplate`
 - **origin**: The collection/table where Mongock's audit log is stored (typically `mongockChangeLog`)
+- **failOnEmptyOrigin**: (Optional) Set to `false` to disable the security check that ensures the origin contains data. By default, Flamingock verifies the origin collection/table has content to prevent importing from the wrong source
 
 ## Step 4: Configure pipeline
 
@@ -109,17 +113,20 @@ pipeline:
       sourcesPackage: "com.yourapp.mongock"
     - name: "Application Changes"
       description: "New changes using Flamingock"
-      sourcesPackage: "com.yourapp.flamingock.changes"
+sourcesPackage: "com.yourapp.flamingock.changes"
 ```
 
-### Key configuration elements:
+### Pipeline configuration explained:
 
-1. **System Stage**: Contains the upgrade change unit that imports Mongock change logs and transforms them to Flamingock audit logs
+**Stage types and usage:**
+
+1. **System Stage**: A generic stage for system-level change units handled by Flamingock itself. In this migration context, it contains the upgrade change unit that imports Mongock change logs and transforms them to Flamingock audit logs
+
 2. **Legacy Stage**: Points to your existing change units from Mongock (type: "legacy") - no need to move or copy files. This stage is read-only and should not receive new changeUnits
+
 3. **User Stage**: For new Flamingock-native change units. Typically, applications use a single user stage where all new changes should be added
 
-### Stage usage patterns:
-
+**Important notes:**
 - **System and Legacy stages** are special stages handled by Flamingock itself
 - **User stages** are where you add your application changes. In most cases, you'll have just one user stage for all your new changeUnits
 - For advanced stage configurations and multi-stage scenarios, see the [pipeline & stages guide](client-configuration/pipeline-and-stages)
