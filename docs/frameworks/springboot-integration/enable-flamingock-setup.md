@@ -50,15 +50,15 @@ Check [Version Compatibility](introduction.md#version-compatibility)
 
 ## Configure setup and activate integration
 
-To activate the integration, add `@Flamingock` to any class in your application (commonly on your main class or a configuration class):
+To activate the integration, add `@EnableFlamingock` to any class in your application (commonly on your main class or a configuration class):
 
 ```java
-import io.flamingock.core.api.annotations.Flamingock;
+import io.flamingock.core.api.annotations.EnableFlamingock;
 import io.flamingock.core.api.annotations.Stage;
 
-@Flamingock(
+@EnableFlamingock(
     stages = {
-        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+        @Stage(location = "com.yourapp.changes")
     }
 )
 @SpringBootApplication
@@ -69,7 +69,7 @@ public class MyApplication {
 }
 ```
 
-The `@Flamingock` annotation enables automatic Spring Boot integration, which:
+The `@EnableFlamingock` annotation enables automatic Spring Boot integration, which:
 
 - Detect and use Spring’s `ApplicationContext` and `ApplicationEventPublisher`
 - Loads Flamingock configuration directly from your Spring Boot config file

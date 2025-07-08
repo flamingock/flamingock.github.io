@@ -101,14 +101,14 @@ configuration:
 
 ## Step 4: Configure setup
 
-Configure Flamingock using the `@Flamingock` annotation. Add this annotation to any class in your application:
+Configure Flamingock using the `@EnableFlamingock` annotation. Add this annotation to any class in your application:
 
 ```java
-@Flamingock(
-    systemStage = @SystemStage(sourcesPackage = "com.yourapp.flamingock.system"),
+@EnableFlamingock(
+    systemStage = "com.yourapp.flamingock.system",
     stages = {
-        @Stage(name = "Existing changes from Mongock", type = StageType.LEGACY, sourcesPackage = "com.yourapp.mongock"),
-        @Stage(name = "Application Changes", sourcesPackage = "com.yourapp.flamingock.changes")
+        @Stage(name = "Existing changes from Mongock", type = StageType.LEGACY, location = "com.yourapp.mongock"),
+        @Stage(location = "com.yourapp.flamingock.changes")
     }
 )
 public class FlamingockConfig {
@@ -129,7 +129,7 @@ public class FlamingockConfig {
 **Important notes:**
 - **System and Legacy stages** are special stages handled by Flamingock itself
 - **User stages** are where you add your application changes. In most cases, you'll have just one user stage for all your new changeUnits
-- For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](client-configuration/pipeline-and-stages)
+- For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](client-configuration/setup-and-stages)
 
 ## Run and validate
 

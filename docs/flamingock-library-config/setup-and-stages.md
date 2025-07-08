@@ -16,7 +16,7 @@ Flamingock processes system and legacy stages first, then user stages. Changes w
 
 ## Setup configuration
 
-Flamingock is configured using the `@Flamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
+Flamingock is configured using the `@EnableFlamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
 The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
 
@@ -31,10 +31,9 @@ Alternatively, you can use a YAML file by specifying `pipelineFile` in the annot
 Here's the default single-stage configuration:
 
 ```java
-@Flamingock(
+@EnableFlamingock(
     stages = {
-        @Stage(name = "main", 
-               sourcesPackage = "com.yourcompany.changes")
+        @Stage(location = "com.yourcompany.changes")
     }
 )
 public class FlamingockConfig {
@@ -45,10 +44,10 @@ public class FlamingockConfig {
 :::info Multiple stages (advanced)
 For complex scenarios requiring independent change sets, you can define multiple stages:
 ```java
-@Flamingock(
+@EnableFlamingock(
     stages = {
-        @Stage(name = "setup", sourcesPackage = "com.yourcompany.setup"),
-        @Stage(name = "main", sourcesPackage = "com.yourcompany.changes")
+        @Stage(name = "setup", location = "com.yourcompany.setup"),
+        @Stage(location = "com.yourcompany.changes")
     }
 )
 ```
@@ -57,7 +56,7 @@ For complex scenarios requiring independent change sets, you can define multiple
 Alternatively, using a YAML file:
 
 ```java
-@Flamingock(pipelineFile = "config/setup.yaml")
+@EnableFlamingock(pipelineFile = "config/setup.yaml")
 public class FlamingockConfig {}
 ```
 
@@ -66,7 +65,7 @@ Where `config/setup.yaml` contains:
 pipeline:
   stages:
     - name: main
-      sourcesPackage: com.yourcompany.changes
+      location: com.yourcompany.changes
 ```
 
 ---
@@ -74,8 +73,8 @@ pipeline:
 ## Required fields
 
 Each stage must define:
-- `name`: A unique identifier
-- At least one of `sourcesPackage` or `resourcesDir`
+- `name` (optional): A unique identifier - if not provided, it will be auto-derived from the location
+- `location`: The package or directory where changes are located
 
 ---
 
@@ -83,27 +82,20 @@ Each stage must define:
 
 | Field            | Required            | Description                                                                 |
 |------------------|---------------------|-----------------------------------------------------------------------------|
-| `name`           | :white_check_mark:  | Unique identifier for the stage                                             |
+| `location`       | :white_check_mark:  | Package or directory scanned for both code-based and template-based changes |
+| `name`           | :x:                 | Unique identifier for the stage (auto-derived from location if not provided) |
 | `description`    | :x:                 | Optional text explaining the stage's purpose                                |
-| `sourcesPackage` | :white_check_mark:* | Scanned for both code-based and template-based changes                      |
-| `resourcesDir`   | :white_check_mark:* | Used for template-based changes in the resources directory                  |
-
-:::info
-You must provide at least one of `sourcesPackage`, `resourcesDir`, or both.
-:::
 
 ---
 
 ## Where Changes are located
 
-- **`sourcesPackage`** refers to a source package (e.g., `com.company.init`).  
-  - Template-based and code-based changes can co-exist here.
-  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`
-  - Can be customized via the `sources` compiler option.
-
-- **`resourcesDir`** refers to a path inside `src/main/resources`.  
-  - Only used for template-based changes.
-  - Can be customized via the `resources` compiler option.
+- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.  
+  - Template-based and code-based changes can co-exist if location is a source package.
+  - If location references a resource directory, it only accepts template-based changeUnits.
+  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`. 
+  - Source root can be customized via the `sources` compiler option.
+  - Resource root can be customized via the `resources` compiler option.
   
 - Customizing Source and Resource Root Paths
 <Tabs groupId="gradle_maven">
@@ -146,7 +138,7 @@ pipeline:
   stages:
     - name: user-setup
       description: User-related DB setup
-      sourcesPackage: com.yourapp.flamingock.users
+      location: com.yourapp.flamingock.users
 ```
 
 Folder view:
@@ -168,9 +160,9 @@ src/
 ## 🛠 Troubleshooting
 
 ### My stage isn't picked up
-- Make sure the stage has a `name` and **at least one** of `sourcesPackage` or `resourcesDir`
+- Make sure the stage has a `location` field defined
 - Check the file path is correct and uses `/` as a separator, not `.` in YAML
-- If using `resourcesDir`, make sure the file is placed under `src/main/resources/your-dir`
+- If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
 
 ### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
@@ -181,8 +173,29 @@ src/
 
 ## Best Practices
 
+### Single stage approach (recommended)
+The default and recommended approach is to use a **single stage** with the `@Stage` annotation:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourcompany.changes")
+    }
+)
+```
+
+This approach:
+- Simplifies setup management and reduces complexity
+- Ensures all changes execute in a predictable sequential order
+- Eliminates the need to manage inter-stage dependencies
+- Provides the clearest mental model for most applications
+
+:::info Multiple stages (advanced use case)
+Multiple stages are only recommended for complex scenarios requiring independent change sets with different lifecycles or sources. Most applications should use a single stage.
+:::
+
 ### Placing your changes
-We strongly recommend placing all your changes — code-based and template-based — in a **single `sourcesPackage`**.
+We strongly recommend placing all your changes — code-based and template-based — in a **single location** defined by the `@Stage` annotation.
   - Ensures changes are always scanned, regardless of type
   - Avoids needing two locations if one template-based change requires fallback to code
   - Keeps everything in one logical location
@@ -207,3 +220,4 @@ This convention:
 
 :::tip
 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
+:::

@@ -53,15 +53,15 @@ Check [Version Compatibility](introduction.md#version-compatibility)
 
 ## Configure setup and build Flamingock manually
 
-With the manual setup, you first need to configure Flamingock using `@Flamingock` annotation with `setup = SetupType.BUILDER`, then manually configure and run Flamingock using the builder API.
+With the manual setup, you first need to configure Flamingock using `@EnableFlamingock` annotation with `setup = SetupType.BUILDER`, then manually configure and run Flamingock using the builder API.
 
 ### 1. Configure the annotation
 
 ```java
-@Flamingock(
+@EnableFlamingock(
     setup = SetupType.BUILDER,
     stages = {
-        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+        @Stage(location = "com.yourapp.changes")
     }
 )
 @Configuration

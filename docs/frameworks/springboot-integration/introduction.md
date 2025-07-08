@@ -32,7 +32,7 @@ Flamingock offers **two ways to integrate with Spring Boot**, depending on how m
 
 ### Builder-based setup (manual)
 
-This approach gives you full control and uses the standard Flamingock builder with `@Flamingock(setup = SetupType.BUILDER)`.  
+This approach gives you full control and uses the standard Flamingock builder with `@EnableFlamingock(setup = SetupType.BUILDER)`.  
 You manually inject the required Spring Boot components(ApplicationContext and ApplicationEventPublisher) as well as any Flamingock core configuration.
 
 In addition, you can register other dependencies manually — these will take precedence over beans from the Spring context when resolving what to inject into change units.
@@ -46,12 +46,12 @@ This is recommended for advanced users or highly customized environments.
 ### Automatic setup
 
 This is the simplest way to enable Flamingock in Spring Boot.  
-Just annotate any class with `@Flamingock` (commonly your main application class), and Flamingock will:
+Just annotate any class with `@EnableFlamingock` (commonly your main application class), and Flamingock will:
 
 - Auto-detect the application context and event publisher
 - Read configuration from Spring Boot config files
 - Automatically wire the `FlamingockRunner` bean
-- Process the pipeline configuration from the annotation
+- Process the setup configuration from the annotation
 
 Ideal for most users who prefer convention over configuration.
 
@@ -147,7 +147,7 @@ Consider the following recommendations to get the most out of Flamingock’s Spr
 - **Prefer `ApplicationRunner` as your runner strategy**  
   It ensures Flamingock runs after the application context is fully initialized, giving it access to all beans, profiles, and configuration. It also integrates more safely with event publishing and external monitoring tools like Actuator or Prometheus.
 
-- **Use automatic setup (`@Flamingock`) for simpler setups**  
+- **Use automatic setup (`@EnableFlamingock`) for simpler setups**  
   Unless you have advanced needs (such as injecting non-Spring-managed dependencies), the automatic setup provides a clean and reliable integration path.
 
 - **Use Spring profiles to scope change units**  

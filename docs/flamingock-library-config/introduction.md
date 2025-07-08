@@ -61,12 +61,12 @@ Each of these can be used in two runtime environments:
 
 ## Setup and stages configuration
 
-Stages are configured using the `@Flamingock` annotation on any class in your application:
+Stages are configured using the `@EnableFlamingock` annotation on any class in your application:
 
 ```java
-@Flamingock(
+@EnableFlamingock(
     stages = {
-        @Stage(name = "main", sourcesPackage = "com.yourapp.changes")
+        @Stage(location = "com.yourapp.changes")
     }
 )
 public class FlamingockConfig {
@@ -76,14 +76,14 @@ public class FlamingockConfig {
 
 Alternatively, you can use a dedicated file by specifying `pipelineFile` in the annotation:
 ```java
-@Flamingock(pipelineFile = "config/pipeline.yaml")
+@EnableFlamingock(pipelineFile = "config/pipeline.yaml")
 public class FlamingockConfig {}
 ```
 
 The annotation should contain **only** the pipeline and stage definitions — no runtime configuration should be placed here.
 
 :::info
-- The `@Flamingock` annotation is required for all runners and all environments.
+- The `@EnableFlamingock` annotation is required for all runners and all environments.
 - The pipeline definition should remain the same across environments.
 - To conditionally include or exclude changes, Flamingock supports [profiles](../frameworks/springboot-integration/profiles.md).
 - Profile support for stages is planned but not yet available.
