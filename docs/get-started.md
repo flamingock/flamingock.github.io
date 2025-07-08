@@ -54,11 +54,9 @@ Example for **Community Edition** using MongoDB Sync4:
 
 All Community Editions:
 
-- **flamingock-ce-mongodb-v3**
-- **flamingock-ce-mongodb-sync4**
-- **flamingock-ce-mongodb-springdata-v2**
-- **flamingock-ce-mongodb-springdata-v3**
-- **flamingock-ce-mongodb-springdata-v4**
+- **flamingock-ce-mongodb-sync**
+- **flamingock-ce-mongodb-springdata**
+- **flamingock-ce-mongodb-springdata-v3-legacy**
 - **flamingock-ce-dynamodb**
 - **flamingock-ce-couchbase**
 
@@ -157,35 +155,35 @@ You can combine both styles in the same project. See our [Examples](/docs/exampl
 
 Flamingock organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Configure Flamingock using the `@Flamingock` annotation on any class in your application:
+Configure Flamingock using the `@EnableFlamingock` annotation on any class in your application:
 
 Here’s a basic structure:
 
 ```java
-@Flamingock(
+@EnableFlamingock(
     stages = {
-        @Stage(name = "main", 
-               sourcesPackage = "com.yourcompany.changes")
+        @Stage(location = "com.yourcompany.changes")
     }
 )
-public class FlamingockConfig {
-    // Configuration class
+public class App {
 }
 ```
 
 ### Stage configuration:
-- `sourcesPackage`: Path to Java packages containing your changes (both code-based and template-based)
-- `resourcesDir`: (Optional) Directory inside `resources/` for template-based changes only
+- `location`: Location where changes are found (mandatory)
+  - **Package**: `"com.yourcompany.changes"` - scans for code and templates
+  - **Resource directory**: `"flamingock/templates"` - scans for templates only(in the resources folder by default)
+- `name`: (Optional) Stage name - auto-derived from location if not provided
 
 :::tip Default approach:
-Most applications use a single stage with `sourcesPackage` pointing to their changes package. This is the recommended default setup.
+Most applications use a single stage: `@Stage(location = "com.yourcompany.changes")`. The name is auto-derived ("changes") and this is the recommended default setup.
 - It’s valid to have template files in both places.
 :::
 
 :::info Advanced options:
 - **Multiple stages**: For complex scenarios requiring independent change sets
 - **File-based configuration**: Use `pipelineFile` parameter for YAML configuration
-- **Resource directories**: Separate templates using `resourcesDir`
+- **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
 ---
