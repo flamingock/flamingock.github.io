@@ -30,13 +30,13 @@ flowchart LR
 Every change — whether it’s a database migration, a feature flag update, or a third-party API configuration — is encapsulated into a **ChangeUnit**.
 
 - Each ChangeUnit is uniquely identified, versioned, and optionally includes rollback logic.
-- Changes can be defined in code (Java/Kotlin) or declaratively (YAML/JSON) via reusable templates [**templates**](../docs/templates/templates-introduction.md).
+- Changes can be defined in code (Java/Kotlin) or declaratively (YAML/JSON) via reusable templates [**templates**](../templates/templates-introduction.md).
 
 ---
 
 ## 2. Organize changes into Workflows
 
-ChangeUnits are grouped into stages and structured into a [**Workflow**](overview/core-concepts.md?#-workflows) pipeline to represent a coordinated sequence of changes.
+ChangeUnits are grouped into stages and structured into a [**Workflow**](../overview/core-concepts.md?#-workflows) pipeline to represent a coordinated sequence of changes.
 
 - Workflows allow you to define how changes should be applied: sequentially or (in future releases) in parallel or conditionally.
 - This logical grouping simplifies the orchestration and order of changes across systems / services / components.
@@ -88,7 +88,7 @@ Imagine a developer needs to introduce the following system changes as part of a
 2. Enable a feature flag in a SaaS dashboard via REST API  
 3. Update an environment variable in a remote configuration store
 
-![Example 1](../static/img/Flamingock%20Example%20use%20case%201.png)
+![Example 1](../../static/img/Flamingock%20Example%20use%20case%201.png)
 
 Here’s how Flamingock helps:
 
@@ -114,7 +114,7 @@ In a Domain-Driven Design (DDD) environment, a change to a domain model often re
 2. Modify the Kafka event schema and topic configuration
 3. Adjust the API Gateway routing and validation rules
 
-![Example 2](../static/img/Flamingock%20Example%20use%20case%202.png)
+![Example 2](../../static/img/Flamingock%20Example%20use%20case%202.png)
 
 Here’s how Flamingock makes this seamless:
 

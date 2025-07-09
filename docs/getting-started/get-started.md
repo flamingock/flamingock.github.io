@@ -61,7 +61,7 @@ All Community Editions:
 - **flamingock-ce-couchbase**
 
 :::note
-For configuration details specific to the Community Edition, see the [community edition section](./community-edition/Introduction.md)
+For configuration details specific to the Community Edition, see the [community edition section](../community-edition/Introduction.md)
 :::
 ---
 
@@ -111,7 +111,7 @@ This is required at **build time** and supports:
 A **ChangeUnit** is a unit of logic that Flamingock will execute during your application's startup.
 
 Changes can be defined in a **code-based** or **template-based** style, depending on your preferred approach.
-For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → ChangeUnits](./overview/core-concepts.md#-changeunits) section.
+For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → ChangeUnits](../overview/core-concepts.md#-changeunits) section.
 
  
 <Tabs groupId="change">
@@ -146,7 +146,7 @@ public class CreateTableChange {
 </Tabs>
 
 :::info
-You can combine both styles in the same project. See our [Examples](/docs/examples.md)  to see these in action.
+You can combine both styles in the same project. See our [Examples](../examples/examples.md)  to see these in action.
 :::
 
 ---
@@ -190,7 +190,7 @@ Most applications use a single stage: `@Stage(location = "com.yourcompany.change
 
 ## 5. Configure Flamingock
 
-Before running your application, make sure Flamingock is properly configured, depending on the [edition](./overview/editions.md) and setup you are using:
+Before running your application, make sure Flamingock is properly configured, depending on the [edition](../overview/editions.md) and setup you are using:
 
 - **Cloud Edition**: Set your API token, service name, and environment.
 - **Community Edition**: Provide connection details for your storage system (e.g., connection for MongoDB, DynamoDB, CouchBase, etc.).
@@ -298,6 +298,6 @@ Stage: mysql_stage
 ---
 ## Next Steps
 
-- Dive into [Spring Boot Integration](./frameworks/springboot-integration/introduction.md)
-- Learn more about [Configuration Options](./flamingock-library-config/introduction.md)
-- Understand [Rollback & Auditing](./overview/core-concepts.md#-rollbacks)
+- Dive into [Spring Boot Integration](../frameworks/springboot-integration/introduction.md)
+- Learn more about [Configuration Options](../flamingock-library-config/introduction.md)
+- Understand [Rollback & Auditing](../overview/core-concepts.md#-rollbacks)

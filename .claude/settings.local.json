@@ -1,9 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(yarn start)",
-      "Bash(curl:*)",
-      "Bash(pkill:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(grep:*)",
+      "Bash(npm start)",
+      "Bash(npx docusaurus:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
