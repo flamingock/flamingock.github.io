@@ -34,3 +34,56 @@
   white-space: normal;
   word-break: break-word;
 }
+
+/* Sidebar contents header styling */
+.sidebar-contents-header {
+  font-size: 0.875rem;
+  font-weight: 750;
+  color: var(--ifm-color-content-secondary);
+  margin: 0 0 0.5rem 0.75rem;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Dark mode styling for contents header */
+[data-theme='dark'] .sidebar-contents-header {
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Sidebar divider styling - invisible but maintains spacing */
+.sidebar-divider {
+  border: none;
+  margin: 1rem 0.75rem;
+  background: none;
+  height: 0;
+}
+
+/* Dark mode styling for sidebar divider - no visual changes needed */
+[data-theme='dark'] .sidebar-divider {
+  /* No additional styling needed since divider is invisible */
+}
+
+/* Enhance main section (level-1) category styling */
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link {
+  font-weight: 600;
+  color: var(--ifm-color-content);
+  font-size: 1rem;
+}
+
+/* Dark mode styling for main section category labels */
+[data-theme='dark'] .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link {
+  color: var(--ifm-color-content);
+}
+
+/* Enhance nested section (level-2) category styling */
+.theme-doc-sidebar-item-category-level-2 > .menu__list-item-collapsible > .menu__link {
+  font-weight: 600;
+  color: var(--ifm-color-content);
+  font-size: 0.9rem;
+}
+
+/* Dark mode styling for nested section category labels */
+[data-theme='dark'] .theme-doc-sidebar-item-category-level-2 > .menu__list-item-collapsible > .menu__link {
+  color: var(--ifm-color-content);
+}
