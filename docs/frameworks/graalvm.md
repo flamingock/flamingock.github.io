@@ -19,7 +19,6 @@ This page explains how to generate a GraalVM native image for a Flamingock-enabl
 When building your application, Flamingock's annotation processor:
 
 - Scans for all annotated code-based changes (`@ChangeUnit`)
-- Reads the pipeline file to locate stages and their related change units
 - Discovers template-based changes from `sourcesPackage` and `resourcesDir`
 - Generates metadata files containing all required classes for reflection
 
@@ -84,8 +83,7 @@ Create a file named `resource-config.json` in your project root:
 {
   "resources": {
     "includes": [
-      { "pattern": "META-INF/flamingock/full-pipeline.json" },
-      { "pattern": "META-INF/flamingock/templated-pipeline.json" }
+      { "pattern": "META-INF/flamingock/metadata.json" }
     ]
   }
 }
