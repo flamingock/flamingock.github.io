@@ -1,13 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(yarn start)",
-      "Bash(curl:*)",
-      "Bash(pkill:*)",
-      "WebFetch(domain:stackoverflow.com)",
-      "WebFetch(domain:docusaurus.io)",
-      "Bash(yarn build)"
-      "Bash(pkill:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
