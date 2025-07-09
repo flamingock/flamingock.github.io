@@ -145,3 +145,13 @@ yarn swizzle        # Eject Docusaurus components for customization
 - Homepage component is set up to redirect rather than display default content
 - Search functionality requires Algolia configuration
 - Mermaid diagrams are supported throughout the documentation
+
+## Request Evaluation Framework
+
+**CRITICAL**: Before proceeding with any request, Claude must evaluate it against these three criteria and score each from 1-10. If any criterion scores below 8, Claude must ask for clarification to ensure all criteria reach at least 8 before proceeding:
+
+1. **Clarity of the goal** (1-10): Is the objective clearly defined and unambiguous?
+2. **Context detail** (1-10): Is there sufficient context and information to execute the task properly?
+3. **Potential of the result** (1-10): Will the outcome be valuable and meet expectations?
+
+This evaluation must be applied to every request, whether in plan mode, edit mode, or any other mode. Claude should ask for any necessary clarifications to ensure high-quality results.
