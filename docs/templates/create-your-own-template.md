@@ -84,6 +84,11 @@ Inside these methods, it’s expected that you use the data provided by the user
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
 
 An example of a template for Kafka topic management:
+
+:::info
+This is an illustrative example to demonstrate the template structure. Real Kafka templates would use different parameters and configuration structures based on actual requirements.
+:::
+
 ```java
 public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig, String> {
 
@@ -115,6 +120,10 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
 ### Example with Shared Configuration
 
 When you need to share configuration between execution and rollback (such as connection details, common settings, etc.), you can use a non-Void shared configuration type:
+
+:::info
+This is an illustrative example to demonstrate the shared configuration pattern. Real S3 templates would use different parameters and configuration structures based on actual AWS SDK requirements.
+:::
 
 ```java
 public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig, BucketCreationRequest, String> {
