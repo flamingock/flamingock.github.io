@@ -87,7 +87,7 @@ Used for internal framework changes. System stages are handled by Flamingock for
 ```
 
 ### Legacy Stages
-Used specifically for migrating from Mongock to Flamingock. For detailed information about legacy stages and migration, see the [Migration from Mongock guide](../resources/migration-mongock-to-flamingock).
+Used to locate existing changeUnits that were originally created in Mongock. Legacy stages point to your original Mongock changeUnits and execute only those that weren't previously applied by Mongock. For detailed information about legacy stages and the upgrade process, see the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock).
 
 ```java  
 @Stage(type = LEGACY, location = "com.yourapp.mongock")
