@@ -40,14 +40,14 @@ Example for **Community Edition** using MongoDB Sync4:
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
         implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-        implementation("io.flamingock:flamingock-ce-mongodb-sync-v4")
+        implementation("io.flamingock:flamingock-ce-mongodb-sync")
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">
         ```xml
         <dependency>
         <groupId>io.flamingock</groupId>
-        <artifactId>flamingock-ce-mongodb-sync4</artifactId>
+        <artifactId>flamingock-ce-mongodb-sync</artifactId>
         <version>${flamingockVersion}</version>
         </dependency>
         ```
