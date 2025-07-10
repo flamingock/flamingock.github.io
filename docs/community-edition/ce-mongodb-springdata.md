@@ -236,7 +236,7 @@ Internally, Flamingock will manage the transaction lifecycle and ensure all oper
 There is no need to manually manage a `ClientSession` when using Spring Data.
 Flamingock integrates with Spring’s transaction management infrastructure to coordinate the session for you.
 
-> See the [Transactions](../transactions.md) page for general behavior and when to use `transactional = false`.
+> See the [Transactions](../flamingock-library-config/transactions.md) page for general behavior and when to use `transactional = false`.
 ---
 
 ## Examples

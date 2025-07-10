@@ -146,7 +146,7 @@ public class CreateTableChange {
 </Tabs>
 
 :::info
-You can combine both styles in the same project. See our [Examples](../examples/examples.md)  to see these in action.
+You can combine both styles in the same project. See our [Examples](../resources/examples.md)  to see these in action.
 :::
 
 ---
@@ -190,7 +190,7 @@ Most applications use a single stage: `@Stage(location = "com.yourcompany.change
 
 ## 5. Configure Flamingock
 
-Before running your application, make sure Flamingock is properly configured, depending on the [edition](../overview/editions.md) and setup you are using:
+Before running your application, make sure Flamingock is properly configured, depending on the [edition](../overview/Editions.md) and setup you are using:
 
 - **Cloud Edition**: Set your API token, service name, and environment.
 - **Community Edition**: Provide connection details for your storage system (e.g., connection for MongoDB, DynamoDB, CouchBase, etc.).

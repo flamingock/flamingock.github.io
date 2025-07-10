@@ -322,6 +322,6 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 
 ## Next Steps
 
-- [Quickstart Guide](../get-started.md) → Learn how to create your first ChangeUnit and run Flamingock. 
+- [Quickstart Guide](../getting-started/get-started.md) → Learn how to create your first ChangeUnit and run Flamingock. 
 - [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
-- [Real use case examples](../examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.
+- [Real use case examples](../resources/examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.

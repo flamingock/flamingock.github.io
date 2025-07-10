@@ -115,9 +115,9 @@ Explore the rest of the configuration section to tune Flamingock for your system
 ### Shared configuration
 - [Setup & Stages](./setup-and-stages.md)
 - [Lock Configuration](./lock-configuration.md)
-- [Extra Configuration](./xtra-configuration.md)
+- [Extra Configuration](./extra-configuration.md)
 - [Dependency wiring](./changeunit-dependency-injection.md)
 
 ### Pick an edition
-- [☁️ Cloud Edition(Fully-featured)](../cloud-edition.md)
+- [☁️ Cloud Edition(Fully-featured)](../cloud-edition/cloud-edition.md)
 - 🧪 Community Edition(feature-limited)
