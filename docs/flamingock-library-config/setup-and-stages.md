@@ -41,18 +41,6 @@ public class FlamingockConfig {
 }
 ```
 
-:::info Multiple stages (advanced)
-For complex scenarios requiring independent change sets, you can define multiple stages:
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(name = "setup", location = "com.yourcompany.setup"),
-        @Stage(location = "com.yourcompany.changes")
-    }
-)
-```
-:::
-
 Alternatively, using a YAML file:
 
 ```java
@@ -68,6 +56,9 @@ pipeline:
       location: com.yourcompany.changes
 ```
 
+:::info Multiple stages (advanced)
+For complex scenarios requiring independent change sets, you can define multiple stages
+:::
 ---
 
 ## Stage Types
@@ -75,12 +66,15 @@ pipeline:
 Flamingock supports three types of stages:
 
 ### Standard Stages (default)
-The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute in order within the stage, but there's no guaranteed order between multiple standard stages.
+The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). 
+
+ChangeUnits in a standard stage are executed in order.
+
 
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(location = "com.yourcompany.changes")  // Standard stage (default)
+        @Stage(location = "com.yourcompany.changes")  // type = DEFAULT
     }
 )
 ```
@@ -98,6 +92,101 @@ Used specifically for migrating from Mongock to Flamingock. For detailed informa
 ```java  
 @Stage(type = LEGACY, location = "com.yourapp.mongock")
 ```
+
+---
+
+## Multiple Stages (Advanced)
+
+While most applications should use a single stage for simplicity and deterministic execution order, Flamingock supports multiple stages for advanced scenarios where you need to organize changes into independent, isolated groups.
+
+### When to Use Multiple Stages
+
+Multiple stages are beneficial in specific scenarios:
+
+#### Multi-module Applications
+In monolithic applications with well-defined module boundaries, you can give each module its own stage for full autonomy:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "user-module", location = "com.yourapp.users.changes"),
+        @Stage(name = "billing-module", location = "com.yourapp.billing.changes"),
+        @Stage(name = "notification-module", location = "com.yourapp.notifications.changes")
+    }
+)
+```
+
+This approach allows:
+- Each module team to manage their changes independently
+- Different release cycles for different modules
+- Clear separation of concerns and responsibilities
+
+#### Functional Separation
+You might want to separate changes by function or lifecycle:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "core-setup", location = "com.yourapp.setup.changes"),
+        @Stage(name = "business-logic", location = "com.yourapp.business.changes"),
+        @Stage(name = "monitoring-setup", location = "com.yourapp.monitoring.changes")
+    }
+)
+```
+
+### Restrictions and Important Considerations
+
+#### No Execution Order Guarantees
+**Critical limitation**: Flamingock does not guarantee execution order between stages. This means:
+
+- Stage A might execute before, after, or concurrently with Stage B
+- You cannot rely on changes in one stage being applied before another stage starts
+- Each stage should be completely independent from others
+
+#### Why This Matters
+Consider this problematic scenario:
+```java
+// ❌ PROBLEMATIC: Relies on execution order
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "create-tables", location = "com.yourapp.schema"),     // Creates tables
+        @Stage(name = "seed-data", location = "com.yourapp.data")           // Inserts data - DEPENDS on tables existing!
+    }
+)
+```
+
+The `seed-data` stage might execute before `create-tables`, causing failures.
+
+#### Correct Approach
+Instead, group dependent changes in the same stage:
+```java
+// ✅ CORRECT: All related changes in one stage
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourapp.changes")  // Contains both table creation AND data seeding in order
+    }
+)
+```
+
+### System and Legacy Stage Handling
+Flamingock handles SYSTEM and LEGACY stages specially to ensure correctness:
+- These stages have specific execution behaviors managed by Flamingock
+- User stages (standard stages) follow the no-order-guarantee rule
+- You should not rely on any specific execution order, even with system stages present
+
+### Future Enhancements
+Conditional stage execution based on dependencies or conditions is planned for future releases, which would allow:
+- Running stages based on success/failure of other stages
+- Defining explicit dependencies between stages
+- More sophisticated stage orchestration patterns
+
+### When NOT to Use Multiple Stages
+
+Avoid multiple stages when:
+- **You need execution order across different change types** - Use a single stage instead
+- **Changes are logically related** - Keep them together for easier maintenance
+- **Simple applications** - The complexity isn't worth the overhead
+- **Cross-cutting concerns** - Changes that affect multiple areas should be in one stage
 
 ---
 
@@ -222,27 +311,8 @@ This approach:
 - Provides the clearest mental model for most applications
 - Allows you to mix all types of changes (Kafka, MongoDB, SQL, S3, etc.) in deterministic order
 
-### Multiple stages (advanced use cases)
-Multiple stages are useful for specific scenarios:
-
-**Multi-module applications**: Give each module its own independent stage for full autonomy:
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(type = SYSTEM, location = "com.yourapp.module1.changes"),
-        @Stage(type = LEGACY, location = "com.yourapp.module1.changes"),
-        @Stage(location = "com.yourapp.module2.changes")
-    }
-)
-```
-
-**Important considerations for multiple stages**:
-- Execution order between stages is not guaranteed
-- Don't rely on one stage executing before another
-- Most applications should use a single stage to maintain deterministic execution order
-
-:::info Future enhancement
-Conditional stage execution (running stages based on conditions or dependencies) is planned for future releases.
+:::info Advanced scenarios
+For complex use cases like multi-module applications or functional separation, see the [Multiple Stages (Advanced)](#multiple-stages-advanced) section. However, most applications should stick with the single stage approach.
 :::
 
 ### Placing your changes
