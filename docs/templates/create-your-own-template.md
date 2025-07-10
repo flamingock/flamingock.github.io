@@ -3,18 +3,15 @@ sidebar_position: 3
 title: Create your template
 ---
 
-# Create Your Own Flamingock Template
+# Create your own Flamingock template
 
 ## Introduction
 
-Flamingock Templates allow you to encapsulate common logic and reduce boilerplate when defining change units.  
-This page explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
-
-> :pushpin: Need a refresher on what templates are? See the [Templates Overview](/docs/templates/templates-introduction.md).
+[Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
 ---
 
-## Overview of the Required Components
+## Overview of the required components
 
 To create a template, you need:
 
@@ -27,11 +24,11 @@ To create a template, you need:
 
 ---
 
-## 1. Create a Configuration Class
+## 1. Create a Configuration class
 
 You must create a config class that extends `ChangeTemplateConfig<EXECUTION, ROLLBACK>`.
 
-Example:
+**Example:**
 
 ```java
 public class MongoChangeTemplateConfig  extends ChangeTemplateConfig<MongoOperation, MongoOperation> {
@@ -47,14 +44,14 @@ public class MongoChangeTemplateConfig  extends ChangeTemplateConfig<MongoOperat
 ```
 ---
 
-## 2. Implement the Template Class
+## 2. Implement the Template class
 
-You have two options:
+There are two available options:
 
 - **Recommended:** Extend `AbstractChangeTemplate<CONFIG>` for easier setup
 - **Advanced:** Implement `ChangeTemplate<CONFIG>` manually if you need total control
 
-Example:
+**Example:**
 
 ```java
 public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTemplateConfig> {
@@ -83,12 +80,12 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<MongoChangeTempl
 - If your config class references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass both the config class and any referenced types to the superclass constructor to ensure proper reflection support.
 
 :::note 
-See ** 3. Define Execution and Rollback Methods** for how to implement the core logic inside your template class using the provided configuration and dependency injection
+See [**3. Define Execution and Rollback methods** ](./create-your-own-template#3-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the provided configuration and dependency injection
 :::
 
 ---
 
-## 3. Define Execution and Rollback Methods
+## 3. Define Execution and Rollback methods
 Each template must include an `@Execution` method, and may optionally include a `@RollbackExecution` method.
 These methods define the core logic that will be executed when Flamingock runs the corresponding change.
 
@@ -118,7 +115,7 @@ public void rollback(Connection connection) throws SQLException {
 
 ```
 
-### Injecting Dependencies into Template Methods
+### Injecting dependencies into Template methods
 Template methods (such as those annotated with `@Execution` and `@RollbackExecution`) support method-level dependency injection using the same mechanism as change units.
 
 Template classes do not support constructor injection.
@@ -136,17 +133,17 @@ public void execute(MongoDatabase db, ClientService clientService) {
 Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
 :::
 
-### Mapping between template-base changeUnit file and template Methods
+### Mapping between template-base changeUnit file and template methods
 
 In a template-based change unit (declarative format), Flamingock uses the `execution` and `rollback` sections to determine which methods to invoke in your template class.
 
-#### :small_blue_diamond: Execution
+#### Execution
 
 - The method annotated with `@Execution` is **mandatory** for the template developer.
 - The `execution` section in the declarative change unit is **mandatory** for the user.
 - If the `execution` section is missing, Flamingock throws an exception at startup.
 
-#### :small_blue_diamond: Rollback
+#### Rollback
 
 - The method annotated with `@RollbackExecution` is **mandatory** for the template developer.
 - The `rollback` section in the declarative changeUnit is **optional** for the user.
@@ -196,7 +193,7 @@ Group templates by domain or technology for better maintainability.
 
 ---
 
-## 5. Package and Distribute the Template
+## 5. Package and distribute the Template
 
 Depending on your target:
 

@@ -168,7 +168,18 @@ If a change unit is marked as transactional (which is the default), Flamingock w
 
 This ensures **atomicity**: either all operations defined in the change unit — including the audit log — are applied together, or none are.
 
+:::warning
+If you mark a change unit as transactional but do **not** add any operations to the builder, Flamingock will still execute the transaction — but it will contain **only the audit log entry**.
+
+Make sure your change unit populates the `TransactWriteItemsEnhancedRequest.Builder` appropriately.
+:::
+
+> See the [Transactions](../flamingock-library-config/transactions.md) page for general guidance and best practices around transactional vs non-transactional change units.
+
+
+
 ### Example
+
 ```java
 @Execution
 public void execute(@NonLockGuarded DynamoDbClient client,
@@ -191,13 +202,9 @@ You can add as many operations as needed to the builder: `putItem`, `updateItem`
 These operations will be executed **in a single atomic transaction**, together with Flamingock’s internal audit log update.
 :::
 
-:::warning
-If you mark a change unit as transactional but do **not** add any operations to the builder, Flamingock will still execute the transaction — but it will contain **only the audit log entry**.
+You can find more practical examples in the official GitHub repository:  
+👉 [Flamingock DynamoDB example](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)
 
-Make sure your change unit populates the `TransactWriteItemsEnhancedRequest.Builder` appropriately.
-:::
-
-> See the [Transactions](../transactions.md) page for general guidance and best practices around transactional vs non-transactional change units.
 
 
 

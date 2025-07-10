@@ -3,7 +3,7 @@ title: Spring Boot  Testing
 sidebar_position: 4
 ---
 
-## Testing Flamingock in Spring Boot
+## Introduction
 
 This guide explains how to write integration tests for Flamingock when using **Spring Boot** with the `@EnableFlamingock` annotation.
 

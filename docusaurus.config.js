@@ -50,6 +50,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
+          sidebarCollapsible: false,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
@@ -83,6 +84,10 @@ const config = {
       }),
     ],
   ],
+
+  customFields: {
+    homepageRedirect: '/docs/1.0.0/overview/Introduction',
+  },
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
