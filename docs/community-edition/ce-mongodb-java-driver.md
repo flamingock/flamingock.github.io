@@ -44,8 +44,10 @@ You must include the **Flamingock MongoDB sync edition** and a compatible **Mong
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-mongodb-sync:$flamingockVersion")
-implementation("org.mongodb:mongodb-driver-sync:5.5.1") // or any version between 3.7.0 and 5.x.x
+// MongoDB v4
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-sync")
+implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 ```
 
 </TabItem> <TabItem value="maven" label="Maven">

@@ -57,8 +57,8 @@ By annotating your main class with `@EnableFlamingock`, Flamingock will:
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-mongodb-springdata:$flamingockVersion")
-implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-springdata")
 ```
 
 </TabItem>
