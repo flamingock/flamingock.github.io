@@ -83,28 +83,31 @@ Inside these methods, it’s expected that you use the data provided by the user
 - `this.rollback` — the rollback logic/data to apply during rollback or undo  
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
 
-An example of a template for SQL:
+An example of a template for Kafka topic management:
 ```java
-public class SqlTemplate extends AbstractChangeTemplate<Void, String, String> {
+public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig, String> {
 
-    public SqlTemplate() {
-        super();
+    public KafkaTopicTemplate() {
+        super(TopicConfig.class);
     }
 
     @Execution
-    public void execute(Connection connection) throws SQLException {
-        executeStatement(connection, this.execution);
+    public void execute(AdminClient adminClient) throws Exception {
+        // Create topic using the execution configuration
+        NewTopic newTopic = new NewTopic(
+            this.execution.getName(),
+            this.execution.getPartitions(),
+            this.execution.getReplicationFactor()
+        );
+        newTopic.configs(this.execution.getConfigs());
+        
+        adminClient.createTopics(List.of(newTopic)).all().get();
     }
 
     @RollbackExecution
-    public void rollback(Connection connection) throws SQLException {
-        executeStatement(connection, this.rollback);
-    }
-
-    private void executeStatement(Connection connection, String sql) throws SQLException {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
-        }
+    public void rollback(AdminClient adminClient) throws Exception {
+        // Delete topic using the rollback topic name
+        adminClient.deleteTopics(List.of(this.rollback)).all().get();
     }
 }
 ```
@@ -114,37 +117,50 @@ public class SqlTemplate extends AbstractChangeTemplate<Void, String, String> {
 When you need to share configuration between execution and rollback (such as connection details, common settings, etc.), you can use a non-Void shared configuration type:
 
 ```java
-public class ImporterChangeTemplate extends AbstractChangeTemplate<ImportConfiguration, Void, Void> {
+public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig, BucketCreationRequest, String> {
 
-    public ImporterChangeTemplate() {
-        super(ImportConfiguration.class);
+    public S3BucketTemplate() {
+        super(S3ConnectionConfig.class, BucketCreationRequest.class);
     }
 
     @Execution
-    public void execute(DataSource dataSource) {
-        // Access shared configuration
-        String filePath = this.configuration.getFilePath();
-        String tableName = this.configuration.getTableName();
+    public void execute() {
+        // Access shared configuration for AWS connection
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+            .withRegion(this.configuration.getRegion())
+            .withCredentials(this.configuration.getCredentialsProvider())
+            .build();
         
-        // Import logic using shared configuration
-        importData(dataSource, filePath, tableName);
+        // Create bucket using execution configuration
+        CreateBucketRequest request = new CreateBucketRequest(this.execution.getBucketName())
+            .withCannedAcl(this.execution.getAcl());
+        
+        if (this.execution.getEncryption() != null) {
+            // Apply encryption settings
+            request.withObjectLockEnabledForBucket(this.execution.getEncryption().isEnabled());
+        }
+        
+        s3Client.createBucket(request);
     }
 
     @RollbackExecution
-    public void rollback(DataSource dataSource) {
+    public void rollback() {
         // Use the same shared configuration for rollback
-        String tableName = this.configuration.getTableName();
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+            .withRegion(this.configuration.getRegion())
+            .withCredentials(this.configuration.getCredentialsProvider())
+            .build();
         
-        // Rollback logic using shared configuration
-        clearTable(dataSource, tableName);
+        // Delete bucket using rollback bucket name
+        s3Client.deleteBucket(this.rollback);
     }
 }
 ```
 
 This pattern is useful when:
-- Both execution and rollback need the same configuration data
+- Both execution and rollback need the same configuration data (AWS credentials, region, etc.)
 - You want to avoid duplicating connection details or common settings
-- The template doesn't need separate execution/rollback data (hence `Void` for both)
+- The template needs different data for execution vs rollback operations
 
 ### Injecting dependencies into Template methods
 Template methods (such as those annotated with `@Execution` and `@RollbackExecution`) support method-level dependency injection using the same mechanism as change units.
