@@ -63,35 +63,28 @@ For complex scenarios requiring independent change sets, you can define multiple
 
 ## Stage Types
 
-Flamingock supports three types of stages:
+Flamingock supports two families of stages:
 
 ### Standard Stages (default)
-The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). 
-
-ChangeUnits in a standard stage are executed in order.
-
+The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changeUnits in order and provide predictable, sequential execution.
 
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(location = "com.yourcompany.changes")  // type = DEFAULT
+        @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
     }
 )
 ```
 
-### System Stages  
-Used for internal framework changes. System stages are handled by Flamingock for framework-level operations and are not typically used by application developers.
+### Special Stages
+For specific scenarios, Flamingock provides special stage types that require explicitly specifying a `type` parameter. Examples include `SYSTEM` and `LEGACY` stage types, which are used in particular contexts such as the Mongock upgrade process.
 
 ```java
-@Stage(type = SYSTEM, location = "com.yourapp.flamingock.system")
-```
-
-### Legacy Stages
-Used to locate existing changeUnits that were originally created in Mongock. Legacy stages point to your original Mongock changeUnits and execute only those that weren't previously applied by Mongock. For detailed information about legacy stages and the upgrade process, see the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock).
-
-```java  
+@Stage(type = SYSTEM, location = "com.yourapp.system")
 @Stage(type = LEGACY, location = "com.yourapp.mongock")
 ```
+
+For detailed information about special stages and their usage, see the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock).
 
 ---
 
