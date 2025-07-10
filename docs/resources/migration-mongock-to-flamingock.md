@@ -105,8 +105,8 @@ Configure Flamingock using the `@EnableFlamingock` annotation. Add this annotati
 
 ```java
 @EnableFlamingock(
-    systemStage = "com.yourapp.flamingock.system",
     stages = {
+        @Stage(type = StageType.SYSTEM, location = "com.yourapp.flamingock.system"),
         @Stage(name = "Existing changes from Mongock", type = StageType.LEGACY, location = "com.yourapp.mongock"),
         @Stage(location = "com.yourapp.flamingock.changes")
     }
@@ -120,16 +120,17 @@ public class FlamingockConfig {
 
 **Stage types and usage:**
 
-1. **System Stage**: A generic stage for system-level change units handled by Flamingock itself. In this migration context, it contains the upgrade change unit that imports Mongock change logs and transforms them to Flamingock audit logs
+1. **System Stage** (`StageType.SYSTEM`): A special stage for framework-level change units handled by Flamingock itself. In this migration context, it contains the upgrade change unit that imports Mongock change logs and transforms them to Flamingock audit logs
 
-2. **Legacy Stage**: Points to your existing change units from Mongock (type: "legacy") - no need to move or copy files. This stage is read-only and should not receive new changeUnits
+2. **Legacy Stage** (`StageType.LEGACY`): Points to your existing change units from Mongock - no need to move or copy files. This stage is read-only and executes only those change units that weren't previously applied by Mongock. Already-executed change units are skipped based on the imported audit history
 
-3. **User Stage**: For new Flamingock-native change units. Typically, applications use a single user stage where all new changes should be added
+3. **Standard Stage** (default): For new Flamingock-native change units. This is where all your new application changes should be added going forward
 
 **Important notes:**
-- **System and Legacy stages** are special stages handled by Flamingock itself
-- **User stages** are where you add your application changes. In most cases, you'll have just one user stage for all your new changeUnits
-- For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](client-configuration/setup-and-stages)
+- **System and Legacy stages** are special stages handled by Flamingock itself to ensure proper execution order and data integrity
+- **Standard stages** are where you add your application changes. In most cases, you'll have just one standard stage for all your new changeUnits  
+- The LEGACY stage is specifically designed for migration scenarios and should not receive new changeUnits after migration
+- For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](../flamingock-library-config/setup-and-stages)
 
 ## Run and validate
 

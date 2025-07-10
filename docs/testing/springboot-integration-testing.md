@@ -63,7 +63,11 @@ Flamingock requires `DynamoDbClient` and other injected services (like `AdminCli
 ```java
 @SpringBootTest
 @Testcontainers
-@EnableFlamingock
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourapp.changes")
+    }
+)
 public class FlamingockSpringbootTest {
 
   static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1"));

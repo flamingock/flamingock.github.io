@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Flamingock processes system and legacy stages first, then user stages. Changes within a stage are executed sequentially, but execution order between user stages is not guaranteed.
+Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
 
 ---
 
@@ -66,6 +66,37 @@ pipeline:
   stages:
     - name: main
       location: com.yourcompany.changes
+```
+
+---
+
+## Stage Types
+
+Flamingock supports three types of stages:
+
+### Standard Stages (default)
+The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute in order within the stage, but there's no guaranteed order between multiple standard stages.
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourcompany.changes")  // Standard stage (default)
+    }
+)
+```
+
+### System Stages  
+Used for internal framework changes. System stages are handled by Flamingock for framework-level operations and are not typically used by application developers.
+
+```java
+@Stage(type = SYSTEM, location = "com.yourapp.flamingock.system")
+```
+
+### Legacy Stages
+Used specifically for migrating from Mongock to Flamingock. For detailed information about legacy stages and migration, see the [Migration from Mongock guide](../resources/migration-mongock-to-flamingock).
+
+```java  
+@Stage(type = LEGACY, location = "com.yourapp.mongock")
 ```
 
 ---
@@ -174,7 +205,7 @@ src/
 ## Best Practices
 
 ### Single stage approach (recommended)
-The default and recommended approach is to use a **single stage** with the `@Stage` annotation:
+The default and recommended approach is to use a **single stage** with all your changes:
 
 ```java
 @EnableFlamingock(
@@ -189,9 +220,29 @@ This approach:
 - Ensures all changes execute in a predictable sequential order
 - Eliminates the need to manage inter-stage dependencies
 - Provides the clearest mental model for most applications
+- Allows you to mix all types of changes (Kafka, MongoDB, SQL, S3, etc.) in deterministic order
 
-:::info Multiple stages (advanced use case)
-Multiple stages are only recommended for complex scenarios requiring independent change sets with different lifecycles or sources. Most applications should use a single stage.
+### Multiple stages (advanced use cases)
+Multiple stages are useful for specific scenarios:
+
+**Multi-module applications**: Give each module its own independent stage for full autonomy:
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(type = SYSTEM, location = "com.yourapp.module1.changes"),
+        @Stage(type = LEGACY, location = "com.yourapp.module1.changes"),
+        @Stage(location = "com.yourapp.module2.changes")
+    }
+)
+```
+
+**Important considerations for multiple stages**:
+- Execution order between stages is not guaranteed
+- Don't rely on one stage executing before another
+- Most applications should use a single stage to maintain deterministic execution order
+
+:::info Future enhancement
+Conditional stage execution (running stages based on conditions or dependencies) is planned for future releases.
 :::
 
 ### Placing your changes
