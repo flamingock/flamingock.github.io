@@ -88,7 +88,7 @@ FlamingockBuilder builder = Flamingock
 
 :::info
 Platform components are registered using the same `.addDependency(...)` method used for change unit dependencies.  
-For details, see the [Platform component injection](/docs/client-configuration/platform-component-injection.md) page.
+For details, see the [Platform component injection](../../flamingock-library-config/platform-component-injection.md) page.
 :::
 ---
 ## Overriding Spring-provided dependencies

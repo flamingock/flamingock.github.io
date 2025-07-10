@@ -27,7 +27,7 @@ Flamingock includes built-in **auditing** for full traceability of executed chan
 - **Target system**: The external resource that ChangeUnits operate upon (e.g., a database schema, S3 bucket, Kafka topic, or configuration service). Flamingock’s ChangeUnits apply changes to these systems in an ordered, auditable fashion. When a database serves as both audit store and target system, Flamingock can wrap change and audit insert in one transaction; otherwise, auditing and execution occur separately.
 
 :::tip
-To better understand the differences between Audit Store and Target System, see the [Audit store vs target system section](./audit-store-vs-target-system.md)
+To better understand the differences between Audit Store and Target System, see the [Audit store vs target system section](../overview/audit-store-vs-target-system.md)
 :::
 
 ---

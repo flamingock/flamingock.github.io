@@ -21,7 +21,7 @@ Built on the principles of **Change-as-Code**, Flamingock enables your teams to:
 Flamingock ensures your systems changes evolve reliably — at scale.
 
 **Ready to modernize your change management?**  
-[Get started](../get-started.md) and see how Flamingock can power your release lifecycle.
+[Get started](../getting-started/get-started.md) and see how Flamingock can power your release lifecycle.
 
 
 ![Flamingock gif](../../static/img/Flamingock%20process%20animation%20(1).gif)
@@ -78,4 +78,4 @@ With Flamingock, developers define any component changes (database, system chang
 
 *Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
 
-👉 **Dive deeper:** | [How it works?](../how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../get-started.md)  
+👉 **Dive deeper:** | [How it works?](../getting-started/how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../getting-started/get-started.md)

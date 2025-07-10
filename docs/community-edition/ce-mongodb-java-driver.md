@@ -154,7 +154,7 @@ public void execute(ClientSession session, MongoDatabase db) {
 ```
 The session lifecycle is managed automatically by Flamingock.  If you omit the ClientSession parameter, the change will still execute, but it won't participate in a transaction.
 
-> See the [Transactions](../transactions.md) page for guidance on when and how to disable transactions (e.g., `transactional = false`).
+> See the [Transactions](../flamingock-library-config/transactions.md) page for guidance on when and how to disable transactions (e.g., `transactional = false`).
 
 ---
 

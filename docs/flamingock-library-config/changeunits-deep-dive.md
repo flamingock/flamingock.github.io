@@ -5,7 +5,7 @@ sidebar_position: 3
 
 ## Clarifying changeUnits
 
-A **ChangeUnit** is the atomic, versioned unit of change in Flamingock. It encapsulates logic to modify an external system (the [**target system**](./audit-store-vs-target-system.md)) and provides metadata and rollback capability. ChangeUnits are discovered and executed in a defined order to ensure deterministic, auditable changes.
+A **ChangeUnit** is the atomic, versioned unit of change in Flamingock. It encapsulates logic to modify an external system (the [**target system**](../overview/audit-store-vs-target-system.md)) and provides metadata and rollback capability. ChangeUnits are discovered and executed in a defined order to ensure deterministic, auditable changes.
 
 ### What a changeUnit Is
 - **Self-contained change**  
@@ -18,7 +18,7 @@ A **ChangeUnit** is the atomic, versioned unit of change in Flamingock. It encap
   - A `transactional` flag (default `true`) indicating if Flamingock will attempt to wrap execution and audit in a single transaction
 
 - **Versioned and Auditable**  
-  ChangeUnits live in your source code or resources, and their execution is recorded in the [**audit store**](./audit-store-vs-target-system.md) to:
+  ChangeUnits live in your source code or resources, and their execution is recorded in the [**audit store**](../overview/audit-store-vs-target-system.md) to:
   - Prevent duplicate executions
   - Track history (who ran which change and when)
   - Drive rollbacks and “undo” operations
