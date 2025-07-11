@@ -1,5 +1,5 @@
 ---
-title: Upgrade from Mongock to Flamingock
+title: Upgrade from Mongock
 sidebar_position: 999
 ---
 import Tabs from '@theme/Tabs';
@@ -7,18 +7,25 @@ import TabItem from '@theme/TabItem';
 
 # Upgrade from Mongock to Flamingock
 
-This guide walks you through upgrading your existing Mongock project to Flamingock with minimal changes and complete audit-history preservation.
+Flamingock is the next evolution of Mongock.  
+An **upgrade** has two pillars:
 
-## Upgrade steps
+1. **Audit-store import** – Flamingock automatically copies Mongock’s _changeLog_ collection/table into its own audit store so historical executions are preserved.
+2. **Library swap** – Your application stops calling the Mongock API and starts calling Flamingock. Existing ChangeUnits stay in place; only their annotation imports change.
 
-Upgrading from Mongock to Flamingock involves four straightforward steps:
+Because the codebase remains the same and ChangeUnits are kept intact, we call this an _upgrade_, not a migration.
 
-1. **Update ChangeUnit imports** – Replace Mongock package imports with Flamingock equivalents in your existing ChangeUnits.  
-2. **Upgrade application code** – Replace Mongock API usage with the Flamingock builder.  
-3. **Create system stage** – Add a template-based ChangeUnit to import existing audit logs.  
-4. **Configure pipeline** – Define pipeline configuration pointing to your existing ChangeUnit packages.  
+---
 
-That’s it! Once complete, your project runs with Flamingock, preserving all existing change units and history.
+## Upgrade steps (at a glance)
+
+1. **Update ChangeUnit imports** – Replace Mongock annotations with Flamingock equivalents.
+2. **Upgrade application code** – Replace Mongock API usage with the Flamingock builder(or Spring annotation).
+3. **Create system stage** – Add a template-based ChangeUnit that imports legacy audit records.
+4. **Configure pipeline** – Point Flamingock to your legacy and new ChangeUnit packages.
+
+That’s it! Once complete, Flamingock runs with your full history intact.
+
 
 ## Original Mongock dependencies
 
@@ -79,7 +86,7 @@ For Spring Boot integration, see the [Spring Boot guide](springboot-integration/
 
 ## Step 3: Create system stage
 
-The system stage is a special stage handled by Flamingock for system-level operations. In this migration context, you'll create a template-based change unit in the system stage package to handle the upgrade from Mongock. 
+The system stage is a special stage handled by Flamingock for system-level operations. In this upgrade context, you'll create a template-based change unit in the system stage package to handle audit records migration. 
 
 Create a YAML file (e.g., `_0001_upgrade_from_mongock.yaml`) with the following structure:
 
@@ -106,8 +113,8 @@ Configure Flamingock using the `@EnableFlamingock` annotation. Add this annotati
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(type = StageType.SYSTEM, location = "com.yourapp.flamingock.system"),
-        @Stage(name = "Existing changes from Mongock", type = StageType.LEGACY, location = "com.yourapp.mongock"),
+        @Stage(type = SYSTEM, location = "com.yourapp.flamingock.system"),
+        @Stage(type = LEGACY, location = "com.yourapp.mongock"),
         @Stage(location = "com.yourapp.flamingock.changes")
     }
 )
@@ -120,16 +127,10 @@ public class FlamingockConfig {
 
 **Stage types and usage:**
 
-1. **System Stage** (`StageType.SYSTEM`): A special stage for framework-level change units handled by Flamingock itself. In this migration context, it contains the upgrade change unit that imports Mongock change logs and transforms them to Flamingock audit logs
+1. **System stage** - A special stage for framework-level changeUnits handled by Flamingock itself. In this context, it contains the changeUnit(provided by flamingock team) that copies Mongock’s audit data into Flamingock’s store
+2. **Legacy stage** - Designed specifically for the changeUnits that originally came from the legacy tool (here, Mongock). Flamingock treats it as read-only: it runs only the units that never executed under Mongock and skips those already recorded in the imported audit history. Do **not** add new ChangeUnits to this stage.
+3. **Standard stage** (default): For new Flamingock-native change units. This is where all your new application changes should be added going forward
 
-2. **Legacy Stage** (`StageType.LEGACY`): Points to your existing change units from Mongock - no need to move or copy files. This stage is read-only and executes only those change units that weren't previously applied by Mongock. Already-executed change units are skipped based on the imported audit history
-
-3. **Standard Stage** (default): For new Flamingock-native change units. This is where all your new application changes should be added going forward
-
-**Important notes:**
-- **System and Legacy stages** are special stages handled by Flamingock itself to ensure proper execution order and data integrity
-- **Standard stages** are where you add your application changes. In most cases, you'll have just one standard stage for all your new changeUnits  
-- The LEGACY stage is specifically designed for migration scenarios and should not receive new changeUnits after migration
 - For advanced stage configurations and multi-stage scenarios, see the [setup & stages guide](../flamingock-library-config/setup-and-stages)
 
 ## Run and validate
@@ -172,11 +173,14 @@ Stage: Application Changes
 
 ---
 
-## Why upgrade rather than remove?
+## Why upgrade instead of removing or starting fresh?
 
-- **Complete audit history**: Retains all original ChangeUnits and logs.  
-- **Risk mitigation**: Prevents accidental re-application of pending Mongock changes.  
-- **Philosophy**: Treats migrations as code and history as part of your application.  
+- **Preserve your audit trail** – Every historical ChangeUnit and its execution log remains intact for compliance and debugging.
+- **Avoid unintended re-runs** – Flamingock imports Mongock’s history, so previously-executed ChangeUnits are never applied twice.
+- **Keep change-as-code semantics** – The act of migrating the audit store itself is handled as a versioned change, reinforcing the idea that history is part of your application.
+- **Future continuity** – Teams and tools that rely on Mongock’s records can transition seamlessly; dashboards and reports will show an unbroken timeline.
+
+
 
 ---
 

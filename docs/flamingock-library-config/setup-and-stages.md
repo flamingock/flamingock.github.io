@@ -85,7 +85,7 @@ For specific scenarios, Flamingock provides special stage types that require exp
 )
 ```
 
-To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock) which demonstrates their practical usage.
+To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/upgrade-from-mongock) which demonstrates their practical usage.
 
 ---
 

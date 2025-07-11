@@ -146,7 +146,7 @@ Some of the key advancements introduced by Flamingock include:
 
 While Flamingock retains conceptual compatibility with Mongock, it represents a significant leap forward in flexibility, scalability, and developer experience.
 
-If you are currently using Mongock, we encourage you to [review the migration guide](../resources/migration-mongock-to-flamingock.md) and explore what Flamingock can offer in modern change management.
+If you are currently using Mongock, we encourage you to [review the migration guide](upgrade-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
 ---
 
