@@ -7,8 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Upgrade from Mongock to Flamingock
 
-Flamingock is the next evolution of Mongock.  
-An **upgrade** has two pillars:
+Flamingock is the next evolution of Mongock. **Upgrading** from Mongock to Flamingock involves two main pillars:
 
 1. **Audit-store import** – Flamingock automatically copies Mongock’s _changeLog_ collection/table into its own audit store so historical executions are preserved.
 2. **Library swap** – Your application stops calling the Mongock API and starts calling Flamingock. Existing ChangeUnits stay in place; only their annotation imports change.
