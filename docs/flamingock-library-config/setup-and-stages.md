@@ -20,10 +20,6 @@ Flamingock is configured using the `@EnableFlamingock` annotation on any class i
 
 The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
 
-:::info
-Alternatively, you can use a YAML file by specifying `pipelineFile` in the annotation.
-:::
-
 ---
 
 ## Defining the setup
@@ -80,18 +76,24 @@ The default stage type where users place their changes. This is where you'll put
 For specific scenarios, Flamingock provides special stage types that require explicitly specifying a `type` parameter. Examples include `SYSTEM` and `LEGACY` stage types, which are used in particular contexts such as the Mongock upgrade process.
 
 ```java
-@Stage(type = SYSTEM, location = "com.yourapp.system")
-@Stage(type = LEGACY, location = "com.yourapp.mongock")
+@EnableFlamingock(
+        stages = {
+                @Stage(type = SYSTEM, location = "com.yourapp.system"),
+                @Stage(type = LEGACY, location = "com.yourapp.mongock"),
+                @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
+        }
+)
 ```
 
-For detailed information about special stages and their usage, see the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock).
+To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock) which demonstrates their practical usage.
 
 ---
 
 ## Multiple Stages (Advanced)
 
-While most applications should use a single stage for simplicity and deterministic execution order, Flamingock supports multiple stages for advanced scenarios where you need to organize changes into independent, isolated groups.
-
+Most applications will naturally fit into a single stage, which keeps things simple and ensures a clear, deterministic execution order. 
+However, if you prefer to organize changes into multiple stages—for example, to separate concerns or enforce isolated execution 
+flows—Flamingock fully supports that as well. We’ll explain how it works and what to consider when taking that approach.
 ### When to Use Multiple Stages
 
 Multiple stages are beneficial in specific scenarios:
@@ -110,7 +112,7 @@ In monolithic applications with well-defined module boundaries, you can give eac
 ```
 
 This approach allows:
-- Each module team to manage their changes independently
+- Independent change management across modules
 - Different release cycles for different modules
 - Clear separation of concerns and responsibilities
 
@@ -161,17 +163,6 @@ Instead, group dependent changes in the same stage:
 )
 ```
 
-### System and Legacy Stage Handling
-Flamingock handles SYSTEM and LEGACY stages specially to ensure correctness:
-- These stages have specific execution behaviors managed by Flamingock
-- User stages (standard stages) follow the no-order-guarantee rule
-- You should not rely on any specific execution order, even with system stages present
-
-### Future Enhancements
-Conditional stage execution based on dependencies or conditions is planned for future releases, which would allow:
-- Running stages based on success/failure of other stages
-- Defining explicit dependencies between stages
-- More sophisticated stage orchestration patterns
 
 ### When NOT to Use Multiple Stages
 
@@ -181,6 +172,12 @@ Avoid multiple stages when:
 - **Simple applications** - The complexity isn't worth the overhead
 - **Cross-cutting concerns** - Changes that affect multiple areas should be in one stage
 
+:::info Future Enhancements
+Conditional stage execution based on dependencies or conditions is planned for future releases, which would allow:
+- Running stages based on success/failure of other stages
+- Defining explicit dependencies between stages
+- More sophisticated stage orchestration patterns
+:::
 ---
 
 ## Required fields
@@ -270,24 +267,11 @@ src/
 
 ---
 
-## 🛠 Troubleshooting
-
-### My stage isn't picked up
-- Make sure the stage has a `location` field defined
-- Check the file path is correct and uses `/` as a separator, not `.` in YAML
-- If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
-
-### No changes found in stage
-- Verify that the class or YAML file is located in the expected package/directory
-- For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
-- For template-based changes, check file names and YAML formatting
-
----
-
 ## Best Practices
 
-### Single stage approach (recommended)
-The default and recommended approach is to use a **single stage** with all your changes:
+### Single Stage Execution (default and recommended)
+
+In most applications, **changes that require a specific, deterministic execution order** should be grouped into a **single stage**. This ensures they are applied sequentially and in the exact order they are defined.
 
 ```java
 @EnableFlamingock(
@@ -297,15 +281,15 @@ The default and recommended approach is to use a **single stage** with all your 
 )
 ```
 
-This approach:
-- Simplifies setup management and reduces complexity
-- Ensures all changes execute in a predictable sequential order
+Grouping related changes into a single stage:
+- Ensures **predictable, sequential execution**
+- Avoids ambiguity from cross-stage execution timing
 - Eliminates the need to manage inter-stage dependencies
-- Provides the clearest mental model for most applications
-- Allows you to mix all types of changes (Kafka, MongoDB, SQL, S3, etc.) in deterministic order
+- Keeps setup simple and easier to maintain
+- Supports mixing all types of changes (Kafka, MongoDB, SQL, S3, etc.) in a well-defined order
 
 :::info Advanced scenarios
-For complex use cases like multi-module applications or functional separation, see the [Multiple Stages (Advanced)](#multiple-stages-advanced) section. However, most applications should stick with the single stage approach.
+If your application benefits from separating changes—for example, by module or lifecycle—you can define [Multiple Stages (Advanced)](#multiple-stages-advanced). Just remember: deterministic execution is guaranteed only within a stage, not across them.
 :::
 
 ### Placing your changes
@@ -335,3 +319,19 @@ This convention:
 :::tip
 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
 :::
+
+
+
+## 🛠 Troubleshooting
+
+### My stage isn't picked up
+- Make sure the stage has a `location` field defined
+- Check the file path is correct and uses `/` as a separator, not `.` in YAML
+- If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
+
+### No changes found in stage
+- Verify that the class or YAML file is located in the expected package/directory
+- For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
+- For template-based changes, check file names and YAML formatting
+
+---
