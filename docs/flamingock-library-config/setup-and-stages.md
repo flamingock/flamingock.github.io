@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Flamingock processes system and legacy stages first, then user stages. Changes within a stage are executed sequentially, but execution order between user stages is not guaranteed.
+Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
 
 ---
 
@@ -19,10 +19,6 @@ Flamingock processes system and legacy stages first, then user stages. Changes w
 Flamingock is configured using the `@EnableFlamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
 The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
-
-:::info
-Alternatively, you can use a YAML file by specifying `pipelineFile` in the annotation.
-:::
 
 ---
 
@@ -41,18 +37,6 @@ public class FlamingockConfig {
 }
 ```
 
-:::info Multiple stages (advanced)
-For complex scenarios requiring independent change sets, you can define multiple stages:
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(name = "setup", location = "com.yourcompany.setup"),
-        @Stage(location = "com.yourcompany.changes")
-    }
-)
-```
-:::
-
 Alternatively, using a YAML file:
 
 ```java
@@ -68,6 +52,132 @@ pipeline:
       location: com.yourcompany.changes
 ```
 
+:::info Multiple stages (advanced)
+For complex scenarios requiring independent change sets, you can define multiple stages
+:::
+---
+
+## Stage Types
+
+Flamingock supports two families of stages:
+
+### Standard Stages (default)
+The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changeUnits in order and provide predictable, sequential execution.
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
+    }
+)
+```
+
+### Special Stages
+For specific scenarios, Flamingock provides special stage types that require explicitly specifying a `type` parameter. Examples include `SYSTEM` and `LEGACY` stage types, which are used in particular contexts such as the Mongock upgrade process.
+
+```java
+@EnableFlamingock(
+        stages = {
+                @Stage(type = SYSTEM, location = "com.yourapp.system"),
+                @Stage(type = LEGACY, location = "com.yourapp.mongock"),
+                @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
+        }
+)
+```
+
+To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/migration-mongock-to-flamingock) which demonstrates their practical usage.
+
+---
+
+## Multiple Stages (Advanced)
+
+Most applications will naturally fit into a single stage, which keeps things simple and ensures a clear, deterministic execution order. 
+However, if you prefer to organize changes into multiple stages—for example, to separate concerns or enforce isolated execution 
+flows—Flamingock fully supports that as well. We’ll explain how it works and what to consider when taking that approach.
+### When to Use Multiple Stages
+
+Multiple stages are beneficial in specific scenarios:
+
+#### Multi-module Applications
+In monolithic applications with well-defined module boundaries, you can give each module its own stage for full autonomy:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "user-module", location = "com.yourapp.users.changes"),
+        @Stage(name = "billing-module", location = "com.yourapp.billing.changes"),
+        @Stage(name = "notification-module", location = "com.yourapp.notifications.changes")
+    }
+)
+```
+
+This approach allows:
+- Independent change management across modules
+- Different release cycles for different modules
+- Clear separation of concerns and responsibilities
+
+#### Functional Separation
+You might want to separate changes by function or lifecycle:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "core-setup", location = "com.yourapp.setup.changes"),
+        @Stage(name = "business-logic", location = "com.yourapp.business.changes"),
+        @Stage(name = "monitoring-setup", location = "com.yourapp.monitoring.changes")
+    }
+)
+```
+
+### Restrictions and Important Considerations
+
+#### No Execution Order Guarantees
+**Critical limitation**: Flamingock does not guarantee execution order between stages. This means:
+
+- Stage A might execute before, after, or concurrently with Stage B
+- You cannot rely on changes in one stage being applied before another stage starts
+- Each stage should be completely independent from others
+
+#### Why This Matters
+Consider this problematic scenario:
+```java
+// ❌ PROBLEMATIC: Relies on execution order
+@EnableFlamingock(
+    stages = {
+        @Stage(name = "create-tables", location = "com.yourapp.schema"),     // Creates tables
+        @Stage(name = "seed-data", location = "com.yourapp.data")           // Inserts data - DEPENDS on tables existing!
+    }
+)
+```
+
+The `seed-data` stage might execute before `create-tables`, causing failures.
+
+#### Correct Approach
+Instead, group dependent changes in the same stage:
+```java
+// ✅ CORRECT: All related changes in one stage
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourapp.changes")  // Contains both table creation AND data seeding in order
+    }
+)
+```
+
+
+### When NOT to Use Multiple Stages
+
+Avoid multiple stages when:
+- **You need execution order across different change types** - Use a single stage instead
+- **Changes are logically related** - Keep them together for easier maintenance
+- **Simple applications** - The complexity isn't worth the overhead
+- **Cross-cutting concerns** - Changes that affect multiple areas should be in one stage
+
+:::info Future Enhancements
+Conditional stage execution based on dependencies or conditions is planned for future releases, which would allow:
+- Running stages based on success/failure of other stages
+- Defining explicit dependencies between stages
+- More sophisticated stage orchestration patterns
+:::
 ---
 
 ## Required fields
@@ -157,24 +267,11 @@ src/
 
 ---
 
-## 🛠 Troubleshooting
-
-### My stage isn't picked up
-- Make sure the stage has a `location` field defined
-- Check the file path is correct and uses `/` as a separator, not `.` in YAML
-- If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
-
-### No changes found in stage
-- Verify that the class or YAML file is located in the expected package/directory
-- For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
-- For template-based changes, check file names and YAML formatting
-
----
-
 ## Best Practices
 
-### Single stage approach (recommended)
-The default and recommended approach is to use a **single stage** with the `@Stage` annotation:
+### Single Stage Execution (default and recommended)
+
+In most applications, **changes that require a specific, deterministic execution order** should be grouped into a **single stage**. This ensures they are applied sequentially and in the exact order they are defined.
 
 ```java
 @EnableFlamingock(
@@ -184,14 +281,15 @@ The default and recommended approach is to use a **single stage** with the `@Sta
 )
 ```
 
-This approach:
-- Simplifies setup management and reduces complexity
-- Ensures all changes execute in a predictable sequential order
+Grouping related changes into a single stage:
+- Ensures **predictable, sequential execution**
+- Avoids ambiguity from cross-stage execution timing
 - Eliminates the need to manage inter-stage dependencies
-- Provides the clearest mental model for most applications
+- Keeps setup simple and easier to maintain
+- Supports mixing all types of changes (Kafka, MongoDB, SQL, S3, etc.) in a well-defined order
 
-:::info Multiple stages (advanced use case)
-Multiple stages are only recommended for complex scenarios requiring independent change sets with different lifecycles or sources. Most applications should use a single stage.
+:::info Advanced scenarios
+If your application benefits from separating changes—for example, by module or lifecycle—you can define [Multiple Stages (Advanced)](#multiple-stages-advanced). Just remember: deterministic execution is guaranteed only within a stage, not across them.
 :::
 
 ### Placing your changes
@@ -221,3 +319,19 @@ This convention:
 :::tip
 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
 :::
+
+
+
+## 🛠 Troubleshooting
+
+### My stage isn't picked up
+- Make sure the stage has a `location` field defined
+- Check the file path is correct and uses `/` as a separator, not `.` in YAML
+- If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
+
+### No changes found in stage
+- Verify that the class or YAML file is located in the expected package/directory
+- For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
+- For template-based changes, check file names and YAML formatting
+
+---
