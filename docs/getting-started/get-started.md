@@ -22,6 +22,7 @@ Example for **Cloud Edition**:
     <TabItem value="gradle" label="Gradle" default>
         ```kotlin
         implementation(platform("io.flamingock:flamingock-cloud-bom:$flamingockVersion"))
+        implementation("io.flamingock:flamingock-cloud")
         ```
     </TabItem>
     <TabItem value="maven" label="Maven">

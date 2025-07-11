@@ -27,14 +27,22 @@ Because the codebase remains the same and ChangeUnits are kept intact, we call t
 That’s it! Once complete, Flamingock runs with your full history intact.
 
 
-## Original Mongock dependencies
+## Step1: Update artefacts
 
-In your `build.gradle`:
+Replace the Mongock artefacts with Flamingock ones.
 
+- Mongock
 ```groovy
 implementation(platform("io.mongock:mongock-bom:5.5.0"))
 implementation("io.mongock:mongock-standalone")
 implementation("io.mongock:mongodb-sync-v4-driver")
+```
+
+- Flamingock
+```groovy
+implementation(platform("io.flamingock:flamingock-cloud-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-sync")
+annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 ```
 
 ## Step 1: Update ChangeUnit imports
