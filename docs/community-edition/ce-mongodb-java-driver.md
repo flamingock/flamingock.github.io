@@ -1,5 +1,5 @@
 ---
-title: MongoDB (Java Driver)
+title: MongoDB (Java driver)
 sidebar_position: 2
 ---
 
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-This section explains how to configure and use the **Flamingock Community Edition for MongoDB** in applications that interact directly with MongoDB using the **official Java driver**.
+This section explains how to configure and use the **Flamingock Community Edition for MongoDB** in applications that interact directly with MongoDB using the **official Java driver** (`mongodb-driver-sync`).
 
 This edition is designed for use cases where the application provides its own MongoDB connection via `MongoClient`, and Flamingock operates directly over that connection to manage changes. It does not rely on any external framework or abstraction layer.
 
@@ -19,20 +19,15 @@ Flamingock persists a minimal set of metadata in your MongoDB database to suppor
 
 It is particularly suited to teams working in **framework-agnostic** or low-level environments, where integration is done directly at the driver level, and fine-grained control over MongoDB configuration is required.
 
-The following sections cover how to configure Flamingock using the Java driver, explain the available editions for MongoDB 3.x and 4.x, and provide practical examples and best practices.
+Flamingock supports `mongodb-driver-sync` versions from **3.7.0 up to 5.x.x**.
 
 ---
 
-## Editions
+## Supported versions
 
-Flamingock provides two specific editions for MongoDB, depending on the version of the **Java driver** used in your application.
-
-| Edition Name                   | Java Driver                          | MongoDB Compatibility |
-|--------------------------------|--------------------------------------|-----------------------|
-| `flamingock-ce-mongodb-v3`     | `org.mongodb:mongo-java-driver`      | MongoDB 3.x           |
-| `flamingock-ce-mongodb-sync4`  | `org.mongodb:mongodb-driver-sync`    | MongoDB 4.x           |
-
-Select the edition that matches the MongoDB driver version used by your application.
+| Flamingock Module                 | MongoDB Driver                   | MongoDB Compatibility       |
+|----------------------------------|----------------------------------|-----------------------------|
+| `flamingock-ce-mongodb-sync`     | `org.mongodb:mongodb-driver-sync` (3.7.0 - 5.x.x) | MongoDB 3.x to 5.x           |
 
 ---
 
@@ -42,7 +37,7 @@ To get started with the Flamingock Community Edition for MongoDB, follow these b
 
 ### 1. Add the required dependencies
 
-You must include both the **Flamingock MongoDB specific edition** and the corresponding **MongoDB Java driver** in your project. Use the appropriate coordinates depending on your build tool and MongoDB version.
+You must include the **Flamingock MongoDB sync edition** and a compatible **MongoDB Java driver** in your project.
 
 <Tabs groupId="build_tool">
 
@@ -50,78 +45,70 @@ You must include both the **Flamingock MongoDB specific edition** and the corres
 
 ```kotlin
 // MongoDB v4
-implementation("io.flamingock:flamingock-ce-mongodb-sync4:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-sync")
 implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 ```
 
 </TabItem> <TabItem value="maven" label="Maven">
 
 ```xml
-<!-- MongoDB v4 -->
 <dependency>
   <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-ce-mongodb-sync4</artifactId>
+  <artifactId>flamingock-ce-mongodb-sync</artifactId>
   <version>${flamingock.version}</version>
 </dependency>
 <dependency>
   <groupId>org.mongodb</groupId>
   <artifactId>mongodb-driver-sync</artifactId>
-  <version>4.x.x</version>
+  <version>5.5.1</version> <!-- or any version between 3.7.0 and 5.x.x -->
 </dependency>
-
 ```
+
 </TabItem> </Tabs>
 
 ### 2. Enable Flamingock runner
 
 At minimum, you must provide:
+- A MongoDatabase (as a **dependency**)
 - A MongoClient instance (as a **dependency**)
-- A mongodb.databaseName (as a **property**)
-- 
+
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+MongoDatabase mongoDatabase = mongoClient.getDatabase("YOUR_DATABASE");
 
-Runner runner  = Flamingock.builder()
+Runner runner = Flamingock.builder()
+          .addDependency(mongoDatabase)
           .addDependency(mongoClient)
-          .setProperty("mongodb.databaseName", "flamingock-database")
-          // other common configurations
-          .build()
-          ;
+          // other optional configurations
+          .build();
 ```
-
 For production, we strongly recommend using the default MongoDB configuration values unless you fully understand the implications.
-
 ### 3. Execute Flamingock
 Once the Flamingock runner is configured and built, you can trigger Flamingock’s execution:
-
 ```java
 runner.execute();
 ```
-
-
-
 
 ---
 
 ## Configuration overview
 
-Flamingock’s MongoDB community edition requires both, dependencies  and configuration properties, provided via the flamingock builder.
+Flamingock requires both dependencies and configuration properties, set via the builder.
 
 ### Dependencies
-These must be registered using `.addDependency(...)`
 
-| Type                             | Required | Description                     |
-|----------------------------------|:--------:|---------------------------------|
-| `com.mongodb.client.MongoClient` |   Yes    | Required to connect to MongoDB. |
+| Type                               | Required | Description                                   |
+|------------------------------------|:--------:|-----------------------------------------------|
+| `com.mongodb.client.MongoDatabase` |   Yes    | Required to connect to your MongoDB database. |
+| `com.mongodb.client.MongoClient`   |   Yes    | Required for transactional support.           |
 
 ### Properties
-
 
 These must be set using `.setProperty(...)`
 
 | Property                         | Type                   | Default Value                  | Required | Description                                                                                                           |
 |----------------------------------|------------------------|--------------------------------|:--------:|-----------------------------------------------------------------------------------------------------------------------|
-| `mongodb. databaseName`          | `String`               | n/a                            |   Yes    | Name of the MongoDB database. This is required to store audit logs and acquire distributed locks.                     |
 | `mongodb.autoCreate`             | `boolean`              | `true`                         |    No    | Whether Flamingock should automatically create required collections and indexes.                                      |
 | `mongodb.readConcern`            | `String`               | `"MAJORITY"`                   |    No    | Controls the isolation level for read operations.                                                                     |
 | `mongodb. writeConcern.w`        | `String or int`        | `"MAJORITY"`                   |    No    | Write acknowledgment level. Specifies how many MongoDB nodes must confirm the write for it to succeed.                |
@@ -132,38 +119,33 @@ These must be set using `.setProperty(...)`
 | `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
-It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
+We strongly recommend keeping the default configuration values in production environments. They are optimized for **consistency, durability, and safety**, ensuring Flamingock’s audit and rollback guarantees.
 :::
 Overriding them is only appropriate in limited cases (e.g., testing or local development). If you choose to modify these settings, you assume full responsibility for maintaining the integrity and consistency of your system.
 
 ### Full configuration example
-
 The following example shows how to configure Flamingock with both required and optional properties. It demonstrates how to override  index creation, and read/write behaviour. This level of configuration is useful when you need to customise Flamingock's behaviour to match the consistency and durability requirements of your deployment.
-
 
 ```java
 MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+MongoDatabase mongoDatabase = mongoClient.getDatabase("YOUR_DATABASE");
 
 FlamingockBuilder builder = Flamingock.builder()
-          // mandatory configuration
+          .addDependency(mongoDatabase)
           .addDependency(mongoClient)
-          .setProperty("mongodb.databaseName", "flamingock-database")
-          // optional configuration
           .setProperty("mongodb.autoCreate", true)
           .setProperty("mongodb.readConcern", "MAJORITY")
           .setProperty("mongodb.writeConcern.w", "MAJORITY")
           .setProperty("mongodb.writeConcern.journal", true)
           .setProperty("mongodb.writeConcern.wTimeout", Duration.ofSeconds(1))
-          .setProperty("mongodb.readPreference", ReadPreferenceLevel.PRIMARY)
-          // other common configurations
-          ;
+          .setProperty("mongodb.readPreference", ReadPreferenceLevel.PRIMARY");
 ```
 
 ---
 
 ## Transaction support
 
-If your MongoDB deployment supports transactions, Flamingock allows you to work within a transactional session by declaring a `ClientSession` parameter in your changeUnit’s `@Execution` method:
+Flamingock supports transactions via `ClientSession` when used with a compatible MongoDB deployment. Simply include it as a parameter in your change unit:
 
 ```java
 @Execution
@@ -174,30 +156,27 @@ public void execute(ClientSession session, MongoDatabase db) {
 ```
 The session lifecycle is managed automatically by Flamingock.  If you omit the ClientSession parameter, the change will still execute, but it won't participate in a transaction.
 
-> See the [Transactions](../transactions.md) page for general behavior and when to use `transactional = false`.
+> See the [Transactions](../flamingock-library-config/transactions.md) page for guidance on when and how to disable transactions (e.g., `transactional = false`).
 
 ---
 
 ## Examples
 
 You can find practical examples in the official GitHub repository:  
-👉 [github.com/flamingock/flamingock-examples/mongodb](https://github.com/flamingock/flamingock-examples/mongodb)
+👉 [Flamingock MongoDB example](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
 
 ---
 
-## :white_check_mark: Best practices
+## ✅ Best practices
 
 - **Use Flamingock’s default consistency settings (`writeConcern`, `readConcern`, `readPreference`) in production**  
-  These defaults are **strictly selected to guarantee strong consistency, durability, and fault-tolerance**, which are fundamental to Flamingock’s execution guarantees.  
-  Overriding them is **strongly discouraged in production environments**, as it can compromise the integrity of audit logs and distributed coordination.
+  These values guarantee strong consistency, durability, and fault tolerance. Overriding them is discouraged unless absolutely necessary.
 
-- **Use the default repository names (`flamingockAuditLogs`, `flamingockLock`) unless you have a strong reason to change them**  
-  The default names are chosen to avoid collisions and clearly identify Flamingock-managed collections. Overriding them is supported but rarely necessary.
+- **Use the default collection names (`flamingockAuditLogs`, `flamingockLock`)**  
+  These help avoid collisions and simplify debugging.
 
-- **Keep `indexCreation` enabled unless your deployment restricts index creation at runtime**  
-  This setting ensures that Flamingock creates and maintains the required indexes to enforce audit integrity and locking guarantees.  
-  Disable this only if your application does not have the necessary permissions to create indexes — and only if you manage the required indexes manually.
+- **Enable automatic index creation unless your environment prohibits it**  
+  This ensures that Flamingock can enforce audit and locking guarantees. If disabled, manage indexes manually.
 
-- **Always match the edition to the MongoDB driver used in your project**  
-  Use `flamingock-ce-mongodb-v3` for the legacy 3.x Java driver and `flamingock-ce-mongodb-sync4` for the 4.x sync driver.  
-  This ensures proper transaction support and internal compatibility.
+- **Ensure your MongoDB Java driver version is between 3.7.0 and 5.x.x**  
+  This range is tested and supported by Flamingock.

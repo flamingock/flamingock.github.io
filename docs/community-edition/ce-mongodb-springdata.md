@@ -8,8 +8,6 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-## Introduction
-
 This section explains how to use the **Flamingock Community Edition for MongoDB** in applications that rely on **Spring Data MongoDB**.
 
 This edition is designed for teams that already use Spring Data to manage their database access and want to include Flamingock as part of their change tracking and execution model. It integrates with **Spring Boot** and **MongoTemplate**, handling auditing, distributed locking, and transactional coordination.
@@ -19,34 +17,39 @@ Flamingock persists a minimal set of metadata in your MongoDB database:
 - **Audit logs** — track which changes have been applied
 - **Distributed locks** — prevent concurrent modifications in distributed deployments
 
-
 ---
 
 ## Editions
 
-Flamingock provides three specific editions for Spring Data MongoDB, depending on the version of **Spring Data** used in your application. Each edition is aligned with the underlying MongoDB Java driver supported by that Spring Data version.
+Flamingock provides two editions for Spring Data.
 
-| Edition Name                          | Spring Data Version | MongoDB Driver Version | MongoDB Compatibility |
-|---------------------------------------|---------------------|------------------------|-----------------------|
-| `flamingock-ce-mongodb-springdata-v2` | 2.x                 | 3.x                    | MongoDB 3.x           |
-| `flamingock-ce-mongodb-springdata-v3` | 3.x                 | 4.x                    | MongoDB 4.x           |
-| `flamingock-ce-mongodb-springdata-v4` | 4.x                 | 4.x                    | MongoDB 4.x+          |
+### Why are there two MongoDB Spring Data Community-Edition artifacts?
 
-Select the edition that matches the version of Spring Data MongoDB used in your project.
+The only difference is the Java version they target:
 
-:::info JDK compatibility
-The `flamingock-ce-mongodb-springdata-v4` edition requires **JDK 17 or higher**, as it is aligned with the Spring Data 4.x and Spring Boot 3.x ecosystems.
-:::
+- `flamingock-ce-mongodb-springdata` — built for the current Spring Data MongoDB 4.x line, which itself requires JDK 17 or newer.
+- `flamingock-ce-mongodb-springdata-v3-legacy` — kept for teams still on Spring Data 3.x (Spring Boot 2) who must stay on JDK 8 – 11.
+
+Choose the artifact that matches the JDK level of your application today; switching later is as simple as changing the dependency.
+
+| Edition Name                                  | Spring Data Version       |
+|-----------------------------------------------|---------------------------|
+| `flamingock-ce-mongodb-springdata-v3-legacy`  | [3.0.0, 4.0.0)            |
+| `flamingock-ce-mongodb-springdata`            | [4.0.0, 5.0.0)            |
+
 
 ---
 
 ## Get Started
+
 If you're using **Spring Boot**, the recommended approach is the **automatic setup** with `@EnableFlamingock`.
 
 By annotating your main class with `@EnableFlamingock`, Flamingock will:
+
 - Automatically detect and inject Spring components (`ApplicationContext`, `ApplicationEventPublisher`, etc.)
 - Pick up configuration from the native Spring Boot config file
 - Create and register a runner bean (either `ApplicationRunner` or `InitializingBean`)
+- Process the setup configuration from the annotation
 
 ### 1. Add the required dependencies
 
@@ -54,8 +57,8 @@ By annotating your main class with `@EnableFlamingock`, Flamingock will:
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-mongodb-springdata-v4:$flamingockVersion")
-implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-mongodb-springdata")
 ```
 
 </TabItem>
@@ -64,7 +67,7 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 ```xml
 <dependency>
   <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-ce-mongodb-springdata-v4</artifactId>
+  <artifactId>flamingock-ce-mongodb-springdata</artifactId>
   <version>${flamingock.version}</version>
 </dependency>
 <dependency>
@@ -77,17 +80,24 @@ implementation("io.flamingock:springboot-integration-v3:$flamingockVersion")
 </TabItem>
 </Tabs>
 
-### 2. Enable Flamingock runner
+:::info Legacy Support
+If your project uses **Spring Data 3.x** and **Spring Boot 2.x**, use the `flamingock-ce-mongodb-springdata-v3-legacy` edition instead.
+:::
 
+### 2. Configure setup and enable Flamingock runner
 Choose one of the following options based on your preferred integration style:
-- **Automatic setup** (recommended): Just annotate your main class with `@EnableFlamingock`
-- **Manual builder-based setup**: Manually register the Flamingock runner bean
+- **Automatic setup** (recommended): Annotate your main class with `@EnableFlamingock`
+- **Manual builder-based setup**: Use `@EnableFlamingock` with `setup = SetupType.BUILDER` and manually register the Flamingock runner bean
 
 <Tabs groupId="automatic_builder">
 <TabItem value="automatic" label="Automatic">
 
 ```java
-@EnableFlamingock
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourapp.changes")
+    }
+)
 @SpringBootApplication
 public class MyApp {
   public static void main(String[] args) {
@@ -100,50 +110,55 @@ public class MyApp {
 <TabItem value="builder" label="Builder">
 
 ```java
-@Bean
-public ApplicationRunner flamingockRunner(ApplicationContext context,
-                                           ApplicationEventPublisher publisher,
-                                           MongoTemplate template) {
-  FlamingockBuilder builder = Flamingock.builder()
-      .addDependency(context)
-      .addDependency(publisher)
-      .addDependency(template)
-      .setProperty("mongodb.databaseName", "flamingock-db");
-  return SpringbootUtil.toApplicationRunner(builder.build());
-}
+@EnableFlamingock(
+    setup = SetupType.BUILDER,
+    stages = {
+        @Stage(location = "com.yourapp.changes")
+    }
+)
+@Configuration
+public class FlamingockConfig {
 
+    @Bean
+    public ApplicationRunner flamingockRunner(ApplicationContext context,
+                                               ApplicationEventPublisher publisher,
+                                               MongoTemplate template) {
+        FlamingockBuilder builder = Flamingock.builder()
+            .addDependency(context)
+            .addDependency(publisher)
+            .addDependency(template)
+            .setProperty("mongodb.databaseName", "flamingock-db");
+        return SpringbootUtil.toApplicationRunner(builder.build());
+    }
+}
 ```
 
 </TabItem>
 </Tabs>
-
 
 ---
 
 ## Configuration overview
 
 Flamingock’s MongoDB Spring Data edition requires two types of inputs:
-
 - **Dependencies**: These are required runtime components, such as `MongoTemplate`
 - **Properties**: These configure Flamingock’s internal behavior and are typically declared in the Spring configuration file or via the builder.
 
 ### Dependencies
 
-These must be available in the Spring context (when using `@EnableFlamingock`) or registered via `.addDependency(...)` when using the builder.
+These must be available in the Spring context (when using automatic setup with `@Flamingock`) or registered via `.addDependency(...)` when using the builder setup.
 
 | Type                                                    | Required | Notes                                                                                                              |
 |---------------------------------------------------------|:--------:|--------------------------------------------------------------------------------------------------------------------|
-| `org.springframework.data.mongodb.core.MongoTemplate`   |   Yes    | Must be declared as a Spring bean. If you're using Spring Boot with MongoDB, Spring will auto-configure this bean. |
-| `org.springframework.context.ApplicationContext`        |   Yes    | Auto-injected by Spring Boot (no manual configuration needed).                                                     |
-| `org.springframework.context.ApplicationEventPublisher` |   Yes    | Auto-injected by Spring Boot (no manual configuration needed).                                                     |
+| `org.springframework.data.mongodb.core.MongoTemplate`   |   Yes    | Must be declared as a Spring bean.                                                                                 |
+| `org.springframework.context.ApplicationContext`        |   Yes    | Auto-injected by Spring Boot.                                                                                      |
+| `org.springframework.context.ApplicationEventPublisher` |   Yes    | Auto-injected by Spring Boot.                                                                                      |
 
 :::info
-In most cases, **Spring Boot will automatically configure `MongoTemplate`** based on your database connection settings.
+Spring Boot will typically auto-configure `MongoTemplate` for you.
 :::
 
 ### Properties
-
-These can be set using `.setProperty(...)` with the builder or via the Spring Boot configuration file.
 
 | Property                         | Type                   | Default Value                  | Required | Description                                                                                     |
 |----------------------------------|------------------------|--------------------------------|:--------:|-------------------------------------------------------------------------------------------------|
@@ -154,13 +169,14 @@ These can be set using `.setProperty(...)` with the builder or via the Spring Bo
 | `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration. ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                     |
 | `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel. PRIMARY` |    No    | Specifies which MongoDB node to read from.                                                      |
 | `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection used to store applied changes. Most users should keep the default value. |
-| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |                                                    |
 
 :::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
 :::
 Overriding them is only appropriate in limited cases (e.g., testing or local development). If you choose to modify these settings, you assume full responsibility for maintaining the integrity and consistency of your system.
 
+---
 
 ### Full configuration example
 The following example shows how to configure Flamingock with both required and optional properties. It demonstrates how to override index creation, and read/write behaviour. This level of configuration is useful when you need to customise Flamingock's behaviour to match the consistency and durability requirements of your deployment.
@@ -186,18 +202,16 @@ flamingock:
 
 ```java
 FlamingockBuilder builder = Flamingock.builder()
-        .addDependency(applicationContext)
-        .addDependency(applicationEventPublisher)
-        .addDependency(mongoTemplate)
-        .setProperty("mongodb.databaseName", "flamingock-db")
-        .setProperty("mongodb.autoCreate", true)
-        .setProperty("mongodb.readConcern", "MAJORITY")
-        .setProperty("mongodb.writeConcern.w", "MAJORITY")
-        .setProperty("mongodb.writeConcern.journal", true)
-        .setProperty("mongodb.writeConcern.wTimeout", Duration.ofSeconds(1))
-        .setProperty("mongodb.readPreference", ReadPreferenceLevel.PRIMARY);
-
-
+    .addDependency(applicationContext)
+    .addDependency(applicationEventPublisher)
+    .addDependency(mongoTemplate)
+    .setProperty("mongodb.databaseName", "flamingock-db")
+    .setProperty("mongodb.autoCreate", true)
+    .setProperty("mongodb.readConcern", "MAJORITY")
+    .setProperty("mongodb.writeConcern.w", "MAJORITY")
+    .setProperty("mongodb.writeConcern.journal", true)
+    .setProperty("mongodb.writeConcern.wTimeout", Duration.ofSeconds(1))
+    .setProperty("mongodb.readPreference", ReadPreferenceLevel.PRIMARY);
 ```
 
 </TabItem>
@@ -214,17 +228,15 @@ To benefit from transactional execution, simply declare your `@Execution` method
 ```java
 @Execution
 public void change(MongoTemplate mongoTemplate) {
-    // use template with transaction support (managed by Flamingock)
+    // This will run inside a transaction
 }
 ```
-
 Internally, Flamingock will manage the transaction lifecycle and ensure all operations performed through `MongoTemplate` are part of a single, atomic transaction. If anything fails, the changes and the audit log will be rolled back.
 
 There is no need to manually manage a `ClientSession` when using Spring Data.
 Flamingock integrates with Spring’s transaction management infrastructure to coordinate the session for you.
 
-> See the [Transactions](../transactions.md) page for general behavior and when to use `transactional = false`.
-
+> See the [Transactions](../flamingock-library-config/transactions.md) page for general behavior and when to use `transactional = false`.
 ---
 
 ## Examples
@@ -234,7 +246,7 @@ You can find practical examples in the official GitHub repository:
 
 ---
 
-## :white_check_mark: Best practices
+## ✅ Best practices
 
 - **Use Flamingock’s default consistency settings (`writeConcern`, `readConcern`, `readPreference`) in production**  
   These defaults are **strictly selected to guarantee strong consistency, durability, and fault-tolerance**, which are fundamental to Flamingock’s execution guarantees.  
@@ -246,6 +258,4 @@ You can find practical examples in the official GitHub repository:
 - **Keep `indexCreation` enabled unless your deployment restricts index creation at runtime**  
   This setting ensures that Flamingock creates and maintains the required indexes to enforce audit integrity and locking guarantees.  
   Disable this only if your application does not have the necessary permissions to create indexes — and only if you manage the required indexes manually.
-
-- **Always use the edition that matches your Spring Data and MongoDB driver version**  
-  For example, Spring Data 4.x → `flamingock-ce-mongodb-springdata-v4`.
+- **Always match the edition to your Spring Data / MongoDB driver version**

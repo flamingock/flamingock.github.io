@@ -1,4 +1,5 @@
 ---
+title: Flamingock editions
 sidebar_position: 60
 ---
 
@@ -11,7 +12,7 @@ The Community Edition is a free, open-source version of Flamingock that provides
 The current compatible databases for this version are: MongoDB, DynamoDB, CosmosDB or Couchbase. 
 
 Key points around this edition:
-- Offers a similar functionality as our legacy Mongock version.
+- Offers a similar functionality as our legacy Mongock version + expansion to control changes of any component.
 - You provision your own database (compatible with MongoDB, DynamoDB, CosmosDB or Couchbase) - compatible to extension with additional drivers.
 - Storage of local metadata for execution tracking (no centralised feature)
 - Focuses on core functionality (does not include the advanced capabilities provided in the Cloud Edition).

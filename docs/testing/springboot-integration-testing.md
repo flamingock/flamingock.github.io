@@ -3,7 +3,7 @@ title: Spring Boot  Testing
 sidebar_position: 4
 ---
 
-## Testing Flamingock in Spring Boot
+## Introduction
 
 This guide explains how to write integration tests for Flamingock when using **Spring Boot** with the `@EnableFlamingock` annotation.
 
@@ -63,7 +63,11 @@ Flamingock requires `DynamoDbClient` and other injected services (like `AdminCli
 ```java
 @SpringBootTest
 @Testcontainers
-@EnableFlamingock
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "com.yourapp.changes")
+    }
+)
 public class FlamingockSpringbootTest {
 
   static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1"));

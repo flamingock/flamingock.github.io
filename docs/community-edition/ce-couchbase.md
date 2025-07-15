@@ -40,7 +40,8 @@ To get started with the Flamingock Community Edition for Couchbase, follow these
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation("io.flamingock:flamingock-ce-couchbase:$flamingockVersion")
+implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-ce-couchbase")
 implementation("com.couchbase.client:java-client:3.x.x")
 ```
 
@@ -138,3 +139,6 @@ FlamingockBuilder builder = Flamingock.builder()
 > ⚠️ Couchbase transactions are not currently managed automatically by Flamingock.  
 > However, Flamingock guarantees safe, idempotent changes through internal locking, auditing, and execution guarantees.
 
+
+You can find some practical examples in the official GitHub repository:  
+👉 [Flamingock Couchbase example](https://github.com/mongock/mongock-examples/tree/master/couchbase)
