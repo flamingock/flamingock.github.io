@@ -2,6 +2,7 @@
   "label": "Supported frameworks",
   "position": 6,
   "link": {
-    "description": "Supported Frameworks by Flamingock"
+    "type": "doc",
+    "id": "frameworks/graalvm"
   }
 }
