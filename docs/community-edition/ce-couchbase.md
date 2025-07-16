@@ -25,7 +25,7 @@ This edition supports Couchbase through a dedicated artifact:
 
 | Edition Name              | Java SDK                           | Couchbase Compatibility |
 |---------------------------|------------------------------------|-------------------------|
-| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` | Fully supported         |
+| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` | >= `3.4.3`              |
 
 ---
 
