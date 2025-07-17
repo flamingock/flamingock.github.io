@@ -2,6 +2,7 @@
   "label": "Community Edition",
   "position": 7,
   "link": {
-    "description": "Community Edition"
+    "type": "doc",
+    "id": "community-edition/Introduction"
   }
 }

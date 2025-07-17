@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 title: Introduction
+sidebar_label: Templates Introduction
 ---
 
 import Tabs from '@theme/Tabs';
@@ -31,84 +32,7 @@ Templates exist to solve a common problem in traditional, code-based migrations:
 
 Instead of repeating the same boilerplate code over and over, templates let you **externalize the logic** into a reusable definition and **parameterize** what’s different.
 
----
 
-### A simple example
-
-Imagine you're working on a Java application that manages users and roles in a database. You’re using code-based ChangeUnits like this:
-
-```java
-@ChangeUnit(id = "create-users-table", order = 1, author = "flamingock")
-public class CreateUsersTableChangeUnit {
-
-    @Execution
-    public void execute(Connection connection) {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(255))");
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to create users table", e);
-        }
-}
-
-@ChangeUnit(id = "create-roles-table", order = 2, author = "flamingock")
-public class CreateRolesTableChangeUnit {
-
-    @Execution
-    public void execute(Connection connection) {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE roles (id INT PRIMARY KEY, role_name VARCHAR(255))");
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to create roles table", e);
-        }
-    }
-}   
-```
-
-These classes are almost identical — they only differ in the SQL they execute. Over time, these small repetitions add up.
-
----
-
-### 💡 Now with Templates
-
-Instead of duplicating logic, you could define a single template (e.g. `sql-template`) that handles SQL execution generically. Then you just pass the SQL via configuration:
-
-```yaml
-id: create-users-table
-order: 1
-templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    CREATE TABLE users (
-      id INT PRIMARY KEY,
-      name VARCHAR(255)
-    )
-```
-
-```yaml
-id: create-roles-table
-order: 2
-templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    CREATE TABLE roles (
-      id INT PRIMARY KEY,
-      role_name VARCHAR(255)
-    )
-```
-
-Behind the scenes, the **template handles the logic**: connection management, execution, rollback, etc.
-
----
-
-### What You Gain
-
-- **Less boilerplate**: You don’t need to write 10 near-identical Java classes.
-- **Faster development**: Anyone can create a change unit by based on an already existing template.
-- **Safer migrations**: Centralized logic makes it easier to test and enforce best practices.
-
-:::info
-Templates let you think in terms of ***what*** you want to do — not ***how*** you implement it every time.
-:::
 
 ## Key Features
 

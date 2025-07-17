@@ -2,6 +2,7 @@
   "label": "Command Line Interface",
   "position": 9,
   "link": {
-    "description": "Flamingock CLI"
+    "type": "doc",
+    "id": "cli/cli"
   }
 }

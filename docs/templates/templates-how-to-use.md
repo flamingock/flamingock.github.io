@@ -56,7 +56,7 @@ templateConfiguration:
 ```
 
 :::info
-Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock. 
+Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock.
 :::
 
 #### 🔍 Understanding the configuration attributes
@@ -72,9 +72,20 @@ Template-based changes provide both **structure and flexibility**. They share th
 
 ### Step 3: Configure Flamingock to use the template file
 
-:::warning
-TODO: FLAMINGOCK CONFIGURATION (BUILDER / SPRINGBOOT) AND STAGE WITH YAML TEMPLATE PATH.
-:::
+To configure Flamingock to use the YAML template file, you need to define a stage that includes the path to the template file using the `@EnableFlamingock` annotation:
+
+```java
+@EnableFlamingock(
+    stages = {
+        @Stage(location = "src/main/resources/templates")
+    }
+)
+public class MainApplication {
+    // Configuration class
+}
+```
+
+If you prefer to use a pipeline YAML file for configuration, refer to the [Setup & Stages guide](../flamingock-library-config/setup-and-stages.md) for more details.
 
 ### Step 4: Run Flamingock
 
@@ -110,7 +121,7 @@ public class CreatePersonsTableChangeUnit {
     public void execute() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            
+
             statement.executeUpdate("""
                 CREATE TABLE Persons (
                     PersonID int PRIMARY KEY,

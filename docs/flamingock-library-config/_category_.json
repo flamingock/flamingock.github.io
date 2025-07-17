@@ -2,6 +2,7 @@
   "label": "Flamingock library",
   "position": 40,
   "link": {
-    "description": "Flamingock client configuration."
+    "type": "doc",
+    "id": "flamingock-library-config/introduction"
   }
 }

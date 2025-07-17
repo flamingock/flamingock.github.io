@@ -2,6 +2,7 @@
   "label": "Overview",
   "position": 2,
   "link": {
-    "description": "Flamingock overview"
+    "type": "doc",
+    "id": "overview/Introduction"
   }
 }

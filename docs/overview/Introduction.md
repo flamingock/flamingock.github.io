@@ -1,6 +1,7 @@
 ---
 title: Introduction
 sidebar_position: 10
+sidebar_label: Introduction to Flamingock
 ---
 
 # Introducing Flamingock

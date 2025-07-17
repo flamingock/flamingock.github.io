@@ -2,6 +2,7 @@
   "label": "Testing",
   "position": 8,
   "link": {
-    "description": "Flamingock Testing."
+    "type": "doc",
+    "id": "testing/introduction"
   }
 }

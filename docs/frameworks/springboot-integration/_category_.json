@@ -2,6 +2,7 @@
   "label": "Springboot",
   "position": 10,
   "link": {
-    "description": "Flamingock Springboot integration"
+    "type": "doc",
+    "id": "frameworks/springboot-integration/introduction"
   }
 }
