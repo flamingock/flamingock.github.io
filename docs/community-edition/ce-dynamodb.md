@@ -23,9 +23,9 @@ Flamingock persists a minimal set of metadata in your DynamoDB tables to support
 
 This is a single edition for DynamoDB, provided as a standalone artifact.
 
-| Edition Name             | Java Client                       |  DynamoDB Compatibility  |
-|--------------------------|-----------------------------------|:------------------------:|
-| `flamingock-ce-dynamodb` | `software.amazon.awssdk:dynamodb` |          `2.x`           |
+| Edition Name             | Java Client                       | DynamoDB Compatibility |
+|--------------------------|-----------------------------------|:----------------------:|
+| `flamingock-ce-dynamodb` | `software.amazon.awssdk:dynamodb` |      >= `2.25.29`      |
 
 ---
 
