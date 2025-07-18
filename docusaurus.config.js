@@ -174,6 +174,13 @@ const config = {
         additionalLanguages: ['java', 'kotlin', 'yaml', 'sql', 'groovy', 'json']
       },
     }),
+  plugins: [
+    [
+      "docusaurus-plugin-generate-llms-txt",
+      {
+        outputFile: "llms.txt",
+      },
+    ],
+  ],
 };
-
 export default config;
