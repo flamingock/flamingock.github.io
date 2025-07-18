@@ -34,7 +34,7 @@ Choose the artifact that matches the JDK level of your application today; switch
 
 | Edition Name                                  | Spring Data Version       |
 |-----------------------------------------------|---------------------------|
-| `flamingock-ce-mongodb-springdata-v3-legacy`  | [3.0.0, 4.0.0)            |
+| `flamingock-ce-mongodb-springdata-v3-legacy`  | [3.1.4, 4.0.0)            |
 | `flamingock-ce-mongodb-springdata`            | [4.0.0, 5.0.0)            |
 
 
