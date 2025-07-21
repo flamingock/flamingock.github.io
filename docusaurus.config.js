@@ -181,6 +181,9 @@ const config = {
         outputFile: "llms.txt",
       },
     ],
+    [require.resolve('docusaurus-lunr-search'), {
+      languages: ['en']
+    }]
   ],
 };
 export default config;
