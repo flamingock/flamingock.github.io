@@ -1,6 +1,7 @@
 ---
 title: Introduction
 sidebar_position: 1
+sidebar_label: CE Introduction
 ---
 
 import Tabs from '@theme/Tabs';

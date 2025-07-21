@@ -155,7 +155,7 @@ native-image \
   --features=io.flamingock.graalvm.RegistrationFeature \
   -H:ResourceConfigurationFiles=resource-config.json \
   -H:+ReportExceptionStackTraces \
-  --initialize-at-build-time=org.slf4j.simple.SimpleLogger,org.slf4j.LoggerFactory,org.slf4j.impl.StaticLoggerBinder \
+  --initialize-at-build-time=org.slf4j.simple \
   -jar build/libs/your-app.jar
 ```
 
@@ -163,7 +163,7 @@ native-image \
 
 - `--features=io.flamingock.graalvm.RegistrationFeature`: Registers all Flamingock-related classes for reflection using metadata gathered during build time.
 - `-H:ResourceConfigurationFiles=resource-config.json`: Informs GraalVM of required static resource files to include.
-- `--initialize-at-build-time=...`: Ensures specific classes are initialized during image build rather than at runtime. Useful for frameworks and logging libraries.
+- `--initialize-at-build-time`: – **Optional**. Build‑time init for listed classes/packages (freeze static state; faster start; avoids early reflection/I/O). Flamingock does not require specific entries. Use only if a library benefits (e.g., logging). Example: --initialize-at-build-time=org.slf4j.impl,org.slf4j.simple. Omit if unsure.
 
 #### Expected native image output
 

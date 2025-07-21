@@ -19,7 +19,7 @@ Flamingock persists a minimal set of metadata in your MongoDB database to suppor
 
 It is particularly suited to teams working in **framework-agnostic** or low-level environments, where integration is done directly at the driver level, and fine-grained control over MongoDB configuration is required.
 
-Flamingock supports `mongodb-driver-sync` versions from **3.7.0 up to 5.x.x**.
+Flamingock supports `mongodb-driver-sync` versions from **4.0.0 up to 5.x.x**.
 
 ---
 
@@ -27,7 +27,7 @@ Flamingock supports `mongodb-driver-sync` versions from **3.7.0 up to 5.x.x**.
 
 | Flamingock Module                 | MongoDB Driver                   | MongoDB Compatibility       |
 |----------------------------------|----------------------------------|-----------------------------|
-| `flamingock-ce-mongodb-sync`     | `org.mongodb:mongodb-driver-sync` (3.7.0 - 5.x.x) | MongoDB 3.x to 5.x           |
+| `flamingock-ce-mongodb-sync`     | `org.mongodb:mongodb-driver-sync` (4.0.0 - 5.x.x) | MongoDB 3.x to 5.x           |
 
 ---
 
@@ -61,7 +61,7 @@ implementation("org.mongodb:mongodb-driver-sync:4.x.x")
 <dependency>
   <groupId>org.mongodb</groupId>
   <artifactId>mongodb-driver-sync</artifactId>
-  <version>5.5.1</version> <!-- or any version between 3.7.0 and 5.x.x -->
+  <version>5.5.1</version> <!-- or any version between 4.0.0 and 5.x.x -->
 </dependency>
 ```
 
@@ -178,5 +178,5 @@ You can find practical examples in the official GitHub repository:
 - **Enable automatic index creation unless your environment prohibits it**  
   This ensures that Flamingock can enforce audit and locking guarantees. If disabled, manage indexes manually.
 
-- **Ensure your MongoDB Java driver version is between 3.7.0 and 5.x.x**  
+- **Ensure your MongoDB Java driver version is between 4.0.0 and 5.x.x**  
   This range is tested and supported by Flamingock.

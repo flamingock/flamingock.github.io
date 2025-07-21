@@ -2,6 +2,7 @@
   "label": "Resources",
   "position": 10,
   "link": {
-    "description": "Examples and migration resources"
+    "type": "doc",
+    "id": "resources/examples"
   }
 }
