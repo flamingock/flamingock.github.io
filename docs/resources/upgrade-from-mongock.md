@@ -89,7 +89,7 @@ MongockStandalone.builder()
 - Remove package scanning in favor of pipeline config
 - Inject dependencies via `.addDependency()`
 
-For Spring Boot integration, see the [Spring Boot guide](springboot-integration/introduction).
+For Spring Boot integration, see the [Spring Boot guide](../frameworks/springboot-integration/introduction.md).
 
 ## Step 3: Create system stage
 
@@ -191,6 +191,6 @@ Stage: Application Changes
 
 ---
 
-Ready to upgrade? See the [pipeline & stages guide](client-configuration/pipeline-and-stages) and [ChangeUnit reference](change-units).  
+Ready to upgrade? See the [pipeline & stages guide](../flamingock-library-config/setup-and-stages.md) and [ChangeUnit reference](../flamingock-library-config/changeunits-deep-dive.md).  
 
 **Complete example project**: https://github.com/mongock/flamingock-examples/tree/master/import-from-mongock
