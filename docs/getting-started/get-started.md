@@ -181,13 +181,10 @@ public class App {
 
 :::tip Default approach:
 Most applications use a single stage: `@Stage(location = "com.yourcompany.changes")`. The name is auto-derived ("changes") and this is the recommended default setup.
-- It’s valid to have template files in both places.
 :::
 
 :::info Advanced options:
-- **Multiple stages**: For complex scenarios requiring independent change sets
-- **File-based configuration**: Use `pipelineFile` parameter for YAML configuration
-- **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
+For advance options, visit our [stage section](../flamingock-library-config/setup-and-stages.md)
 :::
 
 ---
