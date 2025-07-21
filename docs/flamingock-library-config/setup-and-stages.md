@@ -52,9 +52,12 @@ pipeline:
       location: com.yourcompany.changes
 ```
 
-:::info Multiple stages (advanced)
-For complex scenarios requiring independent change sets, you can define multiple stages
+:::info Advanced options:
+- **Multiple stages**: For complex scenarios requiring independent change sets go to the [stage section below](#multiple-stages-advanced)
+- **File-based configuration**: Use `pipelineFile` parameter for YAML configuration
+- **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
+
 ---
 
 ## Stage Types
@@ -94,6 +97,12 @@ To see these special stages in action, refer to the [Upgrade from Mongock guide]
 Most applications will naturally fit into a single stage, which keeps things simple and ensures a clear, deterministic execution order. 
 However, if you prefer to organize changes into multiple stages—for example, to separate concerns or enforce isolated execution 
 flows—Flamingock fully supports that as well. We’ll explain how it works and what to consider when taking that approach.
+
+:::tip Default approach:
+Most applications use a single stage: `@Stage(location = "com.yourcompany.changes")`. The name is auto-derived ("changes") and this is the recommended default setup.
+:::
+
+
 ### When to Use Multiple Stages
 
 Multiple stages are beneficial in specific scenarios:
