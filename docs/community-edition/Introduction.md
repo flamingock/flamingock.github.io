@@ -8,13 +8,15 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Community Edition
+The **Community Edition** is Flamingock's free, open-source offering where you provide and manage your own database as the **audit store**—the dedicated location where Flamingock records which changes have been executed, when, and by whom.
 
-Flamingock follows a modular architecture that allows users to work with multiple database technologies through specialized components.
-In the context of the **Community Edition**, each *Edition* represents support for a specific database technology—such as MongoDB, DynamoDB, CosmosDB, or Couchbase—packaged.
+Unlike the Cloud Edition (which uses Flamingock's managed backend as the audit store and provides advanced features), the Community Edition requires you to set up and maintain your own audit store. This makes it suitable for getting started with Flamingock, experimenting with change-as-code concepts, or for projects that need basic change management capabilities.
 
-Each edition encapsulates all the logic necessary to integrate Flamingock with a given database: handling of ChangeUnit executions, locking mechanisms, transaction support (when available), and compatibility with database-specific features and limitations. This structure allows you to select and include only the edition relevant to your application, keeping your dependency footprint clean and your integration precise.
+The **audit store** is separate from your **target systems** (the resources your ChangeUnits modify). For example, you might use MongoDB as your audit store while your ChangeUnits create S3 buckets, update Kafka topics, or modify database schemas. As the Cloud Edition, the Community edition provides transactional consistency guarantees to ensure changes and audit records remain synchronized.
 
-All editions under the Community umbrella share a consistent developer experience and follow the same core changeUnit executions principles, but are tailored to the constraints and capabilities of their respective databases. This ensures that developers get the best possible behavior—whether using a transactional system like MongoDB or an eventually consistent NoSQL database like MongoDB or DynamoDB.
+To learn more about the distinction between audit stores and target systems, see [Audit Store vs. Target System](../overview/audit-store-vs-target-system.md).
+
+The Community Edition supports several database technologies for your audit store: **MongoDB**, **DynamoDB**, **CosmosDB**, and **Couchbase**. Each provides the same core Flamingock functionality while premium features are available in the Cloud and Self-hosted editions.
 
 ## Available editions
 
