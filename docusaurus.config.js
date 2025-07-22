@@ -15,15 +15,15 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://mongock.github.io',
+  url: 'https://flamingock.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'mongock', // Usually your GitHub org/user name.
-  projectName: 'mongock.github.io', // Usually your repo name.
+  organizationName: 'flamingock', // Usually your GitHub org/user name.
+  projectName: 'flamingock.github.io', // Usually your repo name.
   trailingSlash: false,
   deploymentBranch: 'gh-pages', // Rama donde se desplegará el sitio
 
@@ -86,7 +86,7 @@ const config = {
   ],
 
   customFields: {
-    homepageRedirect: '/docs/1.0.0/overview/Introduction',
+    homepageRedirect: '/docs/1.0.0/getting-started/get-started',
   },
 
   themeConfig:
@@ -116,7 +116,7 @@ const config = {
           },
           { type: 'search', position: 'right' },
           {
-            href: 'https://github.com/mongock',
+            href: 'https://github.com/flamingock',
             label: 'GitHub',
             position: 'right',
           },
