@@ -22,7 +22,6 @@ jobs:
 
       - name: Deploy website
         env:
-          GIT_USER: github-actions[bot]
-          GIT_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_USER: flamingock
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn deploy
