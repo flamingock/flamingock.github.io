@@ -170,10 +170,10 @@ Below is a summary of the available editions in the Flamingock Community Edition
 
 | Edition   | Database         | Supported Versions | Transactions | Locking Support | Notes                                                                                                                      |
 |-----------|------------------|--------------------|--------------|-----------------|----------------------------------------------------------------------------------------------------------------------------|
-| MongoDB   | MongoDB          | 4.0+               | ✅ Yes        | ✅ Yes           | Flamingock provides support for both low-level native drivers and high-level abstractions through Spring Data integration. |
-| DynamoDB  | AWS DynamoDB     | All                | ✅ Yes        | ✅ Yes           | Locking via coordination table                                                                                             |
-| CosmosDB  | Azure Cosmos DB  | Mongo API 3.6/4.0  | ✅ Partial    | ✅ Yes           | Limited transaction support                                                                                                |
-| Couchbase | Couchbase Server | 6.5+               | ✅ Yes        | ✅ Yes           | Requires Couchbase SDK 3+                                                                                                  |
+| MongoDB   | MongoDB          | >=4.0              | ✅ Yes        | ✅ Yes           | Flamingock provides support for both low-level native drivers and high-level abstractions through Spring Data integration. |
+| DynamoDB  | AWS DynamoDB     | >=2.25.29          | ✅ Yes        | ✅ Yes           |                                                                                                                            |
+| CosmosDB  | Azure Cosmos DB  | Mongo API 3.6/4.0  | ✅ Yes        | ✅ Yes           |                                                                                                                            |
+| Couchbase | Couchbase Server | >=3.4.3            | ❌ No         | ✅ Yes           |                                                                                                                            |
 
 ---
 ## Features
