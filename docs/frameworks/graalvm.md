@@ -231,7 +231,7 @@ For more information on image creation and options, refer to the [GraalVM build 
 
 ## Example project
 
-We have built a [complete example project for GraalVM](https://github.com/mongock/flamingock-examples/tree/master/graalvm) that demonstrates:
+We have built a [complete example project for GraalVM](https://github.com/flamingock/flamingock-examples/tree/master/graalvm) that demonstrates:
 - A working Flamingock configuration with GraalVM
 - Sample change units
 - Proper resource configuration

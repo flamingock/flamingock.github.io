@@ -141,4 +141,4 @@ FlamingockBuilder builder = Flamingock.builder()
 
 
 You can find some practical examples in the official GitHub repository:  
-👉 [Flamingock Couchbase example](https://github.com/mongock/mongock-examples/tree/master/couchbase)
+👉 [Flamingock Couchbase example](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)

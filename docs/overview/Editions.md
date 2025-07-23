@@ -35,7 +35,7 @@ Use this edition if you want a scalable, collaborative, and secure environment t
 :::info
 Coming soon! Flamingock Cloud Edition is currently under development.
 
-If you'd like to participate in our user testing round, please contact support@mongock.io 
+If you'd like to participate in our user testing round, please contact support@flamingock.io 
 :::
 
 
@@ -45,5 +45,5 @@ Provides all the offered functionality in Flamingock Cloud, deployed in your inf
 :::info
 Flamingock self-hosted edition is not released yet. 
 
-Interested? If you require this edition to be available for your enterprise, please contact support@mongock.io 
+Interested? If you require this edition to be available for your enterprise, please contact support@flamingock.io 
 :::
