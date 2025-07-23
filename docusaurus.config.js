@@ -59,7 +59,7 @@ const config = {
           versions: {
             current: {
               label: '1.0.0',
-              path: '1.0.0',
+              path: '',
             },
           },
         },
@@ -86,7 +86,7 @@ const config = {
   ],
 
   customFields: {
-    homepageRedirect: '/docs/1.0.0/getting-started/get-started',
+    homepageRedirect: '/docs/getting-started/get-started',
   },
 
   themeConfig:
@@ -120,11 +120,12 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
-          {
+          //Disable version dropdown
+          /*{
             type: 'docsVersionDropdown',
             position: 'right',
             dropdownActiveClassDisabled: true, // Muestra siempre el desplegable
-          },
+          },*/
         ],
       },
       footer: {
@@ -133,6 +134,26 @@ const config = {
           {
             title: 'Docs',
             items: [
+              {
+                label: 'Getting Started',
+                to: '/docs/getting-started/get-started',
+              },
+              {
+                label: 'Overview',
+                to: '/docs/overview/core-concepts',
+              },
+              {
+                label: 'Configuration',
+                to: '/docs/flamingock-library-config/introduction',
+              },
+              {
+                label: 'Community Edition',
+                to: '/docs/community-edition/introduction',
+              },
+              {
+                label: 'Resources',
+                to: '/docs/resources/introduction',
+              },
             ],
           },
           {
@@ -140,15 +161,11 @@ const config = {
             items: [
               {
                 label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                href: 'https://stackoverflow.com/questions/tagged/flamingock',
               },
               {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'X',
-                href: 'https://x.com/docusaurus',
+                label: 'Linkedin',
+                href: 'https://www.linkedin.com/company/flamingock',
               },
             ],
           },
@@ -161,7 +178,7 @@ const config = {
               },*/
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/flamingock',
               },
             ],
           },
