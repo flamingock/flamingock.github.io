@@ -59,7 +59,7 @@ const config = {
           versions: {
             current: {
               label: '1.0.0',
-              path: '1.0.0',
+              path: '',
             },
           },
         },
@@ -86,7 +86,7 @@ const config = {
   ],
 
   customFields: {
-    homepageRedirect: '/docs/1.0.0/getting-started/get-started',
+    homepageRedirect: '/docs/getting-started/get-started',
   },
 
   themeConfig:
@@ -164,8 +164,8 @@ const config = {
                 href: 'https://stackoverflow.com/questions/tagged/flamingock',
               },
               {
-                label: 'X',
-                href: 'https://x.com/flamingock',
+                label: 'Linkedin',
+                href: 'https://www.linkedin.com/company/flamingock',
               },
             ],
           },
