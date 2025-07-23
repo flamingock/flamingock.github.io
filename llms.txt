@@ -987,7 +987,7 @@ FlamingockBuilder builder = Flamingock.builder()
 
 
 You can find some practical examples in the official GitHub repository:  
-👉 [Flamingock Couchbase example](https://github.com/mongock/mongock-examples/tree/master/couchbase)
+👉 [Flamingock Couchbase example](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)
 
 ---
 
@@ -2625,7 +2625,7 @@ For more information on image creation and options, refer to the [GraalVM build 
 
 ## Example project
 
-We have built a [complete example project for GraalVM](https://github.com/mongock/flamingock-examples/tree/master/graalvm) that demonstrates:
+We have built a [complete example project for GraalVM](https://github.com/flamingock/flamingock-examples/tree/master/graalvm) that demonstrates:
 - A working Flamingock configuration with GraalVM
 - Sample change units
 - Proper resource configuration
@@ -4062,7 +4062,7 @@ Use this edition if you want a scalable, collaborative, and secure environment t
 :::info
 Coming soon! Flamingock Cloud Edition is currently under development.
 
-If you'd like to participate in our user testing round, please contact support@mongock.io 
+If you'd like to participate in our user testing round, please contact support@flamingock.io 
 :::
 
 
@@ -4072,7 +4072,7 @@ Provides all the offered functionality in Flamingock Cloud, deployed in your inf
 :::info
 Flamingock self-hosted edition is not released yet. 
 
-Interested? If you require this edition to be available for your enterprise, please contact support@mongock.io 
+Interested? If you require this edition to be available for your enterprise, please contact support@flamingock.io 
 :::
 
 ---
@@ -4369,7 +4369,7 @@ Each example folder and project includes its own `README.md` with detailed setup
 
 1. **Clone the examples repository**
    ```bash
-   git clone https://github.com/mongock/flamingock-examples.git
+   git clone https://github.com/flamingock/flamingock-examples.git
    ```  
    This repository contains all the example folders for various technologies.
 
@@ -4776,7 +4776,7 @@ Stage: Application Changes
 
 Ready to upgrade? See the [pipeline & stages guide](../flamingock-library-config/setup-and-stages.md) and [ChangeUnit reference](../flamingock-library-config/changeunits-deep-dive.md).  
 
-**Complete example project**: https://github.com/mongock/flamingock-examples/tree/master/import-from-mongock
+**Complete example project**: https://github.com/flamingock/flamingock-examples/tree/master/import-from-mongock
 
 ---
 
