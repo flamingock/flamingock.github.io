@@ -31,7 +31,7 @@ Each example folder and project includes its own `README.md` with detailed setup
 
 1. **Clone the examples repository**
    ```bash
-   git clone https://github.com/mongock/flamingock-examples.git
+   git clone https://github.com/flamingock/flamingock-examples.git
    ```  
    This repository contains all the example folders for various technologies.
 

@@ -193,4 +193,4 @@ Stage: Application Changes
 
 Ready to upgrade? See the [pipeline & stages guide](../flamingock-library-config/setup-and-stages.md) and [ChangeUnit reference](../flamingock-library-config/changeunits-deep-dive.md).  
 
-**Complete example project**: https://github.com/mongock/flamingock-examples/tree/master/import-from-mongock
+**Complete example project**: https://github.com/flamingock/flamingock-examples/tree/master/import-from-mongock
