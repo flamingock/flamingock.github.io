@@ -169,7 +169,7 @@ Spring Boot will typically auto-configure `MongoTemplate` for you.
 | `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration. ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                     |
 | `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel. PRIMARY` |    No    | Specifies which MongoDB node to read from.                                                      |
 | `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection used to store applied changes. Most users should keep the default value. |
-| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |                                                    |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLocks"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |                                                    |
 
 :::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
@@ -252,7 +252,7 @@ You can find practical examples in the official GitHub repository:
   These defaults are **strictly selected to guarantee strong consistency, durability, and fault-tolerance**, which are fundamental to Flamingock’s execution guarantees.  
   Overriding them is **strongly discouraged in production environments**, as it can compromise the integrity of audit logs and distributed coordination.
 
-- **Use the default repository names (`flamingockAuditLogs`, `flamingockLock`) unless you have a strong reason to change them**  
+- **Use the default repository names (`flamingockAuditLogs`, `flamingockLocks`) unless you have a strong reason to change them**  
   The default names are chosen to avoid collisions and clearly identify Flamingock-managed collections. Overriding them is supported but rarely necessary.
 
 - **Keep `indexCreation` enabled unless your deployment restricts index creation at runtime**  

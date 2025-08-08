@@ -27,7 +27,7 @@ Below is a summary of the available editions in the Flamingock Community Edition
 | MongoDB   | MongoDB          | >=4.0              | ✅ Yes        | ✅ Yes           | Flamingock provides support for both low-level native drivers and high-level abstractions through Spring Data integration. |
 | DynamoDB  | AWS DynamoDB     | >=2.25.29          | ✅ Yes        | ✅ Yes           |                                                                                                                            |
 | CosmosDB  | Azure Cosmos DB  | Mongo API 3.6/4.0  | ✅ Yes        | ✅ Yes           |                                                                                                                            |
-| Couchbase | Couchbase Server | >=3.4.3            | ❌ No         | ✅ Yes           |                                                                                                                            |
+| Couchbase | Couchbase Server | >=3.6.0            | ❌ No         | ✅ Yes           |                                                                                                                            |
 
 ---
 ## Features

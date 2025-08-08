@@ -120,8 +120,8 @@ These must be set using `.setProperty(...)`
 | `dynamodb. readCapacityUnits`   | `Long`    |    No    | `5L`                  | Read capacity units (for **PROVISIONED** billing mode only).                 |
 | `dynamodb. writeCapacityUnits`  | `Long`    |    No    | `5L`                  | Write capacity units (for **PROVISIONED** billing mode only).                |
 | `dynamodb.autoCreate`           | `Boolean` |    No    | `true`                | Automatically creates the required tables if they do not exist.              |
-| `dynamodb. auditRepositoryName` | `String`  |    No    | `flamingockAuditLogs` | Table used to store audit records. Most users should keep the default name.  |
-| `dynamodb. lockRepositoryName`  | `String`  |    No    | `flamingockLock`      | Table used for distributed locking. Most users should keep the default name. |
+| `dynamodb. auditRepositoryName` | `String`  |    No    | `"flamingockAuditLogs"` | Table used to store audit records. Most users should keep the default name.  |
+| `dynamodb. lockRepositoryName`  | `String`  |    No    | `"flamingockLocks"`      | Table used for distributed locking. Most users should keep the default name. |
 
 :::warning
 In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
