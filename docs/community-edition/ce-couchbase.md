@@ -25,7 +25,7 @@ This edition supports Couchbase through a dedicated artifact:
 
 | Edition Name              | Java SDK                           | Couchbase Compatibility |
 |---------------------------|------------------------------------|-------------------------|
-| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` | >= `3.4.3`              |
+| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` (>= `3.6.0`) | >= `7.0`              |
 
 ---
 
@@ -66,13 +66,17 @@ implementation("com.couchbase.client:java-client:3.x.x")
 
 ### 2. Enable Flamingock runner
 
-At minimum, you must provide a `Cluster` instance (as a **dependency**):
+At minimum, you must provide:
+- A Cluster instance (as a **dependency**)
+- A Bucket instance (as a **dependency**)
 
 ```java
 Cluster cluster = Cluster.connect("localhost", "username", "password");
+Bucket bucket = cluster.bucket("YOUR_BUCKET");
 
 Runner runner = Flamingock.builder()
     .addDependency(cluster)
+    .addDependency(bucket)
     .build();
 ```
 
@@ -88,10 +92,7 @@ runner.execute();
 
 ## Configuration overview
 
-Flamingock’s Couchbase Community Edition requires both:
-
-- A `Cluster` dependency
-- A set of configuration properties
+Flamingock requires both dependencies and configuration properties, set via the builder.
 
 ### Dependencies
 
@@ -99,7 +100,8 @@ These must be registered using `.addDependency(...)`
 
 | Type                                | Required | Description                                        |
 |-------------------------------------|:--------:|----------------------------------------------------|
-| `com.couchbase.client.java.Cluster` |   Yes    | Required to connect and execute against Couchbase. |
+| `com.couchbase.client.java.Cluster` |   Yes    | Required to connect and execute against Couchbase cluster. |
+| `com.couchbase.client.java.Bucket` |   Yes    | Required to connect and execute against Couchbase bucket. |
 
 ### Properties
 
@@ -107,7 +109,10 @@ These must be set using `.setProperty(...)`
 
 | Property      | Type      | Required | Default Value | Description                                                              |
 |---------------|-----------|:--------:|---------------|--------------------------------------------------------------------------|
-| `autoCreate`  | `boolean` |    No    | `true`        | Whether Flamingock should auto-create required buckets and indexes.      |
+| `couchbase.autoCreate`  | `boolean` |    No    | `true`        | Whether Flamingock should auto-create required collections and indexes.      |
+| `couchbase.scopeName`  | `String` |    No    | `"_default"`        | Name of the Couchbase scope where the collections exist or will be created.       |
+| `couchbase.auditRepositoryName`   | `String`               |   No    | `"flamingockAuditLogs"`        | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
+| `couchbase.lockRepositoryName`    | `String`               |    No    | `"flamingockLocks"`             | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
 In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
@@ -122,12 +127,15 @@ The following example shows how to configure Flamingock with both required and o
 
 ```java
 Cluster cluster = Cluster.connect("localhost", "username", "password");
+Bucket bucket = cluster.bucket("YOUR_BUCKET");
 
 FlamingockBuilder builder = Flamingock.builder()
     // mandatory dependency
     .addDependency(cluster)
+    .addDependency(bucket)
     // optional configuration
-    .setProperty("autoCreate", true);
+    .setProperty("autoCreate", true)
+    .setProperty("couchbase.scopeName", "YOUR_SCOPE");
 ```
 
 > You can add additional dependencies and properties based on your custom setup (e.g., metrics, listeners, or cloud-specific settings).

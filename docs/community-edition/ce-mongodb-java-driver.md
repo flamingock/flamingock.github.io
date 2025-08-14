@@ -116,7 +116,7 @@ These must be set using `.setProperty(...)`
 | `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration .ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                                           |
 | `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel .PRIMARY` |    No    | Defines which MongoDB node to read from.                                                                              |
 | `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
-| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLocks"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
 We strongly recommend keeping the default configuration values in production environments. They are optimized for **consistency, durability, and safety**, ensuring Flamingock’s audit and rollback guarantees.
@@ -172,7 +172,7 @@ You can find practical examples in the official GitHub repository:
 - **Use Flamingock’s default consistency settings (`writeConcern`, `readConcern`, `readPreference`) in production**  
   These values guarantee strong consistency, durability, and fault tolerance. Overriding them is discouraged unless absolutely necessary.
 
-- **Use the default collection names (`flamingockAuditLogs`, `flamingockLock`)**  
+- **Use the default collection names (`flamingockAuditLogs`, `flamingockLocks`)**  
   These help avoid collisions and simplify debugging.
 
 - **Enable automatic index creation unless your environment prohibits it**  
