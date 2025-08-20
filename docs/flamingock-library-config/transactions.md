@@ -81,18 +81,7 @@ This tells Flamingock:
 - Not to use a transaction for the execution and audit
 - To call `@RollbackExecution` if something goes wrong
 
-### Globally (less common)
-
-You can also disable transactions across all change units in the builder:
-
-```java
-Flamingock
-  .builder()
-  .disableTransaction()
-  .build()
-  .run();
-```
-
+[//]: # (TODO: Add target section reference)
 ---
 
 ## Manual rollback
