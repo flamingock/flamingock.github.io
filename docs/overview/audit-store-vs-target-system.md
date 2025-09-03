@@ -1,111 +1,145 @@
 ---
-title: Audit store vs. target system
+title: Target Systems vs Audit Store Architecture
 sidebar_position: 100
 ---
 
-# Audit Store vs. Target System
+# Target Systems vs Audit Store Architecture
+*Understanding Flamingock's dual-system design for enterprise safety*
 
-In Flamingock, it is important to distinguish between two very different roles that external systems can play:
+Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
 
-## Audit Store
+---
 
-The audit store is the dedicated persistence layer where Flamingock records metadata about each change unit’s execution. Its sole purpose is to capture, in an append-only log, exactly which change units ran, when they ran, who initiated them, and whether they succeeded or failed (along with any error details). This information is used to:
+## The Dual-System Architecture
 
-- **Prevent duplicate applications**  
-  By checking the audit store before running a change unit, Flamingock guarantees each change is executed at most once.
+### Target Systems: Where Changes Are Applied
+**Target Systems** are your business systems where actual changes happen:
 
-- **Track change history**  
-  You can query the audit store to see all previously applied changes, filter by author or date range, and generate reports.
+- **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
+- **Purpose**: Store and process your business data and configurations
+- **Modified by**: Your business logic through ChangeUnits
 
-- **Coordinate distributed execution**  
-  In a clustered environment, Flamingock nodes consult the audit store to decide which change units still need to run—and to know which locks are held.
+### Audit Store: Where Execution Is Tracked  
+**Audit Store** is Flamingock's dedicated system for tracking what happened:
 
-- **Drive rollbacks and “undo” operations**  
-  Since each audit entry captures rollback availability, Flamingock can navigate backward through the audit store to revert a series of changes in reverse order.
+- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
+- **Purpose**: Record execution history, compliance data, issue tracking
+- **Modified by**: Flamingock framework automatically (never your code)
 
-Depending on your setup, the audit store may be:
+---
 
-- A user-provided database (for Community Edition). For example, if you run CE with MongoDB, Flamingock writes audit records into a MongoDB collection.
-- Flamingock’s own cloud backend (for Cloud Edition). In that case, the audit store is a managed that you never host yourself.
+## Why This Separation Matters
 
-In summary, the audit store exists solely to record what happened—and to ensure consistency and idempotency across deployments.
+### Enterprise Safety Benefits
+1. **Complete Audit Trail**: Every change attempt is recorded regardless of business system failures
+2. **Governance Separation**: Business data and compliance data have different access patterns
+3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
+4. **Compliance Independence**: Audit integrity is maintained even during business system issues
 
-## Target System
+---
 
-A target system is any external resource or service upon which a change unit’s logic operates. When you write a change unit, you define `@Execution` and `@RollbackExecution` methods that perform actions against a target system—such as:
+## Target System Types
 
-- A cloud service (e.g., creating an S3 bucket or configuring a CloudFormation stack)
-- A messaging backbone (e.g., creating a new Kafka topic, configuring permissions, or updating an existing schema)
-- A configuration service (e.g., updating a feature-flag in Consul or Vault)
-- A database schema (e.g., creating a new column in your relational database)
-- A NoSQL data store (e.g., creating a new collection or index in MongoDB)
-- Even another microservice’s REST API
+### Transactional Target Systems
+Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
 
-The key point is that the target system is where changes must actually be applied—and those changes must occur exactly once (or be rolled back) to keep your application and its ecosystem in sync. Flamingock orchestrates these operations in a deterministic, ordered fashion, but the target system itself is whatever resource or service your change unit code touches.
+**Safety and Coordination:**
+- **Community Edition**: Reliable execution tracking and recovery capabilities
+- **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
 
-## Why the distinction matters
+### Non-Transactional Target Systems
+Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 
-Because Flamingock originated from Mongock (which treated the database both as audit store and change target), it’s common to conflate these two roles. In practice:
+**Safety and Coordination:**
+- **Community Edition**: Reliable execution tracking and rollback-based recovery
+- **Cloud Edition**: Enhanced recoverability with custom validation options
 
-- **In Cloud Edition with distributed transaction protocol (for a transactionally-capable target like an RDBMS)**:
-  - Flamingock writes a small “intent” or “flag” record in your own database before it writes the audit entry to the cloud store.
-  - After successfully committing your database change, Flamingock finalizes the audit record in the cloud. If anything fails at any step, Flamingock can roll everything back or clean up partial intent entries. This protocol ensures that, even though the audit store lives in the cloud, your RDBMS change and the audit record remain effectively atomic from Flamingock’s perspective.
+---
 
-- **When a relational or NoSQL database serves as both audit store and change target** (for example, CE running on MongoDB):
-  - Flamingock writes an audit-entry document into the same database where your data resides.
-  - For DML or DDL change units that modify that same database, Flamingock can wrap both the change and the audit insert in a single transaction—ensuring “all-or-nothing” consistency.
+## How It Works
 
-- **When the change target is a different system** (for example, creating S3 buckets or updating Kafka topics):
-  - The audit store remains your chosen audit database or Flamingock’s cloud backend.
-  - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
-  - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
+```
+     Your ChangeUnits:
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │ 1. Change[UpdateKafkaSchema] → Target System[Kafka Schema Registry]      │
+     │ 2. Change[SeedKafkaEvents]   → Target System[Kafka Topics]               │
+     │ 3. Change[AddUserStatus]     → Target System[User Database]              │
+     └──────────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                    ┌───────────────────────┐
+                    │      Flamingock       │
+                    │    (Orchestrator)     │
+                    └───────────────────────┘
+                                │
+                                │ Executes sequentially
+                                │
+                 ChangeUnit #1  │───────────────────────────┐
+            (UpdateKafkaSchema) │                           │
+                                │                           │
+                                │             ┌─────────────┴────────────┐
+                                │             ▼                          ▼
+                                │     ┌─────────────────────┐      ┌──────────────┐
+                                │     │   Target System:    │      │ Audit Store  │
+                                │     │ ┌─────────────────┐ │      │              │
+                                │     │ │ Schema Registry │ │      │   Records:   │
+                                │     │ └─────────────────┘ │      │ #1 applied   │
+                                │     │  (applies change)   │      │              │
+                                │     └─────────────────────┘      └──────────────┘
+                                │
+                                │
+                  ChangeUnit #2 │───────────────────────────┐
+              (SeedKafkaEvents) │                           │
+                                │                           │
+                                │             ┌─────────────┴────────────┐
+                                │             ▼                          ▼
+                                │     ┌─────────────────────┐      ┌──────────────┐
+                                │     │   Target System:    │      │ Audit Store  │
+                                │     │ ┌─────────────────┐ │      │              │
+                                │     │ │  Kafka Topics   │ │      │   Records:   │
+                                │     │ └─────────────────┘ │      │ #2 applied   │
+                                │     │  (applies change)   │      │              │
+                                │     └─────────────────────┘      └──────────────┘
+                                │
+                                │
+                  ChangeUnit #3 └───────────────────────────┐
+                (AddUserStatus)                             │
+                                                            │
+                                              ┌─────────────┴────────────┐
+                                              ▼                          ▼
+                                      ┌─────────────────────┐      ┌──────────────┐
+                                      │   Target System:    │      │ Audit Store  │
+                                      │ ┌─────────────────┐ │      │              │
+                                      │ │  User Database  │ │      │   Records:   │
+                                      │ └─────────────────┘ │      │ #3 applied   │
+                                      │  (applies change)   │      │              │
+                                      └─────────────────────┘      └──────────────┘
+                                
+```
 
-![Audit store](../../static/img/Diagrams-TargetAndAuditStore.drawio.png)
+**The Flow:**
+1. **You create ChangeUnits** - Define what changes need to happen
+2. **Flamingock orchestrates** - Safely applies changes across all your systems  
+3. **Target systems evolve** - Your business systems get updated
+4. **Audit store tracks everything** - Complete history for compliance and recovery
 
-### Illustration
-
-#### Transactional target with Cloud as audit store (Cloud Edition)
-
-  📄 **_0001_CreateUserTableChange**
-    - **Targets:** Transactional database (e.g., PostgreSQL)
-    - **Audit store:** Flamingock Cloud (Cloud Edition)
-    - **Transactional behavior:** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store, achieving the same effect as a traditional transaction.
-
-#### Target and audit store are the same transactional database
-
-  📄 **_0002_CreateUserTableChange**
-    - **Targets:** Transactional database (e.g., MongoDB)
-    - **Audit store:** Same MongoDB instance (Community Edition)
-    - **Transactional behavior:** Wrapped in a single DB transaction—so both the schema change (or data change) and the audit insert happen or fail together.
-
-#### Non-transactional target with Cloud as audit store
-
-  📄 **_0003_ConfigureS3BucketChange**
-    - **Targets:** Amazon S3 (creating a bucket)
-    - **Audit store:** Flamingock Cloud (Cloud Edition)
-    - **Transactional behavior:**
-      1. Flamingock calls S3’s `createBucket`.
-      2. If that succeeds, Flamingock writes an audit entry to the **cloud** audit store.
-      3. If the S3 call fails, Flamingock invokes your `@RollbackExecution` (deleting or cleaning up) and then writes an audit entry marking the change as “rolled back.”
-
-:::note
-All change units within a single application must use the same audit store. You cannot mix multiple audit backends in the same application.
-:::
-
+---
 
 ## Key Takeaways
 
-- **Audit Store**
-    - Record of “what ran when and by whom”
-    - Used to prevent duplicates, drive rollbacks, and coordinate distributed execution
-    - Hosted in Flamingock’s cloud backend (Cloud Edition) or your chosen database (CE) 
+### For Developers
+- **Target Systems**: Where your business logic runs and makes changes
+- **Audit Store**: Automatically managed by Flamingock for tracking and compliance
+- **Implementation**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) and [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md)
 
-- **Target System**
-    - The actual resource being modified (S3 buckets, Kafka topics, database tables, config services, and so on)
-    - Change units call external APIs or drivers against this system
-    - May or may not support transactions; if it does, Flamingock can co-ordinate with the audit store (via Cloud’s distributed protocol or CE’s DB transaction)
+### For Architects  
+- **Clean Separation**: Business logic separated from execution tracking
+- **Enterprise Scalability**: Architecture supports compliance, governance, multi-environment
+- **Flexibility**: Works with any target system type (transactional, non-transactional, hybrid)
 
+### For Operations
+- **Issue Resolution**: Tools operate on audit store, you fix target systems
+- **Compliance**: Complete audit trail independent of business system availability  
+- **Recovery**: Always know the state, even during complex failure scenarios
 
-:::tip
-Distinguishing these two roles makes it clear that Flamingock’s core value lies in coordinating audit and execution—across arbitrary target systems—rather than assuming both duties are performed by the same database. This clarity ensures you can design your change units and architecture with the proper expectations around consistency, rollback, and idempotency.
-:::
+**Bottom Line**: This dual-system architecture is what enables Flamingock to provide enterprise-grade safety and governance capabilities that traditional tools cannot match.
