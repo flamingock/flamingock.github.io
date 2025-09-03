@@ -18,6 +18,7 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
 - **Purpose**: Store and process your business data and configurations
 - **Modified by**: Your business logic through ChangeUnits
+- **Configuration**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) for technical setup
 
 ### Audit Store: Where Execution Is Tracked  
 **Audit Store** is Flamingock's dedicated system for tracking what happened:
@@ -25,6 +26,7 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
 - **Purpose**: Record execution history, compliance data, issue tracking
 - **Modified by**: Flamingock framework automatically (never your code)
+- **Configuration**: See [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md) for technical setup
 
 ---
 

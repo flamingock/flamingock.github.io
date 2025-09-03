@@ -5,20 +5,98 @@ sidebar_position: 80
 # Core Concepts
 
 ### 📦 ChangeUnits
-**ChangeUnits** are the fundamental structure that hold your change logic. They are executed atomically and versioned for traceability. They represent any kind of change applied to a system, such as configuration modifications, API calls, data migration, etc.
+**ChangeUnits** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
 
 Each ChangeUnit includes:
-- Unique ID and metadata
-- Execution logic (e.g., Java, YAML, or no-code template)
-- Rollback capability
+- **Unique identity**: ID, order, and metadata for tracking
+- **Target system**: Explicit annotation defining where changes are applied
+- **Execution logic**: Java code, YAML templates, or declarative configurations
+- **Recovery strategy**: Configurable behavior for handling failures
+- **Rollback capability**: Compensation logic for governance and undo operations
+
+**Basic Structure:**
+```java
+@TargetSystem("user-database")  // Required: defines where changes are applied
+@ChangeUnit(id = "unique-id", order = "001", author = "team")
+public class MyChange {
+    @Execution
+    public void execute(/* dependencies */) { }
+    
+    @RollbackExecution  // Highly recommended for all changes
+    public void rollback(/* dependencies */) { }
+}
+```
 
 For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
 
-### 📋 Auditing
-Flamingock includes built-in **auditing** for full traceability of executed changes.
-- Stores metadata about each executed ChangeUnit: timestamp, status, user, and system
-- Useful for compliance, debugging, and visibility
-- Can be extended to external observability platforms (e.g., ELK, Prometheus, Datadog)
+---
+
+## 🛡️ Recovery Strategies
+
+**Flamingock's key differentiator**: While traditional tools retry blindly or fail silently, Flamingock provides intelligent, configurable recovery strategies based on operation characteristics.
+
+### MANUAL_INTERVENTION (Default)
+**Philosophy**: "When in doubt, stop and alert rather than corrupt data."
+
+- **When it activates**: Any failure where state is uncertain
+- **What happens**: Execution stops, issue logged, requires human review
+- **Why it's default**: Prevents silent data corruption in enterprise environments
+- **Best for**: Critical data changes, non-idempotent operations, financial transactions
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "critical-user-update", order = "001", author = "platform-team")
+// No @Recovery annotation needed - MANUAL_INTERVENTION is default
+public class CriticalUserUpdate {
+    @Execution
+    public void execute(MongoDatabase db) {
+        // Critical business logic - manual review on failure ensures safety
+    }
+}
+```
+
+### ALWAYS_RETRY  
+**Philosophy**: "Keep trying until successful."
+
+- **When it activates**: Any failure, regardless of state
+- **What happens**: Automatic retry on next execution until success
+- **Why opt-in**: Requires idempotent operations
+- **Best for**: Cache warming, event publishing, idempotent configuration updates
+
+```java
+@TargetSystem("redis-cache")
+@ChangeUnit(id = "cache-warming", order = "002", author = "platform-team")
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
+public class CacheWarmingChange {
+    @Execution  
+    public void execute(RedisTemplate redis) {
+        // Idempotent operation - safe to retry automatically
+    }
+}
+```
+
+### Cloud Edition Enhanced Recovery
+Cloud Edition uses the same strategies but provides enhanced outcomes through:
+- **Marker mechanisms** for transactional systems
+- **Intelligent reconciliation** for automatic issue resolution  
+- **Advanced retry logic** with backoff and circuit breaker patterns
+
+---
+
+## 📋 Enterprise Auditing
+Flamingock provides comprehensive audit capabilities for compliance and operational excellence:
+
+### Audit States
+- **Success States**: EXECUTED, ROLLED_BACK, MANUAL_MARKED_AS_EXECUTED
+- **Failure States**: STARTED, EXECUTION_FAILED, ROLLBACK_FAILED (create issues requiring resolution)
+- **Resolution States**: Manual resolutions via CLI for governance and compliance
+
+### Audit Capabilities
+- **Complete execution history** with timestamp, author, system, and outcome details
+- **Issue detection and tracking** for failed or incomplete changes
+- **CLI-based resolution workflow** for operational excellence
+- **Compliance reporting** capabilities for regulatory requirements
+- **Integration ready** for external observability platforms (ELK, Prometheus, Datadog)
 
 ### 🗄️ Audit store vs. Target system
 
@@ -52,7 +130,7 @@ Depending on the edition, the Driver may connect to a user-provided database (CE
 ### 🔁 Transaction handling
 Flamingock supports **transactional consistency** where possible:
 
-- **When the target System is also a database supporting ACID transactions** (like MongoDB), Flamingock ensures that a ChangeUnit’s operation on the target System and its audit-log insert into the Audit Store commit together as a single transaction.
+- **When the target System supports ACID transactions** (like MongoDB), Flamingock executes the ChangeUnit's operation in one transaction and the audit-log write in a separate transaction, providing safety through its coordination mechanisms.
 - **When the target System does not support transactions** (e.g., HTTP APIs, file systems, or message brokers), Flamingock uses compensating actions (rollbacks) and auditing to maintain integrity.
 
 For a deeper dive around Transactions, see the [Transactions](../flamingock-library-config/transactions.md) section.

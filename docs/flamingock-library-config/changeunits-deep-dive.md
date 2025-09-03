@@ -120,7 +120,7 @@ Some operations may require setting `transactional = false` even in databases:
 - Large bulk operations that exceed transaction limits
 - Cross-system changes spanning multiple databases
 
-➡️ To understand how to define and configure **target systems**, see [Target System Configuration](../overview/audit-store-vs-target-system.md)
+➡️ To understand how to define and configure **target systems**, see [Target System Configuration](./target-system-configuration.md)
 
 ## 6. Default Safety & Recovery
 
@@ -156,5 +156,6 @@ Some operations may require setting `transactional = false` even in databases:
 
 **Next Steps:**
 - Learn about [dependency injection](./changeunit-dependency-injection.md) in ChangeUnits
+- Configure [target systems](./target-system-configuration.md) and [audit store](./audit-store-configuration.md)
 - Explore [template-based ChangeUnits](../templates/templates-introduction.md) for declarative changes
 - Understand [advanced recovery strategies](../recovery-and-safety/recovery-strategies.md) for production scenarios

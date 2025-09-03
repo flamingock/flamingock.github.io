@@ -3,168 +3,296 @@ title: Transactions
 sidebar_position: 90
 ---
 
-# Transactions
+# Change-Level Transactionality
+*Smart defaults with expert control for enterprise safety*
 
-Flamingock supports transactional execution for change units **when the underlying system and configuration allow it**.
-
-In this context, **transactional execution means wrapping both the user-defined change and the corresponding audit record** in a single, atomic operation. This ensures that either both the change and the audit log are committed together, or neither are.
-
-Flamingock logs each change unit execution in an audit store. In transactional scenarios, the change and the audit record are persisted together.
-
-This page explains:
-- What Flamingock considers transactional
-- When transactions apply and when they don’t
-- How Flamingock handles failure and rollback when transactions aren’t available
+Flamingock provides intelligent transactionality control that balances enterprise safety with operational flexibility. Understanding when and how to use transactional vs non-transactional changes is key to building reliable distributed system evolution.
 
 ---
 
-## What Flamingock considers transactional
+## The Safety-First Approach
 
-A change unit is considered transactional when:
+### Default Behavior: Transactional = True
+Flamingock defaults to `transactional = true` for maximum safety:
+- **Change execution** runs within a database transaction
+- **Audit logging** happens in a separate transaction for architectural safety
+- **Automatic rollback** of the change transaction if execution fails
+- **Coordination mechanisms** ensure consistency between change and audit operations
 
-- The change targets a system that supports transactions (e.g., a modern database)
-- The Flamingock **Community Edition** driver in use supports transactions
-- The change unit is marked as `transactional = true` (default behavior)
-
-If these conditions are met, Flamingock wraps the execution of:
-- The `@Execution` method of the change unit
-- The audit log record creation
-
-...**within the same transaction**. If anything fails, the entire operation is rolled back and not recorded as executed.
-
----
-
-## When transactions don’t apply
-
-Transactions do **not** apply in the following scenarios:
-
-- The change targets a **non-transactional system** (e.g., Kafka, S3, external APIs)
-- The change targets a **different database** than the one used for Flamingock’s audit log
-- The change performs **operations that are not allowed in transactions** (e.g., DDL operations in Mysql or MongoDB)
-- The driver or underlying **database doesn’t support transactions**
-
-:::tip
-In all these cases, mark the change unit with `@ChangeUnit(transactional = false)` to disable transaction wrapping.
-<!--  To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section. -->
-:::
-
-
-:::warning
-If a change unit is marked as transactional (`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock assumes the database rolled back the change, and skips the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
-:::
+### When You Need Non-Transactional
+Some operations cannot or should not run in transactions:
+- **DDL operations** (CREATE INDEX, ALTER TABLE) in many databases
+- **Large bulk operations** that would exceed transaction limits
+- **Cross-system changes** spanning multiple databases
+- **Non-transactional targets** (Kafka, S3, REST APIs)
 
 ---
 
-## Disabling transactions
+## Understanding Target System Types
 
-### Per change unit (recommended)
-
-Transactions are **enabled by default**. You can disable them explicitly for a given change unit:
+### Transactional Target Systems
+Systems that natively support ACID transactions:
 
 ```java
-@ChangeUnit(id = "provision-bucket", order = "004", author = "team-a", transactional = false)
-public class S3ProvisioningChange {
-
-  @Execution
-  public void execute(S3Client s3) {
-    s3.createBucket(...);
-  }
-
-  @RollbackExecution
-  public void rollback(S3Client s3) {
-    s3.deleteBucket(...);
-  }
+@TargetSystem("user-database")  // PostgreSQL, MySQL, MongoDB 4.0+
+@ChangeUnit(id = "update-user-status", order = "001", author = "platform-team")
+// transactional = true (default) - leverages database transaction capabilities
+public class UpdateUserStatus {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // This runs inside a transaction
+        // Automatic rollback on failure
+        database.getCollection("users")
+                .updateMany(eq("status", "pending"), set("status", "active"));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // For CLI undo operations - not called on failure (transaction handles it)
+        database.getCollection("users")
+                .updateMany(eq("status", "active"), set("status", "pending"));
+    }
 }
 ```
 
-This tells Flamingock:
-- Not to use a transaction for the execution and audit
-- To call `@RollbackExecution` if something goes wrong
-
-### Globally (less common)
-
-You can also disable transactions across all change units in the builder:
+### Non-Transactional Target Systems  
+Systems without native transaction support:
 
 ```java
-Flamingock
-  .builder()
-  .disableTransaction()
-  .build()
-  .run();
+@TargetSystem("event-stream")  // Kafka, S3, REST APIs
+@ChangeUnit(id = "publish-user-events", order = "002", author = "platform-team", 
+           transactional = false)  // Required for non-transactional systems
+public class PublishUserEvents {
+    
+    @Execution
+    public void execute(KafkaTemplate kafka) {
+        // No transaction possible - manual safety required
+        kafka.send("user-topic", "user-status-changed", eventData);
+    }
+    
+    @RollbackExecution
+    public void rollback(KafkaTemplate kafka) {
+        // WILL be called on failure - provides manual safety
+        // Publish compensating event or cleanup logic
+        kafka.send("user-topic", "user-status-rollback", compensationData);
+    }
+}
 ```
 
 ---
 
-## Manual rollback
+## When to Use Transactional = False
 
-When `transactional = false`, Flamingock cannot rely on the underlying system to roll back failed operations. Instead, it will attempt a **manual rollback** by calling your `@RollbackExecution` method if execution fails.
+Even in transactional systems, some operations require `transactional = false`:
 
-This fallback allows Flamingock to support non-transactional systems like:
+### DDL Operations Example
+```java
+@TargetSystem("user-database")  // MongoDB (transactional system)
+@ChangeUnit(id = "create-user-indexes", order = "003", author = "dba-team", 
+           transactional = false)  // DDL operations can't be in transactions
+public class CreateUserIndexes {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Index creation isn't transactional even in MongoDB
+        MongoCollection<Document> users = database.getCollection("users");
+        users.createIndex(ascending("email"));
+        users.createIndex(compound(ascending("status"), descending("createdAt")));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // WILL be called on failure - cleanup partial index creation
+        MongoCollection<Document> users = database.getCollection("users");
+        try {
+            users.dropIndex("email_1");
+            users.dropIndex("status_1_createdAt_-1");
+        } catch (Exception e) {
+            // Handle rollback errors appropriately
+        }
+    }
+}
+```
 
-- Message brokers (e.g., Kafka, RabbitMQ)
-- External APIs
-- Cloud infrastructure
-
-:::info
-You are responsible for writing reliable rollback logic. Flamingock cannot guarantee full recovery unless your rollback method safely restores the previous state.
-:::
+### Large Bulk Operations
+```java
+@TargetSystem("analytics-database")
+@ChangeUnit(id = "bulk-user-analysis", order = "004", author = "analytics-team",
+           transactional = false)  // Bulk operations for performance
+public class BulkUserAnalysis {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Process millions of records - transaction would timeout/lock
+        MongoCollection<Document> users = database.getCollection("users");
+        MongoCollection<Document> analytics = database.getCollection("user_analytics");
+        
+        // Batch processing for performance
+        users.find().forEach(user -> {
+            Document analyticsDoc = generateAnalytics(user);
+            analytics.insertOne(analyticsDoc);
+        });
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // Clean up partial bulk operation
+        database.getCollection("user_analytics").deleteMany(new Document());
+    }
+}
+```
 
 ---
 
-## When to use `transactional = false`
+## Recovery Strategy Integration
 
-| Type of change                                                                      | `transactional = false`? |
-|-------------------------------------------------------------------------------------|:------------------------:|
-| Operation allowed in transaction - same DB as audit log (transactional)             |            ❌             |
-| Operation not allowed inside transaction (e.g., DDL operations in Mysql or MongoDB) |            ✅             |
-| ChangeUnit targets different DB than audit log                                      |            ✅             |
-| ChangeUnit targets non-database system or a non-transactional                       |            ✅             |
+### Transactional Changes + MANUAL_INTERVENTION
+```java
+@TargetSystem("financial-database")
+@ChangeUnit(id = "update-account-balances", order = "005", author = "finance-team")
+// transactional = true (default) + MANUAL_INTERVENTION (default)
+// = Maximum safety for critical data
+public class UpdateAccountBalances {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Critical financial data - automatic transaction rollback on failure
+        // Manual intervention required to investigate any issues
+    }
+}
+```
 
----
-
-## Flamingock Cloud Edition
-
-:::info
-Flamingock Cloud Edition will support transactions through its own internal coordination mechanism.  
-Documentation will be added when this feature is released.
-:::
-
----
-
-## Edition-specific transaction behavior
-The examples and recommendations on this page apply to Flamingock generally, but each Community Edition (CE) driver has its own transactional capabilities and constraints.
-
-Refer to the relevant edition page for detailed behavior, including:
-- Whether transactions are supported
-- How they are initiated and managed
-- Known limitations (e.g., unsupported operations)
-
-**Supported transactional CE editions:**
-- [flamingock-ce-mongodb-sync](../community-edition/ce-mongodb-java-driver.md)
-- [flamingock-ce-mongodb-springdata](../community-edition/ce-mongodb-springdata.md)
-- [flamingock-ce-dynamodb](../community-edition/ce-dynamodb.md)
-- [flamingock-ce-couchbase](../community-edition/ce-couchbase.md)
-
-:::info
-Cloud Edition transactional support will be explained in its own section once released.
-:::
+### Non-Transactional Changes + ALWAYS_RETRY
+```java
+@TargetSystem("cache-service")
+@ChangeUnit(id = "warm-user-cache", order = "006", author = "platform-team",
+           transactional = false)  // Cache operations aren't transactional
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)  // Safe to retry
+public class WarmUserCache {
+    
+    @Execution
+    public void execute(RedisTemplate redis) {
+        // Idempotent cache warming - safe to retry automatically
+        // No transaction needed, automatic retry on failure
+    }
+}
+```
 
 ---
 
-## :white_check_mark: Best practices
+## Configuration Options
 
--  **Use `transactional = false` for changes that cannot run in a transaction**
+### Per-Change Configuration (Recommended)
+```java
+// Explicit control per change
+@ChangeUnit(id = "my-change", transactional = false, /* other params */)
+```
 
-Some database drivers (e.g., MongoDB Sync) don’t support all operations inside transactions (such as DDL or index creation). In those cases, explicitly set `transactional = false` to avoid runtime errors.
+### Global Configuration (Less Common)
+```java
+// Disable transactions globally
+Flamingock.builder()
+    .disableTransaction()  // All changes become non-transactional
+    .build()
+```
 
-- **Always set `transactional = false` for non-database change units**
+---
 
-If your change interacts with a message queue, API, file system, or another external system, it should **not** be marked as transactional. Flamingock will treat it as non-transactional and enable manual rollback instead.
+## Decision Matrix
 
--  **Keep change unit scope narrow and isolated**
+| Change Type | Target System | Operation | Transactional Setting |
+|------------|---------------|-----------|---------------------|
+| Data updates | MongoDB, PostgreSQL | DML operations | `true` (default) |
+| Schema changes | MongoDB, PostgreSQL | DDL operations | `false` |
+| Cache updates | Redis, Memcached | Cache operations | `false` |
+| Event publishing | Kafka, RabbitMQ | Message sending | `false` |
+| API calls | REST services | HTTP requests | `false` |
+| File operations | File system, S3 | File manipulation | `false` |
+| Bulk processing | Any database | Large datasets | `false` |
 
-Avoid combining transactional and non-transactional logic within the same change unit. If part of the logic targets a non-transactional system, isolate that logic in a dedicated change unit and mark it appropriately.
+---
 
-- **Prefer automatic rollback (via transaction) when available**
+## Best Practices
 
-Transactional change units offer stronger guarantees. Use them when the system supports them to ensure atomic execution and safe rollback on failure.
+### **Always Provide @RollbackExecution**
+Regardless of transactionality, always implement rollback methods:
+
+```java
+@RollbackExecution
+public void rollback(/* dependencies */) {
+    // For transactional changes: Used in CLI undo operations
+    // For non-transactional changes: Used in automatic failure recovery
+}
+```
+
+### **Match Recovery Strategy to Operation**
+- **Transactional + Critical data** → MANUAL_INTERVENTION (default)
+- **Non-transactional + Idempotent** → ALWAYS_RETRY
+- **Non-transactional + Critical** → MANUAL_INTERVENTION
+
+### **Keep Changes Focused**
+Don't mix transactional and non-transactional operations in one change:
+
+```java
+// ❌ Bad - mixing concerns
+@ChangeUnit(id = "mixed-operations")
+public class MixedOperations {
+    @Execution
+    public void execute(MongoDatabase db, KafkaTemplate kafka) {
+        // Database update (transactional) + Kafka publish (non-transactional)
+    }
+}
+
+// ✅ Good - separate concerns
+@ChangeUnit(id = "database-update", transactional = true)
+@ChangeUnit(id = "kafka-publish", transactional = false)
+```
+
+### **Use Explicit Annotations**
+Be explicit about transactionality for clarity:
+
+```java
+// ✅ Clear intent
+@ChangeUnit(id = "user-update", transactional = true)   // Explicit
+@ChangeUnit(id = "index-creation", transactional = false) // Explicit
+```
+
+---
+
+## Troubleshooting
+
+### "Operation Not Supported In Transaction" Errors
+```java
+// Error: "Cannot create index in transaction"
+@ChangeUnit(transactional = true)  // ❌ Wrong
+public class CreateIndexes { }
+
+// Fix: Disable transactions for DDL
+@ChangeUnit(transactional = false)  // ✅ Correct
+public class CreateIndexes { }
+```
+
+### Partial Failure Recovery
+```java
+@ChangeUnit(transactional = false)
+public class NonTransactionalChange {
+    
+    @Execution
+    public void execute() {
+        // Step 1: succeeds
+        // Step 2: fails <- Partial completion
+        // @RollbackExecution will be called automatically
+    }
+    
+    @RollbackExecution  
+    public void rollback() {
+        // Must handle cleanup of Step 1
+        // Flamingock calls this automatically on failure
+    }
+}
+```
+
+---
+
+**Key Takeaway**: Flamingock's transactionality control provides enterprise safety through intelligent defaults while giving you expert control when needed. Use transactions when possible, disable them when necessary, and always provide rollback logic for governance and recovery.

@@ -1,25 +1,24 @@
 ---
-title: Introduction
 sidebar_position: 10
 sidebar_label: Introduction to Flamingock
+title: " "
 ---
 
-# Introducing Flamingock
-*The evolution of Mongock — reimagined for the modern enterprise*
-
 ![Flamingock logo](../../static/img/Flamingock-04.png)
+*The safety-first platform for distributed system evolution*
+## The Flamingock Guarantee
+**"Your system will always be left in a known, auditable, and consistent state — no matter what happens."**
 
-Managing change across today’s distributed systems is complex — from database migrations to API evolution and SaaS configuration updates.
+Managing change across distributed systems is inherently complex — from database updates to API evolution, message queue configuration, and SaaS integrations. Traditional tools optimize for the "happy path," but real-world deployments face partial failures, network issues, and uncertain states.
 
-**Flamingock** provides a unified, auditable, and version-controlled approach to managing these changes with confidence.
+**Flamingock** is the enterprise platform built for real-world chaos, providing safety-first distributed system evolution with complete audit trails and intelligent recovery strategies.
 
-Built on the principles of **Change-as-Code**, Flamingock enables your teams to:
+Built on **Change-as-Code** principles, Flamingock transforms how organizations evolve their systems:
 
-- Version and document system changes  
-- Maintain compliance with full traceability  
-- Accelerate deployments with safe, coordinated rollouts
-
-Flamingock ensures your systems changes evolve reliably — at scale.
+- **Safety by default**: When uncertain, stop and alert rather than corrupt data
+- **Complete audit trail**: Every action, success, and failure is tracked for compliance
+- **Intelligent recovery**: Configurable strategies based on operation characteristics
+- **Organizational impact**: Reduce team dependencies, accelerate releases, ensure governance
 
 **Ready to modernize your change management?**  
 [Get started](../getting-started/get-started.md) and see how Flamingock can power your release lifecycle.
@@ -28,55 +27,107 @@ Flamingock ensures your systems changes evolve reliably — at scale.
 ![Flamingock gif](../../static/img/Flamingock%20process%20animation%20(1).gif)
 
 ## Why Flamingock?
-Our objective is to reduce software release overhead by providing a tool that can be enable tracking configuration changes  programatically (change-as-code), with the language of choice of the Application developer.  This reduces the dependency on infrastructure engineers to maintain configuration changes that are led/introduced by the Application developer, simplifying the release process, reducing risk during deployments, and reducing time to market and skills required for developing and maintaining Configuration changes.
 
-With multiple deployment model offerings, Flamingock provides helps teams by:
+### Built for Enterprise Reality
+While traditional tools assume perfect conditions, Flamingock is engineered for production environments where:
+- **Networks fail mid-operation** - Flamingock tracks partial state and enables safe recovery
+- **Systems are non-transactional** - Kafka, S3, REST APIs get first-class safety treatment  
+- **Compliance is mandatory** - Complete audit trails with governance workflows
+- **Teams need autonomy** - Developers control their domain without infrastructure dependencies
 
-**Centralising services, systems & environment changes**
-Version and ship your system changes with your application and store them centrally. Flamingock allows operations to manage your changes (Execution, Rollback, Undo, Audit, etc.)
+### Strategic Business Impact
+Flamingock transforms organizational capabilities:
 
-**Reduce team & skills dependencies**
-Empower Developers to have full control over the Application, external configuration, and database changes. Allow to manage stateful and stateless changes in distributed systems in a safe and reliable manner.
+**Risk Reduction**
+- Prevent silent data corruption through safety-first defaults
+- Complete audit trails for regulatory compliance and incident response
+- Intelligent recovery strategies eliminate guesswork during failures
 
-**Achieve Configuration automation of all Systems**
-Synchronise system dependency changes with your Application changes, as they ship together. The deployment of the Application will execute a System changes to the required state, achieving immutable deployments in any environment.
+**Team Velocity**  
+- Eliminate deployment bottlenecks with autonomous change management
+- Reduce cross-team dependencies through clear ownership boundaries
+- Accelerate release cycles with confident, coordinated rollouts
 
-
-## Some example use cases
-
-Some examples of these use cases (but not limited to) are:
-
-- Persistent storage management
-- Manage deployment dependencies
-- Configuration of external cloud SaaS providers
-- Database migrations - supported by our legacy Mongock engine, but extended to any Database (NoSQL and SQL).
-- API Gateway configurations
-- Message broker configurations + *many more!*
-
-Our tool offers managing configuration changes to any system/component in a safe and audited manner within the Application context.
+**Operational Excellence**
+- Centralized governance with distributed execution
+- Real-time visibility across all system changes
+- Automated compliance reporting and audit capabilities
 
 
-#### What is Flamingock not suitable for?
+## Enterprise Use Cases
 
-We are not an Infrastructure provider (neither intend to be). We believe that there are multiple good widely adopted solutions within the infrastrucuture space. 
+Flamingock enables safe evolution across your entire technology stack:
 
-We provide Application developers the ability to configure Application domain-specific resources within those infrastructure components. This enables following a Domain-driven ownership for Application developers, provisioning them with self-serve capabilities and autonomy for configuring their resources within the boundaries of an existing infrastructure.
+**Data Systems**
+- Database schema evolution (SQL/NoSQL)
+- Data transformations and cleanup operations
+- Index creation and optimization
 
-# How Flamingock works?
+**Infrastructure & APIs** 
+- Message broker topic and schema management
+- API gateway configuration and routing rules
+- Cloud service provisioning and configuration
 
-**⚙️ Code It. Deploy It. Forget It.**  
+**Application Configuration**
+- Feature flag rollouts and toggles  
+- External SaaS provider setup and integration
+- Security policy and permission updates
 
-With Flamingock, developers define any component changes (database, system changes, SaaS, etc. )  **directly in application code** using familiar programming constructs such as classes and annotations, or template-based formats like YAML. The Flamingock client library then:  
+**Distributed System Coordination**
+- Multi-service configuration synchronization
+- Cross-system dependency management
+- Environment-specific deployment customization
 
-- **Automatically executes** changes during application startup  
-- **Generates audit trails** for full transparency and compliance  
-- **Keeps changes version-locked** to your application releases  
+Flamingock provides enterprise-grade safety and audit capabilities for any system change that must evolve with your application.
 
-**Benefits:**  
-- **No more out-of-band scripts** - Changes travel with your app code  
-- **Cluster-safe execution** - Designed for distributed systems from the ground up  
-- **Native version control** - Every change is code-reviewed alongside feature development  
 
-*Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
+## What Flamingock Is Not
+
+**Infrastructure-as-Code Platform**: Flamingock operates within existing infrastructure, not provisioning it. We integrate with your existing cloud providers, databases, and services.
+
+**Generic Batch Processing**: While powerful, Flamingock is optimized for deterministic, auditable changes that complete quickly, not long-running data processing jobs.
+
+**CI/CD Replacement**: Flamingock integrates with your deployment pipeline but focuses specifically on safe system evolution, not build/test/deploy orchestration.
+
+## How Flamingock Works
+
+### Change-as-Code Architecture
+Developers define system changes directly in application code using familiar programming constructs or declarative templates:
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "add-user-status", order = "001", author = "platform-team")
+public class AddUserStatusField {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Your change logic here - executed once, safely
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                           new Document("$set", new Document("status", "active")));
+    }
+    
+    @RollbackExecution  
+    public void rollback(MongoDatabase database) {
+        // Compensation logic for governance and undo operations
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                           new Document("$unset", new Document("status", "")));
+    }
+}
+```
+
+### Enterprise Execution Lifecycle
+1. **Automatic Discovery**: Flamingock scans your application for changes
+2. **Safety Validation**: Checks audit store to prevent duplicate execution
+3. **Intelligent Execution**: Applies changes with configurable recovery strategies
+4. **Complete Audit**: Records execution details for compliance and troubleshooting
+5. **Recovery Management**: Provides CLI tools for issue resolution and governance
+
+### Built for Production Reality
+- **Distributed-safe**: Prevents race conditions in clustered deployments
+- **Network-resilient**: Handles partial failures with intelligent recovery
+- **Compliance-ready**: Complete audit trails with governance workflows  
+- **Version-locked**: Changes evolve with your application lifecycle  
 
 👉 **Dive deeper:** | [How it works?](../getting-started/how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../getting-started/get-started.md)
