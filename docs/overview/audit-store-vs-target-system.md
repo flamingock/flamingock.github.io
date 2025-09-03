@@ -1,9 +1,9 @@
 ---
-title: Target Systems vs Audit Store Architecture
+title: Target Systems vs Audit Store
 sidebar_position: 100
 ---
 
-# Target Systems vs Audit Store Architecture
+# Target Systems vs Audit Store
 *Understanding Flamingock's dual-system design for enterprise safety*
 
 Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
