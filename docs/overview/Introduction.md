@@ -4,130 +4,90 @@ sidebar_label: Introduction to Flamingock
 title: " "
 ---
 
-![Flamingock logo](../../static/img/Flamingock-04.png)
+![Flamingock logo](../../static/img/Flamingock-04.png)  
 *The safety-first platform for distributed system evolution*
+
+---
+
 ## The Flamingock Guarantee
 **"Your system will always be left in a known, auditable, and consistent state — no matter what happens."**
 
-Managing change across distributed systems is inherently complex — from database updates to API evolution, message queue configuration, and SaaS integrations. Traditional tools optimize for the "happy path," but real-world deployments face partial failures, network issues, and uncertain states.
+Managing change across an application and the distributed systems it interacts with is inherently complex — database schema updates, message broker configuration, API evolution, cloud service provisioning.  
+Traditional tools optimize for the *happy path*, but real-world deployments face partial failures, network issues, and uncertain states.
 
-**Flamingock** is the enterprise platform built for real-world chaos, providing safety-first distributed system evolution with complete audit trails and intelligent recovery strategies.
+**Flamingock** is built for this reality. It provides safety-first distributed system evolution with **complete auditability** and **configurable recovery strategies**, ensuring that change is never left in doubt.
 
-Built on **Change-as-Code** principles, Flamingock transforms how organizations evolve their systems:
-
-- **Safety by default**: When uncertain, stop and alert rather than corrupt data
-- **Complete audit trail**: Every action, success, and failure is tracked for compliance
-- **Intelligent recovery**: Configurable strategies based on operation characteristics
-- **Organizational impact**: Reduce team dependencies, accelerate releases, ensure governance
-
-**Ready to modernize your change management?**  
-[Get started](../getting-started/get-started.md) and see how Flamingock can power your release lifecycle.
-
-
-![Flamingock gif](../../static/img/Flamingock%20process%20animation%20(1).gif)
+---
 
 ## Why Flamingock?
 
-### Built for Enterprise Reality
-While traditional tools assume perfect conditions, Flamingock is engineered for production environments where:
-- **Networks fail mid-operation** - Flamingock tracks partial state and enables safe recovery
-- **Systems are non-transactional** - Kafka, S3, REST APIs get first-class safety treatment  
-- **Compliance is mandatory** - Complete audit trails with governance workflows
-- **Teams need autonomy** - Developers control their domain without infrastructure dependencies
+### Safety and auditability by design
+- **Safe by default**: When Flamingock cannot guarantee success, it stops and alerts instead of risking corruption.  
+- **Built-in recovery mechanisms**: By default Flamingock retries safely where possible, and users can configure recovery strategies to minimize manual intervention.  
+- **Complete audit trail**: Every execution, success, and failure is tracked for compliance and troubleshooting.  
+- **Deterministic execution**: ChangeUnits run once and only once, in a controlled order.  
 
-### Strategic Business Impact
-Flamingock transforms organizational capabilities:
+### Designed for distributed reality
+- **Non-transactional systems supported**: Kafka, S3, REST APIs, and more get first-class safety treatment.  
+- **Network-resilient**: Handles interruptions and partial failures with recovery strategies.  
+- **Cluster-safe**: Prevents race conditions in distributed or containerized deployments.  
 
-**Risk Reduction**
-- Prevent silent data corruption through safety-first defaults
-- Complete audit trails for regulatory compliance and incident response
-- Intelligent recovery strategies eliminate guesswork during failures
+### Organizational benefits
+- **Reduce risk**: Eliminate silent corruption and ensure compliance.  
+- **Increase velocity**: Developers can evolve their systems independently, without waiting on infrastructure teams.  
+- **Enable governance**: Clear ownership, auditability, and rollback capabilities across all environments.  
 
-**Team Velocity**  
-- Eliminate deployment bottlenecks with autonomous change management
-- Reduce cross-team dependencies through clear ownership boundaries
-- Accelerate release cycles with confident, coordinated rollouts
+---
 
-**Operational Excellence**
-- Centralized governance with distributed execution
-- Real-time visibility across all system changes
-- Automated compliance reporting and audit capabilities
+## Use Cases
 
-
-## Enterprise Use Cases
-
-Flamingock enables safe evolution across your entire technology stack:
+Flamingock enables controlled, auditable evolution across your technology stack:
 
 **Data Systems**
-- Database schema evolution (SQL/NoSQL)
-- Data transformations and cleanup operations
-- Index creation and optimization
+- Database schema changes (SQL/NoSQL)  
+- Index creation and optimization  
+- Data migrations and transformations  
 
-**Infrastructure & APIs** 
-- Message broker topic and schema management
-- API gateway configuration and routing rules
-- Cloud service provisioning and configuration
+**Infrastructure & APIs**  
+- Message broker topic and schema management  
+- API gateway and routing rules  
+- Cloud service configuration  
 
-**Application Configuration**
-- Feature flag rollouts and toggles  
-- External SaaS provider setup and integration
-- Security policy and permission updates
+**Application Configuration**  
+- Feature flag rollouts  
+- SaaS integrations and external service setup  
+- Security policies and permissions  
 
-**Distributed System Coordination**
-- Multi-service configuration synchronization
-- Cross-system dependency management
-- Environment-specific deployment customization
+**Distributed Coordination**  
+- Multi-service configuration synchronization  
+- Cross-system dependency management  
 
-Flamingock provides enterprise-grade safety and audit capabilities for any system change that must evolve with your application.
+**...and other systems requiring safe, auditable evolution**
 
+---
 
 ## What Flamingock Is Not
+- **Not Infrastructure-as-Code**: We evolve systems already provisioned by your infrastructure.  
+- **Not generic batch processing**: Optimized for deterministic, auditable changes — not arbitrary long-running jobs.  
+- **Not a CI/CD replacement**: Complements your pipeline but focuses exclusively on safe system evolution.  
 
-**Infrastructure-as-Code Platform**: Flamingock operates within existing infrastructure, not provisioning it. We integrate with your existing cloud providers, databases, and services.
-
-**Generic Batch Processing**: While powerful, Flamingock is optimized for deterministic, auditable changes that complete quickly, not long-running data processing jobs.
-
-**CI/CD Replacement**: Flamingock integrates with your deployment pipeline but focuses specifically on safe system evolution, not build/test/deploy orchestration.
+---
 
 ## How Flamingock Works
 
-### Change-as-Code Architecture
-Developers define system changes directly in application code using familiar programming constructs or declarative templates:
+### Change-as-code architecture
+Developers define **ChangeUnits** in code or templates. Each ChangeUnit is versioned, auditable, and executed once per system.  
 
-```java
-@TargetSystem("user-database")
-@ChangeUnit(id = "add-user-status", order = "001", author = "platform-team")
-public class AddUserStatusField {
-    
-    @Execution
-    public void execute(MongoDatabase database) {
-        // Your change logic here - executed once, safely
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                           new Document("$set", new Document("status", "active")));
-    }
-    
-    @RollbackExecution  
-    public void rollback(MongoDatabase database) {
-        // Compensation logic for governance and undo operations
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                           new Document("$unset", new Document("status", "")));
-    }
-}
-```
+### Execution lifecycle
+1. **Discovery** – Flamingock scans your app for ChangeUnits  
+2. **Validation** – Prevents duplicate execution using the audit store  
+3. **Execution** – Runs the change with the configured recovery strategy  
+4. **Audit** – Records all outcomes for visibility and compliance  
+5. **Recovery** – Provides CLI (and Cloud UI) tools for resolution if needed  
 
-### Enterprise Execution Lifecycle
-1. **Automatic Discovery**: Flamingock scans your application for changes
-2. **Safety Validation**: Checks audit store to prevent duplicate execution
-3. **Intelligent Execution**: Applies changes with configurable recovery strategies
-4. **Complete Audit**: Records execution details for compliance and troubleshooting
-5. **Recovery Management**: Provides CLI tools for issue resolution and governance
+---
 
-### Built for Production Reality
-- **Distributed-safe**: Prevents race conditions in clustered deployments
-- **Network-resilient**: Handles partial failures with intelligent recovery
-- **Compliance-ready**: Complete audit trails with governance workflows  
-- **Version-locked**: Changes evolve with your application lifecycle  
-
-👉 **Dive deeper:** | [How it works?](../getting-started/how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../getting-started/get-started.md)
+## Next Steps
+- [Quickstart Guide](../getting-started/get-started.md)  
+- [How it Works](../getting-started/how-it-works.md)  
+- [Technical Overview](technical-overview.md)  
