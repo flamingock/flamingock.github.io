@@ -351,6 +351,18 @@ yarn swizzle        # Eject Docusaurus components for customization
 - Search functionality requires Algolia configuration
 - Mermaid diagrams are supported throughout the documentation
 
+## Documentation Style Guidelines
+
+### Title Capitalization
+- Use sentence case for titles and headers (capitalize only first word and proper nouns)
+- Avoid uppercase for words that are not the first word or proper names
+- Example: "Recovery strategies" not "Recovery Strategies"
+
+### Content Style
+- Avoid emojis in documentation sections unless explicitly requested
+- Keep technical documentation professional and clean
+- Focus on clarity and readability over decoration
+
 ## Request Evaluation Framework
 
 **CRITICAL**: Before proceeding with any request, Claude must evaluate it against these three criteria and score each from 1-10. If any criterion scores below 8, Claude must ask for clarification to ensure all criteria reach at least 8 before proceeding:

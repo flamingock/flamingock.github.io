@@ -2,182 +2,91 @@
 sidebar_position: 80
 ---
 
-# Core Concepts
+# Core concepts
 
-### 📦 ChangeUnits
+### ChangeUnits
 **ChangeUnits** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
 
 Each ChangeUnit includes:
 - **Unique identity**: ID, order, and metadata for tracking
-- **Target system**: Explicit annotation defining where changes are applied
-- **Execution logic**: Java code, YAML templates, or declarative configurations
-- **Recovery strategy**: Configurable behavior for handling failures
+- **Target system**: Where the changes is applied to
+- **Execution logic**: The actual change implementation
 - **Rollback capability**: Compensation logic for governance and undo operations
+- **Recovery strategy**: Configurable behavior for handling failures
 
-**Basic Structure:**
-```java
-@TargetSystem("user-database")  // Required: defines where changes are applied
-@ChangeUnit(id = "unique-id", order = "001", author = "team")
-public class MyChange {
-    @Execution
-    public void execute(/* dependencies */) { }
-    
-    @RollbackExecution  // Highly recommended for all changes
-    public void rollback(/* dependencies */) { }
-}
-```
+ChangeUnits can be implemented in two forms:
+- **Code-based**: Java classes with annotations that contain the change logic
+- **Template-based**: Declarative low-code approach using YAML configurations
 
 For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
 
 ---
 
-## 🛡️ Recovery Strategies
+### Templates
+Templates provide a reusable layer on top of ChangeUnits for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
 
-**Flamingock's key differentiator**: While traditional tools retry blindly or fail silently, Flamingock provides intelligent, configurable recovery strategies based on operation characteristics.
+With templates, you create multiple ChangeUnits using a declarative, low-code approach. Each ChangeUnit uses a template and passes its specific configuration. For example, an SQL template receives the SQL statement as configuration, executes it, and handles errors consistently.
 
-### MANUAL_INTERVENTION (Default)
-**Philosophy**: "When in doubt, stop and alert rather than corrupt data."
+This approach is particularly useful for:
+- Standardizing common operations across your codebase
+- Reducing boilerplate code
+- Enabling non-developers to define changes through configuration
 
-- **When it activates**: Any failure where state is uncertain
-- **What happens**: Execution stops, issue logged, requires human review
-- **Why it's default**: Prevents silent data corruption in enterprise environments
-- **Best for**: Critical data changes, non-idempotent operations, financial transactions
-
-```java
-@TargetSystem("user-database")
-@ChangeUnit(id = "critical-user-update", order = "001", author = "platform-team")
-// No @Recovery annotation needed - MANUAL_INTERVENTION is default
-public class CriticalUserUpdate {
-    @Execution
-    public void execute(MongoDatabase db) {
-        // Critical business logic - manual review on failure ensures safety
-    }
-}
-```
-
-### ALWAYS_RETRY  
-**Philosophy**: "Keep trying until successful."
-
-- **When it activates**: Any failure, regardless of state
-- **What happens**: Automatic retry on next execution until success
-- **Why opt-in**: Requires idempotent operations
-- **Best for**: Cache warming, event publishing, idempotent configuration updates
-
-```java
-@TargetSystem("redis-cache")
-@ChangeUnit(id = "cache-warming", order = "002", author = "platform-team")
-@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-public class CacheWarmingChange {
-    @Execution  
-    public void execute(RedisTemplate redis) {
-        // Idempotent operation - safe to retry automatically
-    }
-}
-```
-
-### Cloud Edition Enhanced Recovery
-Cloud Edition uses the same strategies but provides enhanced outcomes through:
-- **Marker mechanisms** for transactional systems
-- **Intelligent reconciliation** for automatic issue resolution  
-- **Advanced retry logic** with backoff and circuit breaker patterns
+For more information about templates, see the [Templates](../templates/templates-introduction.md) section.
 
 ---
 
-## 📋 Enterprise Auditing
-Flamingock provides comprehensive audit capabilities for compliance and operational excellence:
+## Recovery strategies
 
-### Audit States
-- **Success States**: EXECUTED, ROLLED_BACK, MANUAL_MARKED_AS_EXECUTED
-- **Failure States**: STARTED, EXECUTION_FAILED, ROLLBACK_FAILED (create issues requiring resolution)
-- **Resolution States**: Manual resolutions via CLI for governance and compliance
+Recovery strategies define how Flamingock responds when a ChangeUnit fails during execution. They determine whether the system should stop and wait for manual intervention or automatically retry the operation.
 
-### Audit Capabilities
-- **Complete execution history** with timestamp, author, system, and outcome details
-- **Issue detection and tracking** for failed or incomplete changes
-- **CLI-based resolution workflow** for operational excellence
-- **Compliance reporting** capabilities for regulatory requirements
-- **Integration ready** for external observability platforms (ELK, Prometheus, Datadog)
+Flamingock provides two main strategies:
+- **Manual intervention** (default): Stops execution and requires human review when failures occur
+- **Always retry**: Automatically retries the change on the next execution attempt
 
-### 🗄️ Audit store vs. Target system
+The choice of strategy depends on whether your changes are idempotent and how critical they are to your system's integrity.
 
-- **Audit store**: The dedicated location where Flamingock records metadata about change executions. Its sole purpose is to track which ChangeUnits ran, when, and with what outcome—ensuring idempotency, rollbacks, and distributed coordination. This might be a user-provided database (Community Edition) or Flamingock’s cloud backend (Cloud Edition).
-
-- **Target system**: The external resource that ChangeUnits operate upon (e.g., a database schema, S3 bucket, Kafka topic, or configuration service). Flamingock’s ChangeUnits apply changes to these systems in an ordered, auditable fashion. When a database serves as both audit store and target system, Flamingock can wrap change and audit insert in one transaction; otherwise, auditing and execution occur separately.
-
-:::tip
-To better understand the differences between Audit Store and Target System, see the [Audit store vs target system section](../overview/audit-store-vs-target-system.md)
-:::
+For detailed configuration and implementation, see the [Recovery configuration](../flamingock-library-config/recovery-configuration.md) section.
 
 ---
 
-### 🏃 Runner
-The **Runner** is the heart of Flamingock’s execution lifecycle. It’s responsible for:
-- Scanning, orchestrating, and executing ChangeUnits at application startup (or on-demand)
-- Coordinating interactions with the Audit Store (via its Driver)
+## Audit store
+The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which ChangeUnits have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
 
-It can be embedded in your application or run as an independent service in distributed environments.
+## Target system  
+The **target system** is where your actual business changes are applied. These are the systems your ChangeUnits modify - databases, message queues, APIs, configuration services, etc. Each ChangeUnit declares which target system it operates on.
 
-### 🔌 Driver
-A **Driver** acts as an adapter between Flamingock and the Audit Store. It manages all low-level interactions required for:
-- Writing audit-log entries when a ChangeUnit runs
-- Acquiring and releasing distributed locks
-- Querying execution history to prevent duplicate runs
-
-Depending on the edition, the Driver may connect to a user-provided database (CE) or Flamingock’s cloud backend (Cloud Edition). It does *not* perform any Target System changes—that responsibility lies fully with the ChangeUnit code.
+For more details about how these systems work together, see the [Audit store vs target system](../overview/audit-store-vs-target-system.md) section.
 
 ---
 
-### 🔁 Transaction handling
-Flamingock supports **transactional consistency** where possible:
+## Transaction handling
+Flamingock adapts its behavior based on the transactional capabilities of your target systems:
 
-- **When the target System supports ACID transactions** (like MongoDB), Flamingock executes the ChangeUnit's operation in one transaction and the audit-log write in a separate transaction, providing safety through its coordination mechanisms.
-- **When the target System does not support transactions** (e.g., HTTP APIs, file systems, or message brokers), Flamingock uses compensating actions (rollbacks) and auditing to maintain integrity.
+### Transactional target systems
+Systems like PostgreSQL, MySQL, or MongoDB 4.0+ that support ACID transactions. When working with these systems, Flamingock can leverage native transaction support to ensure atomicity of changes. If a failure occurs mid-execution, the native rollback mechanism ensures no partial changes are left in the system.
 
-For a deeper dive around Transactions, see the [Transactions](../flamingock-library-config/transactions.md) section.
+### Non-transactional target systems
+Systems like Kafka, S3, REST APIs, or file systems that don't support transactions. For these systems, Flamingock relies on explicit rollback methods and careful change design to maintain consistency. Recovery strategies become particularly important for handling failures in non-transactional contexts.
 
-### 🔙 Rollbacks
-Each ChangeUnit can define rollback logic:
-- For safe reversion when operating against non-transactional systems
-- For reverting to a previous version of the software ("Undo"), invoked via the CLI
+For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
 
 ---
 
-### 🧩 Templates
-Flamingock introduces **change templates** for low-code use cases. These are YAML or JSON-based definitions that let teams describe changes declaratively—especially useful for configuration changes and SaaS integrations.
+## Stages
+Stages organize your changes into logical groups within Flamingock's execution pipeline. By default, you work with a single stage that contains all your changes, ensuring they execute sequentially in a deterministic order.
 
-Templates are:
-- Extensible and version-controlled
-- Friendly to non-developer users
+Key characteristics:
+- Changes within a stage execute sequentially with guaranteed order
+- Most applications only need a single stage
+- Multiple stages can be used for modular architectures, but execution order between stages is not guaranteed
+- Each stage defines where to find its changes (package or directory location)
 
-For a deeper dive around Templates, see the [Templates](../templates/templates-introduction.md) section.
-
----
-
-### 🔄 Workflows
-Workflows group and coordinate multiple ChangeUnits into stages. In future releases, they will support:
-- **Sequential** or **parallel** execution
-- **Conditional branching** (e.g., only run if a previous unit succeeded)
-
-This will enable advanced orchestration logic during deployments or upgrades.
-
-For a deeper dive around Workflows, see the [Pipelines and stages](../flamingock-library-config/setup-and-stages.md) section.
+For detailed information about stages and advanced configurations, see the [Setup and stages](../flamingock-library-config/setup-and-stages.md) section.
 
 ---
 
-### 🔒 Distributed Locking
-To ensure safe execution in multi-instance deployments, Flamingock uses a distributed lock mechanism. This guarantees:
-- Avoidance of duplicate execution or race conditions
-- Synchronisation between multiple runners
-- Coordination across microservices in distributed environments
+## Events
+Flamingock can notify your application about the execution status of changes through events. This enables integration with monitoring systems, custom logging, or triggering downstream processes based on change completion.
 
-It supports multiple lock implementations (e.g., MongoDB, Redis, DynamoDB).
-
-
-For a deeper dive around distributed locks, see the [Distributed locking](../flamingock-library-config/lock-configuration.md) section.
-
----
-
-### 📣 Events
-Flamingock is able to notify your Application around the execution status of changes via Events.
-
-For a deeper dive around Events, see the [Events](../flamingock-library-config/events.md) section.
+For more information about events, see the [Events](../flamingock-library-config/events.md) section.
