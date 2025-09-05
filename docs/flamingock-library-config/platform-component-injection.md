@@ -1,6 +1,6 @@
 ---
 title: Platform component injection
-sidebar_position: 4
+sidebar_position: 50
 ---
 
 # Platform component injection
