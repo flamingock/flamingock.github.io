@@ -1,108 +1,204 @@
 // File: cli/cli
 
-# CLI (Coming Soon)
+# Flamingock CLI
+*Enterprise-grade operational control for distributed system evolution*
 
-Flamingock’s Command-Line Interface (CLI) will enable operational and maintenance tasks outside your application’s normal startup cycle. You’ll be able to run change units, inspect or repair the audit log, and manage locks—all from a standalone command.
-
-:::info **Status:** UNDER DEVELOPMENT
- The CLI is under development and will be released soon. This page provides a high-level overview of expected upcoming features.
-:::
+Flamingock's Command-Line Interface (CLI) provides complete operational control over your system changes, enabling maintenance, troubleshooting, and governance tasks outside your application's normal startup cycle.
 
 ---
 
-## Why a CLI?
+## Enterprise Operational Capabilities
 
-- **Operational control**  
-  Execute change units, perform dry-runs, or trigger rollbacks without launching the full application.
+### **Issue Resolution & Recovery**
+The CLI is central to Flamingock's recovery strategy workflow, providing enterprise-grade operational excellence:
 
-- **Maintenance tasks**  
-  Inspect or fix inconsistencies in the audit log, manage stale locks, and run integrity checks.
+- **Issue Detection**: Identify failed or incomplete changes across your distributed systems
+- **Guided Resolution**: Get specific guidance for resolving each type of failure
+- **Audit Management**: Mark changes as resolved after manual verification or correction
+- **Compliance Workflow**: Maintain complete audit trails during issue resolution
 
-- **Automation & scripting**  
-  Integrate Flamingock operations into CI/CD pipelines, cron jobs, or custom scripts.
+### **Operational Control**
+- **Change Execution**: Run changes on-demand without full application startup
+- **Dry-Run Analysis**: Preview pending changes and their execution order
+- **Rollback Operations**: Safely revert changes using compensation logic
+- **Lock Management**: Clear stale distributed locks from interrupted processes
 
----
-
-## Planned Features
-
-When first released, the Flamingock CLI will support:
-
-- **Run change units**  
-  Execute any pending change units defined in your application’s code base.  
-  _(Requires passing your application JAR so the CLI can load the `@ChangeUnit` classes, but only if a change unit depends on code inside that JAR.)_
-
-- **Dry-run mode**  
-  Preview which change units would run and in what order—without making any changes or writing to the audit store.
-
-- **Rollback / Undo**  
-  Revert one or more change units that have already executed (by specifying change ID, date, or tag).  
-  _(Requires the application JAR if the change unit’s logic depends on application-specific classes.)_
-
-- **Audit inspection**  
-  List executed change units from the audit store and filter by criteria such as author, date range, or status.  
-  _(Does *not* require your application JAR, since it only reads from the audit backend.)_
-
-- **Lock management**  
-  View or clear distributed locks that may have been left behind by interrupted processes.
-
-- **Consistency checks**  
-  Compare the change-unit definitions in your code against entries in the audit log to detect mismatches or missing entries.
+### **Enterprise Integration**
+- **CI/CD Pipeline Integration**: Embed Flamingock operations in deployment workflows
+- **Automation Scripts**: Script common operational tasks and maintenance procedures
+- **Compliance Reporting**: Generate audit reports and change history analysis
 
 ---
 
-## Example Usage
+## Core CLI Operations
 
-Below are illustrative commands using the `fcli` (Flamingock CLI) binary. If a command needs to load your change-unit classes, it must be pointed at your application JAR. Other commands (like audit inspection) work without a JAR.
+### **Issue Resolution Workflow**
+The primary CLI workflow for operational excellence:
 
 ```bash
-# 1. Run all pending change units in 'development' profile
-fcli run \
-  --app-jar /path/to/your-app.jar \
-  --config application.yaml \
-  --profile development
+# 1. Discover issues requiring attention
+flamingock issue list
 
-# 2. Preview pending changes (no JAR required)
-fcli dry-run \
-  --config application.yaml \
-  --profile development
+# 2. Get the next issue to resolve (automatic prioritization)
+flamingock issue get
 
-# 3. Roll back a specific change by ID (requires the JAR only if rollback logic uses application classes)
-fcli rollback \
-  --app-jar /path/to/your-app.jar \
-  --change-id 0005_add_users_table \
-  --config application.yaml
+# 3. Get specific issue with detailed guidance
+flamingock issue get -c change-id --guidance
 
-# 4. List audit log entries, filter by author (no JAR required)
-fcli audit-list \
-  --config application.yaml \
-  --filter author=dev-team
-
-# 5. Clear any stale locks (no JAR required)
-fcli clear-locks \
-  --config application.yaml
-
---app-jar: Path to your compiled application JAR containing @ChangeUnit classes. Required only for commands that execute or roll back change units whose logic depends on code inside your application.
-
---config: Flamingock configuration file (e.g., application.yaml or flamingock.properties).
-
---profile: Spring-style profile or environment name (the CLI will pass this to Flamingock to select the right changes).
-
+# 4. Resolve the issue after manual verification/correction
+flamingock audit fix -c change-id --resolution APPLIED
+flamingock audit fix -c change-id --resolution ROLLED_BACK
 ```
 
-## Getting Started 
+### **Change Execution & Management**
+- **Execute Changes**: Run pending changes on-demand
+- **Dry-Run Analysis**: Preview execution order and dependencies without applying changes
+- **Rollback Operations**: Safely revert changes using `@RollbackExecution` methods
+- **Audit Inspection**: Query execution history with filtering by author, date, status
 
-**Install the CLI**  
-Download and install the platform-specific `fcli` binary for Linux, macOS, or Windows.
+### **Operational Maintenance** 
+- **Lock Management**: View and clear distributed locks from interrupted processes
+- **Consistency Checks**: Validate change definitions against audit log entries
+- **Integrity Verification**: Ensure audit store consistency and detect anomalies
 
-**Prepare your application JAR**  
-Build your project so that all `@ChangeUnit` classes are packaged into a single runnable JAR.
+### **Enterprise Reporting**
+- **Audit Trails**: Generate compliance reports and change history analysis
+- **Issue Analytics**: Track resolution patterns and operational metrics
+- **Change Impact**: Analyze cross-system dependencies and execution patterns
 
-**Run CLI commands**  
-Use the commands shown above—supplying `--app-jar` only when running or rolling back change units that depend on application-specific classes.
+---
 
-## Feedback & contributions
+## Operational Workflows
 
-We welcome your feedback on the CLI design. As the CLI nears release, feel free to open issues or submit pull requests to the Flamingock CLI repository.
+### **Issue Resolution Workflow**
+The most common CLI usage pattern for enterprise operations:
+
+```bash
+# Daily operational workflow
+flamingock issue list
+# Output: Shows all unresolved issues across your distributed systems
+
+flamingock issue get  
+# Output: Returns next priority issue with detailed context and guidance
+
+# After manual investigation and correction:
+flamingock audit fix -c user-data-update-v2 --resolution APPLIED
+# Output: ✅ Issue resolved - change marked as successfully applied
+
+# Alternative resolution:
+flamingock audit fix -c problematic-change --resolution ROLLED_BACK
+# Output: ✅ Issue resolved - change marked as rolled back
+```
+
+### **Change Management Operations**
+```bash
+# Execute pending changes on-demand
+flamingock run --app-jar /path/to/app.jar --config application.yaml
+
+# Preview what would execute (dry-run)
+flamingock dry-run --config application.yaml --profile production
+
+# Execute specific change by ID
+flamingock run -c user-schema-update --app-jar /path/to/app.jar
+
+# Rollback/undo specific change
+flamingock undo -c user-schema-update --app-jar /path/to/app.jar
+```
+
+### **Audit and Compliance Operations**
+```bash
+# List all executed changes with filtering
+flamingock audit list --author platform-team --from 2024-01-01
+
+# Generate compliance report
+flamingock audit report --format csv --output /reports/compliance-2024.csv
+
+# Verify audit store integrity
+flamingock audit verify --config application.yaml
+```
+
+### **Maintenance Operations**
+```bash
+# Clear stale distributed locks
+flamingock lock clear --config application.yaml
+
+# Check consistency between code and audit store
+flamingock consistency-check --app-jar /path/to/app.jar --config application.yaml
+```
+
+---
+
+## Enterprise Integration Patterns
+
+### **CI/CD Pipeline Integration**
+```yaml
+# Example: Jenkins/GitHub Actions integration
+deploy:
+  steps:
+    - name: Execute Flamingock Changes
+      run: |
+        flamingock run --app-jar dist/app.jar --config prod.yaml
+        
+    - name: Verify No Issues
+      run: |
+        flamingock issue list --fail-if-any
+```
+
+### **Operational Runbooks**
+```bash
+# Daily operations checklist
+#!/bin/bash
+echo "Checking for Flamingock issues..."
+flamingock issue list
+
+if [ $? -ne 0 ]; then
+  echo "Issues detected - resolving..."
+  while flamingock issue get > /dev/null; do
+    echo "Resolve the displayed issue manually, then press Enter"
+    read
+    flamingock issue get -c $(flamingock issue get --format id) --resolution APPLIED
+  done
+fi
+```
+
+### **Emergency Response**
+```bash
+# Emergency rollback procedure
+flamingock undo -c problematic-change --app-jar emergency-build.jar
+flamingock audit fix -c problematic-change --resolution ROLLED_BACK
+```
+
+---
+
+## Installation & Setup
+
+### **Download CLI**
+```bash
+# Linux/macOS
+curl -L https://releases.flamingock.io/cli/latest/flamingock-cli-linux -o flamingock
+chmod +x flamingock
+
+# Windows
+# Download from: https://releases.flamingock.io/cli/latest/flamingock-cli-windows.exe
+```
+
+### **Configuration**
+The CLI uses your existing Flamingock configuration files:
+- `application.yaml` / `application.properties`
+- `flamingock.yaml` / `flamingock.properties`
+
+### **JAR Requirements**
+Supply `--app-jar` only for commands that execute change logic:
+- **Required**: `run`, `undo`, `rollback` commands
+- **Not required**: `issue`, `audit`, `lock` commands
+
+---
+
+## Enterprise Support
+
+The Flamingock CLI is production-ready and provides enterprise-grade operational capabilities for managing distributed system evolution at scale.
+
+**Need help?** Contact support@flamingock.io for enterprise support and training.
 
 ---
 
@@ -173,7 +269,7 @@ Below is a summary of the available editions in the Flamingock Community Edition
 | MongoDB   | MongoDB          | >=4.0              | ✅ Yes        | ✅ Yes           | Flamingock provides support for both low-level native drivers and high-level abstractions through Spring Data integration. |
 | DynamoDB  | AWS DynamoDB     | >=2.25.29          | ✅ Yes        | ✅ Yes           |                                                                                                                            |
 | CosmosDB  | Azure Cosmos DB  | Mongo API 3.6/4.0  | ✅ Yes        | ✅ Yes           |                                                                                                                            |
-| Couchbase | Couchbase Server | >=3.4.3            | ❌ No         | ✅ Yes           |                                                                                                                            |
+| Couchbase | Couchbase Server | >=3.6.0            | ❌ No         | ✅ Yes           |                                                                                                                            |
 
 ---
 ## Features
@@ -308,7 +404,7 @@ These must be set using `.setProperty(...)`
 | `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration .ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                                           |
 | `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel .PRIMARY` |    No    | Defines which MongoDB node to read from.                                                                              |
 | `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
-| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLocks"`             |    No    | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
 We strongly recommend keeping the default configuration values in production environments. They are optimized for **consistency, durability, and safety**, ensuring Flamingock’s audit and rollback guarantees.
@@ -364,7 +460,7 @@ You can find practical examples in the official GitHub repository:
 - **Use Flamingock’s default consistency settings (`writeConcern`, `readConcern`, `readPreference`) in production**  
   These values guarantee strong consistency, durability, and fault tolerance. Overriding them is discouraged unless absolutely necessary.
 
-- **Use the default collection names (`flamingockAuditLogs`, `flamingockLock`)**  
+- **Use the default collection names (`flamingockAuditLogs`, `flamingockLocks`)**  
   These help avoid collisions and simplify debugging.
 
 - **Enable automatic index creation unless your environment prohibits it**  
@@ -543,7 +639,7 @@ Spring Boot will typically auto-configure `MongoTemplate` for you.
 | `mongodb. writeConcern.wTimeout` | `Duration`             | `Duration. ofSeconds(1)`       |    No    | Maximum time to wait for the write concern to be fulfilled.                                     |
 | `mongodb. readPreference`        | `ReadPreference Level` | `ReadPreferenceLevel. PRIMARY` |    No    | Specifies which MongoDB node to read from.                                                      |
 | `mongodb. auditRepositoryName`   | `String`               | `"flamingockAuditLogs"`        |    No    | Name of the collection used to store applied changes. Most users should keep the default value. |
-| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLock"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |                                                    |
+| `mongodb. lockRepositoryName`    | `String`               | `"flamingockLocks"`             |    No    | Name of the collection used for distributed locking. Most users should keep the default value.  |                                                    |
 
 :::warning
 It's **strongly recommended keeping the default MongoDB configuration values provided by Flamingock** — especially in production environments. These defaults are carefully chosen to guarantee **maximum consistency, durability, and safety**, which are fundamental to Flamingock’s audit and rollback guarantees.
@@ -626,7 +722,7 @@ You can find practical examples in the official GitHub repository:
   These defaults are **strictly selected to guarantee strong consistency, durability, and fault-tolerance**, which are fundamental to Flamingock’s execution guarantees.  
   Overriding them is **strongly discouraged in production environments**, as it can compromise the integrity of audit logs and distributed coordination.
 
-- **Use the default repository names (`flamingockAuditLogs`, `flamingockLock`) unless you have a strong reason to change them**  
+- **Use the default repository names (`flamingockAuditLogs`, `flamingockLocks`) unless you have a strong reason to change them**  
   The default names are chosen to avoid collisions and clearly identify Flamingock-managed collections. Overriding them is supported but rarely necessary.
 
 - **Keep `indexCreation` enabled unless your deployment restricts index creation at runtime**  
@@ -755,8 +851,8 @@ These must be set using `.setProperty(...)`
 | `dynamodb. readCapacityUnits`   | `Long`    |    No    | `5L`                  | Read capacity units (for **PROVISIONED** billing mode only).                 |
 | `dynamodb. writeCapacityUnits`  | `Long`    |    No    | `5L`                  | Write capacity units (for **PROVISIONED** billing mode only).                |
 | `dynamodb.autoCreate`           | `Boolean` |    No    | `true`                | Automatically creates the required tables if they do not exist.              |
-| `dynamodb. auditRepositoryName` | `String`  |    No    | `flamingockAuditLogs` | Table used to store audit records. Most users should keep the default name.  |
-| `dynamodb. lockRepositoryName`  | `String`  |    No    | `flamingockLock`      | Table used for distributed locking. Most users should keep the default name. |
+| `dynamodb. auditRepositoryName` | `String`  |    No    | `"flamingockAuditLogs"` | Table used to store audit records. Most users should keep the default name.  |
+| `dynamodb. lockRepositoryName`  | `String`  |    No    | `"flamingockLocks"`      | Table used for distributed locking. Most users should keep the default name. |
 
 :::warning
 In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
@@ -871,7 +967,7 @@ This edition supports Couchbase through a dedicated artifact:
 
 | Edition Name              | Java SDK                           | Couchbase Compatibility |
 |---------------------------|------------------------------------|-------------------------|
-| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` | >= `3.4.3`              |
+| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` (>= `3.6.0`) | >= `7.0`              |
 
 ---
 
@@ -912,13 +1008,17 @@ implementation("com.couchbase.client:java-client:3.x.x")
 
 ### 2. Enable Flamingock runner
 
-At minimum, you must provide a `Cluster` instance (as a **dependency**):
+At minimum, you must provide:
+- A Cluster instance (as a **dependency**)
+- A Bucket instance (as a **dependency**)
 
 ```java
 Cluster cluster = Cluster.connect("localhost", "username", "password");
+Bucket bucket = cluster.bucket("YOUR_BUCKET");
 
 Runner runner = Flamingock.builder()
     .addDependency(cluster)
+    .addDependency(bucket)
     .build();
 ```
 
@@ -934,10 +1034,7 @@ runner.execute();
 
 ## Configuration overview
 
-Flamingock’s Couchbase Community Edition requires both:
-
-- A `Cluster` dependency
-- A set of configuration properties
+Flamingock requires both dependencies and configuration properties, set via the builder.
 
 ### Dependencies
 
@@ -945,7 +1042,8 @@ These must be registered using `.addDependency(...)`
 
 | Type                                | Required | Description                                        |
 |-------------------------------------|:--------:|----------------------------------------------------|
-| `com.couchbase.client.java.Cluster` |   Yes    | Required to connect and execute against Couchbase. |
+| `com.couchbase.client.java.Cluster` |   Yes    | Required to connect and execute against Couchbase cluster. |
+| `com.couchbase.client.java.Bucket` |   Yes    | Required to connect and execute against Couchbase bucket. |
 
 ### Properties
 
@@ -953,7 +1051,10 @@ These must be set using `.setProperty(...)`
 
 | Property      | Type      | Required | Default Value | Description                                                              |
 |---------------|-----------|:--------:|---------------|--------------------------------------------------------------------------|
-| `autoCreate`  | `boolean` |    No    | `true`        | Whether Flamingock should auto-create required buckets and indexes.      |
+| `couchbase.autoCreate`  | `boolean` |    No    | `true`        | Whether Flamingock should auto-create required collections and indexes.      |
+| `couchbase.scopeName`  | `String` |    No    | `"_default"`        | Name of the Couchbase scope where the collections exist or will be created.       |
+| `couchbase.auditRepositoryName`   | `String`               |   No    | `"flamingockAuditLogs"`        | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
+| `couchbase.lockRepositoryName`    | `String`               |    No    | `"flamingockLocks"`             | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
 
 :::warning
 In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
@@ -968,12 +1069,15 @@ The following example shows how to configure Flamingock with both required and o
 
 ```java
 Cluster cluster = Cluster.connect("localhost", "username", "password");
+Bucket bucket = cluster.bucket("YOUR_BUCKET");
 
 FlamingockBuilder builder = Flamingock.builder()
     // mandatory dependency
     .addDependency(cluster)
+    .addDependency(bucket)
     // optional configuration
-    .setProperty("autoCreate", true);
+    .setProperty("autoCreate", true)
+    .setProperty("couchbase.scopeName", "YOUR_SCOPE");
 ```
 
 > You can add additional dependencies and properties based on your custom setup (e.g., metrics, listeners, or cloud-specific settings).
@@ -1463,176 +1567,162 @@ While Java typically avoids underscores and leading digits, change units are not
 
 // File: flamingock-library-config/changeunits-deep-dive
 
-## Clarifying changeUnits
+# ChangeUnits Deep Dive
 
-A **ChangeUnit** is the atomic, versioned unit of change in Flamingock. It encapsulates logic to modify an external system (the [**target system**](../overview/audit-store-vs-target-system.md)) and provides metadata and rollback capability. ChangeUnits are discovered and executed in a defined order to ensure deterministic, auditable changes.
+## 1. Introduction: Understanding ChangeUnits
 
-### What a changeUnit Is
-- **Self-contained change**  
-  Each ChangeUnit includes:
-  - A unique `id` (unique across the entire application)
-  - An `order` determining execution sequence
-  - An optional `author` and `description`
-  - An `@Execution` method (or template) with the change logic
-  - A `@RollbackExecution` method (or template) with compensating logic
-  - A `transactional` flag (default `true`) indicating if Flamingock will attempt to wrap execution and audit in a single transaction
+A **ChangeUnit** is the atomic, versioned, self-contained unit of change in Flamingock.  
+It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
 
-- **Versioned and Auditable**  
-  ChangeUnits live in your source code or resources, and their execution is recorded in the [**audit store**](../overview/audit-store-vs-target-system.md) to:
-  - Prevent duplicate executions
-  - Track history (who ran which change and when)
-  - Drive rollbacks and “undo” operations
-
-### What a changeUnit is not
-- **Not a long-running job**  
-  ChangeUnits should complete promptly. Flamingock needs to know the result (success or failure) before proceeding. Long-running or asynchronous operations can lead to unexpected behavior or retries.
-- **Not a general-purpose script**  
-  While ChangeUnits run code, they are not intended for arbitrary scripting. Their role is to apply deterministic, idempotent changes that evolve your target systems in sync with your application.
+**Key characteristics:**
+- Executed in sequence based on their `order`
+- Recorded in the audit store to prevent duplicate execution
+- Safe by default: if Flamingock is uncertain about a change's outcome, it stops and requires manual intervention
+- Each ChangeUnit runs exactly once per system
 
 ---
 
-## ChangeUnit properties
+## 2. Structure of a ChangeUnit
 
-Every ChangeUnit must define:
-- `id` (String): Unique across all ChangeUnits in the application.
-- `order` (String or numeric): Defines execution order (evaluated lexicographically or numerically).
-- `author` (String): Who is responsible for the change.
-- `description` (String, optional): Brief explanation of the change.
-- `transactional` (boolean, default `true`): Whether Flamingock will attempt to wrap the change and audit insert in one transaction (if the target system and audit store support transactions).
+### Required Properties
+- **`id`**: Unique identifier across all ChangeUnits in the application  
+- **`order`**: Execution sequence (must use zero-padded format like `0001`, `0002`, `_0001_ChangeName`)  
+- **`author`**: Who is responsible for this change  
 
----
+### Optional Properties
+- **`description`**: Brief explanation of what the change does  
+- **`transactional`** (default `true`): Only relevant if the target system supports transactions. Has no effect on non-transactional systems like S3 or Kafka.  
 
-## Types of changeUnits
+### Required Annotations and Methods
+- **`@TargetSystem`**: Specifies which system this change affects  
+- **`@ChangeUnit`**: Marks the class as a ChangeUnit  
+- **`@Execution`**: The method containing your change logic  
+- **`@RollbackExecution`**: The method to undo the change (required for safety and governance)  
 
-ChangeUnits can be defined based on two approaches: code-based and [template-based](../templates/templates-introduction.md)
+> **Note:** Rollback is important because in **non-transactional systems**, it's be used to revert changes if execution fails. In **all systems**, rollback is essential for undo operations (via CLI or UI).  
 
-### Code-based changeUnits
-Code-based ChangeUnits are written in Java (or Kotlin/Groovy) with annotations:
+## 3. Types of ChangeUnits
+
+### Code-based ChangeUnits
+Written in Java (or Kotlin/Groovy) with annotations. Best for **specific jobs** or when you need a **flexibility window** that isn’t covered by an existing template.  
+
+This approach gives you full programmatic control, making it the fallback option when no reusable template exists for your use case.
 
 ```java
-@ChangeUnit(
-        id = "create_s3_bucket", 
-        order = "0001", 
-        author = "dev-team", 
-        transactional = false,
-        description = "Create my-app-bucket S3 bucket")
-public class _0001_CreateS3BucketChange {
-
-  @Execution
-  public void execute(S3Client s3Client) {
-    s3Client.createBucket("my-app-bucket");
-  }
-
-  @RollbackExecution
-  public void rollback(S3Client s3Client) {
-    s3Client.deleteBucket("my-app-bucket");
-  }
+@TargetSystem("user-database")
+@ChangeUnit(id = "add-user-status", order = "0001", author = "dev-team")
+public class _0001_AddUserStatus {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                            new Document("$set", new Document("status", "active")));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                            new Document("$unset", new Document("status", "")));
+    }
 }
 ```
 
-#### Discoverability & execution
-- **Location**: Files must reside in a source package scanned by Flamingock (default: `src/main/java`).
-- **Naming**: Class names should match `_ORDER_name` (e.g., `_0001_CreateS3BucketChange`) to simplify ordering and visibility.
-- **Dependencies**: Flamingock injects dependencies (e.g., `S3Client`, `MongoClient`) via Spring or builder-based DI.
+### Template-based ChangeUnits
+Template-based ChangeUnits use YAML or JSON definitions. They are especially useful for **repetitive or parameterized operations**, where the same logic can to be applied multiple times with different configurations.
 
-### Template-based changeUnits
-Template-based ChangeUnits use YAML or JSON definitions. Example (SQL DDL):
+- The execution logic is encapsulated in a **template** (provided by Flamingock, a contributor, or created by you).  
+- Each ChangeUnit then supplies its own configuration to apply that logic consistently.  
+- This approach ensures **immutability** (the YAML/JSON file itself represents the change) and makes it easier to **reuse proven patterns**.
+
 
 ```yaml
-# /src/main/resources/_0003_add_status_column.yml
+# File: _0002_add_status_column.yml
 id: add_status_column
-order: 0003
+order: "0002"
 author: "db-team"
-description: "Add 'status' column to 'orders' table"
+description: "Add status column to orders table"
 templateName: sql-template
 templateConfiguration:
   executionSql: |
-    ALTER TABLE orders ADD COLUMN status VARCHAR(20);
+    ALTER TABLE orders ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
   rollbackSql: |
     ALTER TABLE orders DROP COLUMN status;
 ```
 
-#### Discoverability & execution
-- **Location**: While Flamingock will scan src/main/resources by default, we **strongly recommend** placing template files in the same code‐package/directory as your code‐based ChangeUnits.
-    - This ensures that both code‐based and template‐based ChangeUnits live side by side for visibility and immutability.
-- **Naming**: File names should follow `_ORDER_name.yml` or `_ORDER_name.json`.
-- **Advantages**:
-  - Easier immutability: The YAML/JSON file itself represents the change, avoiding modifications in code.
-  - Better for simple, repeatable tasks (e.g., SQL DDL).
+Both types follow the same execution model and provide the same safety guarantees.
+
+## 4. Naming & Discoverability
+
+### Enforced Naming Convention
+All ChangeUnit files (both code and templates) **must** follow this pattern:
+
+- **Format**: `_XXXX_DescriptiveName`
+- **Order**: Must be at least 4 digits, zero-padded (e.g., `0001`, `0002`, `0100`)
+- **Examples**: 
+  - Code: `_0001_CreateUserIndexes.java`
+  - Template: `_0002_AddStatusColumn.yml`
+
+### Why This Convention?
+- **Visibility**: Easy to see execution order at a glance
+- **Immutability**: Clear versioning prevents accidental modifications
+- **Deterministic ordering**: Ensures consistent execution across environments
+
+### File Locations
+- **Code-based**: Place in packages scanned by Flamingock (default: `src/main/java`)
+- **Template-based**: Place in `src/main/resources` or preferably alongside code-based ChangeUnits
+- **Recommendation**: Keep all ChangeUnits (code and templates) in the same package/directory for better organization
+
+## 5. Transactional Behavior
+
+- **Transactional target systems** (e.g., MongoDB, PostgreSQL): operations run within a transaction **unless you explicitly set `transactional = false`**.  
+- **Non-transactional target systems** (e.g., S3, Kafka): the `transactional` flag has no effect — operations are applied without transactional guarantees.
+
+Some operations may require setting `transactional = false` even in databases:
+- DDL operations (e.g., CREATE INDEX, ALTER TABLE)
+- Large bulk operations that exceed transaction limits
+- Cross-system changes spanning multiple databases
+
+➡️ To understand how to define and configure **target systems**, see [Target System Configuration](./target-system-configuration.md)
+
+## 6. Default Safety & Recovery
+
+**Flamingock's core principle**: If a ChangeUnit execution result is uncertain, Flamingock stops and requires manual intervention. This prevents silent data corruption.
+
+**What this means:**
+- If a change fails, Flamingock halts execution
+- The issue is recorded in the audit store
+- Manual investigation and resolution is required via CLI (or Cloud UI in Cloud Edition)
+
+➡️ **For advanced recovery strategies**, see [Recovery Strategies](../recovery-and-safety/recovery-strategies.md)
+
+## 7. Best Practices
+
+### Core Principles
+- **Treat ChangeUnits as immutable**: Once deployed, never modify existing ChangeUnits. Create new ones for corrections.
+- **Always provide @RollbackExecution**: Important for CLI undo operations and recovery scenarios.
+- **Keep scope focused**: One ChangeUnit should address one logical change.
+
+### Technical Guidelines
+- **Make operations idempotent when possible**: Try to design changes that can be safely re-run.
+- **Test both execution and rollback**: Include ChangeUnit testing in your CI/CD pipeline.
+- **Follow naming conventions**: Use the `_XXXX_DescriptiveName` pattern consistently.
+
+### Organizational Best Practices
+- **Clear authorship**: Always specify the `author` for accountability.
+- **Version control discipline**: Review ChangeUnits in pull requests like any critical code.
+- **Document complex changes**: Use the `description` field to explain non-obvious logic.
+- **Maintain change logs**: Keep a high-level record of what changes were made when.
+
 
 ---
 
-[//]: # (## How ChangeUnits Are Discovered & Executed)
-
-[//]: # ()
-[//]: # (Flamingock uses **classpath scanning** to locate ChangeUnits:)
-
-[//]: # ()
-[//]: # (- **Code-based**: Scans specified packages for classes annotated with `@ChangeUnit` or `@Change`.)
-
-[//]: # (- **Template-based**: Scans specified resource directories for YAML/JSON files matching pattern `_.*\.&#40;yml|json&#41;`.)
-
-[//]: # ()
-[//]: # (Flamingock builds a **pipeline** of stages and executes ChangeUnits in ascending order based on `order`.)
-
-[//]: # ()
-[//]: # (---)
-
-## Considerations
-
-### Transactional behavior
-- **Transactional changes (default)**: When the target system and audit store share a transactional context (e.g., MongoDB CE), Flamingock wraps both in a single transaction.
-- **Non-transactional changes**: `transactional = false`. Flamingock executes `@Execution` and, upon success, writes to the audit store. If `@Execution` fails, Flamingock invokes `@RollbackExecution`. See [transactions page](../flamingock-library-config/transactions.md)
-    
-
-### Immutability
-- **Code-based**: Once committed and possibly executed, avoid modifying the class. Instead, introduce a new ChangeUnit for evolution.
-- **Template-based**: Treat the file as immutable. Modifying an existing template breaks history ordering — use new template files for new changes.
-
-### Audit store constraints
-- **Single audit store per application**: All ChangeUnits in one application write to the same audit store.
-- **Audit store integrity**: Do not manually modify audit records in the audit store; this can corrupt Flamingock’s state. Use CLI/UI for supported modifications.
-
-### Idempotency
-- ChangeUnits should be idempotent or safe to re-run. Flamingock retries failed ChangeUnits on next startup. If a non-transactional ChangeUnit partially succeeded, ensure it can handle multiple executions or include appropriate guards.
-
----
-
-## Best practices
-
-**Name and location conventions***  
-  - Place both code-based and template-based ChangeUnits in the same source package/directory for visibility and immutability.  
-  - Use filenames or class names prefixed with the zero-padded order (e.g., `_0001_create_s3_bucket.java` or `_0001_create_s3_bucket.yaml`).
-
-- **Always provide rollback**  
-  Even for transactional ChangeUnits, implement `@RollbackExecution` so CLI “undo” operations work smoothly.
-
-- **Template-based changeUnits for simplicity and immutability**  
-  Favor templated ChangeUnits (YAML/JSON) for routine, repeatable tasks—such as SQL DDL, configuration toggles, or small API calls. Templates are inherently immutable (being a static file), making it easier to adhere to versioning best practices.
-
-- **Use Flamingock’s batching feature for long-running operations**(coming soon)  
-  For ChangeUnits that process large workloads (e.g., migrating millions of rows), leverage Flamingock’s built-in batching mechanism. Define a single ChangeUnit that iterates through data in batches; Flamingock will mark it as complete only when all batches succeed, and will resume from the last processed batch on retry.
-
-- **Inject minimal dependencies**  
-  Only inject what you need (e.g., clients, DAOs). Avoid injecting large application contexts within ChangeUnits.
-
-- **Write clear descriptions**  
-  Use the `description` property to explain the purpose and impact of each ChangeUnit.
-
-- **Implement idempotency**  
-  For non-transactional operations (e.g., deleting an S3 bucket), wrap calls in checks (e.g., “if exists”) to handle re-runs gracefully.
-
-- **Immutable operations**  
-  Once a ChangeUnit is applied to any environment, treat its code or template as immutable. For corrections, create new ChangeUnits rather than editing old ones.
-
-- **Explicit ordering**  
-  Declare a clear, numeric `order` for each ChangeUnit. Relying on implicit or alphabetical ordering can introduce hidden dependencies and make debugging deployment issues difficult.
-
-- **Audit store hygiene**  
-  Never manually edit or delete records in the audit store. Direct modifications can corrupt Flamingock’s internal state and lead to unpredictable behavior or data loss. If you need to correct audit data, use Flamingock’s supported operations (CLI or UI) or follow documented recovery procedures.
-
-- **Documentation and metadata**  
-  Use the `author` and `description` (if available) fields to document the intent of each ChangeUnit. This metadata helps teams understand why a change was made and by whom—critical for code reviews and compliance audits.
+**Next Steps:**
+- Learn about [dependency injection](./changeunit-dependency-injection.md) in ChangeUnits
+- Configure [target systems](./target-system-configuration.md) and [audit store](./audit-store-configuration.md)
+- Explore [template-based ChangeUnits](../templates/templates-introduction.md) for declarative changes
+- Understand [advanced recovery strategies](../recovery-and-safety/recovery-strategies.md) for production scenarios
 
 ---
 
@@ -1844,6 +1934,884 @@ If a component is relevant for both Flamingock internal operations and for injec
 
 - [ChangeUnit dependency injection](changeunit-dependency-injection.md) — for injecting services directly into change units  
 - [Spring Boot integration](../frameworks/springboot-integration/introduction.md) — for automated platform wiring in Spring apps
+
+---
+
+// File: flamingock-library-config/target-system-configuration
+
+# Target System Configuration
+*How to define and configure target systems for your ChangeUnits*
+
+Target systems are where your business changes are applied. This guide covers how to properly configure them, define their characteristics, and work with different system types.
+
+> **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store Architecture](../overview/audit-store-vs-target-system.md).
+
+---
+
+## Basic Target System Definition
+
+### Required: @TargetSystem Annotation
+Every ChangeUnit must specify which target system it affects:
+
+```java
+@TargetSystem("user-database")  // Required: explicitly names the target
+@ChangeUnit(id = "add-user-status", order = "0001", author = "dev-team")
+public class _0001_AddUserStatus {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Your business logic modifies the target system
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                           new Document("$set", new Document("status", "active")));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        database.getCollection("users")
+                .updateMany(new Document(), 
+                           new Document("$unset", new Document("status", "")));
+    }
+}
+```
+
+### Target System Naming Convention
+- **Use descriptive names**: `"user-database"`, `"payment-api"`, `"inventory-cache"`
+- **Be consistent**: Same target system name across related ChangeUnits
+- **Avoid generic names**: Not `"database"` or `"api"` - be specific
+
+---
+
+## Transactional vs Non-Transactional Systems
+
+### Transactional Target Systems
+Systems that support ACID transactions and can coordinate with Flamingock's audit store:
+
+```java
+@TargetSystem("financial-database")
+@ChangeUnit(id = "process-payments", order = "0001", author = "finance-team",
+           transactional = true)  // Default behavior for transactional systems
+public class ProcessPayments {
+    
+    @Execution
+    public void execute(MongoDatabase financialDb) {
+        // Runs within a transaction
+        // Automatic rollback coordination with audit store
+        financialDb.getCollection("payments")
+                  .updateMany(eq("status", "pending"), 
+                             combine(set("status", "processed"),
+                                   set("processedAt", new Date())));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase financialDb) {
+        financialDb.getCollection("payments")
+                  .updateMany(eq("status", "processed"),
+                             combine(set("status", "pending"),
+                                   unset("processedAt")));
+    }
+}
+```
+
+**Supported Transactional Systems:**
+- **MongoDB 4.0+**: With replica sets or sharded clusters
+- **PostgreSQL**: All versions with transaction support
+- **MySQL**: InnoDB engine with transaction support
+- **SQL Server**: Standard transaction support
+
+### Non-Transactional Target Systems
+Systems that don't support transactions but still benefit from Flamingock's safety mechanisms:
+
+```java
+@TargetSystem("event-stream")
+@ChangeUnit(id = "publish-user-events", order = "0002", author = "platform-team",
+           transactional = false)  // Must be false for non-transactional systems
+public class PublishUserEvents {
+    
+    @Execution
+    public void execute(KafkaTemplate kafkaTemplate) {
+        // No transaction support, but Flamingock provides safety through:
+        // 1. Execution tracking in audit store
+        // 2. Rollback compensation via @RollbackExecution
+        List<UserEvent> events = prepareUserEvents();
+        for (UserEvent event : events) {
+            kafkaTemplate.send("user-events", event.getUserId(), event);
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(KafkaTemplate kafkaTemplate) {
+        // Manual compensation - publish rollback events
+        List<UserEvent> rollbackEvents = prepareRollbackEvents();
+        for (UserEvent event : rollbackEvents) {
+            kafkaTemplate.send("user-events", event.getUserId(), event);
+        }
+    }
+}
+```
+
+**Common Non-Transactional Systems:**
+- **Apache Kafka**: Message streaming platform
+- **Amazon S3**: Object storage service
+- **REST APIs**: External service integrations
+- **File Systems**: Local or network file operations
+- **Redis** (when not using transactions)
+- **Elasticsearch**: Search and analytics engine
+
+---
+
+## Dependency Injection for Target Systems
+
+### MongoDB Example
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "update-user-schema", order = "0001", author = "dev-team")
+public class UpdateUserSchema {
+    
+    @Execution
+    public void execute(MongoDatabase userDatabase) {
+        // MongoDatabase is injected based on target system configuration
+        userDatabase.getCollection("users")
+                   .createIndex(Indexes.ascending("email"));
+    }
+}
+```
+
+### Spring Data Example
+```java
+@TargetSystem("product-database")
+@ChangeUnit(id = "migrate-products", order = "0002", author = "product-team")
+public class MigrateProducts {
+    
+    @Execution
+    public void execute(ProductRepository productRepository) {
+        // Spring Data repository injected automatically
+        List<Product> products = productRepository.findAll();
+        products.forEach(product -> {
+            product.setCategory(determineCategory(product));
+            productRepository.save(product);
+        });
+    }
+}
+```
+
+### Multiple Dependencies Example
+```java
+@TargetSystem("user-system")
+@ChangeUnit(id = "sync-user-data", order = "0003", author = "platform-team")
+public class SyncUserData {
+    
+    @Execution
+    public void execute(MongoDatabase userDb, 
+                       KafkaTemplate eventStream,
+                       S3Client fileStorage,
+                       UserService userService) {
+        // Multiple dependencies injected for complex operations
+        List<User> users = userService.findUsersToSync();
+        
+        for (User user : users) {
+            // Update database
+            updateUserInDatabase(userDb, user);
+            
+            // Publish event
+            publishUserEvent(eventStream, user);
+            
+            // Sync files
+            syncUserFiles(fileStorage, user);
+        }
+    }
+}
+```
+
+---
+
+## Target System Configuration in Flamingock
+
+### Community Edition Configuration
+
+#### MongoDB Target System
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(MongoTemplate mongoTemplate) {
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
+            .addMigrationClass(UserDatabaseChanges.class)
+            // Target system "user-database" maps to MongoDatabase from MongoTemplate
+            .build();
+    }
+}
+```
+
+#### Multiple Target Systems
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean 
+    public Flamingock flamingock(MongoTemplate mongoTemplate,
+                                KafkaTemplate kafkaTemplate,
+                                S3Client s3Client) {
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
+            // Register target system dependencies
+            .addDependency("userDatabase", mongoTemplate.getCollection("users"))
+            .addDependency("eventStream", kafkaTemplate)
+            .addDependency("fileStorage", s3Client)
+            .addMigrationClass(MultiSystemChanges.class)
+            .build();
+    }
+}
+```
+
+---
+
+## When to Use transactional = false
+
+### DDL Operations
+Even in transactional databases, some operations require non-transactional execution:
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "create-user-indexes", order = "0004", author = "dba-team",
+           transactional = false)  // DDL can't be in transactions
+public class CreateUserIndexes {
+    
+    @Execution
+    public void execute(MongoDatabase userDb) {
+        MongoCollection<Document> users = userDb.getCollection("users");
+        // Index creation operations
+        users.createIndex(Indexes.ascending("email"));
+        users.createIndex(Indexes.compound(
+            Indexes.ascending("status"), 
+            Indexes.descending("createdAt")
+        ));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase userDb) {
+        MongoCollection<Document> users = userDb.getCollection("users");
+        users.dropIndex("email_1");
+        users.dropIndex("status_1_createdAt_-1");
+    }
+}
+```
+
+### Large Bulk Operations
+Operations that might exceed transaction limits:
+
+```java
+@TargetSystem("analytics-database")  
+@ChangeUnit(id = "migrate-analytics-data", order = "0005", author = "data-team",
+           transactional = false)  // Large dataset migration
+public class MigrateAnalyticsData {
+    
+    @Execution
+    public void execute(MongoDatabase analyticsDb) {
+        MongoCollection<Document> events = analyticsDb.getCollection("events");
+        
+        // Process in batches to avoid transaction timeouts
+        int batchSize = 10000;
+        int skip = 0;
+        
+        while (true) {
+            List<Document> batch = events.find()
+                                        .skip(skip)
+                                        .limit(batchSize)
+                                        .into(new ArrayList<>());
+            
+            if (batch.isEmpty()) break;
+            
+            // Transform and update batch
+            transformEventBatch(events, batch);
+            skip += batchSize;
+        }
+    }
+}
+```
+
+---
+
+## Target System Best Practices
+
+### Naming and Organization
+```java
+// ✅ Good: Descriptive and specific
+@TargetSystem("user-profile-database")
+@TargetSystem("payment-gateway-api")  
+@TargetSystem("inventory-cache-redis")
+
+// ❌ Avoid: Generic and ambiguous
+@TargetSystem("database")
+@TargetSystem("api")
+@TargetSystem("cache")
+```
+
+### Dependency Scoping
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "update-user-profiles", order = "0006", author = "dev-team")
+public class UpdateUserProfiles {
+    
+    @Execution
+    public void execute(MongoDatabase userDb,           // ✅ Specific database
+                       UserValidationService validator, // ✅ Specific service
+                       EmailService emailService) {     // ✅ Related service
+        // Good: Inject only what you need for this specific change
+    }
+    
+    // ❌ Avoid: Injecting entire application context or unrelated services
+}
+```
+
+### Error Handling and Safety
+```java
+@TargetSystem("external-payment-api")
+@ChangeUnit(id = "update-payment-config", order = "0007", author = "finance-team")
+public class UpdatePaymentConfig {
+    
+    @Execution
+    public void execute(PaymentApiClient paymentClient) {
+        try {
+            // Make change idempotent when possible
+            PaymentConfig currentConfig = paymentClient.getConfig();
+            if (!currentConfig.hasNewFeature()) {
+                paymentClient.updateConfig(newConfigWithFeature());
+            }
+        } catch (PaymentApiException e) {
+            // Log detailed context for troubleshooting
+            log.error("Failed to update payment config. Current state unknown. " +
+                     "Manual verification required at payment provider.", e);
+            throw e; // Re-throw to trigger Flamingock's safety mechanisms
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(PaymentApiClient paymentClient) {
+        // Always provide rollback, even for external APIs
+        try {
+            paymentClient.updateConfig(previousConfig());
+        } catch (PaymentApiException e) {
+            log.error("Payment API rollback failed. Manual intervention required.", e);
+            throw e;
+        }
+    }
+}
+```
+
+---
+
+## Troubleshooting Target System Issues
+
+### Common Configuration Problems
+
+#### Missing @TargetSystem Annotation
+```
+Error: ChangeUnit must specify a target system
+Solution: Add @TargetSystem("system-name") annotation to your ChangeUnit class
+```
+
+#### Dependency Injection Failures  
+```
+Error: No bean of type 'MongoDatabase' available
+Solution: Ensure target system dependencies are properly configured in your Flamingock setup
+```
+
+#### Transactional Setting Mismatch
+```
+Error: Transaction not supported by target system
+Solution: Set transactional = false for non-transactional systems like Kafka, S3, APIs
+```
+
+### Verification Commands
+```bash
+# Check which target systems are configured
+flamingock audit list --group-by target-system
+
+# Verify target system connectivity
+flamingock test-connection --target-system user-database
+
+# List changes for specific target system  
+flamingock audit list --target-system user-database --since "1 week ago"
+```
+
+---
+
+**Key Takeaway**: Proper target system configuration ensures your ChangeUnits can safely and reliably apply business changes while maintaining Flamingock's safety guarantees and audit capabilities.
+
+---
+
+// File: flamingock-library-config/audit-store-configuration
+
+# Audit Store Configuration
+*How to configure Flamingock's audit store for tracking and compliance*
+
+The audit store is Flamingock's dedicated system for tracking execution history, managing distributed locking, and ensuring compliance. This guide covers configuration options for different audit store implementations.
+
+> **Conceptual Overview**: For architectural understanding of audit store vs target systems, see [Target Systems vs Audit Store Architecture](../overview/audit-store-vs-target-system.md).
+
+---
+
+## Audit Store Fundamentals
+
+### What the Audit Store Tracks
+- **Execution History**: Which ChangeUnits ran, when, and with what outcome
+- **Distributed Locking**: Prevents concurrent executions across multiple instances
+- **Issue Tracking**: Failed or uncertain executions requiring resolution
+- **Metadata**: Authors, environments, execution context
+
+### Audit Store vs Target Systems
+- **Audit Store**: Managed automatically by Flamingock framework (never modified by your code)
+- **Target Systems**: Modified by your business logic in `@Execution` methods
+- **Independence**: Audit integrity maintained even if target systems fail
+
+---
+
+## Community Edition Audit Store Options
+
+### MongoDB Audit Store
+
+#### Basic Configuration
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(MongoTemplate mongoTemplate) {
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
+            .addMigrationClass(MyChangeUnits.class)
+            .build();
+    }
+}
+```
+
+#### Advanced MongoDB Configuration
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock() {
+        // Create dedicated audit store connection
+        MongoClientSettings settings = MongoClientSettings.builder()
+            .applyConnectionString(ConnectionString.create("mongodb://audit-db:27017/flamingock-audit"))
+            .writeConcern(WriteConcern.MAJORITY)  // Ensure audit durability
+            .readConcern(ReadConcern.MAJORITY)    // Consistent audit reads
+            .build();
+        
+        MongoClient auditClient = MongoClients.create(settings);
+        MongoTemplate auditTemplate = new MongoTemplate(auditClient, "flamingock-audit");
+        
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(auditTemplate))
+            .addMigrationClass(MyChangeUnits.class)
+            .build();
+    }
+}
+```
+
+#### MongoDB Collections Structure
+Flamingock automatically creates these collections in your audit store:
+
+- **`changeLog`**: Execution history and state tracking
+- **`locks`**: Distributed locking for concurrent safety
+- **`issues`**: Failed executions requiring resolution
+
+### DynamoDB Audit Store
+
+#### Basic DynamoDB Configuration
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(DynamoDbClient dynamoDbClient) {
+        DynamoConnectionRepository connectionRepository = 
+            new DynamoConnectionRepository(dynamoDbClient)
+                .withTablePrefix("flamingock-")  // Optional: prefix for table names
+                .withRegion(Region.US_EAST_1);   // Optional: specify region
+        
+        return Flamingock.builder()
+            .setConnectionRepository(connectionRepository)
+            .addMigrationClass(MyChangeUnits.class)
+            .build();
+    }
+}
+```
+
+#### DynamoDB Tables Structure
+Flamingock automatically creates these tables:
+
+- **`flamingock-changeLog`**: Execution history
+- **`flamingock-locks`**: Distributed locking
+- **`flamingock-issues`**: Issue tracking
+
+### Couchbase Audit Store
+
+#### Basic Couchbase Configuration
+```java
+@Configuration  
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock() {
+        Cluster cluster = Cluster.connect("localhost", "username", "password");
+        Bucket bucket = cluster.bucket("flamingock-audit");
+        
+        CouchbaseConnectionRepository connectionRepository = 
+            new CouchbaseConnectionRepository(bucket)
+                .withScope("audit-scope")        // Optional: custom scope
+                .withCollection("change-log");   // Optional: custom collection
+        
+        return Flamingock.builder()
+            .setConnectionRepository(connectionRepository)
+            .addMigrationClass(MyChangeUnits.class)
+            .build();
+    }
+}
+```
+
+---
+
+## Audit Store Configuration Options
+
+### Write Concern and Durability
+Critical for audit integrity - ensure changes are durably persisted:
+
+```java
+// MongoDB with strong consistency
+MongoClientSettings settings = MongoClientSettings.builder()
+    .writeConcern(WriteConcern.MAJORITY)     // Wait for majority acknowledgment
+    .readConcern(ReadConcern.MAJORITY)       // Read from majority
+    .readPreference(ReadPreference.primary()) // Always read from primary
+    .build();
+
+// DynamoDB with consistent reads
+DynamoConnectionRepository connectionRepository = 
+    new DynamoConnectionRepository(dynamoDbClient)
+        .withConsistentRead(true)            // Enable strong consistency
+        .withWriteCapacity(25)               // Provision appropriate capacity
+        .withReadCapacity(25);
+```
+
+### Collection/Table Naming
+Customize audit store object names:
+
+```java
+// MongoDB custom collection names
+MongoConnectionRepository connectionRepository = 
+    new MongoConnectionRepository(mongoTemplate)
+        .withChangeLogCollectionName("execution_history")
+        .withLockCollectionName("distributed_locks")
+        .withIssuesCollectionName("failed_executions");
+
+// DynamoDB custom table names  
+DynamoConnectionRepository connectionRepository = 
+    new DynamoConnectionRepository(dynamoDbClient)
+        .withChangeLogTableName("ExecutionHistory")
+        .withLockTableName("DistributedLocks")
+        .withIssuesTableName("FailedExecutions");
+```
+
+### Index Optimization
+Flamingock automatically creates necessary indexes, but you can optimize:
+
+```javascript
+// MongoDB: Additional indexes for query performance
+db.changeLog.createIndex({ "targetSystem": 1, "executionDate": -1 })
+db.changeLog.createIndex({ "author": 1, "status": 1 })
+db.issues.createIndex({ "createdAt": -1, "status": 1 })
+```
+
+---
+
+## Separation Patterns
+
+### Pattern 1: Same Database as Target System
+Simplest setup - audit and business data in same database:
+
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(@Qualifier("businessDatabase") MongoTemplate mongoTemplate) {
+        // Both audit store and target system use same database
+        // Benefits: Single database to manage, reduced infrastructure complexity
+        // Important: Even with same database, audit and changes use separate transactions
+        // Trade-offs: Mixed concerns, shared resource limits
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
+            .addMigrationClass(BusinessChangeUnits.class)
+            .build();
+    }
+}
+```
+
+### Pattern 2: Dedicated Audit Database
+Best practice - separate audit store from business systems:
+
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(@Qualifier("auditDatabase") MongoTemplate auditTemplate,
+                                @Qualifier("businessDatabase") MongoTemplate businessTemplate) {
+        // Audit store: dedicated database for compliance and tracking
+        // Target systems: business databases
+        // Benefits: Clear separation, independent scaling, compliance isolation
+        return Flamingock.builder()
+            .setConnectionRepository(new MongoConnectionRepository(auditTemplate))
+            .addDependency("businessDatabase", businessTemplate)
+            .addMigrationClass(BusinessChangeUnits.class)
+            .build();
+    }
+}
+```
+
+### Pattern 3: Cloud Edition
+Managed audit store with enhanced capabilities:
+
+```java
+@Configuration
+public class FlamingockConfig {
+    
+    @Bean
+    public Flamingock flamingock(@Value("${flamingock.cloud.api-key}") String apiKey) {
+        // Audit store: Fully managed Flamingock Cloud backend
+        // Target systems: Your business systems
+        // Benefits: Zero ops, advanced features, enterprise governance
+        return Flamingock.builder()
+            .setConnectionRepository(new CloudConnectionRepository(apiKey))
+            .addMigrationClass(BusinessChangeUnits.class)
+            .build();
+    }
+}
+```
+
+---
+
+## Security and Access Control
+
+### Audit Store Security
+Protect audit integrity with proper access controls:
+
+```java
+// MongoDB with authentication and SSL
+MongoClientSettings settings = MongoClientSettings.builder()
+    .applyConnectionString(ConnectionString.create(
+        "mongodb://audit-user:secure-password@audit-cluster:27017/flamingock-audit" +
+        "?authSource=admin&ssl=true&replicaSet=audit-rs"))
+    .sslSettings(SslSettings.builder()
+        .enabled(true)
+        .invalidHostNameAllowed(false)
+        .build())
+    .build();
+```
+
+### Role-Based Access
+Define appropriate database roles:
+
+```javascript
+// MongoDB: Audit store user with minimal required permissions
+db.createUser({
+    user: "flamingock-audit",
+    pwd: "secure-password",
+    roles: [
+        {
+            role: "readWrite",
+            db: "flamingock-audit"
+        },
+        {
+            role: "dbAdmin",  // For index creation
+            db: "flamingock-audit"
+        }
+    ]
+});
+```
+
+### Network Security
+Isolate audit store network access:
+
+```yaml
+# Docker Compose example with network isolation
+services:
+  audit-database:
+    image: mongo:7
+    networks:
+      - audit-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: audit-admin
+      MONGO_INITDB_ROOT_PASSWORD: secure-password
+  
+  app:
+    networks:
+      - audit-network
+      - business-network
+```
+
+---
+
+## Performance and Scaling
+
+### Connection Pooling
+Optimize audit store connections:
+
+```java
+// MongoDB connection pool settings
+MongoClientSettings settings = MongoClientSettings.builder()
+    .applyToConnectionPoolSettings(builder ->
+        builder.maxSize(20)                    // Max connections
+               .minSize(5)                     // Min connections
+               .maxWaitTime(10, TimeUnit.SECONDS)
+               .maxConnectionIdleTime(30, TimeUnit.SECONDS))
+    .build();
+```
+
+### Write Performance Optimization
+Balance consistency with performance:
+
+```java
+// For high-throughput scenarios
+MongoConnectionRepository connectionRepository = 
+    new MongoConnectionRepository(mongoTemplate)
+        .withBatchSize(100)              // Batch audit writes
+        .withAsyncWrites(true)           // Non-blocking audit writes
+        .withRetryPolicy(RetryPolicy.exponentialBackoff());
+```
+
+### Monitoring and Metrics
+Track audit store health:
+
+```java
+@Component
+public class AuditStoreMonitoring {
+    
+    @EventListener
+    public void onAuditWrite(AuditWriteEvent event) {
+        // Track audit store performance metrics
+        meterRegistry.timer("flamingock.audit.write.duration")
+                    .record(event.getDuration());
+        
+        if (event.hasFailed()) {
+            meterRegistry.counter("flamingock.audit.write.failures")
+                        .increment();
+        }
+    }
+}
+```
+
+---
+
+## Backup and Recovery
+
+### Audit Store Backup Strategy
+Protect your compliance and execution history:
+
+```bash
+#!/bin/bash
+# MongoDB audit store backup script
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+mongodump --host audit-cluster:27017 \
+         --db flamingock-audit \
+         --out /backups/flamingock-audit-$TIMESTAMP \
+         --gzip
+
+# Retention: Keep 30 days of backups
+find /backups -name "flamingock-audit-*" -mtime +30 -exec rm -rf {} \;
+```
+
+### Disaster Recovery
+Restore audit store from backup:
+
+```bash
+#!/bin/bash
+# Restore audit store from backup
+BACKUP_DATE="20241201_143000"
+mongorestore --host audit-cluster:27017 \
+            --db flamingock-audit \
+            --gzip \
+            /backups/flamingock-audit-$BACKUP_DATE/flamingock-audit
+
+# Verify restoration
+mongo audit-cluster:27017/flamingock-audit --eval "db.changeLog.count()"
+```
+
+---
+
+## Troubleshooting Audit Store Issues
+
+### Common Configuration Problems
+
+#### Connection Issues
+```
+Error: Unable to connect to audit store
+Solution: Verify connection string, network access, and authentication credentials
+```
+
+#### Permission Errors
+```
+Error: Insufficient permissions to create collections/tables
+Solution: Grant necessary database permissions to Flamingock user
+```
+
+#### Index Creation Failures
+```
+Error: Failed to create audit store indexes
+Solution: Ensure dbAdmin privileges or create indexes manually
+```
+
+### Diagnostic Commands
+```bash
+# Verify audit store connectivity
+flamingock test-connection --audit-store
+
+# Check audit store schema
+flamingock audit verify-schema
+
+# Monitor audit store performance
+flamingock audit stats --since "1 hour ago"
+
+# Repair corrupted audit entries (use with caution)
+flamingock audit repair --dry-run
+```
+
+### Health Checks
+Implement audit store health monitoring:
+
+```java
+@Component
+public class AuditStoreHealthIndicator implements HealthIndicator {
+    
+    @Override
+    public Health health() {
+        try {
+            // Test audit store connectivity
+            auditStore.testConnection();
+            
+            // Verify recent write capability
+            auditStore.writeHealthCheck();
+            
+            return Health.up()
+                        .withDetail("audit-store", "Available")
+                        .build();
+        } catch (Exception e) {
+            return Health.down()
+                        .withDetail("audit-store", "Unavailable")
+                        .withException(e)
+                        .build();
+        }
+    }
+}
+```
+
+---
+
+**Key Takeaway**: Proper audit store configuration is critical for Flamingock's safety guarantees, compliance capabilities, and operational reliability. Choose the configuration pattern that best matches your architecture and operational requirements.
 
 ---
 
@@ -2113,171 +3081,299 @@ class StageCompletedListener : (IStageCompletedEvent) -> Unit {
 
 // File: flamingock-library-config/transactions
 
-# Transactions
+# Change-Level Transactionality
+*Smart defaults with expert control for enterprise safety*
 
-Flamingock supports transactional execution for change units **when the underlying system and configuration allow it**.
-
-In this context, **transactional execution means wrapping both the user-defined change and the corresponding audit record** in a single, atomic operation. This ensures that either both the change and the audit log are committed together, or neither are.
-
-Flamingock logs each change unit execution in an audit store. In transactional scenarios, the change and the audit record are persisted together.
-
-This page explains:
-- What Flamingock considers transactional
-- When transactions apply and when they don’t
-- How Flamingock handles failure and rollback when transactions aren’t available
+Flamingock provides intelligent transactionality control that balances enterprise safety with operational flexibility. Understanding when and how to use transactional vs non-transactional changes is key to building reliable distributed system evolution.
 
 ---
 
-## What Flamingock considers transactional
+## The Safety-First Approach
 
-A change unit is considered transactional when:
+### Default Behavior: Transactional = True
+Flamingock defaults to `transactional = true` for maximum safety:
+- **Change execution** runs within a database transaction
+- **Audit logging** happens in a separate transaction for architectural safety
+- **Automatic rollback** of the change transaction if execution fails
+- **Coordination mechanisms** ensure consistency between change and audit operations
 
-- The change targets a system that supports transactions (e.g., a modern database)
-- The Flamingock **Community Edition** driver in use supports transactions
-- The change unit is marked as `transactional = true` (default behavior)
-
-If these conditions are met, Flamingock wraps the execution of:
-- The `@Execution` method of the change unit
-- The audit log record creation
-
-...**within the same transaction**. If anything fails, the entire operation is rolled back and not recorded as executed.
-
----
-
-## When transactions don’t apply
-
-Transactions do **not** apply in the following scenarios:
-
-- The change targets a **non-transactional system** (e.g., Kafka, S3, external APIs)
-- The change targets a **different database** than the one used for Flamingock’s audit log
-- The change performs **operations that are not allowed in transactions** (e.g., DDL operations in Mysql or MongoDB)
-- The driver or underlying **database doesn’t support transactions**
-
-:::tip
-In all these cases, mark the change unit with `@ChangeUnit(transactional = false)` to disable transaction wrapping.
-<!--  To ensure Flamingock performs rollback properly, see the [Manual rollback](#manual-rollback) section. -->
-:::
-
-
-:::warning
-If a change unit is marked as transactional (`transactional = false` not applied) but targets a system or operation that doesn’t support transactions, Flamingock assumes the database rolled back the change, and skips the `@RollbackExecution` method in case of failure. This can result in partial updates and loss of consistency.
-:::
+### When You Need Non-Transactional
+Some operations cannot or should not run in transactions:
+- **DDL operations** (CREATE INDEX, ALTER TABLE) in many databases
+- **Large bulk operations** that would exceed transaction limits
+- **Cross-system changes** spanning multiple databases
+- **Non-transactional targets** (Kafka, S3, REST APIs)
 
 ---
 
-## Disabling transactions
+## Understanding Target System Types
 
-### Per change unit (recommended)
-
-Transactions are **enabled by default**. You can disable them explicitly for a given change unit:
+### Transactional Target Systems
+Systems that natively support ACID transactions:
 
 ```java
-@ChangeUnit(id = "provision-bucket", order = "004", author = "team-a", transactional = false)
-public class S3ProvisioningChange {
-
-  @Execution
-  public void execute(S3Client s3) {
-    s3.createBucket(...);
-  }
-
-  @RollbackExecution
-  public void rollback(S3Client s3) {
-    s3.deleteBucket(...);
-  }
+@TargetSystem("user-database")  // PostgreSQL, MySQL, MongoDB 4.0+
+@ChangeUnit(id = "update-user-status", order = "001", author = "platform-team")
+// transactional = true (default) - leverages database transaction capabilities
+public class UpdateUserStatus {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // This runs inside a transaction
+        // Automatic rollback on failure
+        database.getCollection("users")
+                .updateMany(eq("status", "pending"), set("status", "active"));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // For CLI undo operations - not called on failure (transaction handles it)
+        database.getCollection("users")
+                .updateMany(eq("status", "active"), set("status", "pending"));
+    }
 }
 ```
 
-This tells Flamingock:
-- Not to use a transaction for the execution and audit
-- To call `@RollbackExecution` if something goes wrong
-
-### Globally (less common)
-
-You can also disable transactions across all change units in the builder:
+### Non-Transactional Target Systems  
+Systems without native transaction support:
 
 ```java
-Flamingock
-  .builder()
-  .disableTransaction()
-  .build()
-  .run();
+@TargetSystem("event-stream")  // Kafka, S3, REST APIs
+@ChangeUnit(id = "publish-user-events", order = "002", author = "platform-team", 
+           transactional = false)  // Required for non-transactional systems
+public class PublishUserEvents {
+    
+    @Execution
+    public void execute(KafkaTemplate kafka) {
+        // No transaction possible - manual safety required
+        kafka.send("user-topic", "user-status-changed", eventData);
+    }
+    
+    @RollbackExecution
+    public void rollback(KafkaTemplate kafka) {
+        // WILL be called on failure - provides manual safety
+        // Publish compensating event or cleanup logic
+        kafka.send("user-topic", "user-status-rollback", compensationData);
+    }
+}
 ```
 
 ---
 
-## Manual rollback
+## When to Use Transactional = False
 
-When `transactional = false`, Flamingock cannot rely on the underlying system to roll back failed operations. Instead, it will attempt a **manual rollback** by calling your `@RollbackExecution` method if execution fails.
+Even in transactional systems, some operations require `transactional = false`:
 
-This fallback allows Flamingock to support non-transactional systems like:
+### DDL Operations Example
+```java
+@TargetSystem("user-database")  // MongoDB (transactional system)
+@ChangeUnit(id = "create-user-indexes", order = "003", author = "dba-team", 
+           transactional = false)  // DDL operations can't be in transactions
+public class CreateUserIndexes {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Index creation isn't transactional even in MongoDB
+        MongoCollection<Document> users = database.getCollection("users");
+        users.createIndex(ascending("email"));
+        users.createIndex(compound(ascending("status"), descending("createdAt")));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // WILL be called on failure - cleanup partial index creation
+        MongoCollection<Document> users = database.getCollection("users");
+        try {
+            users.dropIndex("email_1");
+            users.dropIndex("status_1_createdAt_-1");
+        } catch (Exception e) {
+            // Handle rollback errors appropriately
+        }
+    }
+}
+```
 
-- Message brokers (e.g., Kafka, RabbitMQ)
-- External APIs
-- Cloud infrastructure
-
-:::info
-You are responsible for writing reliable rollback logic. Flamingock cannot guarantee full recovery unless your rollback method safely restores the previous state.
-:::
+### Large Bulk Operations
+```java
+@TargetSystem("analytics-database")
+@ChangeUnit(id = "bulk-user-analysis", order = "004", author = "analytics-team",
+           transactional = false)  // Bulk operations for performance
+public class BulkUserAnalysis {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Process millions of records - transaction would timeout/lock
+        MongoCollection<Document> users = database.getCollection("users");
+        MongoCollection<Document> analytics = database.getCollection("user_analytics");
+        
+        // Batch processing for performance
+        users.find().forEach(user -> {
+            Document analyticsDoc = generateAnalytics(user);
+            analytics.insertOne(analyticsDoc);
+        });
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        // Clean up partial bulk operation
+        database.getCollection("user_analytics").deleteMany(new Document());
+    }
+}
+```
 
 ---
 
-## When to use `transactional = false`
+## Recovery Strategy Integration
 
-| Type of change                                                                      | `transactional = false`? |
-|-------------------------------------------------------------------------------------|:------------------------:|
-| Operation allowed in transaction - same DB as audit log (transactional)             |            ❌             |
-| Operation not allowed inside transaction (e.g., DDL operations in Mysql or MongoDB) |            ✅             |
-| ChangeUnit targets different DB than audit log                                      |            ✅             |
-| ChangeUnit targets non-database system or a non-transactional                       |            ✅             |
+### Transactional Changes + MANUAL_INTERVENTION
+```java
+@TargetSystem("financial-database")
+@ChangeUnit(id = "update-account-balances", order = "005", author = "finance-team")
+// transactional = true (default) + MANUAL_INTERVENTION (default)
+// = Maximum safety for critical data
+public class UpdateAccountBalances {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Critical financial data - automatic transaction rollback on failure
+        // Manual intervention required to investigate any issues
+    }
+}
+```
 
----
-
-## Flamingock Cloud Edition
-
-:::info
-Flamingock Cloud Edition will support transactions through its own internal coordination mechanism.  
-Documentation will be added when this feature is released.
-:::
-
----
-
-## Edition-specific transaction behavior
-The examples and recommendations on this page apply to Flamingock generally, but each Community Edition (CE) driver has its own transactional capabilities and constraints.
-
-Refer to the relevant edition page for detailed behavior, including:
-- Whether transactions are supported
-- How they are initiated and managed
-- Known limitations (e.g., unsupported operations)
-
-**Supported transactional CE editions:**
-- [flamingock-ce-mongodb-sync](../community-edition/ce-mongodb-java-driver.md)
-- [flamingock-ce-mongodb-springdata](../community-edition/ce-mongodb-springdata.md)
-- [flamingock-ce-dynamodb](../community-edition/ce-dynamodb.md)
-- [flamingock-ce-couchbase](../community-edition/ce-couchbase.md)
-
-:::info
-Cloud Edition transactional support will be explained in its own section once released.
-:::
+### Non-Transactional Changes + ALWAYS_RETRY
+```java
+@TargetSystem("cache-service")
+@ChangeUnit(id = "warm-user-cache", order = "006", author = "platform-team",
+           transactional = false)  // Cache operations aren't transactional
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)  // Safe to retry
+public class WarmUserCache {
+    
+    @Execution
+    public void execute(RedisTemplate redis) {
+        // Idempotent cache warming - safe to retry automatically
+        // No transaction needed, automatic retry on failure
+    }
+}
+```
 
 ---
 
-## :white_check_mark: Best practices
+## Configuration Options
 
--  **Use `transactional = false` for changes that cannot run in a transaction**
+### Per-Change Configuration (Recommended)
+```java
+// Explicit control per change
+@ChangeUnit(id = "my-change", transactional = false, /* other params */)
+```
 
-Some database drivers (e.g., MongoDB Sync) don’t support all operations inside transactions (such as DDL or index creation). In those cases, explicitly set `transactional = false` to avoid runtime errors.
+### Global Configuration (Less Common)
+```java
+// Disable transactions globally
+Flamingock.builder()
+    .disableTransaction()  // All changes become non-transactional
+    .build()
+```
 
-- **Always set `transactional = false` for non-database change units**
+---
 
-If your change interacts with a message queue, API, file system, or another external system, it should **not** be marked as transactional. Flamingock will treat it as non-transactional and enable manual rollback instead.
+## Decision Matrix
 
--  **Keep change unit scope narrow and isolated**
+| Change Type | Target System | Operation | Transactional Setting |
+|------------|---------------|-----------|---------------------|
+| Data updates | MongoDB, PostgreSQL | DML operations | `true` (default) |
+| Schema changes | MongoDB, PostgreSQL | DDL operations | `false` |
+| Cache updates | Redis, Memcached | Cache operations | `false` |
+| Event publishing | Kafka, RabbitMQ | Message sending | `false` |
+| API calls | REST services | HTTP requests | `false` |
+| File operations | File system, S3 | File manipulation | `false` |
+| Bulk processing | Any database | Large datasets | `false` |
 
-Avoid combining transactional and non-transactional logic within the same change unit. If part of the logic targets a non-transactional system, isolate that logic in a dedicated change unit and mark it appropriately.
+---
 
-- **Prefer automatic rollback (via transaction) when available**
+## Best Practices
 
-Transactional change units offer stronger guarantees. Use them when the system supports them to ensure atomic execution and safe rollback on failure.
+### **Always Provide @RollbackExecution**
+Regardless of transactionality, always implement rollback methods:
+
+```java
+@RollbackExecution
+public void rollback(/* dependencies */) {
+    // For transactional changes: Used in CLI undo operations
+    // For non-transactional changes: Used in automatic failure recovery
+}
+```
+
+### **Match Recovery Strategy to Operation**
+- **Transactional + Critical data** → MANUAL_INTERVENTION (default)
+- **Non-transactional + Idempotent** → ALWAYS_RETRY
+- **Non-transactional + Critical** → MANUAL_INTERVENTION
+
+### **Keep Changes Focused**
+Don't mix transactional and non-transactional operations in one change:
+
+```java
+// ❌ Bad - mixing concerns
+@ChangeUnit(id = "mixed-operations")
+public class MixedOperations {
+    @Execution
+    public void execute(MongoDatabase db, KafkaTemplate kafka) {
+        // Database update (transactional) + Kafka publish (non-transactional)
+    }
+}
+
+// ✅ Good - separate concerns
+@ChangeUnit(id = "database-update", transactional = true)
+@ChangeUnit(id = "kafka-publish", transactional = false)
+```
+
+### **Use Explicit Annotations**
+Be explicit about transactionality for clarity:
+
+```java
+// ✅ Clear intent
+@ChangeUnit(id = "user-update", transactional = true)   // Explicit
+@ChangeUnit(id = "index-creation", transactional = false) // Explicit
+```
+
+---
+
+## Troubleshooting
+
+### "Operation Not Supported In Transaction" Errors
+```java
+// Error: "Cannot create index in transaction"
+@ChangeUnit(transactional = true)  // ❌ Wrong
+public class CreateIndexes { }
+
+// Fix: Disable transactions for DDL
+@ChangeUnit(transactional = false)  // ✅ Correct
+public class CreateIndexes { }
+```
+
+### Partial Failure Recovery
+```java
+@ChangeUnit(transactional = false)
+public class NonTransactionalChange {
+    
+    @Execution
+    public void execute() {
+        // Step 1: succeeds
+        // Step 2: fails <- Partial completion
+        // @RollbackExecution will be called automatically
+    }
+    
+    @RollbackExecution  
+    public void rollback() {
+        // Must handle cleanup of Step 1
+        // Flamingock calls this automatically on failure
+    }
+}
+```
+
+---
+
+**Key Takeaway**: Flamingock's transactionality control provides enterprise safety through intelligent defaults while giving you expert control when needed. Use transactions when possible, disable them when necessary, and always provide rollback logic for governance and recovery.
 
 ---
 
@@ -3153,221 +4249,234 @@ import TabItem from '@theme/TabItem';
 
 # Get started
 
-This guide will walk you through the basics of using Flamingock with a step-by-step example, so you can get up and running quickly—whether you're using the **Cloud Edition** or one of the **Community Edition** variants.
+Let's walk through a simple scenario: evolving your inventory service with a few typical changes:
 
-## 1. Add Flamingock client dependency
+- Add a new column to a MySQL database  
+- Provision a new S3 bucket for product images  
+- Create a Kafka topic for stock updates  
 
-To begin, add the Flamingock client library to your project. You can use either:
+Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.  
+This guide walks you through the process in 5 simple steps.
 
-- Cloud Edition (compatible with all systems)
-- Community Edition (you need to choose the specific storage: MongoDB, DynamoDB, etc.)
+---
 
-Flamingock supports BOM (Bill of Materials), which simplifies dependency management by allowing you to declare the version once and avoid mismatches across related modules. This is especially useful when working with multiple Flamingock artifacts.
+## 1. Set up Flamingock in your project
 
-Example for **Cloud Edition**:
+Add Flamingock to your build:
+
 <Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        implementation(platform("io.flamingock:flamingock-cloud-bom:$flamingockVersion"))
-        implementation("io.flamingock:flamingock-cloud")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <dependency>
+  <TabItem value="gradle" label="Gradle" default>
+
+```kotlin
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community")
+
+annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-community-bom</artifactId>
+      <version>${flamingockVersion}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<dependency>
+  <groupId>io.flamingock</groupId>
+  <artifactId>flamingock-community</artifactId>
+</dependency>
+
+<!-- Annotation processor -->
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.11.0</version>
+      <configuration>
+        <annotationProcessorPaths>
+          <path>
             <groupId>io.flamingock</groupId>
-            <artifactId>flamingock-cloud</artifactId>
+            <artifactId>flamingock-processor</artifactId>
             <version>${flamingockVersion}</version>
-        </dependency>
-        ```
-    </TabItem>
+          </path>
+        </annotationProcessorPaths>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+  </TabItem>
 </Tabs>
 
-Example for **Community Edition** using MongoDB Sync4:
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-        implementation("io.flamingock:flamingock-ce-mongodb-sync")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <dependency>
-        <groupId>io.flamingock</groupId>
-        <artifactId>flamingock-ce-mongodb-sync</artifactId>
-        <version>${flamingockVersion}</version>
-        </dependency>
-        ```
-    </TabItem>
-</Tabs>
-
-
-All Community Editions:
-
-- **flamingock-ce-mongodb-sync**
-- **flamingock-ce-mongodb-springdata**
-- **flamingock-ce-mongodb-springdata-v3-legacy**
-- **flamingock-ce-dynamodb**
-- **flamingock-ce-couchbase**
-
-:::note
-For configuration details specific to the Community Edition, see the [community edition section](../community-edition/Introduction.md)
-:::
----
-
-## 2. Add Flamingock annotation processor
-
-Flamingock uses an annotation processor to scan and collect metadata from your changes—whether defined through code or templates.
-
-This is required at **build time** and supports:
-
-- **Code-based** with`@ChangeUnit` 
-- **Template-based** (declarative YAML)
-
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.11.0</version>
-              <configuration>
-                <annotationProcessorPaths>
-                  <path>
-                    <groupId>io.flamingock</groupId>
-                    <artifactId>flamingock-processor</artifactId>
-                    <version>${flamingockVersion}</version>
-                  </path>
-                </annotationProcessorPaths>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-        ```
-    </TabItem>
-</Tabs>
+For more about editions, see [Community Edition](../community-edition/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
 ---
 
-## 3. Define a ChangeUnit
+## 2. Define your first ChangeUnits
 
-A **ChangeUnit** is a unit of logic that Flamingock will execute during your application's startup.
+Each ChangeUnit represents a single change.  
+For our example, we'll define three:
 
-Changes can be defined in a **code-based** or **template-based** style, depending on your preferred approach.
-For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → ChangeUnits](../overview/core-concepts.md#-changeunits) section.
+- **MySQL**: Add a column `category` to products
+- **S3**: Create a `product-images` bucket  
+- **Kafka**: Create a `stock-updates` topic
 
- 
+ChangeUnits can be:
+- **Code-based**: Java classes with annotations
+- **Template-based**: YAML files using reusable templates
+
 <Tabs groupId="change">
-    <TabItem value="code_based" label="Code Based" default>
-```java
-@Change(id = "create-table", order = "1", author = "antonio", transactional = false)
-public class CreateTableChange {
-    @Execution
-    public void execute(Connection connection) throws SQLException {
-        connection.createStatement().executeUpdate("CREATE TABLE clients (id INT, name VARCHAR(255))");
-    }
+  <TabItem value="template_based" label="Template based" default>
 
-    @RollbackExecution
-    public void rollback(Connection connection) throws SQLException {
-        connection.createStatement().executeUpdate("DROP TABLE clients");
-    }
-}
-```
-    </TabItem>
-    <TabItem value="template_based" label="Template Based">
-        ```yaml
-            id: create-table
-            author: antonio
-            order: 1
-            transactional: false #DDL are not transactional in Mysql, so it won't be rolled back
-            template: sql-template
-            templateConfiguration:
-                executionSql: CREATE TABLE clients (id INT, name VARCHAR(255))
-                rollbackSql: DROP TABLE IF EXISTS clients
-        ```
-    </TabItem>
-</Tabs>
-
-:::info
-You can combine both styles in the same project. See our [Examples](../resources/examples.md)  to see these in action.
-:::
-
----
-
-## 4. Configure the Setup
-
-Flamingock organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
-
-Configure Flamingock using the `@EnableFlamingock` annotation on any class in your application:
-
-Here’s a basic structure:
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")
-    }
-)
-public class App {
-}
+```yaml
+id: add-product-category
+author: team
+order: "001"
+targetSystem: mysql-inventory
+template: sql-template
+templateConfiguration:
+  executionSql: |
+    ALTER TABLE products ADD COLUMN category VARCHAR(255)
+  rollbackSql: |
+    ALTER TABLE products DROP COLUMN category
 ```
 
-### Stage configuration:
-- `location`: Location where changes are found (mandatory)
-  - **Package**: `"com.yourcompany.changes"` - scans for code and templates
-  - **Resource directory**: `"flamingock/templates"` - scans for templates only(in the resources folder by default)
-- `name`: (Optional) Stage name - auto-derived from location if not provided
-
-:::tip Default approach:
-Most applications use a single stage: `@Stage(location = "com.yourcompany.changes")`. The name is auto-derived ("changes") and this is the recommended default setup.
-:::
-
-:::info Advanced options:
-For advance options, visit our [stage section](../flamingock-library-config/setup-and-stages.md)
-:::
-
----
-
-## 5. Configure Flamingock
-
-Before running your application, make sure Flamingock is properly configured, depending on the [edition](../overview/Editions.md) and setup you are using:
-
-- **Cloud Edition**: Set your API token, service name, and environment.
-- **Community Edition**: Provide connection details for your storage system (e.g., connection for MongoDB, DynamoDB, CouchBase, etc.).
-
-This configuration is applied through the Flamingock builder.
+  </TabItem>
+  <TabItem value="code_based" label="Code based">
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    FlamingockStandalone
-      .setApiToken("your-flamingock-api-token") 
-      .setEnvironment("dev")
-      .setService("inventory-service")
-      .build()
-      .run();
+@TargetSystem("aws-s3")
+@ChangeUnit(id = "create-s3-bucket", order = "002", author = "team")
+public class _002_CreateS3Bucket {
+
+  @Execution
+  public void execute(S3Client s3Client) {
+    s3Client.createBucket(CreateBucketRequest.builder()
+        .bucket("product-images")
+        .createBucketConfiguration(
+            CreateBucketConfiguration.builder()
+                .locationConstraint(BucketLocationConstraint.EU_WEST_1)
+                .build())
+        .build());
+  }
+
+  @RollbackExecution
+  public void rollback(S3Client s3Client) {
+    s3Client.deleteBucket(DeleteBucketRequest.builder()
+        .bucket("product-images")
+        .build());
   }
 }
 ```
 
-:::info 
-If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
-:::
+  </TabItem>
+</Tabs>
+
+For more details, see [Concepts → ChangeUnits](../overview/core-concepts.md).
+
 ---
 
-## 6. Compile the project
+## 3. Create target systems
 
-Now that you’ve defined your changes and configured Flamingock, it’s time to compile your project.
+Target systems represent the external systems Flamingock will apply your changes to.  
+They are configured in the builder and shared across ChangeUnits.
 
-If everything is correctly set up, Flamingock’s annotation processor will kick in and you’ll see diagnostic messages during compilation:
+For our example:
+- A MySQL database (`mysql-inventory`)
+- An S3 bucket service (`aws-s3`)  
+- A Kafka cluster (`kafka`)
+
+```java
+SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3");
+NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka");
+```
+
+See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.
+
+---
+
+## 4. Configure stages
+
+Flamingock organizes your changes in stages.  
+Most applications only need one stage:
+
+```java
+@EnableFlamingock(
+  stages = {
+    @Stage(location = "com.company.inventory.changes")
+  }
+)
+public class App {}
+```
+
+- **location**: Where Flamingock should look for changes (package or resources)
+- **name**: Optional — defaults to the location name
+
+See [Stages](../flamingock-library-config/setup-and-stages.md) for more details and advanced setups.
+
+---
+
+## 5. Configure Flamingock runtime
+
+Finally, configure Flamingock before running your application.
+
+- **Community Edition**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder
+
+- **Cloud Edition** (coming soon): Provide your API token, service name, and environment
+
+<Tabs groupId="edition">
+  <TabItem value="community" label="Community" default>
+
+```java
+FlamingockStandalone
+  .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+  .addTargetSystems(sql, s3, kafka)
+  .build()
+  .run();
+```
+
+  </TabItem>
+  <TabItem value="cloud" label="Cloud (coming soon)">
+
+```java
+FlamingockStandalone
+  .setApiToken("your-flamingock-api-token") 
+  .setEnvironment("dev")
+  .setService("inventory-service")
+  .addTargetSystems(sql, s3, kafka)
+  .build()
+  .run();
+```
+
+  </TabItem>
+</Tabs>
+
+---
+
+## 6. Run your application
+
+When your service starts, Flamingock automatically:
+
+1. Discovers your ChangeUnits
+2. Checks pending changes  
+3. Executes them safely in order
+4. Records everything in the audit store
+
+**If Flamingock cannot guarantee a safe outcome, it stops and alerts you. Safety first.**
+
+### Example output
 
 <details>
 <summary>Click to see the expected logs</summary>
@@ -3406,49 +4515,13 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </Tabs>
 </details>
 
-:::note 
-The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
-:::
-
-These logs confirm that:
-- Flamingock found your pipeline
-- Template and code-based changes were processed
-- Metadata was generated for execution
-
-:::tip
-If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your @Flamingock annotation is properly configured.
-:::
-
 ---
 
-## 7. Run your Application — Flamingock handles the changes!
-Once your project is compiled and Flamingock is configured, you're ready to run the application.
+## Next steps
 
-When your application starts, Flamingock will be executed as part of the startup process:
-- Load the setup configuration (actually the metadata generated from the annotation configuration during the compilation)
-- Evaluate pending changes
-- Execute the changes
-- Audit the execution status
-
-### Example Output
-
-You should see logs like the following:
-```bash
-[main] INFO io.flamingock.core.runner.PipelineRunner - Starting Flamingock migration
-Stage: mysql_stage
-  1) id: create-table
-     Started              ✅ - OK
-     Executed             ✅ - OK
-     Audited[execution]   ✅ - OK
-[main] INFO io.flamingock.core.runner.PipelineRunner - Finished Flamingock process successfully
-
-```
----
-## Next Steps
-
-- Dive into [Spring Boot Integration](../frameworks/springboot-integration/introduction.md)
-- Learn more about [Configuration Options](../flamingock-library-config/introduction.md)
-- Understand [Rollback & Auditing](../overview/core-concepts.md#-rollbacks)
+- [Spring Boot integration](../frameworks/springboot-integration/introduction.md)
+- [Configuration options](../flamingock-library-config/setup-and-stages.md)
+- [Recovery and safety](../recovery-and-safety/recovery-strategies.md)
 
 ---
 
@@ -3588,82 +4661,93 @@ This ensures that changes in the Database, messaging, and APIs exposed in the ga
 
 // File: overview/Introduction
 
-# Introducing Flamingock
-*The evolution of Mongock — reimagined for the modern enterprise*
+![Flamingock logo](../../static/img/Flamingock-04.png)  
+*The safety-first platform for distributed system evolution*
 
-![Flamingock logo](../../static/img/Flamingock-04.png)
+---
 
-Managing change across today’s distributed systems is complex — from database migrations to API evolution and SaaS configuration updates.
+## The Flamingock Guarantee
+**"Your system will always be left in a known, auditable, and consistent state — no matter what happens."**
 
-**Flamingock** provides a unified, auditable, and version-controlled approach to managing these changes with confidence.
+Managing change across an application and the distributed systems it interacts with is inherently complex — database schema updates, message broker configuration, API evolution, cloud service provisioning.  
+Traditional tools optimize for the *happy path*, but real-world deployments face partial failures, network issues, and uncertain states.
 
-Built on the principles of **Change-as-Code**, Flamingock enables your teams to:
+**Flamingock** is built for this reality. It provides safety-first distributed system evolution with **complete auditability** and **configurable recovery strategies**, ensuring that change is never left in doubt.
 
-- Version and document system changes  
-- Maintain compliance with full traceability  
-- Accelerate deployments with safe, coordinated rollouts
-
-Flamingock ensures your systems changes evolve reliably — at scale.
-
-**Ready to modernize your change management?**  
-[Get started](../getting-started/get-started.md) and see how Flamingock can power your release lifecycle.
-
-
-![Flamingock gif](../../static/img/Flamingock%20process%20animation%20(1).gif)
+---
 
 ## Why Flamingock?
-Our objective is to reduce software release overhead by providing a tool that can be enable tracking configuration changes  programatically (change-as-code), with the language of choice of the Application developer.  This reduces the dependency on infrastructure engineers to maintain configuration changes that are led/introduced by the Application developer, simplifying the release process, reducing risk during deployments, and reducing time to market and skills required for developing and maintaining Configuration changes.
 
-With multiple deployment model offerings, Flamingock provides helps teams by:
+### Safety and auditability by design
+- **Safe by default**: When Flamingock cannot guarantee success, it stops and alerts instead of risking corruption.  
+- **Built-in recovery mechanisms**: By default Flamingock retries safely where possible, and users can configure recovery strategies to minimize manual intervention.  
+- **Complete audit trail**: Every execution, success, and failure is tracked for compliance and troubleshooting.  
+- **Deterministic execution**: ChangeUnits run once and only once, in a controlled order.  
 
-**Centralising services, systems & environment changes**
-Version and ship your system changes with your application and store them centrally. Flamingock allows operations to manage your changes (Execution, Rollback, Undo, Audit, etc.)
+### Designed for distributed reality
+- **Non-transactional systems supported**: Kafka, S3, REST APIs, and more get first-class safety treatment.  
+- **Network-resilient**: Handles interruptions and partial failures with recovery strategies.  
+- **Cluster-safe**: Prevents race conditions in distributed or containerized deployments.  
 
-**Reduce team & skills dependencies**
-Empower Developers to have full control over the Application, external configuration, and database changes. Allow to manage stateful and stateless changes in distributed systems in a safe and reliable manner.
+### Organizational benefits
+- **Reduce risk**: Eliminate silent corruption and ensure compliance.  
+- **Increase velocity**: Developers can evolve their systems independently, without waiting on infrastructure teams.  
+- **Enable governance**: Clear ownership, auditability, and rollback capabilities across all environments.  
 
-**Achieve Configuration automation of all Systems**
-Synchronise system dependency changes with your Application changes, as they ship together. The deployment of the Application will execute a System changes to the required state, achieving immutable deployments in any environment.
+---
 
+## Use Cases
 
-## Some example use cases
+Flamingock enables controlled, auditable evolution across your technology stack:
 
-Some examples of these use cases (but not limited to) are:
+**Data Systems**
+- Database schema changes (SQL/NoSQL)  
+- Index creation and optimization  
+- Data migrations and transformations  
 
-- Persistent storage management
-- Manage deployment dependencies
-- Configuration of external cloud SaaS providers
-- Database migrations - supported by our legacy Mongock engine, but extended to any Database (NoSQL and SQL).
-- API Gateway configurations
-- Message broker configurations + *many more!*
+**Infrastructure & APIs**  
+- Message broker topic and schema management  
+- API gateway and routing rules  
+- Cloud service configuration  
 
-Our tool offers managing configuration changes to any system/component in a safe and audited manner within the Application context.
+**Application Configuration**  
+- Feature flag rollouts  
+- SaaS integrations and external service setup  
+- Security policies and permissions  
 
+**Distributed Coordination**  
+- Multi-service configuration synchronization  
+- Cross-system dependency management  
 
-#### What is Flamingock not suitable for?
+**...and other systems requiring safe, auditable evolution**
 
-We are not an Infrastructure provider (neither intend to be). We believe that there are multiple good widely adopted solutions within the infrastrucuture space. 
+---
 
-We provide Application developers the ability to configure Application domain-specific resources within those infrastructure components. This enables following a Domain-driven ownership for Application developers, provisioning them with self-serve capabilities and autonomy for configuring their resources within the boundaries of an existing infrastructure.
+## What Flamingock Is Not
+- **Not Infrastructure-as-Code**: We evolve systems already provisioned by your infrastructure.  
+- **Not generic batch processing**: Optimized for deterministic, auditable changes — not arbitrary long-running jobs.  
+- **Not a CI/CD replacement**: Complements your pipeline but focuses exclusively on safe system evolution.  
 
-# How Flamingock works?
+---
 
-**⚙️ Code It. Deploy It. Forget It.**  
+## How Flamingock Works
 
-With Flamingock, developers define any component changes (database, system changes, SaaS, etc. )  **directly in application code** using familiar programming constructs such as classes and annotations, or template-based formats like YAML. The Flamingock client library then:  
+### Change-as-code architecture
+Developers define **ChangeUnits** in code or templates. Each ChangeUnit is versioned, auditable, and executed once per system.  
 
-- **Automatically executes** changes during application startup  
-- **Generates audit trails** for full transparency and compliance  
-- **Keeps changes version-locked** to your application releases  
+### Execution lifecycle
+1. **Discovery** – Flamingock scans your app for ChangeUnits  
+2. **Validation** – Prevents duplicate execution using the audit store  
+3. **Execution** – Runs the change with the configured recovery strategy  
+4. **Audit** – Records all outcomes for visibility and compliance  
+5. **Recovery** – Provides CLI (and Cloud UI) tools for resolution if needed  
 
-**Benefits:**  
-- **No more out-of-band scripts** - Changes travel with your app code  
-- **Cluster-safe execution** - Designed for distributed systems from the ground up  
-- **Native version control** - Every change is code-reviewed alongside feature development  
+---
 
-*Built for the modern deployment pipeline where infrastructure should be as agile as your code.*  
-
-👉 **Dive deeper:** | [How it works?](../getting-started/how-it-works.md)  | [Technical Overview](technical-overview.md) | [Quickstart Guide](../getting-started/get-started.md)
+## Next Steps
+- [Quickstart Guide](../getting-started/get-started.md)  
+- [How it Works](../getting-started/how-it-works.md)  
+- [Technical Overview](technical-overview.md)
 
 ---
 
@@ -4030,156 +5114,217 @@ With Flamingock, you can take advantage of the following features:
 
 // File: overview/Editions
 
-Flamingock offers a range of backend providers and deployment models, allowing users to choose from the following: 
+# Flamingock Editions
+*Progressive investment path for enterprise distributed system evolution*
+
+Flamingock provides a strategic investment path from open-source foundation to enterprise platform, ensuring you can start with essential safety guarantees and scale to full organizational transformation.
 
 ![](../../static/img/Diagrams-Editions.drawio.png)
 
-## **🔹 Community Edition (Open Source):**
-The Community Edition is a free, open-source version of Flamingock that provides core functionality to execute changes in your self-provided database.  
-The current compatible databases for this version are: MongoDB, DynamoDB, CosmosDB or Couchbase. 
+## **🔹 Community Edition (Open Source)**
+*Complete safety foundation for distributed system evolution*
 
-Key points around this edition:
-- Offers a similar functionality as our legacy Mongock version + expansion to control changes of any component.
-- You provision your own database (compatible with MongoDB, DynamoDB, CosmosDB or Couchbase) - compatible to extension with additional drivers.
-- Storage of local metadata for execution tracking (no centralised feature)
-- Focuses on core functionality (does not include the advanced capabilities provided in the Cloud Edition).
+**The Foundation**: All core safety guarantees and audit capabilities that make Flamingock unique.
 
-Use this edition if you want a lightweight option you can run on your own infrastructure, and you don’t require cross-service auditability, advanced templates or features, or advanced observability (such as dashboards, metrics, environment and user management)
+### What You Get:
+- **Safety-First Architecture**: MANUAL_INTERVENTION default strategy prevents silent data corruption
+- **Complete Audit Trail**: Full execution history, compliance reporting, issue tracking
+- **Intelligent Recovery**: Configurable strategies (MANUAL_INTERVENTION, ALWAYS_RETRY)
+- **Enterprise-Grade CLI**: Issue resolution, audit management, rollback operations
+- **Universal Target Support**: Databases, APIs, message queues, cloud services, SaaS platforms
+- **Distributed Coordination**: Safe execution across clustered deployments
+
+### Infrastructure:
+- **Your Database**: MongoDB, DynamoDB, CosmosDB, or Couchbase as audit store
+- **Self-Managed**: Full control over your audit and execution infrastructure
+- **Extensible**: Driver architecture supports additional database integrations
+
+### Ideal For:
+- Teams requiring enterprise-grade safety without managed infrastructure
+- Organizations with strong operational capabilities
+- Development teams seeking autonomous change management
+- Projects requiring complete audit trails and governance
 
 
-## **☁️ Flamingock Cloud edition (Coming Soon!):**
+## **☁️ Flamingock Cloud Edition**
+*Enterprise platform for organizational transformation*
 
-Flamingock's managed SaaS platform with a full-feaure offering for production-grade environments. In this edition, Flamingock offers:
-- All Comunity edition features, plus
-- Full access to teamplates and extentions for accelerating integrations
-- Centralised auditing system to showcase Changes across all services and environments
-- Enables RBAC and enterprise-ready governance 
-- Multienvironment management
-- A centralised dashboard 
+**Launch Timeline**: Early 2025 | **Beta Program**: Now accepting participants
 
+### Three-Tier Value Proposition
 
-Use this edition if you want a scalable, collaborative, and secure environment to manage change across multiple environments, services and teams - with full visibility and governance. 
-:::info
-Coming soon! Flamingock Cloud Edition is currently under development.
+#### **Foundation** (All Community Edition capabilities included)
+- Complete safety guarantees and audit capabilities
+- All recovery strategies and CLI operations
+- Universal target system support with distributed coordination
 
-If you'd like to participate in our user testing round, please contact support@flamingock.io 
+#### **Enhanced Execution** (Same configuration, better outcomes)
+- **Intelligent Automation**: Advanced reconciliation and marker mechanisms
+- **Enhanced Recovery**: Automatic issue resolution for operations that would require manual intervention in Community Edition
+- **Smart Retry Logic**: Sophisticated backoff and circuit breaker patterns
+- **Cross-System Coordination**: Advanced transaction protocols for distributed changes
+
+#### **Enterprise Platform Features**
+- **Real-Time Dashboards**: Executive visibility, team metrics, compliance reporting
+- **Advanced RBAC**: Team-based access control, approval workflows, audit delegation
+- **Multi-Environment Management**: Coordinated rollouts, environment promotion, configuration drift detection  
+- **Enterprise Integrations**: SSO, LDAP, external audit systems, notification platforms
+- **SLA Guarantees**: Committed uptime, support response times, data durability
+- **Compliance Automation**: Regulatory reporting, policy enforcement, audit trail management
+
+### **Strategic Investment Path**
+**"Same safety foundations → Enhanced automatic outcomes → Enterprise platform capabilities"**
+
+Start with Community Edition's complete safety guarantees, then enhance with Cloud's automatic resolution and enterprise features. Your configurations and change definitions remain unchanged - Cloud Edition amplifies their effectiveness.
+
+### **Join the Beta Program**
+:::tip **Early Access Available**
+Flamingock Cloud Edition beta program is accepting enterprise participants.
+
+**What you get:**
+- Early access to enterprise platform features
+- Direct influence on product roadmap and prioritization  
+- Dedicated technical support and onboarding assistance
+- Grandfathered pricing for early adopters
+
+**Contact**: support@flamingock.io with "Cloud Beta Program" in the subject line
 :::
 
 
-## **💎 Flamingock self-hosted edition (Coming Soon!):**
-Provides all the offered functionality in Flamingock Cloud, deployed in your infrastructure. 
+## **💎 Flamingock Self-Hosted Edition**
+*Cloud platform capabilities in your infrastructure*
 
-:::info
-Flamingock self-hosted edition is not released yet. 
+**Status**: Available by request for enterprise customers
 
-Interested? If you require this edition to be available for your enterprise, please contact support@flamingock.io 
+### What You Get:
+All Flamingock Cloud Edition capabilities deployed and managed within your infrastructure:
+
+- **Full Cloud Platform Features**: Dashboards, RBAC, multi-environment management
+- **Your Infrastructure**: Complete data sovereignty and infrastructure control  
+- **Enterprise Security**: Meets stringent compliance requirements for regulated industries
+- **Custom Integrations**: Tailored integrations with your existing enterprise systems
+
+### Ideal For:
+- **Regulated Industries**: Financial services, healthcare, government requiring data sovereignty
+- **Enterprise Security**: Organizations with strict infrastructure and data policies
+- **Custom Requirements**: Teams needing specialized integrations or compliance features
+- **Hybrid Architectures**: Organizations requiring both cloud and on-premises capabilities
+
+:::info **Enterprise Availability**
+Flamingock Self-Hosted Edition is available by request for qualifying enterprise customers.
+
+**Requirements**: Enterprise contract, dedicated technical onboarding, infrastructure requirements assessment
+
+**Contact**: support@flamingock.io with "Self-Hosted Edition" in the subject line
 :::
+
+---
+
+## **Choosing Your Edition**
+
+| Need | Community Edition | Cloud Edition | Self-Hosted |
+|------|------------------|---------------|-------------|
+| **Enterprise Safety** | ✅ Complete | ✅ Enhanced | ✅ Enhanced |
+| **Audit & Compliance** | ✅ Full capabilities | ✅ Advanced automation | ✅ Advanced + sovereignty |
+| **Team Collaboration** | CLI-based | ✅ Platform features | ✅ Platform features |
+| **Multi-Environment** | Manual coordination | ✅ Automated | ✅ Automated |
+| **Infrastructure Management** | Self-managed | Fully managed | Self-managed |
+| **Data Sovereignty** | ✅ Your control | Flamingock managed | ✅ Your control |
+
+**Start your journey**: [Community Edition](../getting-started/get-started.md) → [Cloud Beta Program](#join-the-beta-program) → [Enterprise Self-Hosted](#flamingock-self-hosted-edition)
 
 ---
 
 // File: overview/core-concepts
 
-# Core Concepts
+# Core concepts
 
-### 📦 ChangeUnits
-**ChangeUnits** are the fundamental structure that hold your change logic. They are executed atomically and versioned for traceability. They represent any kind of change applied to a system, such as configuration modifications, API calls, data migration, etc.
+### ChangeUnits
+**ChangeUnits** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
 
 Each ChangeUnit includes:
-- Unique ID and metadata
-- Execution logic (e.g., Java, YAML, or no-code template)
-- Rollback capability
+- **Unique identity**: ID, order, and metadata for tracking
+- **Target system**: Where the changes is applied to
+- **Execution logic**: The actual change implementation
+- **Rollback capability**: Compensation logic for governance and undo operations
+- **Recovery strategy**: Configurable behavior for handling failures
+
+ChangeUnits can be implemented in two forms:
+- **Code-based**: Java classes with annotations that contain the change logic
+- **Template-based**: Declarative low-code approach using YAML configurations
 
 For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
 
-### 📋 Auditing
-Flamingock includes built-in **auditing** for full traceability of executed changes.
-- Stores metadata about each executed ChangeUnit: timestamp, status, user, and system
-- Useful for compliance, debugging, and visibility
-- Can be extended to external observability platforms (e.g., ELK, Prometheus, Datadog)
+---
 
-### 🗄️ Audit store vs. Target system
+### Templates
+Templates provide a reusable layer on top of ChangeUnits for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
 
-- **Audit store**: The dedicated location where Flamingock records metadata about change executions. Its sole purpose is to track which ChangeUnits ran, when, and with what outcome—ensuring idempotency, rollbacks, and distributed coordination. This might be a user-provided database (Community Edition) or Flamingock’s cloud backend (Cloud Edition).
+With templates, you create multiple ChangeUnits using a declarative, low-code approach. Each ChangeUnit uses a template and passes its specific configuration. For example, an SQL template receives the SQL statement as configuration, executes it, and handles errors consistently.
 
-- **Target system**: The external resource that ChangeUnits operate upon (e.g., a database schema, S3 bucket, Kafka topic, or configuration service). Flamingock’s ChangeUnits apply changes to these systems in an ordered, auditable fashion. When a database serves as both audit store and target system, Flamingock can wrap change and audit insert in one transaction; otherwise, auditing and execution occur separately.
+This approach is particularly useful for:
+- Standardizing common operations across your codebase
+- Reducing boilerplate code
+- Enabling non-developers to define changes through configuration
 
-:::tip
-To better understand the differences between Audit Store and Target System, see the [Audit store vs target system section](../overview/audit-store-vs-target-system.md)
-:::
+For more information about templates, see the [Templates](../templates/templates-introduction.md) section.
 
 ---
 
-### 🏃 Runner
-The **Runner** is the heart of Flamingock’s execution lifecycle. It’s responsible for:
-- Scanning, orchestrating, and executing ChangeUnits at application startup (or on-demand)
-- Coordinating interactions with the Audit Store (via its Driver)
+## Recovery strategies
 
-It can be embedded in your application or run as an independent service in distributed environments.
+Recovery strategies define how Flamingock responds when a ChangeUnit fails during execution. They determine whether the system should stop and wait for manual intervention or automatically retry the operation.
 
-### 🔌 Driver
-A **Driver** acts as an adapter between Flamingock and the Audit Store. It manages all low-level interactions required for:
-- Writing audit-log entries when a ChangeUnit runs
-- Acquiring and releasing distributed locks
-- Querying execution history to prevent duplicate runs
+Flamingock provides two main strategies:
+- **Manual intervention** (default): Stops execution and requires human review when failures occur
+- **Always retry**: Automatically retries the change on the next execution attempt
 
-Depending on the edition, the Driver may connect to a user-provided database (CE) or Flamingock’s cloud backend (Cloud Edition). It does *not* perform any Target System changes—that responsibility lies fully with the ChangeUnit code.
+The choice of strategy depends on whether your changes are idempotent and how critical they are to your system's integrity.
+
+For detailed configuration and implementation, see the [Recovery configuration](../flamingock-library-config/recovery-configuration.md) section.
 
 ---
 
-### 🔁 Transaction handling
-Flamingock supports **transactional consistency** where possible:
+## Audit store
+The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which ChangeUnits have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
 
-- **When the target System is also a database supporting ACID transactions** (like MongoDB), Flamingock ensures that a ChangeUnit’s operation on the target System and its audit-log insert into the Audit Store commit together as a single transaction.
-- **When the target System does not support transactions** (e.g., HTTP APIs, file systems, or message brokers), Flamingock uses compensating actions (rollbacks) and auditing to maintain integrity.
+## Target system  
+The **target system** is where your actual business changes are applied. These are the systems your ChangeUnits modify - databases, message queues, APIs, configuration services, etc. Each ChangeUnit declares which target system it operates on.
 
-For a deeper dive around Transactions, see the [Transactions](../flamingock-library-config/transactions.md) section.
-
-### 🔙 Rollbacks
-Each ChangeUnit can define rollback logic:
-- For safe reversion when operating against non-transactional systems
-- For reverting to a previous version of the software ("Undo"), invoked via the CLI
+For more details about how these systems work together, see the [Audit store vs target system](../overview/audit-store-vs-target-system.md) section.
 
 ---
 
-### 🧩 Templates
-Flamingock introduces **change templates** for low-code use cases. These are YAML or JSON-based definitions that let teams describe changes declaratively—especially useful for configuration changes and SaaS integrations.
+## Transaction handling
+Flamingock adapts its behavior based on the transactional capabilities of your target systems:
 
-Templates are:
-- Extensible and version-controlled
-- Friendly to non-developer users
+### Transactional target systems
+Systems like PostgreSQL, MySQL, or MongoDB 4.0+ that support ACID transactions. When working with these systems, Flamingock can leverage native transaction support to ensure atomicity of changes. If a failure occurs mid-execution, the native rollback mechanism ensures no partial changes are left in the system.
 
-For a deeper dive around Templates, see the [Templates](../templates/templates-introduction.md) section.
+### Non-transactional target systems
+Systems like Kafka, S3, REST APIs, or file systems that don't support transactions. For these systems, Flamingock relies on explicit rollback methods and careful change design to maintain consistency. Recovery strategies become particularly important for handling failures in non-transactional contexts.
 
----
-
-### 🔄 Workflows
-Workflows group and coordinate multiple ChangeUnits into stages. In future releases, they will support:
-- **Sequential** or **parallel** execution
-- **Conditional branching** (e.g., only run if a previous unit succeeded)
-
-This will enable advanced orchestration logic during deployments or upgrades.
-
-For a deeper dive around Workflows, see the [Pipelines and stages](../flamingock-library-config/setup-and-stages.md) section.
+For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
 
 ---
 
-### 🔒 Distributed Locking
-To ensure safe execution in multi-instance deployments, Flamingock uses a distributed lock mechanism. This guarantees:
-- Avoidance of duplicate execution or race conditions
-- Synchronisation between multiple runners
-- Coordination across microservices in distributed environments
+## Stages
+Stages organize your changes into logical groups within Flamingock's execution pipeline. By default, you work with a single stage that contains all your changes, ensuring they execute sequentially in a deterministic order.
 
-It supports multiple lock implementations (e.g., MongoDB, Redis, DynamoDB).
+Key characteristics:
+- Changes within a stage execute sequentially with guaranteed order
+- Most applications only need a single stage
+- Multiple stages can be used for modular architectures, but execution order between stages is not guaranteed
+- Each stage defines where to find its changes (package or directory location)
 
-
-For a deeper dive around distributed locks, see the [Distributed locking](../flamingock-library-config/lock-configuration.md) section.
+For detailed information about stages and advanced configurations, see the [Setup and stages](../flamingock-library-config/setup-and-stages.md) section.
 
 ---
 
-### 📣 Events
-Flamingock is able to notify your Application around the execution status of changes via Events.
+## Events
+Flamingock can notify your application about the execution status of changes through events. This enables integration with monitoring systems, custom logging, or triggering downstream processes based on change completion.
 
-For a deeper dive around Events, see the [Events](../flamingock-library-config/events.md) section.
+For more information about events, see the [Events](../flamingock-library-config/events.md) section.
 
 ---
 
@@ -4230,112 +5375,1499 @@ On the other hand, if any ChangeUnit fails, the runner stops the migration at th
 
 // File: overview/audit-store-vs-target-system
 
-# Audit Store vs. Target System
+# Target Systems vs Audit Store
+*Understanding Flamingock's dual-system design for enterprise safety*
 
-In Flamingock, it is important to distinguish between two very different roles that external systems can play:
+Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
 
-## Audit Store
+---
 
-The audit store is the dedicated persistence layer where Flamingock records metadata about each change unit’s execution. Its sole purpose is to capture, in an append-only log, exactly which change units ran, when they ran, who initiated them, and whether they succeeded or failed (along with any error details). This information is used to:
+## The Dual-System Architecture
 
-- **Prevent duplicate applications**  
-  By checking the audit store before running a change unit, Flamingock guarantees each change is executed at most once.
+### Target Systems: Where Changes Are Applied
+**Target Systems** are your business systems where actual changes happen:
 
-- **Track change history**  
-  You can query the audit store to see all previously applied changes, filter by author or date range, and generate reports.
+- **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
+- **Purpose**: Store and process your business data and configurations
+- **Modified by**: Your business logic through ChangeUnits
+- **Configuration**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) for technical setup
 
-- **Coordinate distributed execution**  
-  In a clustered environment, Flamingock nodes consult the audit store to decide which change units still need to run—and to know which locks are held.
+### Audit Store: Where Execution Is Tracked  
+**Audit Store** is Flamingock's dedicated system for tracking what happened:
 
-- **Drive rollbacks and “undo” operations**  
-  Since each audit entry captures rollback availability, Flamingock can navigate backward through the audit store to revert a series of changes in reverse order.
+- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
+- **Purpose**: Record execution history, compliance data, issue tracking
+- **Modified by**: Flamingock framework automatically (never your code)
+- **Configuration**: See [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md) for technical setup
 
-Depending on your setup, the audit store may be:
+---
 
-- A user-provided database (for Community Edition). For example, if you run CE with MongoDB, Flamingock writes audit records into a MongoDB collection.
-- Flamingock’s own cloud backend (for Cloud Edition). In that case, the audit store is a managed that you never host yourself.
+## Why This Separation Matters
 
-In summary, the audit store exists solely to record what happened—and to ensure consistency and idempotency across deployments.
+### Enterprise Safety Benefits
+1. **Complete Audit Trail**: Every change attempt is recorded regardless of business system failures
+2. **Governance Separation**: Business data and compliance data have different access patterns
+3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
+4. **Compliance Independence**: Audit integrity is maintained even during business system issues
 
-## Target System
+---
 
-A target system is any external resource or service upon which a change unit’s logic operates. When you write a change unit, you define `@Execution` and `@RollbackExecution` methods that perform actions against a target system—such as:
+## Target System Types
 
-- A cloud service (e.g., creating an S3 bucket or configuring a CloudFormation stack)
-- A messaging backbone (e.g., creating a new Kafka topic, configuring permissions, or updating an existing schema)
-- A configuration service (e.g., updating a feature-flag in Consul or Vault)
-- A database schema (e.g., creating a new column in your relational database)
-- A NoSQL data store (e.g., creating a new collection or index in MongoDB)
-- Even another microservice’s REST API
+### Transactional Target Systems
+Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
 
-The key point is that the target system is where changes must actually be applied—and those changes must occur exactly once (or be rolled back) to keep your application and its ecosystem in sync. Flamingock orchestrates these operations in a deterministic, ordered fashion, but the target system itself is whatever resource or service your change unit code touches.
+**Safety and Coordination:**
+- **Community Edition**: Reliable execution tracking and recovery capabilities
+- **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
 
-## Why the distinction matters
+### Non-Transactional Target Systems
+Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 
-Because Flamingock originated from Mongock (which treated the database both as audit store and change target), it’s common to conflate these two roles. In practice:
+**Safety and Coordination:**
+- **Community Edition**: Reliable execution tracking and rollback-based recovery
+- **Cloud Edition**: Enhanced recoverability with custom validation options
 
-- **In Cloud Edition with distributed transaction protocol (for a transactionally-capable target like an RDBMS)**:
-  - Flamingock writes a small “intent” or “flag” record in your own database before it writes the audit entry to the cloud store.
-  - After successfully committing your database change, Flamingock finalizes the audit record in the cloud. If anything fails at any step, Flamingock can roll everything back or clean up partial intent entries. This protocol ensures that, even though the audit store lives in the cloud, your RDBMS change and the audit record remain effectively atomic from Flamingock’s perspective.
+---
 
-- **When a relational or NoSQL database serves as both audit store and change target** (for example, CE running on MongoDB):
-  - Flamingock writes an audit-entry document into the same database where your data resides.
-  - For DML or DDL change units that modify that same database, Flamingock can wrap both the change and the audit insert in a single transaction—ensuring “all-or-nothing” consistency.
+## How It Works
 
-- **When the change target is a different system** (for example, creating S3 buckets or updating Kafka topics):
-  - The audit store remains your chosen audit database or Flamingock’s cloud backend.
-  - Flamingock cannot wrap, say, an S3 API call and the audit insert inside a single transaction, because those systems do not share a common transaction coordinator.
-  - Instead, Flamingock’s audit store logs the change unit as “executed” only after your `@Execution` method completes without error; if that `@Execution` code fails, Flamingock calls your `@RollbackExecution`. The audit store entry is only written once you confirm the change succeeded.
+```
+     Your ChangeUnits:
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │ 1. Change[UpdateKafkaSchema] → Target System[Kafka Schema Registry]      │
+     │ 2. Change[SeedKafkaEvents]   → Target System[Kafka Topics]               │
+     │ 3. Change[AddUserStatus]     → Target System[User Database]              │
+     └──────────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                    ┌───────────────────────┐
+                    │      Flamingock       │
+                    │    (Orchestrator)     │
+                    └───────────────────────┘
+                                │
+                                │ Executes sequentially
+                                │
+                 ChangeUnit #1  │───────────────────────────┐
+            (UpdateKafkaSchema) │                           │
+                                │                           │
+                                │             ┌─────────────┴────────────┐
+                                │             ▼                          ▼
+                                │     ┌─────────────────────┐      ┌──────────────┐
+                                │     │   Target System:    │      │ Audit Store  │
+                                │     │ ┌─────────────────┐ │      │              │
+                                │     │ │ Schema Registry │ │      │   Records:   │
+                                │     │ └─────────────────┘ │      │ #1 applied   │
+                                │     │  (applies change)   │      │              │
+                                │     └─────────────────────┘      └──────────────┘
+                                │
+                                │
+                  ChangeUnit #2 │───────────────────────────┐
+              (SeedKafkaEvents) │                           │
+                                │                           │
+                                │             ┌─────────────┴────────────┐
+                                │             ▼                          ▼
+                                │     ┌─────────────────────┐      ┌──────────────┐
+                                │     │   Target System:    │      │ Audit Store  │
+                                │     │ ┌─────────────────┐ │      │              │
+                                │     │ │  Kafka Topics   │ │      │   Records:   │
+                                │     │ └─────────────────┘ │      │ #2 applied   │
+                                │     │  (applies change)   │      │              │
+                                │     └─────────────────────┘      └──────────────┘
+                                │
+                                │
+                  ChangeUnit #3 └───────────────────────────┐
+                (AddUserStatus)                             │
+                                                            │
+                                              ┌─────────────┴────────────┐
+                                              ▼                          ▼
+                                      ┌─────────────────────┐      ┌──────────────┐
+                                      │   Target System:    │      │ Audit Store  │
+                                      │ ┌─────────────────┐ │      │              │
+                                      │ │  User Database  │ │      │   Records:   │
+                                      │ └─────────────────┘ │      │ #3 applied   │
+                                      │  (applies change)   │      │              │
+                                      └─────────────────────┘      └──────────────┘
+                                
+```
 
-![Audit store](../../static/img/Diagrams-TargetAndAuditStore.drawio.png)
+**The Flow:**
+1. **You create ChangeUnits** - Define what changes need to happen
+2. **Flamingock orchestrates** - Safely applies changes across all your systems  
+3. **Target systems evolve** - Your business systems get updated
+4. **Audit store tracks everything** - Complete history for compliance and recovery
 
-### Illustration
-
-#### Transactional target with Cloud as audit store (Cloud Edition)
-
-  📄 **_0001_CreateUserTableChange**
-    - **Targets:** Transactional database (e.g., PostgreSQL)
-    - **Audit store:** Flamingock Cloud (Cloud Edition)
-    - **Transactional behavior:** Uses Flamingock’s distributed transaction protocol to guarantee atomicity between the RDBMS and the cloud audit store, achieving the same effect as a traditional transaction.
-
-#### Target and audit store are the same transactional database
-
-  📄 **_0002_CreateUserTableChange**
-    - **Targets:** Transactional database (e.g., MongoDB)
-    - **Audit store:** Same MongoDB instance (Community Edition)
-    - **Transactional behavior:** Wrapped in a single DB transaction—so both the schema change (or data change) and the audit insert happen or fail together.
-
-#### Non-transactional target with Cloud as audit store
-
-  📄 **_0003_ConfigureS3BucketChange**
-    - **Targets:** Amazon S3 (creating a bucket)
-    - **Audit store:** Flamingock Cloud (Cloud Edition)
-    - **Transactional behavior:**
-      1. Flamingock calls S3’s `createBucket`.
-      2. If that succeeds, Flamingock writes an audit entry to the **cloud** audit store.
-      3. If the S3 call fails, Flamingock invokes your `@RollbackExecution` (deleting or cleaning up) and then writes an audit entry marking the change as “rolled back.”
-
-:::note
-All change units within a single application must use the same audit store. You cannot mix multiple audit backends in the same application.
-:::
-
+---
 
 ## Key Takeaways
 
-- **Audit Store**
-    - Record of “what ran when and by whom”
-    - Used to prevent duplicates, drive rollbacks, and coordinate distributed execution
-    - Hosted in Flamingock’s cloud backend (Cloud Edition) or your chosen database (CE) 
+### For Developers
+- **Target Systems**: Where your business logic runs and makes changes
+- **Audit Store**: Automatically managed by Flamingock for tracking and compliance
+- **Implementation**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) and [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md)
 
-- **Target System**
-    - The actual resource being modified (S3 buckets, Kafka topics, database tables, config services, and so on)
-    - Change units call external APIs or drivers against this system
-    - May or may not support transactions; if it does, Flamingock can co-ordinate with the audit store (via Cloud’s distributed protocol or CE’s DB transaction)
+### For Architects  
+- **Clean Separation**: Business logic separated from execution tracking
+- **Enterprise Scalability**: Architecture supports compliance, governance, multi-environment
+- **Flexibility**: Works with any target system type (transactional, non-transactional, hybrid)
 
+### For Operations
+- **Issue Resolution**: Tools operate on audit store, you fix target systems
+- **Compliance**: Complete audit trail independent of business system availability  
+- **Recovery**: Always know the state, even during complex failure scenarios
 
-:::tip
-Distinguishing these two roles makes it clear that Flamingock’s core value lies in coordinating audit and execution—across arbitrary target systems—rather than assuming both duties are performed by the same database. This clarity ensures you can design your change units and architecture with the proper expectations around consistency, rollback, and idempotency.
-:::
+**Bottom Line**: This dual-system architecture is what enables Flamingock to provide enterprise-grade safety and governance capabilities that traditional tools cannot match.
+
+---
+
+// File: recovery-and-safety/recovery-strategies
+
+# Recovery Strategies
+*Intelligent failure handling for enterprise distributed systems*
+
+Flamingock's recovery strategies are a key differentiator from traditional tools. While others retry blindly or fail silently, Flamingock provides intelligent, configurable recovery based on operation characteristics.
+
+---
+
+## The Safety-First Philosophy
+
+**Core Principle**: "When in doubt, stop and alert rather than corrupt data."
+
+Traditional tools assume the "happy path" - they retry operations blindly or fail without context. This approach leads to:
+- Silent data corruption
+- Inconsistent system states  
+- Difficult troubleshooting
+- Compliance gaps
+
+**Flamingock's Approach**: Configurable recovery strategies that match your operation's risk profile.
+
+---
+
+## Recovery Strategy Types
+
+### MANUAL_INTERVENTION (Default)
+**Philosophy**: "Safety first - human judgment for uncertain situations."
+
+```java
+@TargetSystem("financial-database")
+@ChangeUnit(id = "process-payments", order = "001", author = "finance-team")
+// No @Recovery annotation = MANUAL_INTERVENTION default
+public class ProcessPayments {
+    
+    @Execution
+    public void execute(MongoDatabase financialDb) {
+        // Critical financial operations
+        // Any failure requires manual review to ensure data integrity
+        financialDb.getCollection("payments")
+                  .updateMany(eq("status", "pending"), 
+                             combine(set("status", "processed"),
+                                   set("processedAt", new Date())));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase financialDb) {
+        // Financial rollback requires careful manual oversight
+        financialDb.getCollection("payments")
+                  .updateMany(eq("status", "processed"),
+                             combine(set("status", "pending"),
+                                   unset("processedAt")));
+    }
+}
+```
+
+**When It Activates**: Any failure where system state is uncertain
+**What Happens**:
+1. Execution stops immediately
+2. Issue logged with detailed context
+3. Human review required via CLI
+4. Complete audit trail maintained
+
+**Best For**:
+- Financial transactions
+- User data modifications
+- Critical business logic
+- Non-idempotent operations
+- Compliance-sensitive changes
+
+### ALWAYS_RETRY  
+**Philosophy**: "Keep trying until successful - for operations we know are safe."
+
+```java
+@TargetSystem("user-cache")
+@ChangeUnit(id = "warm-user-cache", order = "002", author = "platform-team")
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
+public class WarmUserCache {
+    
+    @Execution
+    public void execute(RedisTemplate redis, UserService userService) {
+        // Idempotent cache warming - safe to repeat
+        List<User> activeUsers = userService.findActiveUsers();
+        for (User user : activeUsers) {
+            String cacheKey = "user:" + user.getId();
+            UserProfile profile = userService.getUserProfile(user.getId());
+            redis.opsForValue().set(cacheKey, profile, Duration.ofHours(24));
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(RedisTemplate redis) {
+        // Clear cache - used for CLI undo operations
+        redis.delete("user:*");
+    }
+}
+```
+
+**When It Activates**: Any failure, regardless of cause
+**What Happens**:
+1. Failure is logged
+2. Automatic retry on next execution
+3. Continues until successful
+4. No manual intervention required
+
+**Best For**:
+- Cache warming operations
+- Idempotent API calls  
+- Event publishing (with consistent keys)
+- Configuration updates
+- Index creation
+- File operations with overwrite
+
+---
+
+## Decision Framework
+
+### Is Your Operation Idempotent?
+**Idempotent**: Running multiple times produces same result as running once
+- ✅ Cache SET operations
+- ✅ Database UPSERT operations
+- ✅ File overwrites
+- ✅ CREATE IF NOT EXISTS operations
+- ❌ Increment/decrement operations
+- ❌ Append operations
+- ❌ Time-sensitive operations
+
+### Risk Assessment Matrix
+
+| Operation Risk | Data Criticality | Recovery Strategy |
+|---------------|------------------|-------------------|
+| **High** | **High** | MANUAL_INTERVENTION |
+| **High** | **Low** | MANUAL_INTERVENTION |
+| **Low** | **High** | MANUAL_INTERVENTION |
+| **Low** | **Low** | ALWAYS_RETRY (if idempotent) |
+
+**Examples**:
+- **High Risk + High Criticality**: Financial transactions, user authentication data
+- **High Risk + Low Criticality**: Complex multi-step processes, dependency changes
+- **Low Risk + High Criticality**: Simple user data updates, critical configuration
+- **Low Risk + Low Criticality**: Cache operations, metrics collection
+
+---
+
+## Practical Implementation Patterns
+
+### Pattern 1: Financial Operations
+```java
+@TargetSystem("payment-system")
+@ChangeUnit(id = "process-refunds", order = "010", author = "finance-team")
+// MANUAL_INTERVENTION default - no annotation needed
+public class ProcessRefunds {
+    
+    @Execution
+    public void execute(PaymentService paymentService) {
+        // Critical financial operation - requires human oversight on failure
+        List<RefundRequest> pendingRefunds = paymentService.getPendingRefunds();
+        for (RefundRequest refund : pendingRefunds) {
+            paymentService.processRefund(refund);
+            auditService.logRefund(refund);
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(PaymentService paymentService) {
+        // Financial rollbacks require manual verification
+        // This method used for CLI undo operations
+    }
+}
+```
+
+### Pattern 2: Infrastructure Setup
+```java
+@TargetSystem("messaging-infrastructure")
+@ChangeUnit(id = "create-kafka-topics", order = "020", author = "platform-team",
+           transactional = false)
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
+public class CreateKafkaTopics {
+    
+    @Execution
+    public void execute(KafkaAdminClient kafkaAdmin) {
+        // Topic creation is idempotent - safe to retry
+        List<NewTopic> topics = Arrays.asList(
+            new NewTopic("user-events", 10, (short) 3),
+            new NewTopic("order-events", 10, (short) 3)
+        );
+        kafkaAdmin.createTopics(topics);
+    }
+    
+    @RollbackExecution
+    public void rollback(KafkaAdminClient kafkaAdmin) {
+        // Delete topics - used for CLI undo operations
+        kafkaAdmin.deleteTopics(Arrays.asList("user-events", "order-events"));
+    }
+}
+```
+
+### Pattern 3: Conditional Logic Based on Environment
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "user-data-cleanup", order = "030", author = "data-team")
+@Recovery(strategy = RecoveryStrategy.MANUAL_INTERVENTION)  // Explicit for clarity
+public class UserDataCleanup {
+    
+    @Execution
+    public void execute(MongoDatabase userDb, @Value("${environment}") String env) {
+        if ("production".equals(env)) {
+            // Production data cleanup requires manual oversight
+            cleanupInactiveUsers(userDb);
+        } else {
+            // Non-production can be more aggressive
+            cleanupAllTestData(userDb);
+        }
+    }
+}
+```
+
+---
+
+## Cloud Edition Enhanced Recovery
+
+Cloud Edition uses the same recovery strategies but provides enhanced outcomes:
+
+### Enhanced MANUAL_INTERVENTION
+- **Automatic issue detection** with real-time alerts
+- **Detailed diagnostic information** for faster resolution
+- **Workflow automation** for common resolution patterns  
+- **Team collaboration** features for complex issues
+
+### Enhanced ALWAYS_RETRY
+- **Intelligent retry backoff** prevents system overload
+- **Circuit breaker patterns** prevent cascading failures
+- **Automatic reconciliation** detects and resolves inconsistencies
+- **Advanced monitoring** provides visibility into retry patterns
+
+### Marker Mechanism (Cloud Edition)
+For transactional systems, Cloud Edition uses sophisticated coordination:
+1. **Intent markers** placed before execution
+2. **State tracking** during execution
+3. **Resolution markers** after completion
+4. **Automatic recovery** based on marker state
+
+This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Edition.
+
+---
+
+## Operational Workflows
+
+### Issue Resolution Process
+```bash
+# 1. Detect issues
+flamingock issue list
+# Shows all changes requiring attention
+
+# 2. Get next priority issue
+flamingock issue get
+# Returns detailed context and guidance
+
+# 3. Investigate and resolve
+# Review target system state
+# Make necessary corrections
+# Document resolution
+
+# 4. Mark as resolved
+flamingock audit fix -c change-id --resolution APPLIED
+# or
+flamingock audit fix -c change-id --resolution ROLLED_BACK
+```
+
+### Monitoring and Alerting
+- **Issue detection**: Automated monitoring of failure states
+- **Alert integration**: Connect to PagerDuty, Slack, email systems
+- **Metrics tracking**: Success rates, failure patterns, resolution times
+- **Dashboard visibility**: Real-time status across environments
+
+---
+
+## Best Practices
+
+### **Start Conservative, Optimize Gradually**
+1. Begin with MANUAL_INTERVENTION (default)
+2. Monitor failure patterns and resolution outcomes
+3. Identify truly idempotent operations
+4. Gradually move appropriate changes to ALWAYS_RETRY
+
+### **Design for Idempotency When Possible**
+```java
+// ✅ Idempotent design
+users.updateMany(
+    eq("status", "pending"),
+    set("status", "processed")  // Same result regardless of repetition
+);
+
+// ❌ Non-idempotent design  
+users.updateMany(
+    eq("status", "pending"),
+    inc("processCount", 1)  // Different result each time
+);
+```
+
+### **Document Recovery Strategy Decisions**
+```java
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
+// Document why: "Cache SET operations are idempotent and safe to retry"
+@ChangeUnit(description = "Warm user profile cache - idempotent operation safe for automatic retry")
+```
+
+### **Test Both Strategies in Development**
+- Simulate failures in lower environments
+- Verify MANUAL_INTERVENTION workflow
+- Validate ALWAYS_RETRY behavior
+- Test rollback logic for both strategies
+
+### **Enterprise Governance**
+- **Policy definition**: Establish organization-wide guidelines
+- **Code review**: Include recovery strategy in review process
+- **Compliance documentation**: Maintain records of strategy decisions
+- **Regular assessment**: Review and update strategies based on operational experience
+
+---
+
+**Key Takeaway**: Recovery strategies are not just error handling - they're a core architectural decision that affects operational safety, team productivity, and business risk. Choose wisely, document thoroughly, and evolve based on operational experience.
+
+---
+
+// File: recovery-and-safety/issue-resolution
+
+# Issue Resolution
+*Enterprise operational workflows for handling failures*
+
+Flamingock's issue resolution system transforms how organizations handle distributed system evolution failures. Instead of guesswork and manual database queries, you get structured workflows, detailed guidance, and complete audit trails.
+
+---
+
+## Understanding Issues
+
+### What Creates an Issue?
+An "issue" is detected when:
+1. **Change execution fails** during the `@Execution` method
+2. **Change starts but never completes** (process crash, timeout)
+3. **Rollback fails** during `@RollbackExecution` method
+4. **Change needs to run again** but is in uncertain state
+
+### Issue States
+| State | Description | Action Required |
+|-------|-------------|----------------|
+| **STARTED** | Execution began but never completed | Manual investigation |
+| **EXECUTION_FAILED** | `@Execution` method failed | Review and resolve |
+| **ROLLBACK_FAILED** | `@RollbackExecution` method failed | Manual cleanup |
+
+---
+
+## CLI-Driven Resolution Workflow
+
+### 1. Issue Discovery
+```bash
+flamingock issue list
+```
+
+**Example Output**:
+```
+ISSUES FOUND (3)
+┌─────────────────────────┬─────────┬──────────────────┬──────────────┐
+│ Change ID               │ State   │ Error            │ Target       │
+├─────────────────────────┼─────────┼──────────────────┼──────────────┤
+│ user-data-sync-v2       │ STARTED │ Connection lost  │ user-db      │
+│ cache-warming-q4        │ FAILED  │ Redis timeout    │ redis-cache  │
+│ payment-processing      │ FAILED  │ Validation error │ payment-api  │
+└─────────────────────────┴─────────┴──────────────────┴──────────────┘
+
+Use 'flamingock issue get' to process issues automatically, or
+'flamingock issue get -c <change-id>' for specific issue details.
+```
+
+### 2. Automated Issue Triage
+```bash
+flamingock issue get
+```
+
+**What This Does**:
+- Automatically selects the next priority issue
+- Provides detailed context and diagnostic information
+- Suggests resolution approaches based on failure type
+- No need to copy/paste change IDs
+
+**Example Output**:
+```
+ISSUE: user-data-sync-v2
+Status: STARTED (execution began but never completed)
+Target System: user-database
+Author: platform-team
+Started: 2024-01-15 14:32:15 UTC
+Error: Connection lost during execution
+
+DIAGNOSTIC INFORMATION:
+- Change was modifying user profiles in MongoDB
+- Execution started but connection dropped after 30 seconds
+- No rollback was triggered (connection failure before completion)
+- Potentially partial state in target system
+
+RESOLUTION GUIDANCE:
+1. Check target system state:
+   - Query user-database for partially updated records
+   - Look for users with incomplete profile updates
+   - Check MongoDB logs for connection errors around 14:32:15 UTC
+
+2. Determine actual state:
+   - If no changes were applied → mark as APPLIED (safe to continue)
+   - If changes were partially applied → complete manually, then mark APPLIED
+   - If changes were fully applied → mark as APPLIED
+   - If changes caused corruption → rollback manually, then mark ROLLED_BACK
+
+3. Resolve the issue:
+   flamingock audit fix -c user-data-sync-v2 --resolution APPLIED
+   flamingock audit fix -c user-data-sync-v2 --resolution ROLLED_BACK
+
+Next: flamingock issue get (to process next issue)
+```
+
+### 3. Manual Investigation
+
+Based on the guidance, investigate the **target system** (not the audit store):
+
+```bash
+# Example: Check MongoDB for partial updates
+mongo user-database --eval "
+  db.users.find({
+    profileUpdatedAt: { \$gte: ISODate('2024-01-15T14:30:00Z') },
+    profileComplete: { \$ne: true }
+  }).count()
+"
+```
+
+### 4. Issue Resolution
+
+After investigation, mark the issue as resolved:
+
+```bash
+# If changes were successfully applied (or completed manually)
+flamingock audit fix -c user-data-sync-v2 --resolution APPLIED
+
+# If changes were rolled back (or need to be skipped)
+flamingock audit fix -c user-data-sync-v2 --resolution ROLLED_BACK
+```
+
+**Success Output**:
+```
+✅ Issue resolved successfully
+   Change: user-data-sync-v2
+   Resolution: APPLIED
+   Audit State: MANUAL_MARKED_AS_EXECUTED
+   Next Execution: Will skip this change (marked as completed)
+```
+
+---
+
+## Resolution Types
+
+### APPLIED Resolution
+**When to use**:
+- Changes were successfully applied to target system
+- Partial changes were completed manually
+- Change should be marked as "done"
+
+**Effect**:
+- Updates audit store to `MANUAL_MARKED_AS_EXECUTED`
+- Future executions will skip this change
+- Maintains audit trail of manual resolution
+
+```bash
+flamingock audit fix -c change-id --resolution APPLIED
+```
+
+### ROLLED_BACK Resolution  
+**When to use**:
+- Changes were rolled back from target system
+- Changes caused issues and were reverted
+- Change should be marked as "undone"
+
+**Effect**:
+- Updates audit store to `MANUAL_MARKED_AS_ROLLED_BACK`
+- Future executions will attempt to run this change again
+- Enables retry after fixing underlying issues
+
+```bash
+flamingock audit fix -c change-id --resolution ROLLED_BACK
+```
+
+---
+
+## Advanced Resolution Scenarios
+
+### Scenario 1: Partial Multi-System Update
+```
+Issue: user-profile-sync failed
+Target Systems: user-database, elasticsearch, redis-cache
+Failure: Elasticsearch connection timeout after DB and cache updates
+```
+
+**Investigation**:
+1. **Database**: Check if user profiles were updated
+2. **Cache**: Verify cache entries were created  
+3. **Elasticsearch**: Confirm no documents were indexed
+
+**Resolution**:
+```bash
+# Manually sync remaining Elasticsearch documents
+curl -X POST "elasticsearch:9200/users/_bulk" -H 'Content-Type: application/json' -d @user_updates.json
+
+# Mark as successfully applied
+flamingock audit fix -c user-profile-sync --resolution APPLIED
+```
+
+### Scenario 2: Failed DDL Operation
+```
+Issue: create-user-indexes failed
+Target System: user-database  
+Failure: Index creation failed due to duplicate key constraint
+```
+
+**Investigation**:
+```bash
+# Check which indexes were created before failure
+mongo user-database --eval "db.users.getIndexes()"
+```
+
+**Resolution Options**:
+```bash
+# Option 1: Complete the index creation manually
+mongo user-database --eval "db.users.createIndex({email: 1}, {unique: true, sparse: true})"
+flamingock audit fix -c create-user-indexes --resolution APPLIED
+
+# Option 2: Clean up partial indexes and retry later
+mongo user-database --eval "db.users.dropIndex('partial_index_name')"
+flamingock audit fix -c create-user-indexes --resolution ROLLED_BACK
+```
+
+### Scenario 3: External API Failure
+```
+Issue: notify-users-via-email failed
+Target System: email-service-api
+Failure: Email service returned 503 Service Unavailable
+```
+
+**Investigation**:
+```bash
+# Check email service logs
+curl -X GET "https://email-service/api/v1/status"
+
+# Check which emails were actually sent
+curl -X GET "https://email-service/api/v1/notifications?batch=user-migration-2024"
+```
+
+**Resolution**:
+```bash
+# If emails were sent despite the error
+flamingock audit fix -c notify-users-via-email --resolution APPLIED
+
+# If no emails were sent and service is now available
+flamingock audit fix -c notify-users-via-email --resolution ROLLED_BACK
+# This allows automatic retry on next execution
+```
+
+---
+
+## Enterprise Operational Patterns
+
+### Daily Operations Checklist
+```bash
+#!/bin/bash
+# Daily Flamingock health check script
+
+echo "=== Flamingock Issues Check ==="
+ISSUE_COUNT=$(flamingock issue list --format count 2>/dev/null || echo "0")
+
+if [ "$ISSUE_COUNT" -gt 0 ]; then
+    echo "⚠️  Found $ISSUE_COUNT issues requiring attention"
+    echo "Run: flamingock issue get"
+    
+    # Optional: Send alert to ops team
+    slack-notify "#ops-alerts" "Flamingock: $ISSUE_COUNT issues need resolution"
+else
+    echo "✅ No issues detected"
+fi
+
+echo "=== Recent Changes ==="
+flamingock audit list --since yesterday --format summary
+```
+
+### Bulk Issue Resolution
+```bash
+#!/bin/bash
+# Process all issues interactively
+
+while flamingock issue get --exists; do
+    echo "=== Processing Next Issue ==="
+    flamingock issue get
+    
+    echo ""
+    echo "Actions:"
+    echo "1. Mark as APPLIED (changes were successful)"  
+    echo "2. Mark as ROLLED_BACK (changes were reverted)"
+    echo "3. Skip (investigate manually later)"
+    echo ""
+    
+    read -p "Choose action (1/2/3): " choice
+    
+    case $choice in
+        1)
+            CHANGE_ID=$(flamingock issue get --format id)
+            flamingock audit fix -c "$CHANGE_ID" --resolution APPLIED
+            echo "✅ Marked as APPLIED"
+            ;;
+        2)
+            CHANGE_ID=$(flamingock issue get --format id)
+            flamingock audit fix -c "$CHANGE_ID" --resolution ROLLED_BACK
+            echo "✅ Marked as ROLLED_BACK"
+            ;;
+        3)
+            echo "⏭️  Skipped - investigate manually"
+            break
+            ;;
+        *)
+            echo "Invalid choice"
+            ;;
+    esac
+    
+    echo ""
+done
+
+echo "✅ All issues processed"
+```
+
+### Integration with Monitoring Systems
+```yaml
+# Example: Prometheus alerting rule
+groups:
+- name: flamingock
+  rules:
+  - alert: FlamingockIssuesDetected
+    expr: flamingock_unresolved_issues > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Flamingock issues require attention"
+      description: "{{ $value }} unresolved issues in Flamingock"
+      runbook_url: "https://wiki.company.com/flamingock-issue-resolution"
+```
+
+```bash
+# Custom metrics collection script
+#!/bin/bash
+ISSUE_COUNT=$(flamingock issue list --format count 2>/dev/null || echo "0")
+echo "flamingock_unresolved_issues $ISSUE_COUNT" | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/flamingock
+```
+
+---
+
+## Best Practices
+
+### **Investigate Target Systems, Not Audit Store**
+- ❌ `SELECT * FROM changeLog WHERE id = 'change-id'`
+- ✅ Check actual business data in target systems
+- ✅ Use application logs and system metrics
+- ✅ Verify intended business outcomes
+
+### **Document Resolution Decisions**
+```bash
+# Add documentation when resolving
+flamingock audit fix -c user-migration --resolution APPLIED \
+  --notes "Verified all users updated successfully. Connection timeout was transient."
+
+# Or maintain a resolution log
+echo "$(date): user-migration APPLIED - connection timeout, data verified complete" >> /var/log/flamingock-resolutions.log
+```
+
+### **Establish Resolution SLAs**
+- **Critical issues**: Resolve within 4 hours
+- **Standard issues**: Resolve within 24 hours
+- **Non-critical issues**: Resolve within 72 hours
+
+### **Team Responsibilities**
+- **Development team**: Create runbooks for their changes
+- **Operations team**: Daily issue monitoring and basic resolution
+- **Subject matter experts**: Complex issue investigation and resolution
+- **Management**: Escalation procedures for critical failures
+
+### **Automation Where Appropriate**
+```bash
+# Example: Auto-resolve known transient failures
+#!/bin/bash
+for issue in $(flamingock issue list --format id --filter "error:ConnectionTimeout"); do
+    # Check if target system is healthy now
+    if ping -c 1 target-database >/dev/null 2>&1; then
+        echo "Auto-resolving transient connection issue: $issue"
+        flamingock audit fix -c "$issue" --resolution ROLLED_BACK --notes "Auto-resolved: transient connection issue"
+    fi
+done
+```
+
+### **Compliance and Audit Requirements**
+- Maintain records of all manual resolutions
+- Document investigation process and findings
+- Establish approval workflows for critical system changes
+- Regular review of resolution patterns for process improvement
+
+---
+
+## Troubleshooting Common Issues
+
+### "No issues found" but changes are stuck
+```bash
+# Check if changes are actually failing or just slow
+flamingock audit list --status STARTED --since "1 hour ago"
+
+# Check application logs for execution context
+tail -f /var/log/app/flamingock.log | grep "EXECUTION"
+```
+
+### CLI returns "connection error"
+```bash
+# Verify CLI configuration
+flamingock config verify
+
+# Check network connectivity to audit store
+telnet audit-database-host 27017
+```
+
+### Resolution doesn't take effect
+```bash
+# Verify resolution was recorded
+flamingock audit list -c change-id --format detailed
+
+# Check for configuration issues
+flamingock consistency-check
+```
+
+---
+
+**Key Takeaway**: Issue resolution is not just error handling - it's a structured operational discipline that ensures your distributed systems evolve safely and your team can respond confidently to any failure scenario.
+
+---
+
+// File: recovery-and-safety/safety-patterns
+
+# Safety Patterns
+*Proven approaches for enterprise-grade distributed system evolution*
+
+This guide presents battle-tested patterns that ensure safe, reliable system evolution in production environments. These patterns have been refined through real-world enterprise deployments and operational experience.
+
+---
+
+## Core Safety Principles
+
+### 1. **Explicit is Better Than Implicit**
+Always be explicit about your intentions and system boundaries.
+
+```java
+// ✅ Explicit and clear
+@TargetSystem("user-database")  // Clear target
+@ChangeUnit(id = "user-status-update", transactional = true)  // Explicit transaction control
+@Recovery(strategy = RecoveryStrategy.MANUAL_INTERVENTION)  // Explicit strategy
+public class UserStatusUpdate { }
+
+// ❌ Implicit and unclear  
+@ChangeUnit(id = "update")  // Unclear intent
+public class Update { }  // No target, relies on defaults
+```
+
+### 2. **Design for Failure**
+Every change should anticipate and handle failure scenarios.
+
+```java
+@TargetSystem("payment-system")
+@ChangeUnit(id = "process-payment-batch", order = "001", author = "finance-team")
+public class ProcessPaymentBatch {
+    
+    @Execution
+    public void execute(PaymentService paymentService) {
+        List<Payment> pendingPayments = paymentService.getPendingPayments();
+        
+        for (Payment payment : pendingPayments) {
+            try {
+                paymentService.processPayment(payment);
+                // Mark individual payment as processed for granular tracking
+                paymentService.markAsProcessed(payment.getId());
+            } catch (PaymentException e) {
+                // Log failure but continue with other payments
+                logger.error("Failed to process payment {}: {}", payment.getId(), e.getMessage());
+                paymentService.markAsFailed(payment.getId(), e.getMessage());
+            }
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(PaymentService paymentService) {
+        // Rollback only successfully processed payments
+        List<Payment> processedPayments = paymentService.getProcessedPayments();
+        for (Payment payment : processedPayments) {
+            paymentService.revertPayment(payment);
+        }
+    }
+}
+```
+
+### 3. **Idempotency by Design**
+When possible, design operations to be naturally idempotent.
+
+```java
+// ✅ Idempotent by design
+@TargetSystem("user-database")
+@ChangeUnit(id = "set-user-preferences", author = "product-team")
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)  // Safe because idempotent
+public class SetUserPreferences {
+    
+    @Execution
+    public void execute(MongoDatabase userDb) {
+        // SET operations are naturally idempotent
+        userDb.getCollection("users")
+              .updateMany(
+                  new Document(), // All users
+                  new Document("$set", new Document("preferences", defaultPreferences()))
+              );
+    }
+}
+
+// ❌ Non-idempotent design
+public class IncrementUserScores {
+    @Execution
+    public void execute(MongoDatabase userDb) {
+        // INCREMENT is not idempotent - each run changes the result
+        userDb.getCollection("users")
+              .updateMany(new Document(), new Document("$inc", new Document("score", 10)));
+    }
+}
+```
+
+---
+
+## Enterprise Safety Patterns
+
+### Pattern 1: Critical Path Protection
+**Use Case**: Financial operations, user authentication, compliance-sensitive changes
+
+```java
+@TargetSystem("financial-database")
+@ChangeUnit(id = "update-account-balances", order = "001", author = "finance-team",
+           transactional = true)  // Leverage database transactions
+// MANUAL_INTERVENTION default - explicit safety
+public class UpdateAccountBalances {
+    
+    @Execution
+    public void execute(MongoDatabase financialDb, AuditLogger auditLogger) {
+        MongoCollection<Document> accounts = financialDb.getCollection("accounts");
+        
+        // Pre-execution validation
+        long totalBefore = calculateTotalBalance(accounts);
+        auditLogger.logBalanceSnapshot("before", totalBefore);
+        
+        // Critical financial operation
+        accounts.updateMany(
+            eq("status", "pending_interest"), 
+            combine(
+                set("status", "interest_applied"),
+                inc("balance", calculateInterest()),
+                set("lastInterestDate", new Date())
+            )
+        );
+        
+        // Post-execution validation
+        long totalAfter = calculateTotalBalance(accounts);
+        auditLogger.logBalanceSnapshot("after", totalAfter);
+        
+        // Invariant check
+        if (Math.abs(totalAfter - totalBefore - expectedInterestTotal()) > 0.01) {
+            throw new BalanceInconsistencyException("Total balance invariant violated");
+        }
+    }
+    
+    @RollbackExecution  
+    public void rollback(MongoDatabase financialDb, AuditLogger auditLogger) {
+        auditLogger.logRollbackStart("update-account-balances");
+        
+        MongoCollection<Document> accounts = financialDb.getCollection("accounts");
+        accounts.updateMany(
+            eq("status", "interest_applied"),
+            combine(
+                set("status", "pending_interest"),
+                inc("balance", -calculateInterest()),
+                unset("lastInterestDate")
+            )
+        );
+        
+        auditLogger.logRollbackComplete("update-account-balances");
+    }
+}
+```
+
+### Pattern 2: Idempotent Operations with Retry
+**Use Case**: Cache warming, event publishing, infrastructure setup
+
+```java
+@TargetSystem("messaging-infrastructure")
+@ChangeUnit(id = "setup-kafka-topics", order = "002", author = "platform-team",
+           transactional = false)  // External system calls
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)  // Safe to retry
+public class SetupKafkaTopics {
+    
+    @Execution
+    public void execute(KafkaAdminClient kafkaAdmin) {
+        List<NewTopic> requiredTopics = Arrays.asList(
+            new NewTopic("user-events", 10, (short) 3),
+            new NewTopic("order-events", 15, (short) 3),
+            new NewTopic("notification-events", 5, (short) 3)
+        );
+        
+        // Get existing topics to avoid creating duplicates
+        Set<String> existingTopics = kafkaAdmin.listTopics().names().get();
+        
+        List<NewTopic> topicsToCreate = requiredTopics.stream()
+            .filter(topic -> !existingTopics.contains(topic.name()))
+            .collect(Collectors.toList());
+        
+        if (!topicsToCreate.isEmpty()) {
+            // Topic creation is idempotent - safe to retry
+            kafkaAdmin.createTopics(topicsToCreate).all().get();
+            logger.info("Created {} new topics: {}", 
+                       topicsToCreate.size(), 
+                       topicsToCreate.stream().map(NewTopic::name).collect(Collectors.toList()));
+        } else {
+            logger.info("All required topics already exist");
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(KafkaAdminClient kafkaAdmin) {
+        // For infrastructure setup, rollback usually means cleanup
+        List<String> topicNames = Arrays.asList("user-events", "order-events", "notification-events");
+        kafkaAdmin.deleteTopics(topicNames);
+    }
+}
+```
+
+### Pattern 3: Progressive Migration  
+**Use Case**: Large-scale data transformations, phased rollouts
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "migrate-user-profiles-batch-1", order = "003", author = "data-team",
+           transactional = false)  // Large operation, process in batches
+public class MigrateUserProfilesBatch1 {
+    
+    private static final int BATCH_SIZE = 1000;
+    private static final String MIGRATION_MARKER = "profile_v2_migration";
+    
+    @Execution
+    public void execute(MongoDatabase userDb) {
+        MongoCollection<Document> users = userDb.getCollection("users");
+        
+        // Process only users without migration marker (idempotent)
+        FindIterable<Document> unmigrated = users.find(
+            and(
+                exists("profileVersion", false),  // Old schema
+                exists(MIGRATION_MARKER, false)   // Not yet processed
+            )
+        ).limit(BATCH_SIZE);
+        
+        int processed = 0;
+        for (Document user : unmigrated) {
+            try {
+                // Transform user profile to new schema
+                Document newProfile = transformProfile(user);
+                
+                users.updateOne(
+                    eq("_id", user.getObjectId("_id")),
+                    combine(
+                        set("profile", newProfile),
+                        set("profileVersion", 2),
+                        set(MIGRATION_MARKER, new Date())  // Mark as processed
+                    )
+                );
+                processed++;
+                
+            } catch (Exception e) {
+                logger.error("Failed to migrate user {}: {}", user.getObjectId("_id"), e.getMessage());
+                // Mark this user as failed for separate handling
+                users.updateOne(
+                    eq("_id", user.getObjectId("_id")),
+                    set("migrationError", e.getMessage())
+                );
+            }
+        }
+        
+        logger.info("Migrated {} user profiles in this batch", processed);
+        
+        // Check if more batches are needed
+        long remaining = users.countDocuments(
+            and(
+                exists("profileVersion", false),
+                exists(MIGRATION_MARKER, false),
+                exists("migrationError", false)  // Exclude failed ones
+            )
+        );
+        
+        if (remaining > 0) {
+            logger.info("{} users remaining for migration", remaining);
+        } else {
+            logger.info("User profile migration completed successfully");
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase userDb) {
+        MongoCollection<Document> users = userDb.getCollection("users");
+        
+        // Rollback users that were migrated in this execution
+        users.updateMany(
+            exists(MIGRATION_MARKER),
+            combine(
+                unset("profile"),
+                unset("profileVersion"), 
+                unset(MIGRATION_MARKER),
+                unset("migrationError")
+            )
+        );
+    }
+}
+```
+
+### Pattern 4: Multi-System Coordination
+**Use Case**: Distributed system synchronization, event sourcing, complex workflows
+
+```java
+@TargetSystem("user-database")  // Primary system
+@ChangeUnit(id = "sync-user-data-across-systems", order = "004", author = "integration-team",
+           transactional = false)  // Multi-system can't be transactional
+public class SyncUserDataAcrossSystems {
+    
+    @Execution
+    public void execute(MongoDatabase userDb, 
+                       ElasticsearchOperations searchOps,
+                       KafkaTemplate<String, Object> eventPublisher,
+                       RedisTemplate<String, Object> cacheOps) {
+        
+        // Get users that need synchronization
+        List<User> usersToSync = findUsersNeedingSync(userDb);
+        List<String> processedUsers = new ArrayList<>();
+        
+        try {
+            for (User user : usersToSync) {
+                // Step 1: Update primary database
+                updateUserInDatabase(userDb, user);
+                
+                // Step 2: Update search index  
+                indexUserInElasticsearch(searchOps, user);
+                
+                // Step 3: Update cache
+                updateUserInCache(cacheOps, user);
+                
+                // Step 4: Publish change event
+                publishUserChangeEvent(eventPublisher, user);
+                
+                // Track successful processing
+                processedUsers.add(user.getId());
+                
+                // Mark user as synchronized
+                markUserAsSynced(userDb, user.getId());
+            }
+            
+        } catch (Exception e) {
+            logger.error("Multi-system sync failed for user batch. Processed: {}. Error: {}", 
+                        processedUsers.size(), e.getMessage());
+            
+            // Store progress information for rollback
+            storeProcessingProgress(userDb, processedUsers);
+            throw e;  // Re-throw to trigger rollback
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase userDb,
+                        ElasticsearchOperations searchOps,
+                        KafkaTemplate<String, Object> eventPublisher, 
+                        RedisTemplate<String, Object> cacheOps) {
+        
+        // Get list of users that were processed before failure
+        List<String> processedUsers = getProcessingProgress(userDb);
+        
+        for (String userId : processedUsers) {
+            try {
+                // Reverse each step in opposite order
+                publishUserRollbackEvent(eventPublisher, userId);
+                removeUserFromCache(cacheOps, userId);
+                removeUserFromElasticsearch(searchOps, userId);
+                rollbackUserInDatabase(userDb, userId);
+                
+            } catch (Exception e) {
+                logger.error("Failed to rollback user {}: {}", userId, e.getMessage());
+                // Continue with other users - partial rollback is better than none
+            }
+        }
+        
+        // Clean up progress tracking
+        clearProcessingProgress(userDb);
+    }
+}
+```
+
+---
+
+## Operational Safety Patterns
+
+### Pattern 5: Environment-Aware Changes
+**Use Case**: Different behavior across environments, gradual rollouts
+
+```java
+@TargetSystem("feature-flags")
+@ChangeUnit(id = "enable-new-checkout", order = "005", author = "product-team")
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)  // Feature flags are idempotent
+public class EnableNewCheckout {
+    
+    @Execution
+    public void execute(FeatureFlagService flagService, 
+                       @Value("${spring.profiles.active}") String environment) {
+        
+        FeatureFlagConfig config = buildConfigForEnvironment(environment);
+        
+        switch (environment) {
+            case "development":
+                // Full rollout in dev
+                flagService.enableFlag("new-checkout", config.withRollout(100));
+                break;
+                
+            case "staging":  
+                // Full rollout in staging
+                flagService.enableFlag("new-checkout", config.withRollout(100));
+                break;
+                
+            case "production":
+                // Gradual rollout in production
+                flagService.enableFlag("new-checkout", config.withRollout(5));  // Start with 5%
+                break;
+                
+            default:
+                logger.warn("Unknown environment: {}. Skipping feature flag change.", environment);
+        }
+    }
+    
+    @RollbackExecution
+    public void rollback(FeatureFlagService flagService) {
+        flagService.disableFlag("new-checkout");
+    }
+}
+```
+
+### Pattern 6: Validation and Verification
+**Use Case**: Critical changes requiring validation, compliance requirements
+
+```java
+@TargetSystem("compliance-database")
+@ChangeUnit(id = "update-gdpr-consent", order = "006", author = "legal-team")
+public class UpdateGdprConsent {
+    
+    @Execution
+    public void execute(MongoDatabase complianceDb, GdprService gdprService) {
+        MongoCollection<Document> userConsents = complianceDb.getCollection("user_consents");
+        
+        // Pre-execution validation
+        long totalUsers = userConsents.countDocuments();
+        long usersWithoutConsent = userConsents.countDocuments(exists("gdprConsent", false));
+        
+        logger.info("Starting GDPR consent update. Total users: {}, Without consent: {}", 
+                   totalUsers, usersWithoutConsent);
+        
+        if (usersWithoutConsent == 0) {
+            logger.info("All users already have GDPR consent recorded. No action needed.");
+            return;
+        }
+        
+        // Execute the change
+        UpdateResult result = userConsents.updateMany(
+            exists("gdprConsent", false),
+            combine(
+                set("gdprConsent", buildDefaultConsent()),
+                set("consentUpdatedDate", new Date()),
+                set("consentSource", "system-migration")
+            )
+        );
+        
+        // Post-execution validation
+        long updatedCount = result.getModifiedCount();
+        long stillWithoutConsent = userConsents.countDocuments(exists("gdprConsent", false));
+        
+        logger.info("GDPR consent update completed. Updated: {}, Remaining without consent: {}", 
+                   updatedCount, stillWithoutConsent);
+        
+        // Validation checks
+        if (updatedCount != usersWithoutConsent) {
+            throw new ValidationException(
+                String.format("Expected to update %d users but actually updated %d", 
+                             usersWithoutConsent, updatedCount));
+        }
+        
+        if (stillWithoutConsent > 0) {
+            logger.warn("Some users still without consent after migration: {}", stillWithoutConsent);
+        }
+        
+        // Compliance reporting
+        gdprService.reportConsentUpdate(updatedCount, "system-migration");
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase complianceDb, GdprService gdprService) {
+        MongoCollection<Document> userConsents = complianceDb.getCollection("user_consents");
+        
+        // Rollback only system-generated consent entries
+        UpdateResult result = userConsents.updateMany(
+            eq("consentSource", "system-migration"),
+            combine(
+                unset("gdprConsent"),
+                unset("consentUpdatedDate"),
+                unset("consentSource")
+            )
+        );
+        
+        logger.info("Rolled back GDPR consent for {} users", result.getModifiedCount());
+        gdprService.reportConsentRollback(result.getModifiedCount(), "system-migration");
+    }
+}
+```
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Anti-Pattern 1: Silent Failures
+```java
+// DON'T DO THIS
+@Execution
+public void execute(ExternalService service) {
+    try {
+        service.updateData(data);
+    } catch (Exception e) {
+        // Silent failure - no one knows this failed!
+        logger.debug("Update failed: {}", e.getMessage());
+    }
+}
+```
+
+### ✅ Better Approach:
+```java
+@Execution  
+public void execute(ExternalService service) {
+    try {
+        service.updateData(data);
+    } catch (ServiceUnavailableException e) {
+        logger.error("Service temporarily unavailable: {}", e.getMessage());
+        throw new RetryableException("External service unavailable", e);
+    } catch (ValidationException e) {
+        logger.error("Data validation failed: {}", e.getMessage());
+        throw new PermanentException("Invalid data provided", e);
+    }
+}
+```
+
+### ❌ Anti-Pattern 2: Mixing Transactional and Non-Transactional
+```java
+// DON'T DO THIS
+@ChangeUnit(transactional = true)  // This won't work for Kafka!
+public class MixedOperations {
+    @Execution
+    public void execute(MongoDatabase db, KafkaTemplate kafka) {
+        db.getCollection("users").updateMany(...);  // Transactional
+        kafka.send("user-topic", event);            // Non-transactional
+    }
+}
+```
+
+### ✅ Better Approach:
+```java
+// Separate concerns
+@TargetSystem("user-database")
+@ChangeUnit(id = "update-users", transactional = true)
+public class UpdateUsers { }
+
+@TargetSystem("event-stream")  
+@ChangeUnit(id = "publish-events", transactional = false)
+public class PublishEvents { }
+```
+
+### ❌ Anti-Pattern 3: Assuming Success
+```java
+// DON'T DO THIS
+@Execution
+public void execute(List<ExternalService> services) {
+    for (ExternalService service : services) {
+        service.update();  // What if some succeed and others fail?
+    }
+}
+```
+
+### ✅ Better Approach:
+```java
+@Execution
+public void execute(List<ExternalService> services) {
+    List<String> successfulServices = new ArrayList<>();
+    
+    try {
+        for (ExternalService service : services) {
+            service.update();
+            successfulServices.add(service.getId());
+        }
+    } catch (Exception e) {
+        // Store partial progress for rollback
+        storeProgress(successfulServices);
+        throw e;
+    }
+}
+```
+
+---
+
+## Best Practices Summary
+
+### **Design for Production**
+1. **Assume failures will happen** - design changes to handle partial completion
+2. **Make operations idempotent** when possible to enable safe retry
+3. **Validate inputs and outputs** to catch issues early
+4. **Log extensively** for troubleshooting and audit purposes
+
+### **Choose the Right Strategy**
+1. **MANUAL_INTERVENTION** for critical, non-idempotent operations
+2. **ALWAYS_RETRY** for idempotent, low-risk operations
+3. **Document your reasoning** for recovery strategy decisions
+
+### **Implement Proper Rollback**
+1. **Always provide @RollbackExecution** methods
+2. **Test rollback logic** as thoroughly as execution logic
+3. **Handle partial failures** in rollback scenarios
+4. **Log rollback operations** for audit trails
+
+### **Monitor and Alert**
+1. **Set up monitoring** for change execution patterns
+2. **Create alerts** for failure conditions
+3. **Establish SLAs** for issue resolution
+4. **Review patterns** regularly to improve safety
+
+**Remember**: Safety patterns are not just about preventing failures - they're about building confidence in your system evolution process and enabling your team to move fast while maintaining enterprise-grade reliability.
 
 ---
 
@@ -4422,7 +6954,7 @@ See the [CONTRIBUTING.md](https://github.com/flamingock/flamingock-examples/blob
 
 ## Introduction
 
-This FAQ addresses frequent questions users may have when incorporating Flamingock into their applications.
+This FAQ addresses frequent questions about Flamingock's enterprise-grade distributed system evolution platform, from basic usage to advanced recovery strategies and operational concerns.
 
 ---
 
@@ -4500,12 +7032,19 @@ If you are working with different Community Editions that use the **same underly
 Yes. Each `ChangeUnit` has a unique ID and Flamingock ensures it runs only once per system, even across multiple instances.
 
 **What happens if a ChangeUnit execution fails midway?**  
-When a `ChangeUnit` fails during execution, Flamingock handles the situation based on whether a transactional context is active:
-Flamingock always try to rollback the failed changes. In a transactional environment, Flamingock relies on the database transactional mechanism to rollback the changes(`@Execution` method) as well as the Flamingock metadata associated to the change. 
+Flamingock's behavior depends on your recovery strategy configuration:
 
-In summary it would be like that change was never started. In a non-transactional environment, Flamingock manually tries to rollback the change by executing the `@RollbackExecution` method (if present) and marks the change entry as `ROLLED_BACK` in the database. Please notice that although Flamingock will try its best to achieve this, it's not guaranteed.
+**With MANUAL_INTERVENTION (default)**:
+1. **Transactional changes**: Database automatically rolls back, issue logged for manual review
+2. **Non-transactional changes**: `@RollbackExecution` method called, issue logged for manual review
+3. **Resolution required**: Use CLI (`flamingock issue get`, then `flamingock audit fix`) to resolve after investigation
 
-Once the rollback operation is performed, Flamingock will abort the execution and throw an exception. The next time Flamingock is executed will carry on from the failed ChangeUnit. It is important to note that if the ChangeUnit fails, the Application startup will exit as Flamingock will abort. This behaviour will repeat until the ChangeUnit has executed successfully.
+**With ALWAYS_RETRY**:
+1. **Transactional changes**: Database automatically rolls back, automatic retry on next execution
+2. **Non-transactional changes**: `@RollbackExecution` method called, automatic retry on next execution
+3. **No manual intervention**: Continues until successful
+
+This intelligent failure handling prevents silent data corruption and provides operational control.
 
 **How can I ensure changes are transactional?**  
 If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../flamingock-library-config/transactions.md).
@@ -4567,6 +7106,128 @@ If you are currently using Mongock, we encourage you to [review the migration gu
 
 ---
 
+### Recovery Strategies & Safety
+
+**What are recovery strategies and why do I need them?**  
+Recovery strategies determine how Flamingock handles failures - the key differentiator from traditional tools that retry blindly or fail silently. You choose between:
+- **MANUAL_INTERVENTION** (default): Stop and alert for human review when uncertain
+- **ALWAYS_RETRY**: Continue automatically until successful for idempotent operations
+
+This prevents silent data corruption and gives you operational control based on your risk tolerance.
+
+**When should I use MANUAL_INTERVENTION vs ALWAYS_RETRY?**  
+**Use MANUAL_INTERVENTION for**:
+- Financial transactions
+- User data modifications  
+- Critical business logic
+- Non-idempotent operations
+- Compliance-sensitive changes
+
+**Use ALWAYS_RETRY for**:
+- Cache warming operations
+- Idempotent API calls
+- Event publishing (with consistent keys)
+- Configuration updates
+- Index creation
+- File operations with overwrite
+
+**How do I know if my operation is idempotent?**  
+An operation is idempotent if running it multiple times produces the same result as running it once. Examples:
+- ✅ `SET user.status = 'active'` (same result every time)
+- ✅ `CREATE INDEX IF NOT EXISTS` (safe to repeat)  
+- ✅ File overwrite with same content
+- ❌ `INCREMENT user.score` (different result each time)
+- ❌ Append operations
+- ❌ Time-sensitive calculations
+
+**What is the issue resolution workflow?**  
+1. **Detection**: `flamingock issue list` shows all unresolved issues
+2. **Triage**: `flamingock issue get` provides next priority issue with guidance
+3. **Investigation**: Check target system state (not audit store)
+4. **Resolution**: `flamingock audit fix -c change-id --resolution APPLIED|ROLLED_BACK`
+
+This structured workflow eliminates guesswork and provides complete audit trails.
+
+**Can I change recovery strategies after deployment?**  
+Yes, you can update the `@Recovery` annotation in your code and redeploy. Existing audit entries maintain their state, but new executions use the updated strategy.
+
+**How does Cloud Edition improve recovery without changing my code?**  
+Cloud Edition uses the same recovery strategies but provides enhanced outcomes through:
+- **Intelligent automation**: Advanced reconciliation and marker mechanisms
+- **Enhanced retry logic**: Sophisticated backoff and circuit breaker patterns  
+- **Automatic issue resolution**: Many failures requiring manual intervention in Community Edition are resolved automatically
+
+Your change definitions remain identical - Cloud Edition just delivers better results.
+
+---
+
+### Enterprise & Operational Concerns
+
+**How does Flamingock ensure data integrity in distributed systems?**  
+Flamingock uses a dual-architecture separating target systems (where changes are applied) from audit store (execution tracking):
+- **Complete audit trail**: Every change attempt recorded regardless of business system failures
+- **Recovery capabilities**: CLI operates on audit state, you fix business systems
+- **Compliance independence**: Audit integrity maintained during business system issues
+- **Governance separation**: Business and compliance data have different access patterns
+
+**What compliance and audit capabilities does Flamingock provide?**  
+- **Complete execution history** with timestamp, author, system, and outcome
+- **Issue tracking and resolution** workflows for failed changes
+- **CLI-based audit management** for governance and compliance
+- **Integration ready** for external observability platforms (ELK, Prometheus, Datadog)
+- **Regulatory reporting** capabilities in Cloud Edition
+
+**How does Flamingock compare to traditional migration tools?**  
+| Aspect | Flyway/Liquibase | Mongock | Flamingock |
+|--------|-----------------|---------|------------|
+| **Focus** | SQL databases | MongoDB only | All systems |
+| **Distributed Systems** | ❌ Not designed for | ❌ Limited | ✅ First-class support |
+| **Non-transactional** | ❌ No support | ❌ Assumes transactions | ✅ Full support |
+| **Failure Handling** | Retry blindly | Retry blindly | Configurable strategies |
+| **Issue Resolution** | Manual SQL | None | CLI + Cloud automation |
+| **Safety Default** | None | None | MANUAL_INTERVENTION |
+
+**Can Flamingock handle multi-system coordination?**  
+Yes, Flamingock is designed for distributed systems. A single ChangeUnit can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining a unified audit trail and recovery strategy.
+
+**How do I ensure my team adopts Flamingock safely?**  
+1. **Start conservative**: Use MANUAL_INTERVENTION (default) initially
+2. **Establish governance**: Define organization-wide recovery strategy guidelines
+3. **Create runbooks**: Document investigation procedures for your changes
+4. **Train on CLI**: Ensure team knows issue resolution workflow
+5. **Monitor patterns**: Review failure patterns to optimize strategies over time
+
+**What happens if the audit store goes down?**  
+Flamingock's safety guarantee: **No business changes applied without proper audit tracking**. If the audit store is unavailable:
+- Flamingock stops execution safely
+- No changes are applied to target systems
+- System remains in safe, known state
+- Resume automatically once audit store connectivity is restored
+
+**Can I use Flamingock in microservices architectures?**  
+Absolutely. Flamingock is designed for distributed systems:
+- Each microservice can have its own ChangeUnits for its domain
+- Shared audit store provides cross-service visibility (especially in Cloud Edition)  
+- CLI provides centralized operational control across all services
+- Recovery strategies can be tailored per service's risk profile
+
+**What are the organizational benefits of adopting Flamingock?**  
+- **Risk reduction**: Prevent silent data corruption through safety-first defaults
+- **Team velocity**: Eliminate deployment bottlenecks with autonomous change management
+- **Operational excellence**: Centralized governance with distributed execution
+- **Compliance automation**: Complete audit trails and governance workflows
+- **Reduced dependencies**: Teams control their domain without infrastructure dependencies
+
+**How does Flamingock support regulatory compliance requirements?**  
+- **Complete audit trails** with immutable execution history
+- **Governance workflows** for change approval and review
+- **Issue resolution documentation** for regulatory reporting
+- **CLI integration** for compliance automation
+- **Separation of concerns** between business and compliance data
+- **Cloud Edition features**: Advanced reporting, RBAC, multi-environment governance
+
+---
+
 ### Other
 
 **Is Flamingock open-source?**  
@@ -4575,7 +7236,7 @@ Yes. The Flamingock client library — used across all editions, including Commu
 For the Cloud and Self-managed editions, additional enterprise components such as the server runtime, dashboards, and governance tools are provided under a commercial licence. These components build on top of the open-source core to deliver advanced features like observability, orchestration, and centralised management.
 
 **Is there a CLI available?**  
-A [CLI is planned](../cli/cli.md), but not yet available. Stay tuned.
+Yes! The [Flamingock CLI](../cli/cli.md) provides enterprise-grade operational control for issue resolution, audit management, and maintenance tasks.
 
 ---
 
@@ -5691,7 +8352,7 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
   registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.autoCreate", () -> true);
   registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLogs");
-  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
+  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLocks");
 }
 ```
 
