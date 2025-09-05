@@ -5,7 +5,7 @@ sidebar_position: 160
 
 ## Introduction
 
-This FAQ addresses frequent questions users may have when incorporating Flamingock into their applications.
+This FAQ addresses frequent questions about Flamingock's enterprise-grade distributed system evolution platform, from basic usage to advanced recovery strategies and operational concerns.
 
 ---
 
@@ -83,12 +83,19 @@ If you are working with different Community Editions that use the **same underly
 Yes. Each `ChangeUnit` has a unique ID and Flamingock ensures it runs only once per system, even across multiple instances.
 
 **What happens if a ChangeUnit execution fails midway?**  
-When a `ChangeUnit` fails during execution, Flamingock handles the situation based on whether a transactional context is active:
-Flamingock always try to rollback the failed changes. In a transactional environment, Flamingock relies on the database transactional mechanism to rollback the changes(`@Execution` method) as well as the Flamingock metadata associated to the change. 
+Flamingock's behavior depends on your recovery strategy configuration:
 
-In summary it would be like that change was never started. In a non-transactional environment, Flamingock manually tries to rollback the change by executing the `@RollbackExecution` method (if present) and marks the change entry as `ROLLED_BACK` in the database. Please notice that although Flamingock will try its best to achieve this, it's not guaranteed.
+**With MANUAL_INTERVENTION (default)**:
+1. **Transactional changes**: Database automatically rolls back, issue logged for manual review
+2. **Non-transactional changes**: `@RollbackExecution` method called, issue logged for manual review
+3. **Resolution required**: Use CLI (`flamingock issue get`, then `flamingock audit fix`) to resolve after investigation
 
-Once the rollback operation is performed, Flamingock will abort the execution and throw an exception. The next time Flamingock is executed will carry on from the failed ChangeUnit. It is important to note that if the ChangeUnit fails, the Application startup will exit as Flamingock will abort. This behaviour will repeat until the ChangeUnit has executed successfully.
+**With ALWAYS_RETRY**:
+1. **Transactional changes**: Database automatically rolls back, automatic retry on next execution
+2. **Non-transactional changes**: `@RollbackExecution` method called, automatic retry on next execution
+3. **No manual intervention**: Continues until successful
+
+This intelligent failure handling prevents silent data corruption and provides operational control.
 
 **How can I ensure changes are transactional?**  
 If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../flamingock-library-config/transactions.md).
@@ -150,6 +157,128 @@ If you are currently using Mongock, we encourage you to [review the migration gu
 
 ---
 
+### Recovery Strategies & Safety
+
+**What are recovery strategies and why do I need them?**  
+Recovery strategies determine how Flamingock handles failures - the key differentiator from traditional tools that retry blindly or fail silently. You choose between:
+- **MANUAL_INTERVENTION** (default): Stop and alert for human review when uncertain
+- **ALWAYS_RETRY**: Continue automatically until successful for idempotent operations
+
+This prevents silent data corruption and gives you operational control based on your risk tolerance.
+
+**When should I use MANUAL_INTERVENTION vs ALWAYS_RETRY?**  
+**Use MANUAL_INTERVENTION for**:
+- Financial transactions
+- User data modifications  
+- Critical business logic
+- Non-idempotent operations
+- Compliance-sensitive changes
+
+**Use ALWAYS_RETRY for**:
+- Cache warming operations
+- Idempotent API calls
+- Event publishing (with consistent keys)
+- Configuration updates
+- Index creation
+- File operations with overwrite
+
+**How do I know if my operation is idempotent?**  
+An operation is idempotent if running it multiple times produces the same result as running it once. Examples:
+- ✅ `SET user.status = 'active'` (same result every time)
+- ✅ `CREATE INDEX IF NOT EXISTS` (safe to repeat)  
+- ✅ File overwrite with same content
+- ❌ `INCREMENT user.score` (different result each time)
+- ❌ Append operations
+- ❌ Time-sensitive calculations
+
+**What is the issue resolution workflow?**  
+1. **Detection**: `flamingock issue list` shows all unresolved issues
+2. **Triage**: `flamingock issue get` provides next priority issue with guidance
+3. **Investigation**: Check target system state (not audit store)
+4. **Resolution**: `flamingock audit fix -c change-id --resolution APPLIED|ROLLED_BACK`
+
+This structured workflow eliminates guesswork and provides complete audit trails.
+
+**Can I change recovery strategies after deployment?**  
+Yes, you can update the `@Recovery` annotation in your code and redeploy. Existing audit entries maintain their state, but new executions use the updated strategy.
+
+**How does Cloud Edition improve recovery without changing my code?**  
+Cloud Edition uses the same recovery strategies but provides enhanced outcomes through:
+- **Intelligent automation**: Advanced reconciliation and marker mechanisms
+- **Enhanced retry logic**: Sophisticated backoff and circuit breaker patterns  
+- **Automatic issue resolution**: Many failures requiring manual intervention in Community Edition are resolved automatically
+
+Your change definitions remain identical - Cloud Edition just delivers better results.
+
+---
+
+### Enterprise & Operational Concerns
+
+**How does Flamingock ensure data integrity in distributed systems?**  
+Flamingock uses a dual-architecture separating target systems (where changes are applied) from audit store (execution tracking):
+- **Complete audit trail**: Every change attempt recorded regardless of business system failures
+- **Recovery capabilities**: CLI operates on audit state, you fix business systems
+- **Compliance independence**: Audit integrity maintained during business system issues
+- **Governance separation**: Business and compliance data have different access patterns
+
+**What compliance and audit capabilities does Flamingock provide?**  
+- **Complete execution history** with timestamp, author, system, and outcome
+- **Issue tracking and resolution** workflows for failed changes
+- **CLI-based audit management** for governance and compliance
+- **Integration ready** for external observability platforms (ELK, Prometheus, Datadog)
+- **Regulatory reporting** capabilities in Cloud Edition
+
+**How does Flamingock compare to traditional migration tools?**  
+| Aspect | Flyway/Liquibase | Mongock | Flamingock |
+|--------|-----------------|---------|------------|
+| **Focus** | SQL databases | MongoDB only | All systems |
+| **Distributed Systems** | ❌ Not designed for | ❌ Limited | ✅ First-class support |
+| **Non-transactional** | ❌ No support | ❌ Assumes transactions | ✅ Full support |
+| **Failure Handling** | Retry blindly | Retry blindly | Configurable strategies |
+| **Issue Resolution** | Manual SQL | None | CLI + Cloud automation |
+| **Safety Default** | None | None | MANUAL_INTERVENTION |
+
+**Can Flamingock handle multi-system coordination?**  
+Yes, Flamingock is designed for distributed systems. A single ChangeUnit can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining a unified audit trail and recovery strategy.
+
+**How do I ensure my team adopts Flamingock safely?**  
+1. **Start conservative**: Use MANUAL_INTERVENTION (default) initially
+2. **Establish governance**: Define organization-wide recovery strategy guidelines
+3. **Create runbooks**: Document investigation procedures for your changes
+4. **Train on CLI**: Ensure team knows issue resolution workflow
+5. **Monitor patterns**: Review failure patterns to optimize strategies over time
+
+**What happens if the audit store goes down?**  
+Flamingock's safety guarantee: **No business changes applied without proper audit tracking**. If the audit store is unavailable:
+- Flamingock stops execution safely
+- No changes are applied to target systems
+- System remains in safe, known state
+- Resume automatically once audit store connectivity is restored
+
+**Can I use Flamingock in microservices architectures?**  
+Absolutely. Flamingock is designed for distributed systems:
+- Each microservice can have its own ChangeUnits for its domain
+- Shared audit store provides cross-service visibility (especially in Cloud Edition)  
+- CLI provides centralized operational control across all services
+- Recovery strategies can be tailored per service's risk profile
+
+**What are the organizational benefits of adopting Flamingock?**  
+- **Risk reduction**: Prevent silent data corruption through safety-first defaults
+- **Team velocity**: Eliminate deployment bottlenecks with autonomous change management
+- **Operational excellence**: Centralized governance with distributed execution
+- **Compliance automation**: Complete audit trails and governance workflows
+- **Reduced dependencies**: Teams control their domain without infrastructure dependencies
+
+**How does Flamingock support regulatory compliance requirements?**  
+- **Complete audit trails** with immutable execution history
+- **Governance workflows** for change approval and review
+- **Issue resolution documentation** for regulatory reporting
+- **CLI integration** for compliance automation
+- **Separation of concerns** between business and compliance data
+- **Cloud Edition features**: Advanced reporting, RBAC, multi-environment governance
+
+---
+
 ### Other
 
 **Is Flamingock open-source?**  
@@ -158,7 +287,7 @@ Yes. The Flamingock client library — used across all editions, including Commu
 For the Cloud and Self-managed editions, additional enterprise components such as the server runtime, dashboards, and governance tools are provided under a commercial licence. These components build on top of the open-source core to deliver advanced features like observability, orchestration, and centralised management.
 
 **Is there a CLI available?**  
-A [CLI is planned](../cli/cli.md), but not yet available. Stay tuned.
+Yes! The [Flamingock CLI](../cli/cli.md) provides enterprise-grade operational control for issue resolution, audit management, and maintenance tasks.
 
 ---
 

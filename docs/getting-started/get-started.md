@@ -6,221 +6,234 @@ import TabItem from '@theme/TabItem';
 
 # Get started
 
-This guide will walk you through the basics of using Flamingock with a step-by-step example, so you can get up and running quickly—whether you're using the **Cloud Edition** or one of the **Community Edition** variants.
+Let's walk through a simple scenario: evolving your inventory service with a few typical changes:
 
-## 1. Add Flamingock client dependency
+- Add a new column to a MySQL database  
+- Provision a new S3 bucket for product images  
+- Create a Kafka topic for stock updates  
 
-To begin, add the Flamingock client library to your project. You can use either:
+Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.  
+This guide walks you through the process in 5 simple steps.
 
-- Cloud Edition (compatible with all systems)
-- Community Edition (you need to choose the specific storage: MongoDB, DynamoDB, etc.)
+---
 
-Flamingock supports BOM (Bill of Materials), which simplifies dependency management by allowing you to declare the version once and avoid mismatches across related modules. This is especially useful when working with multiple Flamingock artifacts.
+## 1. Set up Flamingock in your project
 
-Example for **Cloud Edition**:
+Add Flamingock to your build:
+
 <Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        implementation(platform("io.flamingock:flamingock-cloud-bom:$flamingockVersion"))
-        implementation("io.flamingock:flamingock-cloud")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <dependency>
+  <TabItem value="gradle" label="Gradle" default>
+
+```kotlin
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community")
+
+annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-community-bom</artifactId>
+      <version>${flamingockVersion}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<dependency>
+  <groupId>io.flamingock</groupId>
+  <artifactId>flamingock-community</artifactId>
+</dependency>
+
+<!-- Annotation processor -->
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.11.0</version>
+      <configuration>
+        <annotationProcessorPaths>
+          <path>
             <groupId>io.flamingock</groupId>
-            <artifactId>flamingock-cloud</artifactId>
+            <artifactId>flamingock-processor</artifactId>
             <version>${flamingockVersion}</version>
-        </dependency>
-        ```
-    </TabItem>
+          </path>
+        </annotationProcessorPaths>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+  </TabItem>
 </Tabs>
 
-Example for **Community Edition** using MongoDB Sync4:
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-        implementation("io.flamingock:flamingock-ce-mongodb-sync")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <dependency>
-        <groupId>io.flamingock</groupId>
-        <artifactId>flamingock-ce-mongodb-sync</artifactId>
-        <version>${flamingockVersion}</version>
-        </dependency>
-        ```
-    </TabItem>
-</Tabs>
-
-
-All Community Editions:
-
-- **flamingock-ce-mongodb-sync**
-- **flamingock-ce-mongodb-springdata**
-- **flamingock-ce-mongodb-springdata-v3-legacy**
-- **flamingock-ce-dynamodb**
-- **flamingock-ce-couchbase**
-
-:::note
-For configuration details specific to the Community Edition, see the [community edition section](../community-edition/Introduction.md)
-:::
----
-
-## 2. Add Flamingock annotation processor
-
-Flamingock uses an annotation processor to scan and collect metadata from your changes—whether defined through code or templates.
-
-This is required at **build time** and supports:
-
-- **Code-based** with`@ChangeUnit` 
-- **Template-based** (declarative YAML)
-
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-        ```kotlin
-        annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
-        ```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-        ```xml
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.11.0</version>
-              <configuration>
-                <annotationProcessorPaths>
-                  <path>
-                    <groupId>io.flamingock</groupId>
-                    <artifactId>flamingock-processor</artifactId>
-                    <version>${flamingockVersion}</version>
-                  </path>
-                </annotationProcessorPaths>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-        ```
-    </TabItem>
-</Tabs>
+For more about editions, see [Community Edition](../community-edition/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
 ---
 
-## 3. Define a ChangeUnit
+## 2. Define your first ChangeUnits
 
-A **ChangeUnit** is a unit of logic that Flamingock will execute during your application's startup.
+Each ChangeUnit represents a single change.  
+For our example, we'll define three:
 
-Changes can be defined in a **code-based** or **template-based** style, depending on your preferred approach.
-For a deeper understanding of how changes work and **when to choose one approach over the other**, check out the [Concepts → ChangeUnits](../overview/core-concepts.md#-changeunits) section.
+- **MySQL**: Add a column `category` to products
+- **S3**: Create a `product-images` bucket  
+- **Kafka**: Create a `stock-updates` topic
 
- 
+ChangeUnits can be:
+- **Code-based**: Java classes with annotations
+- **Template-based**: YAML files using reusable templates
+
 <Tabs groupId="change">
-    <TabItem value="code_based" label="Code Based" default>
-```java
-@Change(id = "create-table", order = "1", author = "antonio", transactional = false)
-public class CreateTableChange {
-    @Execution
-    public void execute(Connection connection) throws SQLException {
-        connection.createStatement().executeUpdate("CREATE TABLE clients (id INT, name VARCHAR(255))");
-    }
+  <TabItem value="template_based" label="Template based" default>
 
-    @RollbackExecution
-    public void rollback(Connection connection) throws SQLException {
-        connection.createStatement().executeUpdate("DROP TABLE clients");
-    }
-}
-```
-    </TabItem>
-    <TabItem value="template_based" label="Template Based">
-        ```yaml
-            id: create-table
-            author: antonio
-            order: 1
-            transactional: false #DDL are not transactional in Mysql, so it won't be rolled back
-            template: sql-template
-            templateConfiguration:
-                executionSql: CREATE TABLE clients (id INT, name VARCHAR(255))
-                rollbackSql: DROP TABLE IF EXISTS clients
-        ```
-    </TabItem>
-</Tabs>
-
-:::info
-You can combine both styles in the same project. See our [Examples](../resources/examples.md)  to see these in action.
-:::
-
----
-
-## 4. Configure the Setup
-
-Flamingock organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
-
-Configure Flamingock using the `@EnableFlamingock` annotation on any class in your application:
-
-Here’s a basic structure:
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")
-    }
-)
-public class App {
-}
+```yaml
+id: add-product-category
+author: team
+order: "001"
+targetSystem: mysql-inventory
+template: sql-template
+templateConfiguration:
+  executionSql: |
+    ALTER TABLE products ADD COLUMN category VARCHAR(255)
+  rollbackSql: |
+    ALTER TABLE products DROP COLUMN category
 ```
 
-### Stage configuration:
-- `location`: Location where changes are found (mandatory)
-  - **Package**: `"com.yourcompany.changes"` - scans for code and templates
-  - **Resource directory**: `"flamingock/templates"` - scans for templates only(in the resources folder by default)
-- `name`: (Optional) Stage name - auto-derived from location if not provided
-
-:::tip Default approach:
-Most applications use a single stage: `@Stage(location = "com.yourcompany.changes")`. The name is auto-derived ("changes") and this is the recommended default setup.
-:::
-
-:::info Advanced options:
-For advance options, visit our [stage section](../flamingock-library-config/setup-and-stages.md)
-:::
-
----
-
-## 5. Configure Flamingock
-
-Before running your application, make sure Flamingock is properly configured, depending on the [edition](../overview/Editions.md) and setup you are using:
-
-- **Cloud Edition**: Set your API token, service name, and environment.
-- **Community Edition**: Provide connection details for your storage system (e.g., connection for MongoDB, DynamoDB, CouchBase, etc.).
-
-This configuration is applied through the Flamingock builder.
+  </TabItem>
+  <TabItem value="code_based" label="Code based">
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    FlamingockStandalone
-      .setApiToken("your-flamingock-api-token") 
-      .setEnvironment("dev")
-      .setService("inventory-service")
-      .build()
-      .run();
+@TargetSystem("aws-s3")
+@ChangeUnit(id = "create-s3-bucket", order = "002", author = "team")
+public class _002_CreateS3Bucket {
+
+  @Execution
+  public void execute(S3Client s3Client) {
+    s3Client.createBucket(CreateBucketRequest.builder()
+        .bucket("product-images")
+        .createBucketConfiguration(
+            CreateBucketConfiguration.builder()
+                .locationConstraint(BucketLocationConstraint.EU_WEST_1)
+                .build())
+        .build());
+  }
+
+  @RollbackExecution
+  public void rollback(S3Client s3Client) {
+    s3Client.deleteBucket(DeleteBucketRequest.builder()
+        .bucket("product-images")
+        .build());
   }
 }
 ```
 
-:::info 
-If you're using some frameworks, like Spring Boot, Flamingock may run automatically on application startup (if properly configured).
-:::
+  </TabItem>
+</Tabs>
+
+For more details, see [Concepts → ChangeUnits](../overview/core-concepts.md).
+
 ---
 
-## 6. Compile the project
+## 3. Create target systems
 
-Now that you’ve defined your changes and configured Flamingock, it’s time to compile your project.
+Target systems represent the external systems Flamingock will apply your changes to.  
+They are configured in the builder and shared across ChangeUnits.
 
-If everything is correctly set up, Flamingock’s annotation processor will kick in and you’ll see diagnostic messages during compilation:
+For our example:
+- A MySQL database (`mysql-inventory`)
+- An S3 bucket service (`aws-s3`)  
+- A Kafka cluster (`kafka`)
+
+```java
+SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3");
+NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka");
+```
+
+See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.
+
+---
+
+## 4. Configure stages
+
+Flamingock organizes your changes in stages.  
+Most applications only need one stage:
+
+```java
+@EnableFlamingock(
+  stages = {
+    @Stage(location = "com.company.inventory.changes")
+  }
+)
+public class App {}
+```
+
+- **location**: Where Flamingock should look for changes (package or resources)
+- **name**: Optional — defaults to the location name
+
+See [Stages](../flamingock-library-config/setup-and-stages.md) for more details and advanced setups.
+
+---
+
+## 5. Configure Flamingock runtime
+
+Finally, configure Flamingock before running your application.
+
+- **Community Edition**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder
+
+- **Cloud Edition** (coming soon): Provide your API token, service name, and environment
+
+<Tabs groupId="edition">
+  <TabItem value="community" label="Community" default>
+
+```java
+FlamingockStandalone
+  .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+  .addTargetSystems(sql, s3, kafka)
+  .build()
+  .run();
+```
+
+  </TabItem>
+  <TabItem value="cloud" label="Cloud (coming soon)">
+
+```java
+FlamingockStandalone
+  .setApiToken("your-flamingock-api-token") 
+  .setEnvironment("dev")
+  .setService("inventory-service")
+  .addTargetSystems(sql, s3, kafka)
+  .build()
+  .run();
+```
+
+  </TabItem>
+</Tabs>
+
+---
+
+## 6. Run your application
+
+When your service starts, Flamingock automatically:
+
+1. Discovers your ChangeUnits
+2. Checks pending changes  
+3. Executes them safely in order
+4. Records everything in the audit store
+
+**If Flamingock cannot guarantee a safe outcome, it stops and alerts you. Safety first.**
+
+### Example output
 
 <details>
 <summary>Click to see the expected logs</summary>
@@ -259,46 +272,10 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </Tabs>
 </details>
 
-:::note 
-The exact output may vary depending on your compiler settings, project layout, and whether you've customized the sources or resources paths using compiler options.
-:::
-
-These logs confirm that:
-- Flamingock found your pipeline
-- Template and code-based changes were processed
-- Metadata was generated for execution
-
-:::tip
-If you don’t see this output, ensure the annotation processor is correctly included in your dependencies and that your @Flamingock annotation is properly configured.
-:::
-
 ---
 
-## 7. Run your Application — Flamingock handles the changes!
-Once your project is compiled and Flamingock is configured, you're ready to run the application.
+## Next steps
 
-When your application starts, Flamingock will be executed as part of the startup process:
-- Load the setup configuration (actually the metadata generated from the annotation configuration during the compilation)
-- Evaluate pending changes
-- Execute the changes
-- Audit the execution status
-
-### Example Output
-
-You should see logs like the following:
-```bash
-[main] INFO io.flamingock.core.runner.PipelineRunner - Starting Flamingock migration
-Stage: mysql_stage
-  1) id: create-table
-     Started              ✅ - OK
-     Executed             ✅ - OK
-     Audited[execution]   ✅ - OK
-[main] INFO io.flamingock.core.runner.PipelineRunner - Finished Flamingock process successfully
-
-```
----
-## Next Steps
-
-- Dive into [Spring Boot Integration](../frameworks/springboot-integration/introduction.md)
-- Learn more about [Configuration Options](../flamingock-library-config/introduction.md)
-- Understand [Rollback & Auditing](../overview/core-concepts.md#-rollbacks)
+- [Spring Boot integration](../frameworks/springboot-integration/introduction.md)
+- [Configuration options](../flamingock-library-config/setup-and-stages.md)
+- [Recovery and safety](../recovery-and-safety/recovery-strategies.md)

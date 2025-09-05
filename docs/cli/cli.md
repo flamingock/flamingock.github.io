@@ -1,108 +1,204 @@
 ---
-title: CLI (coming Soon)
+title: Flamingock CLI
 sidebar_position: 999
 ---
 
-# CLI (Coming Soon)
+# Flamingock CLI
+*Enterprise-grade operational control for distributed system evolution*
 
-Flamingock’s Command-Line Interface (CLI) will enable operational and maintenance tasks outside your application’s normal startup cycle. You’ll be able to run change units, inspect or repair the audit log, and manage locks—all from a standalone command.
-
-:::info **Status:** UNDER DEVELOPMENT
- The CLI is under development and will be released soon. This page provides a high-level overview of expected upcoming features.
-:::
+Flamingock's Command-Line Interface (CLI) provides complete operational control over your system changes, enabling maintenance, troubleshooting, and governance tasks outside your application's normal startup cycle.
 
 ---
 
-## Why a CLI?
+## Enterprise Operational Capabilities
 
-- **Operational control**  
-  Execute change units, perform dry-runs, or trigger rollbacks without launching the full application.
+### **Issue Resolution & Recovery**
+The CLI is central to Flamingock's recovery strategy workflow, providing enterprise-grade operational excellence:
 
-- **Maintenance tasks**  
-  Inspect or fix inconsistencies in the audit log, manage stale locks, and run integrity checks.
+- **Issue Detection**: Identify failed or incomplete changes across your distributed systems
+- **Guided Resolution**: Get specific guidance for resolving each type of failure
+- **Audit Management**: Mark changes as resolved after manual verification or correction
+- **Compliance Workflow**: Maintain complete audit trails during issue resolution
 
-- **Automation & scripting**  
-  Integrate Flamingock operations into CI/CD pipelines, cron jobs, or custom scripts.
+### **Operational Control**
+- **Change Execution**: Run changes on-demand without full application startup
+- **Dry-Run Analysis**: Preview pending changes and their execution order
+- **Rollback Operations**: Safely revert changes using compensation logic
+- **Lock Management**: Clear stale distributed locks from interrupted processes
 
----
-
-## Planned Features
-
-When first released, the Flamingock CLI will support:
-
-- **Run change units**  
-  Execute any pending change units defined in your application’s code base.  
-  _(Requires passing your application JAR so the CLI can load the `@ChangeUnit` classes, but only if a change unit depends on code inside that JAR.)_
-
-- **Dry-run mode**  
-  Preview which change units would run and in what order—without making any changes or writing to the audit store.
-
-- **Rollback / Undo**  
-  Revert one or more change units that have already executed (by specifying change ID, date, or tag).  
-  _(Requires the application JAR if the change unit’s logic depends on application-specific classes.)_
-
-- **Audit inspection**  
-  List executed change units from the audit store and filter by criteria such as author, date range, or status.  
-  _(Does *not* require your application JAR, since it only reads from the audit backend.)_
-
-- **Lock management**  
-  View or clear distributed locks that may have been left behind by interrupted processes.
-
-- **Consistency checks**  
-  Compare the change-unit definitions in your code against entries in the audit log to detect mismatches or missing entries.
+### **Enterprise Integration**
+- **CI/CD Pipeline Integration**: Embed Flamingock operations in deployment workflows
+- **Automation Scripts**: Script common operational tasks and maintenance procedures
+- **Compliance Reporting**: Generate audit reports and change history analysis
 
 ---
 
-## Example Usage
+## Core CLI Operations
 
-Below are illustrative commands using the `fcli` (Flamingock CLI) binary. If a command needs to load your change-unit classes, it must be pointed at your application JAR. Other commands (like audit inspection) work without a JAR.
+### **Issue Resolution Workflow**
+The primary CLI workflow for operational excellence:
 
 ```bash
-# 1. Run all pending change units in 'development' profile
-fcli run \
-  --app-jar /path/to/your-app.jar \
-  --config application.yaml \
-  --profile development
+# 1. Discover issues requiring attention
+flamingock issue list
 
-# 2. Preview pending changes (no JAR required)
-fcli dry-run \
-  --config application.yaml \
-  --profile development
+# 2. Get the next issue to resolve (automatic prioritization)
+flamingock issue get
 
-# 3. Roll back a specific change by ID (requires the JAR only if rollback logic uses application classes)
-fcli rollback \
-  --app-jar /path/to/your-app.jar \
-  --change-id 0005_add_users_table \
-  --config application.yaml
+# 3. Get specific issue with detailed guidance
+flamingock issue get -c change-id --guidance
 
-# 4. List audit log entries, filter by author (no JAR required)
-fcli audit-list \
-  --config application.yaml \
-  --filter author=dev-team
-
-# 5. Clear any stale locks (no JAR required)
-fcli clear-locks \
-  --config application.yaml
-
---app-jar: Path to your compiled application JAR containing @ChangeUnit classes. Required only for commands that execute or roll back change units whose logic depends on code inside your application.
-
---config: Flamingock configuration file (e.g., application.yaml or flamingock.properties).
-
---profile: Spring-style profile or environment name (the CLI will pass this to Flamingock to select the right changes).
-
+# 4. Resolve the issue after manual verification/correction
+flamingock audit fix -c change-id --resolution APPLIED
+flamingock audit fix -c change-id --resolution ROLLED_BACK
 ```
 
-## Getting Started 
+### **Change Execution & Management**
+- **Execute Changes**: Run pending changes on-demand
+- **Dry-Run Analysis**: Preview execution order and dependencies without applying changes
+- **Rollback Operations**: Safely revert changes using `@RollbackExecution` methods
+- **Audit Inspection**: Query execution history with filtering by author, date, status
 
-**Install the CLI**  
-Download and install the platform-specific `fcli` binary for Linux, macOS, or Windows.
+### **Operational Maintenance** 
+- **Lock Management**: View and clear distributed locks from interrupted processes
+- **Consistency Checks**: Validate change definitions against audit log entries
+- **Integrity Verification**: Ensure audit store consistency and detect anomalies
 
-**Prepare your application JAR**  
-Build your project so that all `@ChangeUnit` classes are packaged into a single runnable JAR.
+### **Enterprise Reporting**
+- **Audit Trails**: Generate compliance reports and change history analysis
+- **Issue Analytics**: Track resolution patterns and operational metrics
+- **Change Impact**: Analyze cross-system dependencies and execution patterns
 
-**Run CLI commands**  
-Use the commands shown above—supplying `--app-jar` only when running or rolling back change units that depend on application-specific classes.
+---
 
-## Feedback & contributions
+## Operational Workflows
 
-We welcome your feedback on the CLI design. As the CLI nears release, feel free to open issues or submit pull requests to the Flamingock CLI repository.
+### **Issue Resolution Workflow**
+The most common CLI usage pattern for enterprise operations:
+
+```bash
+# Daily operational workflow
+flamingock issue list
+# Output: Shows all unresolved issues across your distributed systems
+
+flamingock issue get  
+# Output: Returns next priority issue with detailed context and guidance
+
+# After manual investigation and correction:
+flamingock audit fix -c user-data-update-v2 --resolution APPLIED
+# Output: ✅ Issue resolved - change marked as successfully applied
+
+# Alternative resolution:
+flamingock audit fix -c problematic-change --resolution ROLLED_BACK
+# Output: ✅ Issue resolved - change marked as rolled back
+```
+
+### **Change Management Operations**
+```bash
+# Execute pending changes on-demand
+flamingock run --app-jar /path/to/app.jar --config application.yaml
+
+# Preview what would execute (dry-run)
+flamingock dry-run --config application.yaml --profile production
+
+# Execute specific change by ID
+flamingock run -c user-schema-update --app-jar /path/to/app.jar
+
+# Rollback/undo specific change
+flamingock undo -c user-schema-update --app-jar /path/to/app.jar
+```
+
+### **Audit and Compliance Operations**
+```bash
+# List all executed changes with filtering
+flamingock audit list --author platform-team --from 2024-01-01
+
+# Generate compliance report
+flamingock audit report --format csv --output /reports/compliance-2024.csv
+
+# Verify audit store integrity
+flamingock audit verify --config application.yaml
+```
+
+### **Maintenance Operations**
+```bash
+# Clear stale distributed locks
+flamingock lock clear --config application.yaml
+
+# Check consistency between code and audit store
+flamingock consistency-check --app-jar /path/to/app.jar --config application.yaml
+```
+
+---
+
+## Enterprise Integration Patterns
+
+### **CI/CD Pipeline Integration**
+```yaml
+# Example: Jenkins/GitHub Actions integration
+deploy:
+  steps:
+    - name: Execute Flamingock Changes
+      run: |
+        flamingock run --app-jar dist/app.jar --config prod.yaml
+        
+    - name: Verify No Issues
+      run: |
+        flamingock issue list --fail-if-any
+```
+
+### **Operational Runbooks**
+```bash
+# Daily operations checklist
+#!/bin/bash
+echo "Checking for Flamingock issues..."
+flamingock issue list
+
+if [ $? -ne 0 ]; then
+  echo "Issues detected - resolving..."
+  while flamingock issue get > /dev/null; do
+    echo "Resolve the displayed issue manually, then press Enter"
+    read
+    flamingock issue get -c $(flamingock issue get --format id) --resolution APPLIED
+  done
+fi
+```
+
+### **Emergency Response**
+```bash
+# Emergency rollback procedure
+flamingock undo -c problematic-change --app-jar emergency-build.jar
+flamingock audit fix -c problematic-change --resolution ROLLED_BACK
+```
+
+---
+
+## Installation & Setup
+
+### **Download CLI**
+```bash
+# Linux/macOS
+curl -L https://releases.flamingock.io/cli/latest/flamingock-cli-linux -o flamingock
+chmod +x flamingock
+
+# Windows
+# Download from: https://releases.flamingock.io/cli/latest/flamingock-cli-windows.exe
+```
+
+### **Configuration**
+The CLI uses your existing Flamingock configuration files:
+- `application.yaml` / `application.properties`
+- `flamingock.yaml` / `flamingock.properties`
+
+### **JAR Requirements**
+Supply `--app-jar` only for commands that execute change logic:
+- **Required**: `run`, `undo`, `rollback` commands
+- **Not required**: `issue`, `audit`, `lock` commands
+
+---
+
+## Enterprise Support
+
+The Flamingock CLI is production-ready and provides enterprise-grade operational capabilities for managing distributed system evolution at scale.
+
+**Need help?** Contact support@flamingock.io for enterprise support and training.
