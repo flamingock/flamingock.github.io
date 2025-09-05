@@ -1,27 +1,27 @@
 ---
-title: Target Systems vs Audit Store
+title: Target systems vs audit store
 sidebar_position: 100
 ---
 
-# Target Systems vs Audit Store
+# Target systems vs audit store
 *Understanding Flamingock's dual-system design for enterprise safety*
 
 Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
 
 ---
 
-## The Dual-System Architecture
+## The dual-system architecture
 
-### Target Systems: Where Changes Are Applied
-**Target Systems** are your business systems where actual changes happen:
+### Target systems: where changes are applied
+**Target systems** are your business systems where actual changes happen:
 
 - **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
 - **Purpose**: Store and process your business data and configurations
 - **Modified by**: Your business logic through ChangeUnits
 - **Configuration**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) for technical setup
 
-### Audit Store: Where Execution Is Tracked  
-**Audit Store** is Flamingock's dedicated system for tracking what happened:
+### Audit store: where execution is tracked  
+**Audit store** is Flamingock's dedicated system for tracking what happened:
 
 - **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
 - **Purpose**: Record execution history, compliance data, issue tracking
@@ -30,9 +30,9 @@ Flamingock's architecture separates business changes from execution tracking thr
 
 ---
 
-## Why This Separation Matters
+## Why this separation matters
 
-### Enterprise Safety Benefits
+### Enterprise safety benefits
 1. **Complete Audit Trail**: Every change attempt is recorded regardless of business system failures
 2. **Governance Separation**: Business data and compliance data have different access patterns
 3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
@@ -40,25 +40,36 @@ Flamingock's architecture separates business changes from execution tracking thr
 
 ---
 
-## Target System Types
+## Target system types
 
-### Transactional Target Systems
+### Transactional target systems
 Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
 
-**Safety and Coordination:**
+**Safety and coordination:**
 - **Community Edition**: Reliable execution tracking and recovery capabilities
 - **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
 
-### Non-Transactional Target Systems
+### Non-transactional target systems
 Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 
-**Safety and Coordination:**
+**Safety and coordination:**
 - **Community Edition**: Reliable execution tracking and rollback-based recovery
 - **Cloud Edition**: Enhanced recoverability with custom validation options
 
 ---
 
-## How It Works
+## Audit store types
+
+### Cloud Edition audit store
+Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
+
+### Community Edition audit store  
+User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Community audit store configuration](../flamingock-library-config/audit-store-configuration.md) for setup.
+
+
+---
+
+## How it works
 
 ```
      Your ChangeUnits:
@@ -127,20 +138,20 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 
 ---
 
-## Key Takeaways
+## Key takeaways
 
-### For Developers
-- **Target Systems**: Where your business logic runs and makes changes
-- **Audit Store**: Automatically managed by Flamingock for tracking and compliance
+### For developers
+- **Target systems**: Where your business logic runs and makes changes
+- **Audit store**: Automatically managed by Flamingock for tracking and compliance
 - **Implementation**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) and [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md)
 
-### For Architects  
-- **Clean Separation**: Business logic separated from execution tracking
-- **Enterprise Scalability**: Architecture supports compliance, governance, multi-environment
+### For architects  
+- **Clean separation**: Business logic separated from execution tracking
+- **Enterprise scalability**: Architecture supports compliance, governance, multi-environment
 - **Flexibility**: Works with any target system type (transactional, non-transactional, hybrid)
 
-### For Operations
-- **Issue Resolution**: Tools operate on audit store, you fix target systems
+### For operations
+- **Issue resolution**: Tools operate on audit store, you fix target systems
 - **Compliance**: Complete audit trail independent of business system availability  
 - **Recovery**: Always know the state, even during complex failure scenarios
 
