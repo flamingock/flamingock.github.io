@@ -156,8 +156,8 @@ For our example:
 
 ```java
 SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
-NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3");
-NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka");
+DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
+DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
 ```
 
 See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.

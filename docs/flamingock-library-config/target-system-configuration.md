@@ -53,9 +53,9 @@ public class App {
     SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
         .withDatasource(ds);
 
-    NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3");
+    DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
 
-    NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka-stock");
+    DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
 
     FlamingockStandalone
       .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
@@ -79,8 +79,8 @@ public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
 }
 
 @Bean  
-public NonTransactionalTargetSystem kafkaTargetSystem() {
-    return new NonTransactionalTargetSystem("kafka-stock");
+public DefaultTargetSystem kafkaTargetSystem() {
+    return new DefaultTargetSystem("kafka-stock");
 }
 ```
 
