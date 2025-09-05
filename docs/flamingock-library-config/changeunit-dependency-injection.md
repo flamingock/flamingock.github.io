@@ -1,13 +1,30 @@
 ---
 title: ChangeUnit dependency injection
-sidebar_position: 4
+sidebar_position: 45
 ---
 
-Flamingock allows you to inject dependencies into your change units so they can use services, clients, or utilities during execution. This is especially useful for **standalone applications**, where no dependency injection framework (like Spring) is present.
+# ChangeUnit Dependency Injection
 
-If you're using **Spring Boot**, Flamingock can integrate with the Spring context to resolve dependencies automatically — Please refer to the [Spring Boot Integration](../frameworks/springboot-integration/introduction.md) section for details.
+Flamingock provides a sophisticated dependency injection system that automatically resolves dependencies for ChangeUnits from multiple sources. Understanding this system is crucial for building maintainable and well-structured changes.
 
-This injection is handled via the **Flamingock builder** — not via YAML — and supports:
+## How dependency resolution works
+
+Flamingock uses a **hierarchical resolution strategy** that searches for dependencies in this order:
+
+1. **Target system context** - Dependencies provided by the specific target system
+2. **General application context** - Shared dependencies registered globally direcntly in the builder  
+3. **Framework context** - When using Spring Boot, beans from the Spring container
+
+This approach ensures that system-specific dependencies are properly scoped while allowing shared utilities to be available everywhere.
+
+:::info
+**Target System Integration**: Each ChangeUnit declares a target system via `@TargetSystem("system-name")`. The target system automatically provides its core dependencies without manual registration.  
+See [Target System Configuration](./target-system-configuration.md) for details.
+:::
+
+## Supported injection features
+
+Dependency injection is configured via the **Flamingock builder** and target system registration, supporting:
 
 | Feature                                                    |  Supported?  |
 |------------------------------------------------------------|:------------:|
@@ -21,34 +38,93 @@ This injection is handled via the **Flamingock builder** — not via YAML — an
 
 ---
 
-## Registering dependencies
+## Target system dependencies
 
-Platform changeUnit dependencies  are registered using the method `addDependency(...)` :
+**Target systems automatically provide their core dependencies** without manual registration. When you register a target system, its primary dependencies become available to all ChangeUnits targeting that system.
+
+### Creating and registering the target system
+First, you create and register a target system with its dependencies:
+
 ```java
-builder
-  .addDependency(clientService);                         
+// Register Kafka Schema Registry target system with its dependencies
+SchemaRegistryClient schemaRegistryClient = new CachedSchemaRegistryClient("http://localhost:8081", 100);
+KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+
+DefaultTargetSystem schemaRegistrySystem = new DefaultTargetSystem("kafka-schema-registry")
+    .addDependency(schemaRegistryClient)
+    .addDependency(kafkaTemplate)
+    .addDependency("schemaValidator", schemaValidatorService);
+
+FlamingockStandalone
+    .addTargetSystems(schemaRegistrySystem)
+    .build()
+    .run();
 ```
-Once registered, Flamingock can inject the requested dependency into your change unit methods or constructors.
+
+### Linking ChangeUnits to the target system
+Then, ChangeUnits targeting that system automatically receive the registered dependencies:
+
 ```java
-@Execution
-public void execute(ClientService clientService) {
-    // ChangeUnit's logic
+@TargetSystem("kafka-schema-registry")
+@ChangeUnit(id = "register-user-schema", order = "001", author = "team")
+public class RegisterUserSchema {
+    
+    @Execution
+    public void execute(SchemaRegistryClient schemaRegistryClient,
+                       KafkaTemplate<String, Object> kafkaTemplate,
+                       @Named("schemaValidator") SchemaValidatorService validator) {
+        // Dependencies injected automatically from "kafka-schema-registry" target system
+        String userSchemaJson = loadUserSchema();
+        validator.validateSchema(userSchemaJson);
+        
+        Schema userSchema = new Schema.Parser().parse(userSchemaJson);
+        schemaRegistryClient.register("user-events-value", userSchema);
+    }
 }
 ```
-### Using name and explicit type
-Let’s say you have a base class `PaymentProcessor`, with two implementations: `StripePaymentProcessor` and `PaypalPaymentProcessor`.
 
-Now imagine you're injecting both implementations like this:
+
+## Registering additional dependencies
+
+For shared or globally-scoped dependencies, use the `addDependency(...)` method in the builder:
+
+```java
+builder
+  .addDependency(clientService)                          // Shared service
+  .addDependency("emailService", emailServiceImpl);     // Named dependency
+```
+
+These dependencies are available to all ChangeUnits as fallbacks when not provided by the target system:
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "notify-users", order = "002", author = "team")
+public class NotifyUsers {
+    
+    @Execution
+    public void execute(MongoDatabase database,      // From target system
+                       EmailService emailService) { // From general context
+        // Both dependencies resolved automatically
+        List<User> users = findUsers(database);
+        emailService.notifyUsers(users);
+    }
+}
+```
+## Resolving ambiguous dependencies
+
+When multiple implementations exist for the same interface, you need to be explicit about which one to use.
+
+
+
+### Example scenario
+You have a `PaymentProcessor` interface with two implementations:
+
 ```java
 addDependency(new StripePaymentProcessor());
 addDependency(new PaypalPaymentProcessor());
 ```
 
-If a change unit method requests either `StripePaymentProcessor` or `PaypalPaymentProcessor` specifically, Flamingock will inject the correct one.
-
-But if the method requests the general type `PaymentProcessor`, Flamingock cannot guarantee which of the two will be used.
-
-To solve this, Flamingock provides two mechanisms:
+Requesting `PaymentProcessor` directly would be ambiguous. Flamingock provides two solutions:
 
 #### Named dependency
 You can register each implementation with a name:
@@ -73,6 +149,9 @@ builder.addDependency(PaymentProcessor.class, new StripePaymentProcessor());
 ```
 Now, any method requesting a `PaymentProcessor` will receive the Stripe implementation — unless a named one is requested instead.
 
+:::info
+**Target systems can solve many ambiguity issues naturally**. By registering different implementations in separate target systems, each ChangeUnit automatically gets the right implementation for its context without manual disambiguation.
+:::
 
 ---
 
@@ -148,9 +227,11 @@ public void run(@NonLockGuarded SomeHelper helper) {
 ```
 ---
 
-## :white_check_mark: Best practices
+## Best practices
 
-- Only inject what you need for the current change unit
-- Prefer constructor injection when dependencies are shared across multiple methods
-- Use `@NonLockGuarded` only when you're certain no side effects are involved
-- Document your dependencies to avoid confusion in large pipelines
+- **Leverage target system dependencies**: Use target system auto-injection for database connections, clients, and system-specific tools
+- **Keep dependencies scoped**: Don't register target system-specific dependencies globally - let each target system provide its own
+- **Only inject what you need** for the current change unit
+- **Prefer constructor injection** when dependencies are shared across multiple methods  
+- **Use `@NonLockGuarded` carefully** - only when you're certain no side effects are involved
+- **Document complex dependency chains** to avoid confusion in large applications
