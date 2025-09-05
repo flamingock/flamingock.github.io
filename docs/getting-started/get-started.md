@@ -76,7 +76,7 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
   </TabItem>
 </Tabs>
 
-For more about editions, see [Community Edition](../community-edition/introduction.md) and [Cloud Edition](../overview/Editions.md).
+For more about editions, see [Community Audit Stores](../community-audit-stores/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
 ---
 
@@ -189,7 +189,7 @@ See [Stages](../flamingock-library-config/setup-and-stages.md) for more details 
 
 Finally, configure Flamingock before running your application.
 
-- **Community Edition**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder
+- **Community Audit Stores**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder
 
 - **Cloud Edition** (coming soon): Provide your API token, service name, and environment
 

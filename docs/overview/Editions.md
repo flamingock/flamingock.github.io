@@ -10,7 +10,7 @@ Flamingock provides a strategic investment path from open-source foundation to e
 
 ![](../../static/img/Diagrams-Editions.drawio.png)
 
-## **🔹 Community Edition (Open Source)**
+## **🔹 Community Audit Stores (Open Source)**
 *Complete safety foundation for distributed system evolution*
 
 **The Foundation**: All core safety guarantees and audit capabilities that make Flamingock unique.
@@ -42,14 +42,14 @@ Flamingock provides a strategic investment path from open-source foundation to e
 
 ### Three-Tier Value Proposition
 
-#### **Foundation** (All Community Edition capabilities included)
+#### **Foundation** (All Community Audit Stores capabilities included)
 - Complete safety guarantees and audit capabilities
 - All recovery strategies and CLI operations
 - Universal target system support with distributed coordination
 
 #### **Enhanced Execution** (Same configuration, better outcomes)
 - **Intelligent Automation**: Advanced reconciliation and marker mechanisms
-- **Enhanced Recovery**: Automatic issue resolution for operations that would require manual intervention in Community Edition
+- **Enhanced Recovery**: Automatic issue resolution for operations that would require manual intervention in Community Audit Stores
 - **Smart Retry Logic**: Sophisticated backoff and circuit breaker patterns
 - **Cross-System Coordination**: Advanced transaction protocols for distributed changes
 
@@ -64,7 +64,7 @@ Flamingock provides a strategic investment path from open-source foundation to e
 ### **Strategic Investment Path**
 **"Same safety foundations → Enhanced automatic outcomes → Enterprise platform capabilities"**
 
-Start with Community Edition's complete safety guarantees, then enhance with Cloud's automatic resolution and enterprise features. Your configurations and change definitions remain unchanged - Cloud Edition amplifies their effectiveness.
+Start with Community Audit Stores's complete safety guarantees, then enhance with Cloud's automatic resolution and enterprise features. Your configurations and change definitions remain unchanged - Cloud Edition amplifies their effectiveness.
 
 ### **Join the Beta Program**
 :::tip **Early Access Available**
@@ -111,7 +111,7 @@ Flamingock Self-Hosted Edition is available by request for qualifying enterprise
 
 ## **Choosing Your Edition**
 
-| Need | Community Edition | Cloud Edition | Self-Hosted |
+| Need | Community Audit Stores | Cloud Edition | Self-Hosted |
 |------|------------------|---------------|-------------|
 | **Enterprise Safety** | ✅ Complete | ✅ Enhanced | ✅ Enhanced |
 | **Audit & Compliance** | ✅ Full capabilities | ✅ Advanced automation | ✅ Advanced + sovereignty |
@@ -120,4 +120,4 @@ Flamingock Self-Hosted Edition is available by request for qualifying enterprise
 | **Infrastructure Management** | Self-managed | Fully managed | Self-managed |
 | **Data Sovereignty** | ✅ Your control | Flamingock managed | ✅ Your control |
 
-**Start your journey**: [Community Edition](../getting-started/get-started.md) → [Cloud Beta Program](#join-the-beta-program) → [Enterprise Self-Hosted](#flamingock-self-hosted-edition)
+**Start your journey**: [Community Audit Stores](../getting-started/get-started.md) → [Cloud Beta Program](#join-the-beta-program) → [Enterprise Self-Hosted](#flamingock-self-hosted-edition)

@@ -75,7 +75,7 @@ Flamingock is a **"Change-as-Code" platform** that versions and orchestrates any
 - **Deterministic state**: Always know exactly what happened and what needs to happen next
 
 ### Edition Positioning
-- **Community Edition**: Secure + Functional
+- **Community Audit Stores**: Secure + Functional
   - Complete safety guarantees
   - Manual intervention when needed
   - Full audit capabilities
@@ -239,7 +239,7 @@ Start with MANUAL_INTERVENTION, move to ALWAYS_RETRY after validation
 
 ## CRITICAL: Flamingock Transaction Behavior
 
-**Important Technical Detail**: Even in Community Edition, audit operations and target system changes are ALWAYS executed in separate transactions:
+**Important Technical Detail**: Even in Community Audit Stores, audit operations and target system changes are ALWAYS executed in separate transactions:
 
 ### Transaction Separation Rules
 1. **Non-transactional target systems**: No transactions at all - neither the change nor audit
@@ -247,7 +247,7 @@ Start with MANUAL_INTERVENTION, move to ALWAYS_RETRY after validation
 3. **Same database as audit store**: Still separate transactions - target system transaction + separate audit transaction
 
 ### Recovery Implications
-- **Community Edition**: Flamingock can recover the majority of failure scenarios through separate transaction approach
+- **Community Audit Stores**: Flamingock can recover the majority of failure scenarios through separate transaction approach
 - **Uncertain scenarios**: When Flamingock saves "started" audit but fails before saving completion status
 - **Cloud Edition**: Marker mechanism provides 100% recovery even in uncertain scenarios
 
@@ -315,7 +315,7 @@ yarn swizzle        # Eject Docusaurus components for customization
 ### Key Directories
 - `docs/`: Main documentation content organized by categories
   - `overview/`: Introduction and core concepts
-  - `community-edition/`: CE-specific documentation
+  - `community-audit-stores/`: Community audit stores specific documentation
   - `flamingock-library-config/`: Library configuration guides
   - `frameworks/`: Framework integration guides
   - `templates/`: Template documentation

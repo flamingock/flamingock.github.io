@@ -1,472 +1,84 @@
 ---
-title: Audit Store Configuration
+title: Audit store configuration  
 sidebar_position: 30
 ---
 
-# Audit Store Configuration
-*How to configure Flamingock's audit store for tracking and compliance*
+# Audit store configuration
 
-The audit store is Flamingock's dedicated system for tracking execution history, managing distributed locking, and ensuring compliance. This guide covers configuration options for different audit store implementations.
+The audit store is Flamingock's dedicated system for tracking execution history, preventing duplicate executions, and ensuring safe system evolution.
 
-> **Conceptual Overview**: For architectural understanding of audit store vs target systems, see [Target Systems vs Audit Store Architecture](../overview/audit-store-vs-target-system.md).
+## What is the audit store?
 
----
+The audit store tracks:
+- **Execution history**: Which ChangeUnits ran, when, and with what outcome
+- **Distributed locking**: Prevents concurrent executions across multiple instances  
+- **Issue tracking**: Failed or uncertain executions requiring resolution
 
-## Audit Store Fundamentals
+Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your ChangeUnits.
 
-### What the Audit Store Tracks
-- **Execution History**: Which ChangeUnits ran, when, and with what outcome
-- **Distributed Locking**: Prevents concurrent executions across multiple instances
-- **Issue Tracking**: Failed or uncertain executions requiring resolution
-- **Metadata**: Authors, environments, execution context
+> **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
 
-### Audit Store vs Target Systems
-- **Audit Store**: Managed automatically by Flamingock framework (never modified by your code)
-- **Target Systems**: Modified by your business logic in `@Execution` methods
-- **Independence**: Audit integrity maintained even if target systems fail
+## Configuration requirements
 
----
+### Cloud Edition
+**No configuration needed** - Flamingock Cloud provides a fully managed audit store with superior synchronization, recovery mechanisms, real-time dashboards, and multi-environment governance.
 
-## Community Edition Audit Store Options
+### Community Audit Stores  
+You must provide and configure your own audit store. Flamingock supports MongoDB, DynamoDB, and Couchbase as audit stores.
 
-### MongoDB Audit Store
+## Community Audit Stores configuration
 
-#### Basic Configuration
+In Community Audit Stores, you register the audit store with the Flamingock builder:
+
 ```java
-@Configuration
-public class FlamingockConfig {
+// Generic example - audit store configuration
+public class App {
+  public static void main(String[] args) {
+    // Create your audit store connection
+    AuditStore auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
     
-    @Bean
-    public Flamingock flamingock(MongoTemplate mongoTemplate) {
-        return Flamingock.builder()
-            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
-            .addMigrationClass(MyChangeUnits.class)
-            .build();
-    }
+    // Register with Flamingock
+    FlamingockStandalone
+      .setAuditStore(auditStore)  // Set the audit store
+      .addTargetSystems(myTargetSystem)
+      .build()
+      .run();
+  }
 }
 ```
 
-#### Advanced MongoDB Configuration
+### Spring Boot configuration
 ```java
-@Configuration
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock() {
-        // Create dedicated audit store connection
-        MongoClientSettings settings = MongoClientSettings.builder()
-            .applyConnectionString(ConnectionString.create("mongodb://audit-db:27017/flamingock-audit"))
-            .writeConcern(WriteConcern.MAJORITY)  // Ensure audit durability
-            .readConcern(ReadConcern.MAJORITY)    // Consistent audit reads
-            .build();
-        
-        MongoClient auditClient = MongoClients.create(settings);
-        MongoTemplate auditTemplate = new MongoTemplate(auditClient, "flamingock-audit");
-        
-        return Flamingock.builder()
-            .setConnectionRepository(new MongoConnectionRepository(auditTemplate))
-            .addMigrationClass(MyChangeUnits.class)
-            .build();
-    }
+@Bean
+public AuditStore auditStore(MongoClient mongoClient) {
+    return new MongoSyncAuditStore(mongoClient, "flamingock-audit");
 }
+
+// Flamingock Spring Boot auto-configuration will pick this up automatically
 ```
 
-#### MongoDB Collections Structure
-Flamingock automatically creates these collections in your audit store:
+## Available Community audit stores
 
-- **`changeLog`**: Execution history and state tracking
-- **`locks`**: Distributed locking for concurrent safety
-- **`issues`**: Failed executions requiring resolution
+For specific configuration details of each supported audit store, see:
 
-### DynamoDB Audit Store
+- [MongoDB audit store](../community-audit-stores/mongodb-audit-store.md)
+- [MongoDB Spring Data audit store](../community-audit-stores/mongodb-springdata-audit-store.md)
+- [DynamoDB audit store](../community-audit-stores/dynamodb-audit-store.md)  
+- [Couchbase audit store](../community-audit-stores/couchbase-audit-store.md)
 
-#### Basic DynamoDB Configuration
-```java
-@Configuration
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock(DynamoDbClient dynamoDbClient) {
-        DynamoConnectionRepository connectionRepository = 
-            new DynamoConnectionRepository(dynamoDbClient)
-                .withTablePrefix("flamingock-")  // Optional: prefix for table names
-                .withRegion(Region.US_EAST_1);   // Optional: specify region
-        
-        return Flamingock.builder()
-            .setConnectionRepository(connectionRepository)
-            .addMigrationClass(MyChangeUnits.class)
-            .build();
-    }
-}
-```
+Each implementation provides:
+- Complete execution tracking
+- Distributed locking mechanisms
+- Issue management capabilities
+- Configuration options specific to the database
 
-#### DynamoDB Tables Structure
-Flamingock automatically creates these tables:
+## Best practices
 
-- **`flamingock-changeLog`**: Execution history
-- **`flamingock-locks`**: Distributed locking
-- **`flamingock-issues`**: Issue tracking
-
-### Couchbase Audit Store
-
-#### Basic Couchbase Configuration
-```java
-@Configuration  
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock() {
-        Cluster cluster = Cluster.connect("localhost", "username", "password");
-        Bucket bucket = cluster.bucket("flamingock-audit");
-        
-        CouchbaseConnectionRepository connectionRepository = 
-            new CouchbaseConnectionRepository(bucket)
-                .withScope("audit-scope")        // Optional: custom scope
-                .withCollection("change-log");   // Optional: custom collection
-        
-        return Flamingock.builder()
-            .setConnectionRepository(connectionRepository)
-            .addMigrationClass(MyChangeUnits.class)
-            .build();
-    }
-}
-```
+1. **Separation of concerns**: Consider using a dedicated database/collection for the audit store, separate from your business data
+2. **Durability settings**: Configure strong consistency settings for your audit store to ensure reliable tracking
+3. **Access control**: Limit write access to the audit store to only the Flamingock framework
+4. **Backup strategy**: Include the audit store in your backup procedures for compliance and recovery
 
 ---
 
-## Audit Store Configuration Options
-
-### Write Concern and Durability
-Critical for audit integrity - ensure changes are durably persisted:
-
-```java
-// MongoDB with strong consistency
-MongoClientSettings settings = MongoClientSettings.builder()
-    .writeConcern(WriteConcern.MAJORITY)     // Wait for majority acknowledgment
-    .readConcern(ReadConcern.MAJORITY)       // Read from majority
-    .readPreference(ReadPreference.primary()) // Always read from primary
-    .build();
-
-// DynamoDB with consistent reads
-DynamoConnectionRepository connectionRepository = 
-    new DynamoConnectionRepository(dynamoDbClient)
-        .withConsistentRead(true)            // Enable strong consistency
-        .withWriteCapacity(25)               // Provision appropriate capacity
-        .withReadCapacity(25);
-```
-
-### Collection/Table Naming
-Customize audit store object names:
-
-```java
-// MongoDB custom collection names
-MongoConnectionRepository connectionRepository = 
-    new MongoConnectionRepository(mongoTemplate)
-        .withChangeLogCollectionName("execution_history")
-        .withLockCollectionName("distributed_locks")
-        .withIssuesCollectionName("failed_executions");
-
-// DynamoDB custom table names  
-DynamoConnectionRepository connectionRepository = 
-    new DynamoConnectionRepository(dynamoDbClient)
-        .withChangeLogTableName("ExecutionHistory")
-        .withLockTableName("DistributedLocks")
-        .withIssuesTableName("FailedExecutions");
-```
-
-### Index Optimization
-Flamingock automatically creates necessary indexes, but you can optimize:
-
-```javascript
-// MongoDB: Additional indexes for query performance
-db.changeLog.createIndex({ "targetSystem": 1, "executionDate": -1 })
-db.changeLog.createIndex({ "author": 1, "status": 1 })
-db.issues.createIndex({ "createdAt": -1, "status": 1 })
-```
-
----
-
-## Separation Patterns
-
-### Pattern 1: Same Database as Target System
-Simplest setup - audit and business data in same database:
-
-```java
-@Configuration
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock(@Qualifier("businessDatabase") MongoTemplate mongoTemplate) {
-        // Both audit store and target system use same database
-        // Benefits: Single database to manage, reduced infrastructure complexity
-        // Important: Even with same database, audit and changes use separate transactions
-        // Trade-offs: Mixed concerns, shared resource limits
-        return Flamingock.builder()
-            .setConnectionRepository(new MongoConnectionRepository(mongoTemplate))
-            .addMigrationClass(BusinessChangeUnits.class)
-            .build();
-    }
-}
-```
-
-### Pattern 2: Dedicated Audit Database
-Best practice - separate audit store from business systems:
-
-```java
-@Configuration
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock(@Qualifier("auditDatabase") MongoTemplate auditTemplate,
-                                @Qualifier("businessDatabase") MongoTemplate businessTemplate) {
-        // Audit store: dedicated database for compliance and tracking
-        // Target systems: business databases
-        // Benefits: Clear separation, independent scaling, compliance isolation
-        return Flamingock.builder()
-            .setConnectionRepository(new MongoConnectionRepository(auditTemplate))
-            .addDependency("businessDatabase", businessTemplate)
-            .addMigrationClass(BusinessChangeUnits.class)
-            .build();
-    }
-}
-```
-
-### Pattern 3: Cloud Edition
-Managed audit store with enhanced capabilities:
-
-```java
-@Configuration
-public class FlamingockConfig {
-    
-    @Bean
-    public Flamingock flamingock(@Value("${flamingock.cloud.api-key}") String apiKey) {
-        // Audit store: Fully managed Flamingock Cloud backend
-        // Target systems: Your business systems
-        // Benefits: Zero ops, advanced features, enterprise governance
-        return Flamingock.builder()
-            .setConnectionRepository(new CloudConnectionRepository(apiKey))
-            .addMigrationClass(BusinessChangeUnits.class)
-            .build();
-    }
-}
-```
-
----
-
-## Security and Access Control
-
-### Audit Store Security
-Protect audit integrity with proper access controls:
-
-```java
-// MongoDB with authentication and SSL
-MongoClientSettings settings = MongoClientSettings.builder()
-    .applyConnectionString(ConnectionString.create(
-        "mongodb://audit-user:secure-password@audit-cluster:27017/flamingock-audit" +
-        "?authSource=admin&ssl=true&replicaSet=audit-rs"))
-    .sslSettings(SslSettings.builder()
-        .enabled(true)
-        .invalidHostNameAllowed(false)
-        .build())
-    .build();
-```
-
-### Role-Based Access
-Define appropriate database roles:
-
-```javascript
-// MongoDB: Audit store user with minimal required permissions
-db.createUser({
-    user: "flamingock-audit",
-    pwd: "secure-password",
-    roles: [
-        {
-            role: "readWrite",
-            db: "flamingock-audit"
-        },
-        {
-            role: "dbAdmin",  // For index creation
-            db: "flamingock-audit"
-        }
-    ]
-});
-```
-
-### Network Security
-Isolate audit store network access:
-
-```yaml
-# Docker Compose example with network isolation
-services:
-  audit-database:
-    image: mongo:7
-    networks:
-      - audit-network
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: audit-admin
-      MONGO_INITDB_ROOT_PASSWORD: secure-password
-  
-  app:
-    networks:
-      - audit-network
-      - business-network
-```
-
----
-
-## Performance and Scaling
-
-### Connection Pooling
-Optimize audit store connections:
-
-```java
-// MongoDB connection pool settings
-MongoClientSettings settings = MongoClientSettings.builder()
-    .applyToConnectionPoolSettings(builder ->
-        builder.maxSize(20)                    // Max connections
-               .minSize(5)                     // Min connections
-               .maxWaitTime(10, TimeUnit.SECONDS)
-               .maxConnectionIdleTime(30, TimeUnit.SECONDS))
-    .build();
-```
-
-### Write Performance Optimization
-Balance consistency with performance:
-
-```java
-// For high-throughput scenarios
-MongoConnectionRepository connectionRepository = 
-    new MongoConnectionRepository(mongoTemplate)
-        .withBatchSize(100)              // Batch audit writes
-        .withAsyncWrites(true)           // Non-blocking audit writes
-        .withRetryPolicy(RetryPolicy.exponentialBackoff());
-```
-
-### Monitoring and Metrics
-Track audit store health:
-
-```java
-@Component
-public class AuditStoreMonitoring {
-    
-    @EventListener
-    public void onAuditWrite(AuditWriteEvent event) {
-        // Track audit store performance metrics
-        meterRegistry.timer("flamingock.audit.write.duration")
-                    .record(event.getDuration());
-        
-        if (event.hasFailed()) {
-            meterRegistry.counter("flamingock.audit.write.failures")
-                        .increment();
-        }
-    }
-}
-```
-
----
-
-## Backup and Recovery
-
-### Audit Store Backup Strategy
-Protect your compliance and execution history:
-
-```bash
-#!/bin/bash
-# MongoDB audit store backup script
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-mongodump --host audit-cluster:27017 \
-         --db flamingock-audit \
-         --out /backups/flamingock-audit-$TIMESTAMP \
-         --gzip
-
-# Retention: Keep 30 days of backups
-find /backups -name "flamingock-audit-*" -mtime +30 -exec rm -rf {} \;
-```
-
-### Disaster Recovery
-Restore audit store from backup:
-
-```bash
-#!/bin/bash
-# Restore audit store from backup
-BACKUP_DATE="20241201_143000"
-mongorestore --host audit-cluster:27017 \
-            --db flamingock-audit \
-            --gzip \
-            /backups/flamingock-audit-$BACKUP_DATE/flamingock-audit
-
-# Verify restoration
-mongo audit-cluster:27017/flamingock-audit --eval "db.changeLog.count()"
-```
-
----
-
-## Troubleshooting Audit Store Issues
-
-### Common Configuration Problems
-
-#### Connection Issues
-```
-Error: Unable to connect to audit store
-Solution: Verify connection string, network access, and authentication credentials
-```
-
-#### Permission Errors
-```
-Error: Insufficient permissions to create collections/tables
-Solution: Grant necessary database permissions to Flamingock user
-```
-
-#### Index Creation Failures
-```
-Error: Failed to create audit store indexes
-Solution: Ensure dbAdmin privileges or create indexes manually
-```
-
-### Diagnostic Commands
-```bash
-# Verify audit store connectivity
-flamingock test-connection --audit-store
-
-# Check audit store schema
-flamingock audit verify-schema
-
-# Monitor audit store performance
-flamingock audit stats --since "1 hour ago"
-
-# Repair corrupted audit entries (use with caution)
-flamingock audit repair --dry-run
-```
-
-### Health Checks
-Implement audit store health monitoring:
-
-```java
-@Component
-public class AuditStoreHealthIndicator implements HealthIndicator {
-    
-    @Override
-    public Health health() {
-        try {
-            // Test audit store connectivity
-            auditStore.testConnection();
-            
-            // Verify recent write capability
-            auditStore.writeHealthCheck();
-            
-            return Health.up()
-                        .withDetail("audit-store", "Available")
-                        .build();
-        } catch (Exception e) {
-            return Health.down()
-                        .withDetail("audit-store", "Unavailable")
-                        .withException(e)
-                        .build();
-        }
-    }
-}
-```
-
----
-
-**Key Takeaway**: Proper audit store configuration is critical for Flamingock's safety guarantees, compliance capabilities, and operational reliability. Choose the configuration pattern that best matches your architecture and operational requirements.
+**Key takeaway**: The audit store is critical for Flamingock's safety guarantees. Cloud Edition provides this fully managed, while Community Audit Stores requires you to configure one of the supported databases.

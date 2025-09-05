@@ -147,8 +147,8 @@ const config = {
                 to: '/docs/flamingock-library-config/introduction',
               },
               {
-                label: 'Community Edition',
-                to: '/docs/community-edition/introduction',
+                label: 'Community Audit Stores',
+                to: '/docs/community-audit-stores/introduction',
               },
               {
                 label: 'Resources',

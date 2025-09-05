@@ -1,5 +1,5 @@
 ---
-title: MongoDB (Java driver)
+title: MongoDB
 sidebar_position: 2
 ---
 
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-This section explains how to configure and use the **Flamingock Community Edition for MongoDB** in applications that interact directly with MongoDB using the **official Java driver** (`mongodb-driver-sync`).
+This section explains how to configure and use the **Flamingock Community Audit Stores for MongoDB** in applications that interact directly with MongoDB using the **official Java driver** (`mongodb-driver-sync`).
 
 This edition is designed for use cases where the application provides its own MongoDB connection via `MongoClient`, and Flamingock operates directly over that connection to manage changes. It does not rely on any external framework or abstraction layer.
 
@@ -33,7 +33,7 @@ Flamingock supports `mongodb-driver-sync` versions from **4.0.0 up to 5.x.x**.
 
 ## Get started
 
-To get started with the Flamingock Community Edition for MongoDB, follow these basic steps:
+To get started with the Flamingock Community Audit Stores for MongoDB, follow these basic steps:
 
 ### 1. Add the required dependencies
 

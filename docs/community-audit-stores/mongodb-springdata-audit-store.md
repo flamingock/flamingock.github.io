@@ -1,5 +1,5 @@
 ---
-title: MongoDB (Spring Data)
+title: MongoDB Spring Data
 sidebar_position: 3
 ---
 
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-This section explains how to use the **Flamingock Community Edition for MongoDB** in applications that rely on **Spring Data MongoDB**.
+This section explains how to use the **Flamingock Community Audit Stores for MongoDB** in applications that rely on **Spring Data MongoDB**.
 
 This edition is designed for teams that already use Spring Data to manage their database access and want to include Flamingock as part of their change tracking and execution model. It integrates with **Spring Boot** and **MongoTemplate**, handling auditing, distributed locking, and transactional coordination.
 
@@ -23,7 +23,7 @@ Flamingock persists a minimal set of metadata in your MongoDB database:
 
 Flamingock provides two editions for Spring Data.
 
-### Why are there two MongoDB Spring Data Community-Edition artifacts?
+### Why are there two MongoDB Spring Data community-audit-stores artifacts?
 
 The only difference is the Java version they target:
 

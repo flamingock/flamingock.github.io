@@ -125,7 +125,7 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 Flamingock provides two editions for Spring Boot integration.
 
-### Why are there two Spring Boot integration Community-Edition artifacts?
+### Why are there two Spring Boot integration community-audit-stores artifacts?
 
 The only difference is the Java version they target:
 

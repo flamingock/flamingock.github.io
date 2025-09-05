@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-This section explains how to configure and use the **Flamingock Community Edition for DynamoDB** in applications that interact with Amazon DynamoDB using the **official AWS SDK for Java**.
+This section explains how to configure and use the **Flamingock Community Audit Stores for DynamoDB** in applications that interact with Amazon DynamoDB using the **official AWS SDK for Java**.
 
 This edition is designed for use cases where the application provides its own DynamoDB client via `DynamoDbClient`, and Flamingock operates directly over that connection to manage changes. It does not require any framework-level integration.
 
@@ -31,7 +31,7 @@ This is a single edition for DynamoDB, provided as a standalone artifact.
 
 ## Get started
 
-To get started with the Flamingock Community Edition for DynamoDB, follow these steps:
+To get started with the Flamingock Community Audit Stores for DynamoDB, follow these steps:
 
 ---
 
@@ -99,7 +99,7 @@ runner.execute();
 ---
 ## Configuration overview
 
-Flamingock’s DynamoDB Community Edition requires both:
+Flamingock’s DynamoDB Community Audit Stores requires both:
 - A `DynamoDbClient` dependency
 - A set of configuration properties
 

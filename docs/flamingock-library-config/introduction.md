@@ -29,7 +29,7 @@ Configuration is divided into two distinct scopes:
 | Lock                             | Distributed locking and timing options              |
 | Extra                            | Metadata, default author, enable/disable            |
 | Cloud Edition                    | Cloud-specific setup: token, env, service           |
-| Community Edition                | Driver-specific config for MongoDB, DynamoDB...     |
+| Community Audit Stores                | Driver-specific config for MongoDB, DynamoDB...     |
 
 
 Each of these topics is explained in its own section.
@@ -52,7 +52,7 @@ Includes:
 ### Edition-specific configuration
 Based on the edition of Flamingock you import:
 - **Cloud Edition**: Related settings to configure Flamingock Cloud.
-- **Community Edition**: MongoDB, DynamoDB, Couchbase drivers and related settings.
+- **Community Audit Stores**: MongoDB, DynamoDB, Couchbase drivers and related settings.
 
 Each of these can be used in two runtime environments:
 - **Standalone** (default) — direct usage with builder (file-based config will be supported soon)
@@ -121,4 +121,4 @@ Explore the rest of the configuration section to tune Flamingock for your system
 
 ### Pick an edition
 - [☁️ Cloud Edition(Fully-featured)](../cloud-edition/cloud-edition.md)
-- 🧪 Community Edition(feature-limited)
+- 🧪 Community Audit Stores(feature-limited)

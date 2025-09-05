@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Introduction
 
-This section explains how to configure and use the **Flamingock Community Edition for Couchbase** in applications that interact directly with Couchbase using the **official Couchbase Java SDK**.
+This section explains how to configure and use the **Flamingock Community Audit Stores for Couchbase** in applications that interact directly with Couchbase using the **official Couchbase Java SDK**.
 
 This edition is intended for scenarios where your application provides a `Cluster` instance and its associated connection. Flamingock will work directly on this connection to track and execute database changes. It does not rely on any framework abstraction or integration.
 
@@ -31,7 +31,7 @@ This edition supports Couchbase through a dedicated artifact:
 
 ## Get started
 
-To get started with the Flamingock Community Edition for Couchbase, follow these steps:
+To get started with the Flamingock Community Audit Stores for Couchbase, follow these steps:
 
 ### 1. Add the required dependencies
 

@@ -16,7 +16,7 @@ Flamingock is a **safety-first platform** for the evolution of distributed syste
 - **Deterministic state**: Always know exactly what happened and what needs to happen next
 
 ### Edition Positioning
-- **Community Edition**: Secure + Functional
+- **Community Audit Stores**: Secure + Functional
   - Complete safety guarantees
   - Manual intervention when needed
   - Full audit capabilities
@@ -551,7 +551,7 @@ In transactional systems, Cloud Edition uses "markers" to ensure safety:
 4. **On failure**: Marker indicates whether changes were applied
 5. **Recovery**: Use marker state to determine safe action
 
-This allows Cloud Edition to **automatically resolve** many issues that would require manual intervention in Community Edition.
+This allows Cloud Edition to **automatically resolve** many issues that would require manual intervention in Community Audit Stores.
 
 ### Enterprise Resilience Features
 
@@ -759,7 +759,7 @@ A: Safety first. It's better to stop and investigate than to corrupt data. You c
 A: When your operation is idempotent and safe to repeat multiple times. Examples: cache warming, event publishing, creating resources with IF NOT EXISTS.
 
 **Q: How does Cloud Edition improve recovery without new strategies?**
-A: Cloud Edition uses the same strategies but adds mechanisms like markers, intelligent backoff, and automatic reconciliation to resolve issues that would require manual intervention in Community Edition.
+A: Cloud Edition uses the same strategies but adds mechanisms like markers, intelligent backoff, and automatic reconciliation to resolve issues that would require manual intervention in Community Audit Stores.
 
 **Q: Can I change recovery strategy after deployment?**
 A: Yes, you can change the strategy in your code and redeploy. Existing audit entries maintain their state.

@@ -15,7 +15,7 @@ The Cloud Edition is currently under development and not yet publicly available.
 :::
 Flamingock Cloud Edition is a **fully managed SaaS platform** that brings advanced features, collaboration, and visibility to your change management workflow.
 
-While the Community Edition offers core functionality with local storage and self-managed execution, the Cloud Edition extends that with powerful enterprise-grade capabilities.
+While the Community Audit Stores offers core functionality with local storage and self-managed execution, the Cloud Edition extends that with powerful enterprise-grade capabilities.
 
 ## What the Cloud Edition will offer
 

@@ -61,7 +61,7 @@ Using **distributed locking**, Flamingock ensures only one instance (or one node
 
 - Works across microservices and distributed system setups
 - Supports multiple store types:
-  - Flamingock Community Edition, with native driver compatibility with MongoDB, Couchbase, DynamoDB
+  - Flamingock Community Audit Stores, with native driver compatibility with MongoDB, Couchbase, DynamoDB
   - Flamingock SaaS or Flamingock self-hosted options to leverage Flamingock's provisioned storage.
 
 ---

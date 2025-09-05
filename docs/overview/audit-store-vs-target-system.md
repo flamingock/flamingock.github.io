@@ -46,14 +46,14 @@ Flamingock's architecture separates business changes from execution tracking thr
 Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
 
 **Safety and coordination:**
-- **Community Edition**: Reliable execution tracking and recovery capabilities
+- **Community Audit Stores**: Reliable execution tracking and recovery capabilities
 - **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
 
 ### Non-transactional target systems
 Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 
 **Safety and coordination:**
-- **Community Edition**: Reliable execution tracking and rollback-based recovery
+- **Community Audit Stores**: Reliable execution tracking and rollback-based recovery
 - **Cloud Edition**: Enhanced recoverability with custom validation options
 
 ---
@@ -63,7 +63,7 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 ### Cloud Edition audit store
 Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
 
-### Community Edition audit store  
+### Community Audit Stores audit store  
 User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Community audit store configuration](../flamingock-library-config/audit-store-configuration.md) for setup.
 
 

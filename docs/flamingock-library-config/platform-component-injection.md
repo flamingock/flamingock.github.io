@@ -18,7 +18,7 @@ You may need to register platform components when:
 - **Framework integration** is required  
   For example, when integrating with Spring Boot, you must provide `ApplicationContext` and `ApplicationEventPublisher` so Flamingock can hook into the application lifecycle.
 
-- **Database access in Community Edition drivers**  
+- **Database access in Community Audit Stores drivers**  
   Some drivers (like MongoDB or DynamoDB) require the database client to be explicitly provided.
 
 - **System integrations like logging or observability** *(coming soon)*  

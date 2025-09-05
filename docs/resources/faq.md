@@ -60,7 +60,7 @@ Flamingock is available in three flavors—pick the one that best fits your need
 
     Ideal for organizations that require enterprise capabilities but cannot—or prefer not to—consume a hosted SaaS.
 
-3. [**Community Edition**](../overview/Editions#-community-edition-open-source)
+3. [**Community Audit Stores**](../overview/Editions#-community-audit-stores-open-source)
 
     Open-source, self-hosted library you run alongside your application:
 
@@ -71,9 +71,9 @@ Flamingock is available in three flavors—pick the one that best fits your need
 
 
 **Can I switch between editions?**  
-Yes. Flamingock provides an importer that allows you to migrate seamlessly from a **Community Edition to the Cloud Edition**, making it easy to adopt a fully managed backend for storing internal data.
+Yes. Flamingock provides an importer that allows you to migrate seamlessly from a **Community Audit Stores to the Cloud Edition**, making it easy to adopt a fully managed backend for storing internal data.
 
-If you are working with different Community Editions that use the **same underlying store** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver edition to the Spring Data edition.
+If you are working with different Community Audit Storess that use the **same underlying store** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver edition to the Spring Data edition.
 
 ---
 
@@ -206,7 +206,7 @@ Yes, you can update the `@Recovery` annotation in your code and redeploy. Existi
 Cloud Edition uses the same recovery strategies but provides enhanced outcomes through:
 - **Intelligent automation**: Advanced reconciliation and marker mechanisms
 - **Enhanced retry logic**: Sophisticated backoff and circuit breaker patterns  
-- **Automatic issue resolution**: Many failures requiring manual intervention in Community Edition are resolved automatically
+- **Automatic issue resolution**: Many failures requiring manual intervention in Community Audit Stores are resolved automatically
 
 Your change definitions remain identical - Cloud Edition just delivers better results.
 

@@ -242,7 +242,7 @@ For transactional systems, Cloud Edition uses sophisticated coordination:
 3. **Resolution markers** after completion
 4. **Automatic recovery** based on marker state
 
-This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Edition.
+This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Audit Stores.
 
 ---
 
