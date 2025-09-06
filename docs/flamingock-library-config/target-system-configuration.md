@@ -1,9 +1,9 @@
 ---
-title: Target System Configuration
+title: Target system configuration
 sidebar_position: 20
 ---
 
-# Target System Configuration
+# Target system configuration
 
 Target systems are the real-world systems where your business changes are applied.  
 They can be databases, message queues, storage buckets, APIs, or any external service your application depends on.
@@ -124,6 +124,26 @@ This makes it easier to govern and audit distributed environments at scale.
 - Avoid generic names like "database" or "api"
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
+
+---
+
+## Available target system implementations
+
+Flamingock provides several built-in target system implementations, organized by their transactional capabilities:
+
+### Transactional target systems
+These systems support native transactions, allowing automatic rollback on failure:
+
+- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
+- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
+- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
+- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
+- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
+
+### Non-transactional target systems
+These systems don't support native transactions but are still safe through Flamingock's compensation mechanisms:
+
+- [Default target system](../target-systems/default-target-system.md) - For any non-transactional system (S3, Kafka, REST APIs, etc.)
 
 ---
 
