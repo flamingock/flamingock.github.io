@@ -6,147 +6,136 @@ sidebar_position: 5
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Introduction
+# Couchbase Audit Store
 
-This section explains how to configure and use the **Flamingock Community Audit Stores for Couchbase** in applications that interact directly with Couchbase using the **official Couchbase Java SDK**.
+This page explains how to configure **Couchbase** as Flamingock's audit store in the **Community Edition**.  
+The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
 
-This edition is intended for scenarios where your application provides a `Cluster` instance and its associated connection. Flamingock will work directly on this connection to track and execute database changes. It does not rely on any framework abstraction or integration.
-
-Flamingock persists a small set of metadata documents in Couchbase to support its execution model:
-
-- **Audit logs** – to track the execution history of each change
-- **Distributed locks** – to coordinate execution across multiple application nodes
+> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
 ---
 
-## Edition
+## Minimum setup
 
-This edition supports Couchbase through a dedicated artifact:
+To use Couchbase as your audit store you need to provide:  
+- A **Cluster**
+- A **Bucket**
 
-| Edition Name              | Java SDK                           | Couchbase Compatibility |
-|---------------------------|------------------------------------|-------------------------|
-| `flamingock-ce-couchbase` | `com.couchbase.client:java-client` (>= `3.6.0`) | >= `7.0`              |
+That's all. Flamingock will take care of collections, indexes, and scope defaults.
+
+Example:
+
+```java
+import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.Bucket;
+import io.flamingock.core.Flamingock;
+import io.flamingock.community.audit.CouchbaseSyncAuditStore;
+
+public class App {
+  public static void main(String[] args) {
+    Cluster cluster = Cluster.connect("localhost", "username", "password");
+    Bucket bucket = cluster.bucket("audit-bucket");
+    
+    Flamingock.builder()
+      .setAuditStore(new CouchbaseSyncAuditStore()
+          .withCluster(cluster)
+          .withBucket(bucket))
+      .build()
+      .run();
+  }
+}
+```
 
 ---
 
-## Get started
+## Supported versions
 
-To get started with the Flamingock Community Audit Stores for Couchbase, follow these steps:
+| Couchbase SDK                  | Couchbase Server | Support level   |
+|--------------------------------|------------------|-----------------|
+| `java-client` 3.6.0+           | 7.0+             | Full support    |
 
-### 1. Add the required dependencies
+---
+
+## Dependencies
 
 <Tabs groupId="build_tool">
 
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-ce-couchbase")
-implementation("com.couchbase.client:java-client:3.x.x")
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community")
+
+// Couchbase SDK (if not already present)
+implementation("com.couchbase.client:java-client:3.7.0")
 ```
 
-</TabItem> <TabItem value="maven" label="Maven">
+</TabItem>
+
+<TabItem value="maven" label="Maven">
 
 ```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-community-bom</artifactId>
+      <version>${flamingock.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
 <dependency>
   <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-ce-couchbase</artifactId>
-  <version>${flamingock.version}</version>
+  <artifactId>flamingock-community</artifactId>
 </dependency>
+
+<!-- Couchbase SDK (if not already present) -->
 <dependency>
   <groupId>com.couchbase.client</groupId>
   <artifactId>java-client</artifactId>
-  <version>3.x.x</version>
+  <version>3.7.0</version>
 </dependency>
 ```
 
-</TabItem> </Tabs>
+</TabItem>
+
+</Tabs>
 
 ---
 
-### 2. Enable Flamingock runner
+## Configuration options
 
-At minimum, you must provide:
-- A Cluster instance (as a **dependency**)
-- A Bucket instance (as a **dependency**)
+Couchbase audit store works out of the box with production-ready defaults.  
+Optional properties let you tune behavior if needed:
+
+| Property                        | Default                | Description                                           |
+|---------------------------------|------------------------|-------------------------------------------------------|
+| `couchbase.autoCreate`          | `true`                 | Auto-create collections and indexes.                  |
+| `couchbase.scopeName`           | `_default`             | Scope where audit collections will be created.        |
+| `couchbase.auditRepositoryName` | `flamingockAuditLogs`  | Collection name for audit entries.                    |
+| `couchbase.lockRepositoryName`  | `flamingockLocks`      | Collection name for distributed locks.                |
+
+Example overriding defaults:
 
 ```java
-Cluster cluster = Cluster.connect("localhost", "username", "password");
-Bucket bucket = cluster.bucket("YOUR_BUCKET");
-
-Runner runner = Flamingock.builder()
-    .addDependency(cluster)
-    .addDependency(bucket)
-    .build();
+Flamingock.builder()
+  .setAuditStore(new CouchbaseSyncAuditStore()
+      .withCluster(cluster)
+      .withBucket(bucket)
+      .withProperty("couchbase.scopeName", "custom-scope")
+      .withProperty("couchbase.autoCreate", true))
+  .build()
+  .run();
 ```
 
-### 3. Execute Flamingock
-
-Once the Flamingock runner is configured and built, you can trigger Flamingock’s execution:
-
-```java
-runner.execute();
-```
+⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
 ---
 
-## Configuration overview
+## Next steps
 
-Flamingock requires both dependencies and configuration properties, set via the builder.
-
-### Dependencies
-
-These must be registered using `.addDependency(...)`
-
-| Type                                | Required | Description                                        |
-|-------------------------------------|:--------:|----------------------------------------------------|
-| `com.couchbase.client.java.Cluster` |   Yes    | Required to connect and execute against Couchbase cluster. |
-| `com.couchbase.client.java.Bucket` |   Yes    | Required to connect and execute against Couchbase bucket. |
-
-### Properties
-
-These must be set using `.setProperty(...)`
-
-| Property      | Type      | Required | Default Value | Description                                                              |
-|---------------|-----------|:--------:|---------------|--------------------------------------------------------------------------|
-| `couchbase.autoCreate`  | `boolean` |    No    | `true`        | Whether Flamingock should auto-create required collections and indexes.      |
-| `couchbase.scopeName`  | `String` |    No    | `"_default"`        | Name of the Couchbase scope where the collections exist or will be created.       |
-| `couchbase.auditRepositoryName`   | `String`               |   No    | `"flamingockAuditLogs"`        | Name of the collection for storing the audit log. Overrides the default. Most users should keep the default value.    |
-| `couchbase.lockRepositoryName`    | `String`               |    No    | `"flamingockLocks"`             | Name of the collection used for distributed locking. Overrides the default. Most users should keep the default value. |
-
-:::warning
-In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
-These defaults ensure consistency, safety, and compatibility with Flamingock’s locking and audit mechanisms.
-:::
-
----
-
-## Full configuration example
-
-The following example shows how to configure Flamingock with both required and optional properties. It demonstrates how to override `autoCreate`, which can be useful in lower environments or when managing schema manually.
-
-```java
-Cluster cluster = Cluster.connect("localhost", "username", "password");
-Bucket bucket = cluster.bucket("YOUR_BUCKET");
-
-FlamingockBuilder builder = Flamingock.builder()
-    // mandatory dependency
-    .addDependency(cluster)
-    .addDependency(bucket)
-    // optional configuration
-    .setProperty("autoCreate", true)
-    .setProperty("couchbase.scopeName", "YOUR_SCOPE");
-```
-
-> You can add additional dependencies and properties based on your custom setup (e.g., metrics, listeners, or cloud-specific settings).
-
----
-
-## Transaction support
-
-> ⚠️ Couchbase transactions are not currently managed automatically by Flamingock.  
-> However, Flamingock guarantees safe, idempotent changes through internal locking, auditing, and execution guarantees.
-
-
-You can find some practical examples in the official GitHub repository:  
-👉 [Flamingock Couchbase example](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)
+- Learn about [Target systems](../flamingock-library-config/target-system-configuration.md)  
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)

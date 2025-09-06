@@ -6,206 +6,142 @@ sidebar_position: 4
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Introduction
+# DynamoDB Audit Store
 
-This section explains how to configure and use the **Flamingock Community Audit Stores for DynamoDB** in applications that interact with Amazon DynamoDB using the **official AWS SDK for Java**.
+This page explains how to configure **Amazon DynamoDB** as Flamingock's audit store in the **Community Edition**.  
+The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
 
-This edition is designed for use cases where the application provides its own DynamoDB client via `DynamoDbClient`, and Flamingock operates directly over that connection to manage changes. It does not require any framework-level integration.
-
-Flamingock persists a minimal set of metadata in your DynamoDB tables to support its execution model:
-
-- **Audit records** – to track which changes have been applied  
-- **Distributed locks** – to coordinate executions across multiple instances
+> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
 ---
 
-## Edition
+## Minimum setup
 
-This is a single edition for DynamoDB, provided as a standalone artifact.
+To use DynamoDB as your audit store you need to provide:  
+- A **DynamoDbClient**
 
-| Edition Name             | Java Client                       | DynamoDB Compatibility |
-|--------------------------|-----------------------------------|:----------------------:|
-| `flamingock-ce-dynamodb` | `software.amazon.awssdk:dynamodb` |      >= `2.25.29`      |
+That's all. Flamingock will take care of tables, indexes, and capacity defaults.
+
+Example:
+
+```java
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import io.flamingock.core.Flamingock;
+import io.flamingock.community.audit.DynamoSyncAuditStore;
+
+public class App {
+  public static void main(String[] args) {
+    DynamoDbClient client = DynamoDbClient.builder()
+        .region(Region.US_EAST_1)
+        .build();
+
+    Flamingock.builder()
+      .setAuditStore(new DynamoSyncAuditStore()
+          .withClient(client))
+      .build()
+      .run();
+  }
+}
+```
 
 ---
 
-## Get started
+## Supported versions
 
-To get started with the Flamingock Community Audit Stores for DynamoDB, follow these steps:
+| AWS SDK                        | DynamoDB       | Support level   |
+|--------------------------------|----------------|-----------------|
+| `dynamodb` 2.25.29+            | All versions   | Full support    |
 
 ---
 
-### 1. Add the required dependencies
-
-You must include both the **Flamingock DynamoDB edition** and the **AWS SDK v2 for DynamoDB** in your project.
+## Dependencies
 
 <Tabs groupId="build_tool">
 
 <TabItem value="gradle" label="Gradle">
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-ce-dynamodb")
-implementation("software.amazon.awssdk:dynamodb-enhanced:2.x.x")
-implementation("software.amazon.awssdk:url-connection-client:2.x.x")
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community")
+
+// AWS SDK (if not already present)
+implementation("software.amazon.awssdk:dynamodb:2.28.0")
+implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 ```
 
-</TabItem> <TabItem value="maven" label="Maven">
+</TabItem>
+
+<TabItem value="maven" label="Maven">
 
 ```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-community-bom</artifactId>
+      <version>${flamingock.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
 <dependency>
   <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-ce-dynamodb</artifactId>
-  <version>${flamingock.version}</version>
+  <artifactId>flamingock-community</artifactId>
+</dependency>
+
+<!-- AWS SDK (if not already present) -->
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>dynamodb</artifactId>
+  <version>2.28.0</version>
 </dependency>
 <dependency>
   <groupId>software.amazon.awssdk</groupId>
   <artifactId>dynamodb-enhanced</artifactId>
-  <version>2.x.x</version>
-</dependency>
-<dependency>
-  <groupId>software.amazon.awssdk</groupId>
-  <artifactId>url-connection-client</artifactId>
-  <version>2.x.x</version>
+  <version>2.28.0</version>
 </dependency>
 ```
 
-</TabItem> </Tabs>
+</TabItem>
+
+</Tabs>
 
 ---
 
-### 2. Enable Flamingock runner
+## Configuration options
 
-At minimum, you must provide a `DynamoDbClient` instance (as a **dependency**)
-```java 
-DynamoDbClient dynamoClient = DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .build();
+DynamoDB audit store works out of the box with production-ready defaults.  
+Optional properties let you tune behavior if needed:
 
-Runner runner = Flamingock.builder()
-        .addDependency(dynamoClient)
-        .build();
+| Property                        | Default                | Description                                                     |
+|---------------------------------|------------------------|------------------------------------------------------------------|
+| `dynamodb.autoCreate`           | `true`                 | Auto-create tables if they don't exist.                         |
+| `dynamodb.readCapacityUnits`   | `5`                    | Read capacity units (PROVISIONED mode only).                    |
+| `dynamodb.writeCapacityUnits`  | `5`                    | Write capacity units (PROVISIONED mode only).                   |
+| `dynamodb.auditRepositoryName` | `flamingockAuditLogs`  | Table name for audit entries.                                   |
+| `dynamodb.lockRepositoryName`  | `flamingockLocks`      | Table name for distributed locks.                               |
 
-```
-
-### 3. Execute Flamingock
-Once the Flamingock runner is configured and built, you can trigger Flamingock’s execution:
+Example overriding defaults:
 
 ```java
-runner.execute();
+Flamingock.builder()
+  .setAuditStore(new DynamoSyncAuditStore()
+      .withClient(client)
+      .withProperty("dynamodb.readCapacityUnits", 10)
+      .withProperty("dynamodb.writeCapacityUnits", 10))
+  .build()
+  .run();
 ```
 
-
----
-## Configuration overview
-
-Flamingock’s DynamoDB Community Audit Stores requires both:
-- A `DynamoDbClient` dependency
-- A set of configuration properties
-
-### Dependencies
-
-These must be registered using `.addDependency(...)`
-
-| Type                                                      | Required | Description                                    |
-|-----------------------------------------------------------|:--------:|------------------------------------------------|
-| `software.amazon.awssdk.services.dynamodb.DynamoDbClient` |   Yes    | Required to access and modify DynamoDB tables. |
-
-### Properties
-
-These must be set using `.setProperty(...)`
-
-| Property                        | Type      | Required | Default Value         | Description                                                                  |
-|---------------------------------|-----------|:--------:|-----------------------|------------------------------------------------------------------------------|
-| `dynamodb. readCapacityUnits`   | `Long`    |    No    | `5L`                  | Read capacity units (for **PROVISIONED** billing mode only).                 |
-| `dynamodb. writeCapacityUnits`  | `Long`    |    No    | `5L`                  | Write capacity units (for **PROVISIONED** billing mode only).                |
-| `dynamodb.autoCreate`           | `Boolean` |    No    | `true`                | Automatically creates the required tables if they do not exist.              |
-| `dynamodb. auditRepositoryName` | `String`  |    No    | `"flamingockAuditLogs"` | Table used to store audit records. Most users should keep the default name.  |
-| `dynamodb. lockRepositoryName`  | `String`  |    No    | `"flamingockLocks"`      | Table used for distributed locking. Most users should keep the default name. |
-
-:::warning
-In production environments, we strongly recommend keeping the default configuration values unless you fully understand the implications.  
-These defaults ensure consistency, safety, and compatibility with Flamingock’s locking and audit mechanisms.
-:::
-
-
-
+⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.  
+Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
 ---
 
+## Next steps
 
-## Full configuration example
-The following example shows how to configure Flamingock with both required and optional properties. 
-It demonstrates how to override index creation, and read/write behaviour. 
-This level of configuration is useful when you need to customise Flamingock's behaviour to match the consistency and 
-durability requirements of your deployment.
-```java
-DynamoDbClient dynamoClient = DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .build();
-
-FlamingockBuilder builder = Flamingock.builder()
-        .addDependency(dynamoClient)
-        .setProperty("autoCreate", true)
-        .setProperty("readCapacityUnits", 5L)
-        .setProperty("writeCapacityUnits", 5L);
-
-```
-
-
----
-
-## Transaction support
-
-
-Flamingock supports transactional execution on DynamoDB using the enhanced client’s `TransactWriteItemsEnhancedRequest.Builder`.
-
-If a change unit is marked as transactional (which is the default), Flamingock will:
-
-- Create a **fresh transactional builder** (`TransactWriteItemsEnhancedRequest.Builder`) for that change
-- Inject it into the `@Execution` method
-- Execute the transaction **only if the change completes successfully** — including Flamingock’s internal audit write as part of the same transaction
-
-This ensures **atomicity**: either all operations defined in the change unit — including the audit log — are applied together, or none are.
-
-:::warning
-If you mark a change unit as transactional but do **not** add any operations to the builder, Flamingock will still execute the transaction — but it will contain **only the audit log entry**.
-
-Make sure your change unit populates the `TransactWriteItemsEnhancedRequest.Builder` appropriately.
-:::
-
-> See the [Transactions](../flamingock-library-config/transactions.md) page for general guidance and best practices around transactional vs non-transactional change units.
-
-
-
-### Example
-
-```java
-@Execution
-public void execute(@NonLockGuarded DynamoDbClient client,
-                    TransactWriteItemsEnhancedRequest.Builder builder) {
-
-  DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
-      .dynamoDbClient(client)
-      .build();
-
-  DynamoDbTable<UserEntity> table = enhancedClient.table("users", TableSchema.fromBean(UserEntity.class));
-
-  builder.addPutItem(table, new UserEntity("Alice", "Anderson"));
-  builder.addPutItem(table, new UserEntity("Bob", "Bennett"));
-}
-
-```
-
-:::tip
-You can add as many operations as needed to the builder: `putItem`, `updateItem`, `deleteItem`, etc.  
-These operations will be executed **in a single atomic transaction**, together with Flamingock’s internal audit log update.
-:::
-
-You can find more practical examples in the official GitHub repository:  
-👉 [Flamingock DynamoDB example](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)
-
-
-
-
----
+- Learn about [Target systems](../flamingock-library-config/target-system-configuration.md)  
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)
