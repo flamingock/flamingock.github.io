@@ -1,5 +1,5 @@
 ---
-title: Target system configuration
+title: Target systems
 sidebar_position: 20
 ---
 
@@ -29,12 +29,32 @@ Every change is tied to a named target system, avoiding ambiguity and enabling c
 This distinction is built into the target system definition.
 
 ### Dependency injection
-Each target system can expose the dependencies required by its ChangeUnits.  
-For example:
 
+Each target system can expose the dependencies required by its ChangeUnits. For example:
 - A MongoDB target system provides a `MongoDatabase`
 - A Kafka target system provides a `KafkaTemplate`  
 - A SQL target system provides a `Connection` or `DataSource`
+
+#### Dependency resolution hierarchy
+
+Each target system needs specific dependencies to function (except `DefaultTargetSystem` which requires none). When Flamingock initializes a target system, it resolves dependencies using this hierarchy:
+
+1. **Direct injection** via `.withXXX()` methods (highest priority)
+2. **Global context** lookup if not directly injected
+3. **Default values** for optional configurations, or **exception** for required ones
+
+This approach provides maximum flexibility while ensuring all requirements are met:
+
+```java
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
+    .withDatabase(database);
+
+// Resolution process:
+// - MongoDatabase: provided directly ✓
+// - MongoClient: searches global context
+// - WriteConcern: not found, uses default (MAJORITY with journal)
+// - If MongoClient missing from global context: throws exception
+```
 
 :::info
 ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
@@ -48,22 +68,20 @@ Target systems are registered at runtime with the Flamingock builder.
 You can define and register as many as you need:
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
-        .withDatasource(ds);
 
-    DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
+SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
+    .withDatasource(ds);
 
-    DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
+DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
 
-    FlamingockStandalone
-      .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
-      .addTargetSystems(mysql, s3, kafka)
-      .build()
-      .run();
-  }
-}
+DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
+
+Flamingock.builder()
+    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+    .addTargetSystems(mysql, s3, kafka)
+    .build()
+    .run();
+  
 ```
 
 At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each ChangeUnit.
