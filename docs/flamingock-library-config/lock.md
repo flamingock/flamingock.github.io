@@ -1,9 +1,9 @@
 ---
-title: Distributed lock configuration
-sidebar_position: 60
+title: Lock
+sidebar_position: 30
 ---
 
-# Distributed lock configuration
+# Lock
 
 Flamingock uses a distributed lock to ensure that changes are only applied **once and only once**, even when multiple instances of your application start simultaneously in a distributed system.
 

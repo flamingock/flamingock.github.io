@@ -1,9 +1,9 @@
 ---
-title: Target systems
-sidebar_position: 20
+title: Introduction
+sidebar_position: 0
 ---
 
-# Target system configuration
+# Target systems
 
 Target systems are the real-world systems where your business changes are applied.  
 They can be databases, message queues, storage buckets, APIs, or any external service your application depends on.

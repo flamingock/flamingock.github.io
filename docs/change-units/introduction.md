@@ -1,9 +1,9 @@
 ---
-title: ChangeUnits Deep Dive
-sidebar_position: 40
+title: Introduction
+sidebar_position: 1
 ---
 
-# ChangeUnits Deep Dive
+# ChangeUnits
 
 ## 1. Introduction: Understanding ChangeUnits
 
