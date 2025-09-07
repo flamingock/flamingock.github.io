@@ -6,7 +6,7 @@ sidebar_position: 0
 # Target systems
 
 Target systems are the real-world systems where your business changes are applied.  
-They can be databases, message queues, storage buckets, APIs, or any external service your application depends on.
+They can be message queues, databases, storage buckets, APIs, or any external service your application depends on.
 
 A ChangeUnit always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
@@ -48,13 +48,13 @@ This approach provides maximum flexibility while ensuring all requirements are m
 ```java
 MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
     .withDatabase(database);
-
-// Resolution process:
-// - MongoDatabase: provided directly ✓
-// - MongoClient: searches global context
-// - WriteConcern: not found, uses default (MAJORITY with journal)
-// - If MongoClient missing from global context: throws exception
 ```
+
+In this example, Flamingock resolves dependencies as follows:
+- **MongoDatabase**: Provided directly via `.withDatabase()`, so it's immediately available
+- **MongoClient**: Not provided directly, so Flamingock searches the global context
+- **WriteConcern**: Not found in either place, so uses the default value (MAJORITY with journal)
+- If MongoClient is missing from the global context, Flamingock throws an exception since it's a required dependency
 
 :::info
 ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
@@ -64,8 +64,7 @@ ChangeUnits are not limited to target system dependencies. They can also request
 
 ## Registering target systems
 
-Target systems are registered at runtime with the Flamingock builder.  
-You can define and register as many as you need:
+Target systems are registered at runtime with the Flamingock builder. You can define and register as many as you need:
 
 ```java
 
