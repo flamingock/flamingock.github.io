@@ -5,44 +5,30 @@ sidebar_position: 1
 
 # ChangeUnits
 
-## 1. Introduction: Understanding ChangeUnits
+A **ChangeUnit** is the atomic, versioned, self-contained unit of change in Flamingock. It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
 
-A **ChangeUnit** is the atomic, versioned, self-contained unit of change in Flamingock.  
-It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
+## Key characteristics
 
-**Key characteristics:**
-- Executed in sequence based on their `order`
-- Recorded in the audit store to prevent duplicate execution
-- Safe by default: if Flamingock is uncertain about a change's outcome, it stops and requires manual intervention
-- Each ChangeUnit runs exactly once per system
+- **Atomic execution**: Each ChangeUnit runs exactly once
+- **Ordered sequence**: Executed based on their `order` property  
+- **Auditable**: Recorded in the audit store to prevent duplicate execution
+- **Safe by default**: If Flamingock is uncertain about a change's outcome, it stops and requires manual intervention
+- **Rollback capable**: Can be undone through rollback methods
 
----
+## What ChangeUnits can do
 
-## 2. Structure of a ChangeUnit
+ChangeUnits enable you to version and track changes across your entire technology stack:
 
-### Required Properties
-- **`id`**: Unique identifier across all ChangeUnits in the application  
-- **`order`**: Execution sequence (must use zero-padded format like `0001`, `0002`, `_0001_ChangeName`)  
-- **`author`**: Who is responsible for this change  
+- **Message queue operations**: Topic creation, schema registry updates
+- **Object storage**: Bucket setup, file migrations, policy updates  
+- **Database migrations**: Schema changes, data transformations, index creation
+- **External API integrations**: Service configurations, webhook setups
+- **Infrastructure changes**: Feature flag updates, configuration changes
 
-### Optional Properties
-- **`description`**: Brief explanation of what the change does  
-- **`transactional`** (default `true`): Only relevant if the target system supports transactions. Has no effect on non-transactional systems like S3 or Kafka.  
-
-### Required Annotations and Methods
-- **`@TargetSystem`**: Specifies which system this change affects  
-- **`@ChangeUnit`**: Marks the class as a ChangeUnit  
-- **`@Execution`**: The method containing your change logic  
-- **`@RollbackExecution`**: The method to undo the change (required for safety and governance)  
-
-> **Note:** Rollback is important because in **non-transactional systems**, it's be used to revert changes if execution fails. In **all systems**, rollback is essential for undo operations (via CLI or UI).  
-
-## 3. Types of ChangeUnits
+## Types of ChangeUnits
 
 ### Code-based ChangeUnits
-Written in Java (or Kotlin/Groovy) with annotations. Best for **specific jobs** or when you need a **flexibility window** that isn’t covered by an existing template.  
-
-This approach gives you full programmatic control, making it the fallback option when no reusable template exists for your use case.
+Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or when you need full programmatic control.
 
 ```java
 @TargetSystem("user-database")
@@ -51,111 +37,42 @@ public class _0001_AddUserStatus {
     
     @Execution
     public void execute(MongoDatabase database) {
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                            new Document("$set", new Document("status", "active")));
+        // Your change logic here
     }
     
     @RollbackExecution
     public void rollback(MongoDatabase database) {
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                            new Document("$unset", new Document("status", "")));
+        // Your rollback logic here
     }
 }
 ```
 
 ### Template-based ChangeUnits
-Template-based ChangeUnits use YAML or JSON definitions. They are especially useful for **repetitive or parameterized operations**, where the same logic can to be applied multiple times with different configurations.
-
-- The execution logic is encapsulated in a **template** (provided by Flamingock, a contributor, or created by you).  
-- Each ChangeUnit then supplies its own configuration to apply that logic consistently.  
-- This approach ensures **immutability** (the YAML/JSON file itself represents the change) and makes it easier to **reuse proven patterns**.
-
+Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
 # File: _0002_add_status_column.yml
 id: add_status_column
 order: "0002"
 author: "db-team"
-description: "Add status column to orders table"
 templateName: sql-template
 templateConfiguration:
-  executionSql: |
-    ALTER TABLE orders ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
-  rollbackSql: |
-    ALTER TABLE orders DROP COLUMN status;
+  executionSql: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
+  rollbackSql: "ALTER TABLE orders DROP COLUMN status;"
 ```
 
-Both types follow the same execution model and provide the same safety guarantees.
+## Safety and recovery
 
-## 4. Naming & Discoverability
+Flamingock prioritizes safety over automation. If execution fails or results are uncertain, Flamingock stops and requires manual intervention rather than risking data corruption. This ensures you always know the exact state of your systems.
 
-### Enforced Naming Convention
-All ChangeUnit files (both code and templates) **must** follow this pattern:
+## Next steps
 
-- **Format**: `_XXXX_DescriptiveName`
-- **Order**: Must be at least 4 digits, zero-padded (e.g., `0001`, `0002`, `0100`)
-- **Examples**: 
-  - Code: `_0001_CreateUserIndexes.java`
-  - Template: `_0002_AddStatusColumn.yml`
+Dive deeper into specific aspects of ChangeUnits:
 
-### Why This Convention?
-- **Visibility**: Easy to see execution order at a glance
-- **Immutability**: Clear versioning prevents accidental modifications
-- **Deterministic ordering**: Ensures consistent execution across environments
+- **[Anatomy & Structure](./anatomy-and-structure.md)** - Learn the technical structure, required properties, and annotations
+- **[Types & Implementation](./types-and-implementation.md)** - Understand code-based vs template-based approaches  
+- **[Best Practices](./best-practices.md)** - Follow proven patterns for reliable ChangeUnits
 
-### File Locations
-- **Code-based**: Place in packages scanned by Flamingock (default: `src/main/java`)
-- **Template-based**: Place in `src/main/resources` or preferably alongside code-based ChangeUnits
-- **Recommendation**: Keep all ChangeUnits (code and templates) in the same package/directory for better organization
-
-## 5. Transactional Behavior
-
-- **Transactional target systems** (e.g., MongoDB, PostgreSQL): operations run within a transaction **unless you explicitly set `transactional = false`**.  
-- **Non-transactional target systems** (e.g., S3, Kafka): the `transactional` flag has no effect — operations are applied without transactional guarantees.
-
-Some operations may require setting `transactional = false` even in databases:
-- DDL operations (e.g., CREATE INDEX, ALTER TABLE)
-- Large bulk operations that exceed transaction limits
-- Cross-system changes spanning multiple databases
-
-➡️ To understand how to define and configure **target systems**, see [Target System Configuration](./target-system-configuration.md)
-
-## 6. Default Safety & Recovery
-
-**Flamingock's core principle**: If a ChangeUnit execution result is uncertain, Flamingock stops and requires manual intervention. This prevents silent data corruption.
-
-**What this means:**
-- If a change fails, Flamingock halts execution
-- The issue is recorded in the audit store
-- Manual investigation and resolution is required via CLI (or Cloud UI in Cloud Edition)
-
-➡️ **For advanced recovery strategies**, see [Recovery Strategies](../recovery-and-safety/recovery-strategies.md)
-
-## 7. Best Practices
-
-### Core Principles
-- **Treat ChangeUnits as immutable**: Once deployed, never modify existing ChangeUnits. Create new ones for corrections.
-- **Always provide @RollbackExecution**: Important for CLI undo operations and recovery scenarios.
-- **Keep scope focused**: One ChangeUnit should address one logical change.
-
-### Technical Guidelines
-- **Make operations idempotent when possible**: Try to design changes that can be safely re-run.
-- **Test both execution and rollback**: Include ChangeUnit testing in your CI/CD pipeline.
-- **Follow naming conventions**: Use the `_XXXX_DescriptiveName` pattern consistently.
-
-### Organizational Best Practices
-- **Clear authorship**: Always specify the `author` for accountability.
-- **Version control discipline**: Review ChangeUnits in pull requests like any critical code.
-- **Document complex changes**: Use the `description` field to explain non-obvious logic.
-- **Maintain change logs**: Keep a high-level record of what changes were made when.
-
-
----
-
-**Next Steps:**
-- Learn about [dependency injection](./changeunit-dependency-injection.md) in ChangeUnits
-- Configure [target systems](./target-system-configuration.md) and [audit store](./audit-store-configuration.md)
-- Explore [template-based ChangeUnits](../templates/templates-introduction.md) for declarative changes
-- Understand [advanced recovery strategies](../recovery-and-safety/recovery-strategies.md) for production scenarios
+Or continue to other key concepts:
+- **[Target Systems](../target-systems/introduction.md)** - Configure where your changes will be applied
+- **[Templates](../templates/introduction.md)** - Explore reusable change patterns
