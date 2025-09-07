@@ -70,6 +70,8 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 Spring Data MongoDB target system integrates with Spring's transaction management. When a ChangeUnit is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ```java
 @TargetSystem("user-database")
 @ChangeUnit(id = "create-users", order = "001")

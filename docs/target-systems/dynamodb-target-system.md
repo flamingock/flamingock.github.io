@@ -58,6 +58,8 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 For a ChangeUnit to leverage DynamoDB's transactional capabilities, it must use the `TransactWriteItemsEnhancedRequest.Builder` parameter. Flamingock uses the injected `DynamoDbClient` dependency to create and manage this builder's lifecycle - creating it before execution and executing the transaction with all operations on success.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ```java
 @TargetSystem("inventory-database")
 @ChangeUnit(id = "update-inventory", order = "001")

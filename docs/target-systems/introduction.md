@@ -28,6 +28,8 @@ Every change is tied to a named target system, avoiding ambiguity and enabling c
 
 This distinction is built into the target system definition.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ### Dependency injection
 
 Each target system can expose the dependencies required by its ChangeUnits. For example:

@@ -11,124 +11,57 @@ Flamingock provides intelligent transaction management that adapts to your targe
 
 ## How Flamingock handles transactions
 
-### Default behavior
-All ChangeUnits default to `transactional = true` for maximum safety. Flamingock automatically adapts based on your target system:
+Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
 
-**For transactional target systems** (PostgreSQL, MongoDB, SQL databases):
-- Change execution runs within a native database transaction
-- Automatic rollback on failure
-- Session/connection managed automatically
+### Transactional target systems
+**Examples**: PostgreSQL, MySQL, MongoDB, SQL databases, DynamoDB, Couchbase
 
-**For non-transactional target systems** (Kafka, S3, REST APIs):
-- No native transaction support
-- Safety through compensation logic (`@RollbackExecution`)
-- Idempotent operations recommended
+These systems support native transaction capabilities:
 
-### When to use non-transactional
-Override the default with `transactional = false` when:
-- DDL operations (CREATE INDEX, ALTER TABLE) that don't support transactions
-- Large bulk operations that exceed transaction limits
-- Operations that must complete regardless of other failures
+**When `transactional = true` (default)**:
+- Execution runs within a native database transaction
+- **On failure**: Automatic rollback using database's native transaction mechanism
+- Session/connection managed automatically by Flamingock
+- `@RollbackExecution` used only for manual operations (CLI undo)
 
----
+**When `transactional = false`**:
+- Execution runs without transaction
+- **On failure**: Safety through compensation logic (@RollbackExecution)
+- Useful for DDL operations or large bulk operations that exceed transaction limits
 
-## Examples
+### Non-transactional target systems
+**Examples**: Kafka, S3, REST APIs, file systems, message queues
 
-### Transactional ChangeUnit (default)
-```java
-@TargetSystem("user-database")
-@ChangeUnit(id = "update-user-status", order = "001")
-// transactional = true (default)
-public class UpdateUserStatus {
-    
-    @Execution
-    public void execute(MongoDatabase database, ClientSession session) {
-        // Runs inside a transaction, session provided automatically
-        database.getCollection("users")
-                .updateMany(session, eq("status", "pending"), set("status", "active"));
-    }
-    
-    @RollbackExecution  
-    public void rollback(MongoDatabase database, ClientSession session) {
-        // For manual rollback operations (CLI undo)
-        database.getCollection("users")
-                .updateMany(session, eq("status", "active"), set("status", "pending"));
-    }
-}
-```
+These systems have no native transaction support:
 
-### Non-transactional ChangeUnit
-```java
-@TargetSystem("user-database")
-@ChangeUnit(id = "create-indexes", order = "002", transactional = false)
-public class CreateIndexes {
-    
-    @Execution
-    public void execute(MongoDatabase database) {
-        // No transaction - DDL operations
-        database.getCollection("users").createIndex(ascending("email"));
-    }
-    
-    @RollbackExecution
-    public void rollback(MongoDatabase database) {
-        // Called automatically on failure for cleanup
-        try {
-            database.getCollection("users").dropIndex("email_1");
-        } catch (Exception e) {
-            // Handle cleanup errors
-        }
-    }
-}
-```
+**The `transactional` flag is ignored** - behavior is always the same:
+- Execution runs normally (no native transaction possible)
+- **On failure**: Safety through compensation logic (@RollbackExecution)
+- Safety relies entirely on idempotent operations and rollback methods
 
-### Non-transactional target system
-```java
-@TargetSystem("event-stream") 
-@ChangeUnit(id = "publish-events", order = "003", transactional = false)
-// Must be false for non-transactional systems
-public class PublishEvents {
-    
-    @Execution
-    public void execute(KafkaTemplate kafka) {
-        kafka.send("user-topic", "status-changed", eventData);
-    }
-    
-    @RollbackExecution
-    public void rollback(KafkaTemplate kafka) {
-        // Compensation logic - publish rollback event
-        kafka.send("user-topic", "status-rollback", compensationData);
-    }
-}
-```
+### Behavior summary table
+
+| Target System Type | `transactional = true` (default) | `transactional = false` |
+|---------------------|-----------------------------------|-------------------------|
+| **Transactional** | Native transaction rollback on failure | `@RollbackExecution` on failure |
+| **Non-transactional** | **Flag ignored** - `@RollbackExecution` on failure | **Flag ignored** - `@RollbackExecution` on failure |
 
 ---
 
 ## Best practices
 
 ### Always provide @RollbackExecution
-- **Transactional systems**: Used for manual rollback operations (CLI undo)
-- **Non-transactional systems**: Called automatically on failure for cleanup
-- **Both cases**: Essential for complete change management
+- **Transactional systems with `transactional = true`**: Used for manual rollback operations (CLI undo)
+- **Transactional systems with `transactional = false`**: Called automatically on failure
+- **Non-transactional systems**: Always called automatically on failure (flag ignored)
+- **All cases**: Essential for complete change management
 
 ### Use appropriate transactionality
-- **Keep default `transactional = true`** for data changes
-- **Use `transactional = false`** only when necessary (DDL, bulk operations)
-- **Design idempotent operations** for non-transactional systems
+- **Keep default `transactional = true`** for regular data changes on transactional systems
+- **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
+- **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
 
-### Handle rollback gracefully
-```java
-@RollbackExecution
-public void rollback(MongoDatabase database) {
-    try {
-        // Attempt cleanup
-        database.getCollection("temp_data").drop();
-    } catch (Exception e) {
-        // Log but don't fail - rollback should be best effort
-        logger.warn("Rollback cleanup failed", e);
-    }
-}
-```
 
 ---
 
-**Key takeaway**: Flamingock's transaction management adapts to your target systems while maintaining safety. Use the defaults unless you have specific requirements for non-transactional execution.
+**Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @RollbackExecution). For non-transactional systems, the flag is ignored and @RollbackExecution is always used.

@@ -75,6 +75,8 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 For a ChangeUnit to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ```java
 @TargetSystem("user-database")
 @ChangeUnit(id = "create-users", order = "001")

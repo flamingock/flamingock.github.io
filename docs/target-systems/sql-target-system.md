@@ -64,6 +64,8 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 For a ChangeUnit to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ```java
 @TargetSystem("inventory-database")
 @ChangeUnit(id = "update-products", order = "001")

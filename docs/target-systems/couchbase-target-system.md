@@ -63,6 +63,8 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 For a ChangeUnit to leverage Couchbase's transactional capabilities, it must use the `AttemptContext` parameter. Flamingock uses the injected `Cluster` and `Bucket` dependencies to create and manage this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
 
+> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+
 ```java
 @TargetSystem("user-database")
 @ChangeUnit(id = "create-users", order = "001")
