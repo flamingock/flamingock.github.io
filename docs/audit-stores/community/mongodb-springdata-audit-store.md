@@ -25,10 +25,6 @@ That's all. Flamingock will take care of collections, indexes, and consistency d
 Example:
 
 ```java
-import org.springframework.data.mongodb.core.MongoTemplate;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSpringDataAuditStore;
-
 public class App {
   public static void main(String[] args) {
     // Assuming MongoTemplate is configured via Spring

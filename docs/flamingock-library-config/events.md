@@ -136,8 +136,6 @@ class StageCompletedListener : (IStageCompletedEvent) -> Unit {
   </TabItem>
   <TabItem value="kotlin" label="Kotlin" default>
     ```kotlin
-        import org.springframework.context.annotation.Bean
-
         @Bean
         fun startFlamingockListener(): PipelineStartedListener {
             return PipelineStartedListener()

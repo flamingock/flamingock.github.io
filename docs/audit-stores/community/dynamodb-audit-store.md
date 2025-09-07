@@ -25,11 +25,6 @@ That's all. Flamingock will take care of tables, indexes, and capacity defaults.
 Example:
 
 ```java
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.DynamoSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     DynamoDbClient client = DynamoDbClient.builder()

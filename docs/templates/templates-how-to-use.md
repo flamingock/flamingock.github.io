@@ -100,14 +100,6 @@ Let’s compare how an SQL migration is handled using a **template-based ChangeU
 ### Approach 1: Using a Traditional Code-Based ChangeUnit
 
 ```java
-import io.flamingock.api.annotations.ChangeUnit;
-import io.flamingock.api.annotations.Execution;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import javax.sql.DataSource;
-
 @ChangeUnit(id = "create-persons-table", order = 1, author = "developer")
 public class CreatePersonsTableChangeUnit {
 

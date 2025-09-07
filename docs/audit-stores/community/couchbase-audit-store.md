@@ -26,11 +26,6 @@ That's all. Flamingock will take care of collections, indexes, and scope default
 Example:
 
 ```java
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.Bucket;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.CouchbaseSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     Cluster cluster = Cluster.connect("localhost", "username", "password");

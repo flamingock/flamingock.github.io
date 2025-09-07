@@ -26,12 +26,6 @@ That's all. Flamingock will take care of collections, indexes, and consistency d
 Example:
 
 ```java
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     MongoClient client = MongoClients.create("mongodb://localhost:27017");
