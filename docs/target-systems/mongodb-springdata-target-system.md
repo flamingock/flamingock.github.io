@@ -24,7 +24,7 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** |
+| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** for both ChangeUnit execution and transaction management |
 
 ### Optional configurations
 
@@ -68,7 +68,7 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-Spring Data MongoDB target system integrates with Spring's transaction management. When a ChangeUnit is marked as transactional (the default), Flamingock leverages Spring's `@Transactional` behavior - the MongoTemplate automatically participates in the current transaction context.
+Spring Data MongoDB target system integrates with Spring's transaction management. When a ChangeUnit is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
 
 ```java
 @TargetSystem("user-database")
@@ -78,11 +78,17 @@ public class CreateUsers {
     @Execution
     public void execution(MongoTemplate mongoTemplate) {
         // MongoTemplate automatically participates in Spring transactions
-        // Flamingock integrates with Spring's transaction management
+        // Flamingock uses the target system's MongoTemplate for transaction management
+        // through Spring's @Transactional infrastructure
         mongoTemplate.save(new User("john@example.com", "John Doe"));
     }
 }
 ```
+
+**How transactions work:**
+1. **Spring integration**: Flamingock leverages the target system's `MongoTemplate` within Spring's transaction context
+2. **Transaction management**: The same `MongoTemplate` handles both ChangeUnit operations and transaction coordination
+3. **Lifecycle**: Spring's transaction infrastructure manages start, commit, and rollback automatically
 
 The transaction lifecycle is managed through Spring's transaction infrastructure, ensuring consistency with your existing Spring Data operations.
 

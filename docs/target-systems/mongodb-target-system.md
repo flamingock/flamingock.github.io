@@ -25,8 +25,8 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** |
+| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** for both ChangeUnit execution and transaction management |
+| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** for both ChangeUnit execution and transaction management |
 
 ### Optional configurations
 
@@ -73,7 +73,7 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock automatically manages this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+For a ChangeUnit to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
 ```java
 @TargetSystem("user-database")
@@ -83,12 +83,18 @@ public class CreateUsers {
     @Execution
     public void execution(MongoDatabase db, ClientSession session) {
         // The ClientSession is required for transactional execution
-        // Flamingock handles transaction start, commit, and rollback
+        // Flamingock uses the target system's MongoClient to create this session
+        // and handles transaction start, commit, and rollback automatically
         db.getCollection("users")
           .insertOne(session, new Document("name", "John"));
     }
 }
 ```
+
+**How transactions work:**
+1. **Session creation**: Flamingock uses the target system's `MongoClient` to create a `ClientSession`
+2. **Transaction management**: The same `MongoClient` and `MongoDatabase` handle transaction operations
+3. **Lifecycle**: Flamingock automatically starts the transaction, commits on success, or rolls back on failure
 
 Without the `ClientSession` parameter, operations will execute but won't participate in transactions.
 

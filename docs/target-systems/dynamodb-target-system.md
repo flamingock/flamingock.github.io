@@ -24,7 +24,7 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `DynamoDbClient` | `.withDynamoDBClient(client)` | AWS DynamoDB client - **required** |
+| `DynamoDbClient` | `.withDynamoDBClient(client)` | AWS DynamoDB client - **required** for both ChangeUnit execution and transaction management |
 
 Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
 - **Required dependencies** will throw an exception
@@ -56,7 +56,7 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage DynamoDB's transactional capabilities, it must use the `TransactWriteItemsEnhancedRequest.Builder` parameter. Flamingock automatically manages this builder's lifecycle - creating it before execution and executing the transaction with all operations on success.
+For a ChangeUnit to leverage DynamoDB's transactional capabilities, it must use the `TransactWriteItemsEnhancedRequest.Builder` parameter. Flamingock uses the injected `DynamoDbClient` dependency to create and manage this builder's lifecycle - creating it before execution and executing the transaction with all operations on success.
 
 ```java
 @TargetSystem("inventory-database")
@@ -67,7 +67,8 @@ public class UpdateInventory {
     public void execution(DynamoDbClient client, 
                          TransactWriteItemsEnhancedRequest.Builder txBuilder) {
         // The transaction builder is required for transactional execution
-        // Flamingock handles transaction creation, execution, and rollback
+        // Flamingock uses the target system's DynamoDbClient to handle transaction operations
+        // and manages transaction creation, execution, and rollback automatically
         
         DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
             .dynamoDbClient(client)
@@ -82,6 +83,11 @@ public class UpdateInventory {
     }
 }
 ```
+
+**How transactions work:**
+1. **Builder creation**: Flamingock uses the target system's `DynamoDbClient` to create a `TransactWriteItemsEnhancedRequest.Builder`
+2. **Transaction management**: The same `DynamoDbClient` executes the transaction with all accumulated operations
+3. **Lifecycle**: Flamingock automatically creates the builder, executes the transaction on success, or handles rollback on failure
 
 Without the `TransactWriteItemsEnhancedRequest.Builder` parameter, operations will execute but won't participate in transactions.
 

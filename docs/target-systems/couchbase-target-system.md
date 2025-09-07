@@ -25,8 +25,8 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** |
-| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** |
+| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** for both ChangeUnit execution and transaction management |
+| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** for both ChangeUnit execution and transaction management |
 
 Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
 - **Required dependencies** will throw an exception
@@ -61,7 +61,7 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage Couchbase's transactional capabilities, it must use the `AttemptContext` parameter. Flamingock automatically manages this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
+For a ChangeUnit to leverage Couchbase's transactional capabilities, it must use the `AttemptContext` parameter. Flamingock uses the injected `Cluster` and `Bucket` dependencies to create and manage this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
 
 ```java
 @TargetSystem("user-database")
@@ -71,7 +71,8 @@ public class CreateUsers {
     @Execution
     public void execution(Cluster cluster, Bucket bucket, AttemptContext txContext) {
         // AttemptContext is required for transactional execution
-        // Flamingock handles transaction start, commit, and rollback
+        // Flamingock uses the target system's Cluster and Bucket to handle transaction operations
+        // and manages transaction start, commit, and rollback automatically
         Collection collection = bucket.defaultCollection();
         
         JsonObject user = JsonObject.create()
@@ -103,6 +104,11 @@ public class UpdateConfigs {
     }
 }
 ```
+
+**How transactions work:**
+1. **Context creation**: Flamingock uses the target system's `Cluster` to create an `AttemptContext` for transaction management
+2. **Transaction management**: The same `Cluster` and `Bucket` handle transaction operations and coordinate with the context
+3. **Lifecycle**: Flamingock automatically creates the transaction context, commits on success, or rolls back on failure
 
 Without the `AttemptContext` parameter, operations will execute but won't participate in transactions.
 

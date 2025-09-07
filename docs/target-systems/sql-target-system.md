@@ -24,7 +24,7 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** |
+| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** for both ChangeUnit execution and transaction management |
 
 ### Optional configurations
 
@@ -62,7 +62,7 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock automatically manages the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+For a ChangeUnit to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
 ```java
 @TargetSystem("inventory-database")
@@ -72,7 +72,8 @@ public class UpdateProducts {
     @Execution
     public void execution(DataSource dataSource) throws SQLException {
         // DataSource automatically participates in transactions
-        // Flamingock handles transaction start, commit, and rollback
+        // Flamingock uses the target system's DataSource for transaction management
+        // and handles transaction start, commit, and rollback automatically
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO products (id, name, price) VALUES (?, ?, ?)")) {
@@ -96,13 +97,19 @@ public class CreateIndexes {
     @Execution
     public void execution(Connection connection) throws SQLException {
         // Connection automatically participates in transactions
-        // Flamingock handles transaction lifecycle
+        // Flamingock uses the target system's connection for transaction operations
+        // and handles transaction lifecycle automatically
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE INDEX idx_product_name ON products(name)");
         }
     }
 }
 ```
+
+**How transactions work:**
+1. **Connection management**: Flamingock uses the target system's `DataSource` to obtain database connections
+2. **Transaction management**: The same `DataSource` or `Connection` handles transaction operations (begin, commit, rollback)
+3. **Lifecycle**: Flamingock automatically manages transaction boundaries, committing on success or rolling back on failure
 
 Without the `DataSource` or `Connection` parameter, operations will execute but won't participate in transactions.
 
