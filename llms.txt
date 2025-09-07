@@ -84,17 +84,11 @@ To use MongoDB as your audit store you need to provide:
 - A **MongoClient**  
 - A **MongoDatabase**
 
-That’s all. Flamingock will take care of collections, indexes, and consistency defaults.  
+That's all. Flamingock will take care of collections, indexes, and consistency defaults.  
 
 Example:
 
 ```java
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     MongoClient client = MongoClients.create("mongodb://localhost:27017");
@@ -102,12 +96,58 @@ public class App {
 
     Flamingock.builder()
       .setAuditStore(new MongoSyncAuditStore()
-          .withClient(client)
+          .withMongoClient(client)
           .withDatabase(db))
       .build()
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** |
+| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** |
+
+### Optional configurations
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+## Reusing target system dependencies
+
+If you're already using a MongoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+MongoSyncTargetSystem mongoTargetSystem = new MongoSyncTargetSystem("user-database")
+    .withMongoClient(client)
+    .withDatabase(userDatabase);
+
+// Create audit store reusing the same dependencies
+MongoSyncAuditStore auditStore = MongoSyncAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(mongoTargetSystem)
+    .build()
+    .run();
+```
+
+You can still override specific settings if needed:
+
+```java
+MongoSyncAuditStore auditStore = MongoSyncAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem)
+    .withReadConcern(ReadConcern.LOCAL);
 ```
 
 ---
@@ -236,10 +276,6 @@ That's all. Flamingock will take care of collections, indexes, and consistency d
 Example:
 
 ```java
-import org.springframework.data.mongodb.core.MongoTemplate;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSpringDataAuditStore;
-
 public class App {
   public static void main(String[] args) {
     // Assuming MongoTemplate is configured via Spring
@@ -252,6 +288,50 @@ public class App {
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** |
+
+### Optional configurations
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+## Reusing target system dependencies
+
+If you're already using a MongoDB Spring Data target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+MongoSpringDataTargetSystem mongoTargetSystem = new MongoSpringDataTargetSystem("user-database")
+    .withMongoTemplate(mongoTemplate);
+
+// Create audit store reusing the same dependencies
+MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(mongoTargetSystem)
+    .build()
+    .run();
+```
+
+You can still override specific settings if needed:
+
+```java
+MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem)
+    .withReadConcern(ReadConcern.LOCAL);
 ```
 
 ---
@@ -417,11 +497,6 @@ That's all. Flamingock will take care of tables, indexes, and capacity defaults.
 Example:
 
 ```java
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.DynamoSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     DynamoDbClient client = DynamoDbClient.builder()
@@ -435,6 +510,34 @@ public class App {
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `DynamoDbClient` | `.withClient(client)` | AWS DynamoDB client - **required** |
+
+## Reusing target system dependencies
+
+If you're already using a DynamoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+DynamoDBTargetSystem dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
+    .withDynamoDBClient(dynamoDbClient);
+
+// Create audit store reusing the same dependencies
+DynamoSyncAuditStore auditStore = DynamoSyncAuditStore
+    .reusingDependenciesFrom(dynamoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(dynamoTargetSystem)
+    .build()
+    .run();
 ```
 
 ---
@@ -565,11 +668,6 @@ That's all. Flamingock will take care of collections, indexes, and scope default
 Example:
 
 ```java
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.Bucket;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.CouchbaseSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     Cluster cluster = Cluster.connect("localhost", "username", "password");
@@ -583,6 +681,36 @@ public class App {
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** |
+| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** |
+
+## Reusing target system dependencies
+
+If you're already using a Couchbase target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
+    .withCluster(cluster)
+    .withBucket(bucket);
+
+// Create audit store reusing the same dependencies
+CouchbaseSyncAuditStore auditStore = CouchbaseSyncAuditStore
+    .reusingDependenciesFrom(couchbaseTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(couchbaseTargetSystem)
+    .build()
+    .run();
 ```
 
 ---
@@ -685,44 +813,30 @@ Flamingock.builder()
 
 # ChangeUnits
 
-## 1. Introduction: Understanding ChangeUnits
+A **ChangeUnit** is the atomic, versioned, self-contained unit of change in Flamingock. It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
 
-A **ChangeUnit** is the atomic, versioned, self-contained unit of change in Flamingock.  
-It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
+## Key characteristics
 
-**Key characteristics:**
-- Executed in sequence based on their `order`
-- Recorded in the audit store to prevent duplicate execution
-- Safe by default: if Flamingock is uncertain about a change's outcome, it stops and requires manual intervention
-- Each ChangeUnit runs exactly once per system
+- **Atomic execution**: Each ChangeUnit runs exactly once
+- **Ordered sequence**: Executed based on their `order` property  
+- **Auditable**: Recorded in the audit store to prevent duplicate execution
+- **Safe by default**: If Flamingock is uncertain about a change's outcome, it stops and requires manual intervention
+- **Rollback capable**: Can be undone through rollback methods
 
----
+## What ChangeUnits can do
 
-## 2. Structure of a ChangeUnit
+ChangeUnits enable you to version and track changes across your entire technology stack:
 
-### Required Properties
-- **`id`**: Unique identifier across all ChangeUnits in the application  
-- **`order`**: Execution sequence (must use zero-padded format like `0001`, `0002`, `_0001_ChangeName`)  
-- **`author`**: Who is responsible for this change  
+- **Message queue operations**: Topic creation, schema registry updates
+- **Object storage**: Bucket setup, file migrations, policy updates  
+- **Database migrations**: Schema changes, data transformations, index creation
+- **External API integrations**: Service configurations, webhook setups
+- **Infrastructure changes**: Feature flag updates, configuration changes
 
-### Optional Properties
-- **`description`**: Brief explanation of what the change does  
-- **`transactional`** (default `true`): Only relevant if the target system supports transactions. Has no effect on non-transactional systems like S3 or Kafka.  
-
-### Required Annotations and Methods
-- **`@TargetSystem`**: Specifies which system this change affects  
-- **`@ChangeUnit`**: Marks the class as a ChangeUnit  
-- **`@Execution`**: The method containing your change logic  
-- **`@RollbackExecution`**: The method to undo the change (required for safety and governance)  
-
-> **Note:** Rollback is important because in **non-transactional systems**, it's be used to revert changes if execution fails. In **all systems**, rollback is essential for undo operations (via CLI or UI).  
-
-## 3. Types of ChangeUnits
+## Types of ChangeUnits
 
 ### Code-based ChangeUnits
-Written in Java (or Kotlin/Groovy) with annotations. Best for **specific jobs** or when you need a **flexibility window** that isn’t covered by an existing template.  
-
-This approach gives you full programmatic control, making it the fallback option when no reusable template exists for your use case.
+Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or when you need full programmatic control.
 
 ```java
 @TargetSystem("user-database")
@@ -731,114 +845,686 @@ public class _0001_AddUserStatus {
     
     @Execution
     public void execute(MongoDatabase database) {
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                            new Document("$set", new Document("status", "active")));
+        // Your change logic here
     }
     
     @RollbackExecution
     public void rollback(MongoDatabase database) {
-        database.getCollection("users")
-                .updateMany(new Document(), 
-                            new Document("$unset", new Document("status", "")));
+        // Your rollback logic here
     }
 }
 ```
 
 ### Template-based ChangeUnits
-Template-based ChangeUnits use YAML or JSON definitions. They are especially useful for **repetitive or parameterized operations**, where the same logic can to be applied multiple times with different configurations.
-
-- The execution logic is encapsulated in a **template** (provided by Flamingock, a contributor, or created by you).  
-- Each ChangeUnit then supplies its own configuration to apply that logic consistently.  
-- This approach ensures **immutability** (the YAML/JSON file itself represents the change) and makes it easier to **reuse proven patterns**.
-
+Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
 # File: _0002_add_status_column.yml
 id: add_status_column
 order: "0002"
 author: "db-team"
-description: "Add status column to orders table"
 templateName: sql-template
 templateConfiguration:
-  executionSql: |
-    ALTER TABLE orders ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
-  rollbackSql: |
-    ALTER TABLE orders DROP COLUMN status;
+  executionSql: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
+  rollbackSql: "ALTER TABLE orders DROP COLUMN status;"
 ```
 
-Both types follow the same execution model and provide the same safety guarantees.
+## Safety and recovery
 
-## 4. Naming & Discoverability
+Flamingock prioritizes safety over automation. If execution fails or results are uncertain, Flamingock stops and requires manual intervention rather than risking data corruption. This ensures you always know the exact state of your systems.
 
-### Enforced Naming Convention
-All ChangeUnit files (both code and templates) **must** follow this pattern:
+## Next steps
 
-- **Format**: `_XXXX_DescriptiveName`
-- **Order**: Must be at least 4 digits, zero-padded (e.g., `0001`, `0002`, `0100`)
-- **Examples**: 
-  - Code: `_0001_CreateUserIndexes.java`
-  - Template: `_0002_AddStatusColumn.yml`
+Dive deeper into specific aspects of ChangeUnits:
 
-### Why This Convention?
-- **Visibility**: Easy to see execution order at a glance
-- **Immutability**: Clear versioning prevents accidental modifications
-- **Deterministic ordering**: Ensures consistent execution across environments
+- **[Anatomy & Structure](./anatomy-and-structure.md)** - Learn the technical structure, required properties, and annotations
+- **[Types & Implementation](./types-and-implementation.md)** - Understand code-based vs template-based approaches  
+- **[Best Practices](./best-practices.md)** - Follow proven patterns for reliable ChangeUnits
 
-### File Locations
-- **Code-based**: Place in packages scanned by Flamingock (default: `src/main/java`)
-- **Template-based**: Place in `src/main/resources` or preferably alongside code-based ChangeUnits
-- **Recommendation**: Keep all ChangeUnits (code and templates) in the same package/directory for better organization
-
-## 5. Transactional Behavior
-
-- **Transactional target systems** (e.g., MongoDB, PostgreSQL): operations run within a transaction **unless you explicitly set `transactional = false`**.  
-- **Non-transactional target systems** (e.g., S3, Kafka): the `transactional` flag has no effect — operations are applied without transactional guarantees.
-
-Some operations may require setting `transactional = false` even in databases:
-- DDL operations (e.g., CREATE INDEX, ALTER TABLE)
-- Large bulk operations that exceed transaction limits
-- Cross-system changes spanning multiple databases
-
-➡️ To understand how to define and configure **target systems**, see [Target System Configuration](./target-system-configuration.md)
-
-## 6. Default Safety & Recovery
-
-**Flamingock's core principle**: If a ChangeUnit execution result is uncertain, Flamingock stops and requires manual intervention. This prevents silent data corruption.
-
-**What this means:**
-- If a change fails, Flamingock halts execution
-- The issue is recorded in the audit store
-- Manual investigation and resolution is required via CLI (or Cloud UI in Cloud Edition)
-
-➡️ **For advanced recovery strategies**, see [Recovery Strategies](../recovery-and-safety/recovery-strategies.md)
-
-## 7. Best Practices
-
-### Core Principles
-- **Treat ChangeUnits as immutable**: Once deployed, never modify existing ChangeUnits. Create new ones for corrections.
-- **Always provide @RollbackExecution**: Important for CLI undo operations and recovery scenarios.
-- **Keep scope focused**: One ChangeUnit should address one logical change.
-
-### Technical Guidelines
-- **Make operations idempotent when possible**: Try to design changes that can be safely re-run.
-- **Test both execution and rollback**: Include ChangeUnit testing in your CI/CD pipeline.
-- **Follow naming conventions**: Use the `_XXXX_DescriptiveName` pattern consistently.
-
-### Organizational Best Practices
-- **Clear authorship**: Always specify the `author` for accountability.
-- **Version control discipline**: Review ChangeUnits in pull requests like any critical code.
-- **Document complex changes**: Use the `description` field to explain non-obvious logic.
-- **Maintain change logs**: Keep a high-level record of what changes were made when.
-
+Or continue to other key concepts:
+- **[Target Systems](../target-systems/introduction.md)** - Configure where your changes will be applied
+- **[Templates](../templates/introduction.md)** - Explore reusable change patterns
 
 ---
 
-**Next Steps:**
-- Learn about [dependency injection](./changeunit-dependency-injection.md) in ChangeUnits
-- Configure [target systems](./target-system-configuration.md) and [audit store](./audit-store-configuration.md)
-- Explore [template-based ChangeUnits](../templates/templates-introduction.md) for declarative changes
-- Understand [advanced recovery strategies](../recovery-and-safety/recovery-strategies.md) for production scenarios
+// File: change-units/anatomy-and-structure
+
+# ChangeUnit Anatomy & Structure
+
+Every ChangeUnit follows a consistent structure with required properties, optional configurations, and specific annotations. Understanding this anatomy is essential for creating reliable changes.
+
+## Required properties
+
+Every ChangeUnit must define these three properties:
+
+### `id` - Unique identifier
+The `id` must be unique across all ChangeUnits in your application.
+
+```java
+@ChangeUnit(id = "add-user-status", order = "0001", author = "dev-team")
+```
+
+**Rules:**
+- Must be unique application-wide
+- Use descriptive names (e.g., `add-user-status`, not `change1`)
+- Cannot be modified once deployed
+
+### `order` - Execution sequence
+The `order` determines when the ChangeUnit executes relative to others.
+
+```java
+@ChangeUnit(id = "create-indexes", order = "0001", author = "dev-team")
+@ChangeUnit(id = "migrate-data", order = "0002", author = "dev-team") 
+@ChangeUnit(id = "cleanup-temp-data", order = "0003", author = "dev-team")
+```
+
+**Requirements:**
+- Must use zero-padded format: `0001`, `0002`, `0100`, etc.
+- Minimum 4 digits recommended for future expansion
+- Determines execution order across all target systems
+- Cannot be changed once deployed
+
+### `author` - Responsibility tracking
+Identifies who is responsible for this change.
+
+```java
+@ChangeUnit(id = "update-schema", order = "0001", author = "database-team")
+@ChangeUnit(id = "migrate-users", order = "0002", author = "john.doe@company.com")
+```
+
+**Best practices:**
+- Use team names for shared responsibility: `database-team`, `api-team`
+- Use individual emails for personal changes: `john.doe@company.com`
+- Keep consistent within your organization
+
+## Optional properties
+
+### `description` - Change explanation
+Briefly describes what the change does, especially useful for complex operations.
+
+```java
+@ChangeUnit(
+    id = "optimize-user-queries", 
+    order = "0001", 
+    author = "performance-team",
+    description = "Add composite index on user table to improve search performance"
+)
+```
+
+### `transactional` - Transaction behavior
+Controls whether the change runs within a transaction (default: `true`).
+
+```java
+@ChangeUnit(
+    id = "create-large-index", 
+    order = "0001", 
+    author = "db-team",
+    transactional = false  // DDL operations may require this
+)
+```
+
+**When to set `transactional = false`:**
+- DDL operations (CREATE INDEX, ALTER TABLE)
+- Large bulk operations that exceed transaction limits  
+- Cross-system changes spanning multiple databases
+- Operations that don't support transactions
+
+**Important:** For non-transactional target systems (S3, Kafka, etc.), this flag has no effect.
+
+## Required annotations
+
+### `@TargetSystem` - System specification
+Declares which target system this ChangeUnit affects.
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "add-user-fields", order = "0001", author = "api-team")
+public class _0001_AddUserFields {
+    // Implementation
+}
+```
+
+
+### `@ChangeUnit` - Class marker
+Marks the class as a ChangeUnit and contains all metadata.
+
+```java
+@ChangeUnit(
+    id = "migrate-user-data",
+    order = "0001", 
+    author = "migration-team",
+    description = "Migrate legacy user format to new schema",
+    transactional = true
+)
+```
+
+## Required methods
+
+### `@Execution` - Change logic
+Contains the actual change implementation.
+
+```java
+@Execution
+public void execute(MongoDatabase database, ClientSession session) {
+    // Your change logic here
+    database.getCollection("users")
+            .insertOne(session, new Document("status", "active"));
+}
+```
+
+**Method characteristics:**
+- Must be public
+- Can have any name (`execute`, `run`, `apply`, etc.)
+- Parameters are dependency-injected by Flamingock
+- Should contain idempotent operations when possible
+
+### `@RollbackExecution` - Undo logic
+Provides logic to reverse the change, essential for safety and CLI undo operations.
+
+```java
+@RollbackExecution
+public void rollback(MongoDatabase database, ClientSession session) {
+    // Undo the change
+    database.getCollection("users")
+            .deleteMany(new Document("status", "active"));
+}
+```
+
+**Why rollback is required:**
+- **Non-transactional systems**: Used automatically if execution fails
+- **All systems**: Required for CLI/UI undo operations
+- **Safety**: Ensures every change can be reversed
+- **Governance**: Demonstrates you've thought through the change impact
+
+## Method parameters and dependency injection
+
+ChangeUnits receive dependencies through method parameters, automatically injected by Flamingock from the target system's context, global context, or underlying framework context.
+
+```java
+// MongoDB target system
+@Execution
+public void execute(MongoDatabase database, ClientSession session) {
+    // database and session injected from target system or global context
+}
+
+// SQL target system  
+@Execution
+public void execute(DataSource dataSource) {
+    // dataSource and connection injected from target system or  global context
+}
+```
+
+For more details on how dependency resolution works, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+
+## File naming conventions
+
+All ChangeUnit files must follow the `_XXXX_DescriptiveName` pattern:
+
+```
+_0001_CreateUserIndexes.java
+_0002_MigrateUserData.java  
+_0003_AddUserStatusColumn.yml
+_0100_OptimizeQueries.java
+```
+
+**Rules:**
+- Start with underscore and zero-padded order
+- Use PascalCase for descriptive names
+- Match the `order` property in the annotation
+- Applies to both code (.java/.kt/.groovy) and template (.yml/.json) files
+
+## Complete example
+
+Here's a complete ChangeUnit showing all elements:
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(
+    id = "add-user-preferences", 
+    order = "0001", 
+    author = "user-experience-team",
+    description = "Add preferences object to user documents with default values",
+    transactional = true
+)
+public class _0001_AddUserPreferences {
+    
+    @Execution
+    public void execute(MongoDatabase database, ClientSession session) {
+        // Add preferences field with default values
+        Document defaultPreferences = new Document()
+            .append("notifications", true)
+            .append("theme", "light")
+            .append("language", "en");
+            
+        database.getCollection("users")
+                .updateMany(
+                    session,
+                    new Document("preferences", new Document("$exists", false)),
+                    new Document("$set", new Document("preferences", defaultPreferences))
+                );
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database, ClientSession session) {
+        // Remove the preferences field
+        database.getCollection("users")
+                .updateMany(
+                    session,
+                    new Document(),
+                    new Document("$unset", new Document("preferences", ""))
+                );
+    }
+}
+```
+
+## Next steps
+
+- **[ChangeUnit types & Implementation](./types-and-implementation)** - Deep dive into code-based vs template-based approaches
+- **[ChangeUnit best Practices](./best-practices)** - Learn proven patterns for reliable ChangeUnits
+- **[Target Systems](../target-systems/introduction)** - Configure where your changes will be applied
+
+---
+
+// File: change-units/types-and-implementation
+
+# ChangeUnit Types & Implementation
+
+Flamingock supports two approaches for implementing ChangeUnits: code-based and template-based. Each serves different use cases and provides the same safety guarantees.
+
+## Code-based ChangeUnits
+
+Code-based ChangeUnits are written in Java, Kotlin, or Groovy with annotations. They provide full programmatic control for custom logic or specific operations that don't fit existing templates.
+
+### Basic structure
+
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "migrate-user-emails", order = "0001", author = "data-team")
+public class _0001_MigrateUserEmails {
+    
+    @Execution
+    public void execute(MongoDatabase database, ClientSession session) {
+        // Custom implementation logic with full programmatic control
+        MongoCollection<Document> users = database.getCollection("users");
+        users.updateMany(session,
+            new Document("email", new Document("$exists", true)),
+            new Document("$set", new Document("emailVerified", false)));
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database, ClientSession session) {
+        // Rollback logic
+        database.getCollection("users")
+                .updateMany(session, new Document(),
+                    new Document("$unset", new Document("emailVerified", "")));
+    }
+}
+```
+
+## Template-based ChangeUnits
+
+Template-based ChangeUnits use YAML or JSON files with reusable templates. Templates provide a low-code, declarative approach for common patterns and repetitive operations. Templates can be as powerful and complex as code-based ChangeUnits - the difference is that templates are developed for reusable patterns and integrations.
+
+### Basic YAML structure
+
+```yaml
+# File: _0001_add_user_index.yml
+id: add_user_index
+order: "0001"
+author: "database-team"
+description: "Add index on user email field for faster lookups"
+templateName: mongodb-index
+templateConfiguration:
+  collection: users
+  indexSpec:
+    email: 1
+  options:
+    unique: true
+    name: "idx_user_email"
+```
+
+For more details about available templates and creating custom templates, see [Templates](../templates/introduction).
+
+
+## File organization
+
+### Recommended project structure:
+```
+src/main/java/com/yourapp/changes/
+├── _0001_CreateUserIndexes.java
+├── _0002_add_user_status.yml
+├── _0003_MigrateUserData.java
+├── _0004_setup_notifications.yml
+└── _0005_OptimizeQueries.java
+```
+
+### Best practices:
+- **Keep together**: Store both code and template files in the same directory
+- **Consistent naming**: Follow `_XXXX_DescriptiveName` pattern for both types
+
+## Template development
+
+Flamingock and the community provide useful templates for common operations. Organizations can also develop their own templates to standardize patterns and integrations specific to their needs.
+
+For more information about available templates and how to create custom templates, see [Templates](../templates/introduction).
+
+## Next steps
+
+- **[Best Practices](./best-practices)** - Learn proven patterns for reliable ChangeUnits
+- **[Templates](../templates/introduction)** - Explore available templates and create custom ones
+- **[Target Systems](../target-systems/introduction)** - Configure where your changes will be applied
+
+---
+
+// File: change-units/best-practices
+
+# ChangeUnit Best Practices
+
+Following these proven patterns will help you create reliable, maintainable ChangeUnits that work safely in production environments.
+
+## Core principles
+
+### Treat ChangeUnits as immutable
+
+Once a ChangeUnit is deployed, never modify it. Create new ChangeUnits for corrections.
+
+**❌ Don't do this:**
+```java
+// Modifying an existing ChangeUnit after deployment
+@ChangeUnit(id = "add-user-field", order = "0001", author = "team")
+public class _0001_AddUserField {
+    @Execution  
+    public void execute(MongoDatabase db) {
+        // Original: db.getCollection("users").updateMany(/* add field */)
+        // Modified: db.getCollection("users").updateMany(/* different logic */)
+    }
+}
+```
+
+**✅ Do this instead:**
+```java
+// Keep the original unchanged
+@ChangeUnit(id = "add-user-field", order = "0001", author = "team")
+public class _0001_AddUserField {
+    @Execution
+    public void execute(MongoDatabase db) {
+        // Original logic remains unchanged
+    }
+}
+
+// Create a new ChangeUnit for corrections
+@ChangeUnit(id = "fix-user-field-values", order = "0002", author = "team")
+public class _0002_FixUserFieldValues {
+    @Execution
+    public void execute(MongoDatabase db) {
+        // Correction logic
+    }
+}
+```
+
+### Always provide rollback logic
+
+Every ChangeUnit must have a `@RollbackExecution` method, regardless of target system type.
+
+**Why rollback matters:**
+- **Non-transactional systems**: Automatic cleanup on failure
+- **All systems**: CLI/UI undo operations
+- **Safety**: Proves you understand the change impact
+- **Governance**: Required for audit compliance
+
+**Example with comprehensive rollback:**
+```java
+@ChangeUnit(id = "setup-user-indexes", order = "0001", author = "db-team")
+public class _0001_SetupUserIndexes {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        MongoCollection<Document> users = database.getCollection("users");
+        
+        // Create compound index for user queries
+        users.createIndex(
+            new Document("email", 1).append("status", 1),
+            new IndexOptions().name("idx_user_email_status").unique(false)
+        );
+        
+        // Create text index for search
+        users.createIndex(
+            new Document("firstName", "text").append("lastName", "text"),
+            new IndexOptions().name("idx_user_search")
+        );
+    }
+    
+    @RollbackExecution
+    public void rollback(MongoDatabase database) {
+        MongoCollection<Document> users = database.getCollection("users");
+        
+        // Drop indexes in reverse order
+        try {
+            users.dropIndex("idx_user_search");
+        } catch (Exception e) {
+            // Index might not exist - log but continue
+        }
+        
+        try {
+            users.dropIndex("idx_user_email_status");  
+        } catch (Exception e) {
+            // Index might not exist - log but continue
+        }
+    }
+}
+```
+
+### Keep scope focused
+
+Each ChangeUnit should address one logical change. Avoid combining unrelated operations.
+
+**❌ Avoid mixing concerns:**
+```java
+@ChangeUnit(id = "big-refactor", order = "0001", author = "team")
+public class _0001_BigRefactor {
+    @Execution
+    public void execute(MongoDatabase db, KafkaProducer producer) {
+        // Adding user field
+        db.getCollection("users").updateMany(/* ... */);
+        
+        // Creating Kafka topic  
+        producer.send(/* create topic message */);
+        
+        // Updating configuration
+        db.getCollection("config").updateOne(/* ... */);
+    }
+}
+```
+
+**✅ Separate concerns:**
+```java
+@TargetSystem("user-database")
+@ChangeUnit(id = "add-user-status", order = "0001", author = "team")
+public class _0001_AddUserStatus {
+    // Focus: User schema change only
+}
+
+@TargetSystem("kafka-events")
+@ChangeUnit(id = "create-user-topic", order = "0001", author = "team") 
+public class _0001_CreateUserTopic {
+    // Focus: Kafka topic creation only
+}
+```
+
+## Technical guidelines
+
+### Design for idempotency
+
+Make operations safe to re-run whenever possible.
+
+**Example: Idempotent field addition:**
+```java
+@ChangeUnit(id = "add-user-preferences", order = "0001", author = "team")
+public class _0001_AddUserPreferences {
+    
+    @Execution
+    public void execute(MongoDatabase database) {
+        // Only update users that don't already have preferences
+        database.getCollection("users").updateMany(
+            new Document("preferences", new Document("$exists", false)),
+            new Document("$set", new Document("preferences", getDefaultPreferences()))
+        );
+    }
+    
+    private Document getDefaultPreferences() {
+        return new Document()
+            .append("theme", "light")
+            .append("notifications", true);
+    }
+}
+```
+
+### Handle errors gracefully
+
+Don't catch exceptions unless you have specific recovery logic. Let Flamingock handle error management.
+
+**❌ Don't suppress errors:**
+```java
+@Execution
+public void execute(MongoDatabase database) {
+    try {
+        // Some operation
+        database.getCollection("users").updateMany(/* ... */);
+    } catch (Exception e) {
+        // Silently ignoring errors prevents proper error handling
+        System.out.println("Error occurred: " + e.getMessage());
+    }
+}
+```
+
+**✅ Let exceptions bubble up:**
+```java
+@Execution  
+public void execute(MongoDatabase database) {
+    // Let Flamingock handle exceptions and recovery
+    database.getCollection("users").updateMany(/* ... */);
+}
+```
+
+### Use meaningful method names
+
+Method names should clearly indicate their purpose.
+
+**Good examples:**
+```java
+@Execution
+public void migrateUserProfilesToNewSchema(MongoDatabase db) { }
+
+@Execution  
+public void addEmailIndexForFasterLookups(MongoDatabase db) { }
+
+@RollbackExecution
+public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
+```
+
+### Avoid domain objects
+
+Don't use domain objects in ChangeUnits. Since ChangeUnits are immutable and your domain evolves, using domain classes can cause compilation errors when fields are removed or modified in newer versions. Instead, work with primitive types, collections, or framework-native objects like `Document` for MongoDB.
+
+
+## Naming and organization
+
+### Follow consistent naming patterns
+
+**File names:**
+- Use `_XXXX_DescriptiveName` format
+- Match the order in `@ChangeUnit` annotation
+- Use PascalCase for class names
+
+**Good examples:**
+```
+_0001_CreateUserIndexes.java
+_0002_MigrateUserData.java
+_0003_AddUserPreferences.java
+_0100_OptimizeUserQueries.java
+```
+
+### Use descriptive IDs and descriptions
+
+Make your ChangeUnits self-documenting:
+
+```java
+@ChangeUnit(
+    id = "migrate-legacy-user-format-to-v2",
+    order = "0001",
+    author = "data-migration-team", 
+    description = "Migrate user documents from legacy format to v2 schema with new preference structure"
+)
+```
+
+### Organize by chronological order
+
+ChangeUnits should be organized chronologically by their order within stages. If you need logical grouping, use stages - but remember that execution order is only guaranteed within a stage, not between stages.
+
+```
+src/main/java/com/company/changes/
+├── _0001_CreateUserCollection.java
+├── _0002_AddUserIndexes.java  
+├── _0003_MigrateUserData.java
+├── _0004_CreateOrdersTable.java
+└── _0005_AddOrderStatusColumn.java
+```
+
+## Testing and validation
+
+### Test both execution and rollback
+
+Create comprehensive tests for your ChangeUnits:
+
+```java
+@Test
+public void testUserMigrationChangeUnit() {
+    // Arrange
+    MongoDatabase testDb = getTestDatabase();
+    insertTestUsers(testDb);
+    
+    _0001_MigrateUsers changeUnit = new _0001_MigrateUsers();
+    
+    // Act - Test execution
+    changeUnit.execute(testDb);
+    
+    // Assert - Verify execution results
+    MongoCollection<Document> users = testDb.getCollection("users");
+    assertEquals(5, users.countDocuments(new Document("status", "active")));
+    
+    // Act - Test rollback  
+    changeUnit.rollback(testDb);
+    
+    // Assert - Verify rollback results
+    assertEquals(0, users.countDocuments(new Document("status", new Document("$exists", true))));
+}
+```
+
+### Validate with real-like data
+
+Test with data that resembles production:
+
+```java
+@Test
+public void testWithRealisticData() {
+    // Use realistic data volumes and edge cases
+    insertUsers(1000);  // Test batch processing
+    insertUsersWithMissingFields(); // Test data inconsistencies
+    insertUsersWithEdgeCaseValues(); // Test boundary conditions
+    
+    // Run your ChangeUnit
+    changeUnit.execute(database);
+    
+    // Verify all scenarios handled correctly
+}
+```
+
+
+## Next steps
+
+- **[Templates](../templates/introduction)** - Explore reusable change patterns
+- **[Target Systems](../target-systems/introduction)** - Configure where changes are applied
+- **[Testing](../testing/introduction)** - Comprehensive testing strategies for ChangeUnits
 
 ---
 
@@ -1107,79 +1793,23 @@ Configuration is divided into two distinct scopes:
 
 ## What you can configure
 
-| Area                             | Description                                         |
-|----------------------------------|-----------------------------------------------------|
-| Setup & Stages                   | Organize changes into ordered stages                |
-| ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
-| Platform component injection     | Platform-level components injection                 |
-| Lock                             | Distributed locking and timing options              |
-| Extra                            | Metadata, default author, enable/disable            |
-| Cloud Edition                    | Cloud-specific setup: token, env, service           |
-| Community Audit Stores                | Driver-specific config for MongoDB, DynamoDB...     |
+| Area                             | Description                                         | Link |
+|----------------------------------|-----------------------------------------------------|------|
+| ⭐ Setup & stages                | Organize changes into ordered stages - **Essential** | [Setup & stages](./setup-and-stages.md) |
+| ⭐ Target systems               | Configure target systems for your changes - **Essential** | [Target systems](../target-systems/introduction.md) |
+| ⭐ Audit store                  | Configure audit storage - **Essential** (Not needed for Cloud Edition) | [Audit stores](../audit-stores/introduction.md) |
+| Global dependency injection      | Dependency injection to ChangeUnits and environment | [Context and dependencies](./context-and-dependencies.md) |
+| Cloud Edition                    | Cloud-specific setup: token, env, service           | [Cloud Edition](../cloud-edition/cloud-edition.md) |
+| Framework integration            | Integration with frameworks (currently Spring Boot) | [Spring Boot integration](../frameworks/springboot-integration/introduction.md) |
+| Lock                             | Distributed locking and timing options              | [Lock configuration](./lock.md) |
+| Extra                            | Metadata, default author, enable/disable            | [Additional configuration](./additional-configuration.md) |
 
 
 Each of these topics is explained in its own section.
 
 ---
 
-## Configuration scopes and layers
 
-Flamingock configuration is organized in two main scopes:
-### Core configuration (shared by all editions)
-Includes:
-- Setup and stages definition
-- Lock settings
-- Metadata
-- Default author
-- Enable/disable flag
-- Dependency injection via addDependency(...) for ChangeUnits and framework components
-- etc.
-
-### Edition-specific configuration
-Based on the edition of Flamingock you import:
-- **Cloud Edition**: Related settings to configure Flamingock Cloud.
-- **Community Audit Stores**: MongoDB, DynamoDB, Couchbase drivers and related settings.
-
-Each of these can be used in two runtime environments:
-- **Standalone** (default) — direct usage with builder (file-based config will be supported soon)
-- **Spring Boot** — supports both setups; builder and integration with Spring’s lifecycle and properties (covered in a separate section)
-
----
-
-## Setup and stages configuration
-
-Stages are configured using the `@EnableFlamingock` annotation on any class in your application:
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourapp.changes")
-    }
-)
-public class FlamingockConfig {
-    // Configuration class
-}
-```
-
-Alternatively, you can use a dedicated file by specifying `pipelineFile` in the annotation:
-```java
-@EnableFlamingock(pipelineFile = "config/pipeline.yaml")
-public class FlamingockConfig {}
-```
-
-The annotation should contain **only** the pipeline and stage definitions — no runtime configuration should be placed here.
-
-:::info
-- The `@EnableFlamingock` annotation is required for all runners and all environments.
-- The pipeline definition should remain the same across environments.
-- To conditionally include or exclude changes, Flamingock supports [profiles](../frameworks/springboot-integration/profiles.md).
-- Profile support for stages is planned but not yet available.
-:::
-
-See the [Pipeline & stages](setup-and-stages.md) page for full details and examples.
-
-
----
 
 ## Applying runtime configuration
 Runtime configuration (everything except the pipeline) can be applied in the following ways:
@@ -1197,17 +1827,22 @@ You can combine both approaches. If a property is defined in both, the builder v
 
 ## Next steps
 
-Explore the rest of the configuration section to tune Flamingock for your system:
+Start with the essential configurations marked with ⭐, then explore additional options based on your needs:
 
-### Shared configuration
-- [Setup & Stages](./setup-and-stages.md)
-- [Lock Configuration](./lock-configuration.md)
-- [Extra Configuration](./extra-configuration.md)
-- [Dependency wiring](./changeunit-dependency-injection.md)
+### Essential configurations (start here)
+- [⭐ Setup & stages](./setup-and-stages.md) - Define how changes are organized and discovered
+- [⭐ Target systems](../target-systems/introduction.md) - Configure systems where changes will be applied
+- [⭐ Audit stores](../audit-stores/introduction.md) - Set up audit storage (not needed for Cloud Edition)
 
-### Pick an edition
-- [☁️ Cloud Edition(Fully-featured)](../cloud-edition/cloud-edition.md)
-- 🧪 Community Audit Stores(feature-limited)
+### Additional configurations
+- [Global dependency injection](./context-and-dependencies.md) - Configure dependency resolution
+- [Framework integration](../frameworks/springboot-integration/introduction.md) - Spring Boot integration
+- [Lock configuration](./lock.md) - Distributed locking options
+- [Additional configuration](./additional-configuration.md) - Metadata, author, and other settings
+
+### Choose your edition
+- [☁️ Cloud Edition](../cloud-edition/cloud-edition.md) - Fully-featured managed solution
+- [🧪 Community Edition](../audit-stores/introduction.md) - Community audit stores (feature-limited)
 
 ---
 
@@ -2136,8 +2771,6 @@ class StageCompletedListener : (IStageCompletedEvent) -> Unit {
   </TabItem>
   <TabItem value="kotlin" label="Kotlin" default>
     ```kotlin
-        import org.springframework.context.annotation.Bean
-
         @Bean
         fun startFlamingockListener(): PipelineStartedListener {
             return PipelineStartedListener()
@@ -2632,9 +3265,6 @@ Check [Version Compatibility](introduction.md#version-compatibility)
 To activate the integration, add `@EnableFlamingock` to any class in your application (commonly on your main class or a configuration class):
 
 ```java
-import io.flamingock.core.api.annotations.EnableFlamingock;
-import io.flamingock.core.api.annotations.Stage;
-
 @EnableFlamingock(
     stages = {
         @Stage(location = "com.yourapp.changes")
@@ -7152,14 +7782,6 @@ Let’s compare how an SQL migration is handled using a **template-based ChangeU
 ### Approach 1: Using a Traditional Code-Based ChangeUnit
 
 ```java
-import io.flamingock.api.annotations.ChangeUnit;
-import io.flamingock.api.annotations.Execution;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import javax.sql.DataSource;
-
 @ChangeUnit(id = "create-persons-table", order = 1, author = "developer")
 public class CreatePersonsTableChangeUnit {
 
