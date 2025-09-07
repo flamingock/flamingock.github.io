@@ -21,17 +21,11 @@ To use MongoDB as your audit store you need to provide:
 - A **MongoClient**  
 - A **MongoDatabase**
 
-That’s all. Flamingock will take care of collections, indexes, and consistency defaults.  
+That's all. Flamingock will take care of collections, indexes, and consistency defaults.  
 
 Example:
 
 ```java
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSyncAuditStore;
-
 public class App {
   public static void main(String[] args) {
     MongoClient client = MongoClients.create("mongodb://localhost:27017");
@@ -39,12 +33,58 @@ public class App {
 
     Flamingock.builder()
       .setAuditStore(new MongoSyncAuditStore()
-          .withClient(client)
+          .withMongoClient(client)
           .withDatabase(db))
       .build()
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** |
+| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** |
+
+### Optional configurations
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+## Reusing target system dependencies
+
+If you're already using a MongoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+MongoSyncTargetSystem mongoTargetSystem = new MongoSyncTargetSystem("user-database")
+    .withMongoClient(client)
+    .withDatabase(userDatabase);
+
+// Create audit store reusing the same dependencies
+MongoSyncAuditStore auditStore = MongoSyncAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(mongoTargetSystem)
+    .build()
+    .run();
+```
+
+You can still override specific settings if needed:
+
+```java
+MongoSyncAuditStore auditStore = MongoSyncAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem)
+    .withReadConcern(ReadConcern.LOCAL);
 ```
 
 ---

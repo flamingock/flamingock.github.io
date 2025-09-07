@@ -53,9 +53,6 @@ Check [Version Compatibility](introduction.md#version-compatibility)
 To activate the integration, add `@EnableFlamingock` to any class in your application (commonly on your main class or a configuration class):
 
 ```java
-import io.flamingock.core.api.annotations.EnableFlamingock;
-import io.flamingock.core.api.annotations.Stage;
-
 @EnableFlamingock(
     stages = {
         @Stage(location = "com.yourapp.changes")

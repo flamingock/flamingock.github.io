@@ -25,10 +25,6 @@ That's all. Flamingock will take care of collections, indexes, and consistency d
 Example:
 
 ```java
-import org.springframework.data.mongodb.core.MongoTemplate;
-import io.flamingock.core.Flamingock;
-import io.flamingock.community.audit.MongoSpringDataAuditStore;
-
 public class App {
   public static void main(String[] args) {
     // Assuming MongoTemplate is configured via Spring
@@ -41,6 +37,50 @@ public class App {
       .run();
   }
 }
+```
+
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** |
+
+### Optional configurations
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+## Reusing target system dependencies
+
+If you're already using a MongoDB Spring Data target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+MongoSpringDataTargetSystem mongoTargetSystem = new MongoSpringDataTargetSystem("user-database")
+    .withMongoTemplate(mongoTemplate);
+
+// Create audit store reusing the same dependencies
+MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(mongoTargetSystem)
+    .build()
+    .run();
+```
+
+You can still override specific settings if needed:
+
+```java
+MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
+    .reusingDependenciesFrom(mongoTargetSystem)
+    .withReadConcern(ReadConcern.LOCAL);
 ```
 
 ---
