@@ -45,6 +45,34 @@ public class App {
 }
 ```
 
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `DynamoDbClient` | `.withClient(client)` | AWS DynamoDB client - **required** |
+
+## Reusing target system dependencies
+
+If you're already using a DynamoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+DynamoDBTargetSystem dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
+    .withDynamoDBClient(dynamoDbClient);
+
+// Create audit store reusing the same dependencies
+DynamoSyncAuditStore auditStore = DynamoSyncAuditStore
+    .reusingDependenciesFrom(dynamoTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(dynamoTargetSystem)
+    .build()
+    .run();
+```
+
 ---
 
 ## Supported versions

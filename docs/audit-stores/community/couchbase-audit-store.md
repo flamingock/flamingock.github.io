@@ -46,6 +46,36 @@ public class App {
 }
 ```
 
+## Dependencies
+
+### Required dependencies
+
+| Dependency | Method | Description |
+|------------|--------|-------------|
+| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** |
+| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** |
+
+## Reusing target system dependencies
+
+If you're already using a Couchbase target system, you can reuse its dependencies to avoid duplicating connection configuration:
+
+```java
+// Reuse dependencies from existing target system
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
+    .withCluster(cluster)
+    .withBucket(bucket);
+
+// Create audit store reusing the same dependencies
+CouchbaseSyncAuditStore auditStore = CouchbaseSyncAuditStore
+    .reusingDependenciesFrom(couchbaseTargetSystem);
+
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(couchbaseTargetSystem)
+    .build()
+    .run();
+```
+
 ---
 
 ## Supported versions
