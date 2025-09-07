@@ -1,12 +1,12 @@
 ---
-title: Target System Configuration
-sidebar_position: 20
+title: Introduction
+sidebar_position: 0
 ---
 
-# Target System Configuration
+# Target systems
 
 Target systems are the real-world systems where your business changes are applied.  
-They can be databases, message queues, storage buckets, APIs, or any external service your application depends on.
+They can be message queues, databases, storage buckets, APIs, or any external service your application depends on.
 
 A ChangeUnit always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
@@ -29,12 +29,32 @@ Every change is tied to a named target system, avoiding ambiguity and enabling c
 This distinction is built into the target system definition.
 
 ### Dependency injection
-Each target system can expose the dependencies required by its ChangeUnits.  
-For example:
 
+Each target system can expose the dependencies required by its ChangeUnits. For example:
 - A MongoDB target system provides a `MongoDatabase`
 - A Kafka target system provides a `KafkaTemplate`  
 - A SQL target system provides a `Connection` or `DataSource`
+
+#### Dependency resolution hierarchy
+
+Each target system needs specific dependencies to function (except `DefaultTargetSystem` which requires none). When Flamingock initializes a target system, it resolves dependencies using this hierarchy:
+
+1. **Direct injection** via `.withXXX()` methods (highest priority)
+2. **Global context** lookup if not directly injected
+3. **Default values** for optional configurations, or **exception** for required ones
+
+This approach provides maximum flexibility while ensuring all requirements are met:
+
+```java
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
+    .withDatabase(database);
+```
+
+In this example, Flamingock resolves dependencies as follows:
+- **MongoDatabase**: Provided directly via `.withDatabase()`, so it's immediately available
+- **MongoClient**: Not provided directly, so Flamingock searches the global context
+- **WriteConcern**: Not found in either place, so uses the default value (MAJORITY with journal)
+- If MongoClient is missing from the global context, Flamingock throws an exception since it's a required dependency
 
 :::info
 ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
@@ -44,26 +64,23 @@ ChangeUnits are not limited to target system dependencies. They can also request
 
 ## Registering target systems
 
-Target systems are registered at runtime with the Flamingock builder.  
-You can define and register as many as you need:
+Target systems are registered at runtime with the Flamingock builder. You can define and register as many as you need:
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
-        .withDatasource(ds);
 
-    DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
+SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
+    .withDatasource(ds);
 
-    DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
+DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
 
-    FlamingockStandalone
-      .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
-      .addTargetSystems(mysql, s3, kafka)
-      .build()
-      .run();
-  }
-}
+DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
+
+Flamingock.builder()
+    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+    .addTargetSystems(mysql, s3, kafka)
+    .build()
+    .run();
+  
 ```
 
 At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each ChangeUnit.
@@ -124,6 +141,29 @@ This makes it easier to govern and audit distributed environments at scale.
 - Avoid generic names like "database" or "api"
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
+
+---
+
+## Available target system implementations
+
+Flamingock provides several built-in target system implementations. The ecosystem includes specialized implementations for technologies that benefit from specific handling, and a universal fallback for everything else:
+
+### Specialized target systems
+These target systems provide optimized handling for specific technologies:
+
+**Transactional systems** - Leverage native transaction capabilities for automatic rollback:
+- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
+- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
+- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
+- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
+- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
+
+### Universal fallback
+For any system that doesn't require specialized handling:
+
+- [Default target system](../target-systems/default-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
+
+**Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 
 ---
 

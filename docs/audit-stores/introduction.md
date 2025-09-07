@@ -1,9 +1,9 @@
 ---
-title: Audit store configuration  
-sidebar_position: 30
+title: Introduction
+sidebar_position: 1
 ---
 
-# Audit store configuration
+# Audit stores
 
 The audit store is Flamingock's dedicated system for tracking execution history, preventing duplicate executions, and ensuring safe system evolution.
 
@@ -18,15 +18,18 @@ Unlike target systems (which your code modifies), the audit store is managed aut
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
 
-## Configuration requirements
-
-### Cloud Edition
+## Cloud Edition
 **No configuration needed** - Flamingock Cloud provides a fully managed audit store with superior synchronization, recovery mechanisms, real-time dashboards, and multi-environment governance.
 
-### Community Audit Stores  
-You must provide and configure your own audit store. Flamingock supports MongoDB, DynamoDB, and Couchbase as audit stores.
+## Community Edition
+With Community Edition, you provide and configure your own audit store. Flamingock supports several databases:
 
-## Community Audit Stores configuration
+- [MongoDB audit store](./community/mongodb-audit-store.md)
+- [MongoDB Spring Data audit store](./community/mongodb-springdata-audit-store.md)
+- [DynamoDB audit store](./community/dynamodb-audit-store.md)  
+- [Couchbase audit store](./community/couchbase-audit-store.md)
+
+### Community Audit Stores general configuration pattern
 
 In Community Audit Stores, you register the audit store with the Flamingock builder:
 
@@ -57,27 +60,6 @@ public AuditStore auditStore(MongoClient mongoClient) {
 // Flamingock Spring Boot auto-configuration will pick this up automatically
 ```
 
-## Available Community audit stores
-
-For specific configuration details of each supported audit store, see:
-
-- [MongoDB audit store](../community-audit-stores/mongodb-audit-store.md)
-- [MongoDB Spring Data audit store](../community-audit-stores/mongodb-springdata-audit-store.md)
-- [DynamoDB audit store](../community-audit-stores/dynamodb-audit-store.md)  
-- [Couchbase audit store](../community-audit-stores/couchbase-audit-store.md)
-
-Each implementation provides:
-- Complete execution tracking
-- Distributed locking mechanisms
-- Issue management capabilities
-- Configuration options specific to the database
-
-## Best practices
-
-1. **Separation of concerns**: Consider using a dedicated database/collection for the audit store, separate from your business data
-2. **Durability settings**: Configure strong consistency settings for your audit store to ensure reliable tracking
-3. **Access control**: Limit write access to the audit store to only the Flamingock framework
-4. **Backup strategy**: Include the audit store in your backup procedures for compliance and recovery
 
 ---
 
