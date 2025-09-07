@@ -143,7 +143,7 @@ const config = {
                 to: '/docs/overview/core-concepts',
               },
               {
-                label: 'Configuration',
+                label: 'Library configuration',
                 to: '/docs/flamingock-library-config/introduction',
               },
               {
