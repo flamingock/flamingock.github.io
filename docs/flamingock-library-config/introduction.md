@@ -1,7 +1,7 @@
 ---
 title: Introduction
 sidebar_position: 1
-sidebar_label: Library Introduction
+sidebar_label: Introduction
 ---
 
 import Tabs from '@theme/Tabs';
@@ -21,79 +21,23 @@ Configuration is divided into two distinct scopes:
 
 ## What you can configure
 
-| Area                             | Description                                         |
-|----------------------------------|-----------------------------------------------------|
-| Setup & Stages                   | Organize changes into ordered stages                |
-| ChangeUnits dependency injection | Dependency injection to changeUnits and environment |
-| Platform component injection     | Platform-level components injection                 |
-| Lock                             | Distributed locking and timing options              |
-| Extra                            | Metadata, default author, enable/disable            |
-| Cloud Edition                    | Cloud-specific setup: token, env, service           |
-| Community Audit Stores                | Driver-specific config for MongoDB, DynamoDB...     |
+| Area                             | Description                                         | Link |
+|----------------------------------|-----------------------------------------------------|------|
+| ⭐ Setup & stages                | Organize changes into ordered stages - **Essential** | [Setup & stages](./setup-and-stages.md) |
+| ⭐ Target systems               | Configure target systems for your changes - **Essential** | [Target systems](../target-systems/introduction.md) |
+| ⭐ Audit store                  | Configure audit storage - **Essential** (Not needed for Cloud Edition) | [Audit stores](../audit-stores/introduction.md) |
+| Global dependency injection      | Dependency injection to ChangeUnits and environment | [Context and dependencies](./context-and-dependencies.md) |
+| Cloud Edition                    | Cloud-specific setup: token, env, service           | [Cloud Edition](../cloud-edition/cloud-edition.md) |
+| Framework integration            | Integration with frameworks (currently Spring Boot) | [Spring Boot integration](../frameworks/springboot-integration/introduction.md) |
+| Lock                             | Distributed locking and timing options              | [Lock configuration](./lock.md) |
+| Extra                            | Metadata, default author, enable/disable            | [Additional configuration](./additional-configuration.md) |
 
 
 Each of these topics is explained in its own section.
 
 ---
 
-## Configuration scopes and layers
 
-Flamingock configuration is organized in two main scopes:
-### Core configuration (shared by all editions)
-Includes:
-- Setup and stages definition
-- Lock settings
-- Metadata
-- Default author
-- Enable/disable flag
-- Dependency injection via addDependency(...) for ChangeUnits and framework components
-- etc.
-
-### Edition-specific configuration
-Based on the edition of Flamingock you import:
-- **Cloud Edition**: Related settings to configure Flamingock Cloud.
-- **Community Audit Stores**: MongoDB, DynamoDB, Couchbase drivers and related settings.
-
-Each of these can be used in two runtime environments:
-- **Standalone** (default) — direct usage with builder (file-based config will be supported soon)
-- **Spring Boot** — supports both setups; builder and integration with Spring’s lifecycle and properties (covered in a separate section)
-
----
-
-## Setup and stages configuration
-
-Stages are configured using the `@EnableFlamingock` annotation on any class in your application:
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourapp.changes")
-    }
-)
-public class FlamingockConfig {
-    // Configuration class
-}
-```
-
-Alternatively, you can use a dedicated file by specifying `pipelineFile` in the annotation:
-```java
-@EnableFlamingock(pipelineFile = "config/pipeline.yaml")
-public class FlamingockConfig {}
-```
-
-The annotation should contain **only** the pipeline and stage definitions — no runtime configuration should be placed here.
-
-:::info
-- The `@EnableFlamingock` annotation is required for all runners and all environments.
-- The pipeline definition should remain the same across environments.
-- To conditionally include or exclude changes, Flamingock supports [profiles](../frameworks/springboot-integration/profiles.md).
-- Profile support for stages is planned but not yet available.
-:::
-
-See the [Pipeline & stages](setup-and-stages.md) page for full details and examples.
-
-
----
 
 ## Applying runtime configuration
 Runtime configuration (everything except the pipeline) can be applied in the following ways:
@@ -111,14 +55,19 @@ You can combine both approaches. If a property is defined in both, the builder v
 
 ## Next steps
 
-Explore the rest of the configuration section to tune Flamingock for your system:
+Start with the essential configurations marked with ⭐, then explore additional options based on your needs:
 
-### Shared configuration
-- [Setup & Stages](./setup-and-stages.md)
-- [Lock Configuration](./lock-configuration.md)
-- [Extra Configuration](./extra-configuration.md)
-- [Dependency wiring](./changeunit-dependency-injection.md)
+### Essential configurations (start here)
+- [⭐ Setup & stages](./setup-and-stages.md) - Define how changes are organized and discovered
+- [⭐ Target systems](../target-systems/introduction.md) - Configure systems where changes will be applied
+- [⭐ Audit stores](../audit-stores/introduction.md) - Set up audit storage (not needed for Cloud Edition)
 
-### Pick an edition
-- [☁️ Cloud Edition(Fully-featured)](../cloud-edition/cloud-edition.md)
-- 🧪 Community Audit Stores(feature-limited)
+### Additional configurations
+- [Global dependency injection](./context-and-dependencies.md) - Configure dependency resolution
+- [Framework integration](../frameworks/springboot-integration/introduction.md) - Spring Boot integration
+- [Lock configuration](./lock.md) - Distributed locking options
+- [Additional configuration](./additional-configuration.md) - Metadata, author, and other settings
+
+### Choose your edition
+- [☁️ Cloud Edition](../cloud-edition/cloud-edition.md) - Fully-featured managed solution
+- [🧪 Community Edition](../audit-stores/introduction.md) - Community audit stores (feature-limited)
