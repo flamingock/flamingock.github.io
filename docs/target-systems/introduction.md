@@ -146,21 +146,24 @@ This makes it easier to govern and audit distributed environments at scale.
 
 ## Available target system implementations
 
-Flamingock provides several built-in target system implementations, organized by their transactional capabilities:
+Flamingock provides several built-in target system implementations. The ecosystem includes specialized implementations for technologies that benefit from specific handling, and a universal fallback for everything else:
 
-### Transactional target systems
-These systems support native transactions, allowing automatic rollback on failure:
+### Specialized target systems
+These target systems provide optimized handling for specific technologies:
 
+**Transactional systems** - Leverage native transaction capabilities for automatic rollback:
 - [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
 - [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
 - [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
 - [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
 - [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
 
-### Non-transactional target systems
-These systems don't support native transactions but are still safe through Flamingock's compensation mechanisms:
+### Universal fallback
+For any system that doesn't require specialized handling:
 
-- [Default target system](../target-systems/default-target-system.md) - For any non-transactional system (S3, Kafka, REST APIs, etc.)
+- [Default target system](../target-systems/default-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
+
+**Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 
 ---
 
