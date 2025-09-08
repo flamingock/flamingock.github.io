@@ -11,13 +11,13 @@ import TabItem from '@theme/TabItem';
 :::caution Beta feature
 Templates are available in **beta**.  
 - You can already create **custom templates** for your own use cases.  
-- Our **official templates** (SQL, MongoDB, etc.) are **experimental** and not yet recommended for production.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
 - Expect API and behavior changes before GA.  
 
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
 :::
 
-Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based migration using the **SQL Template**.
+Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
 
 :::note
 This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
@@ -107,9 +107,9 @@ At application startup, Flamingock will automatically detect the YAML file and p
 
 ---
 
-## Use case: SQL database migration
+## Use case: SQL database changes
 
-Let’s compare how an SQL migration is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
+Let's compare how an SQL change is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
 
 ### Approach 1: Using a Traditional Code-Based ChangeUnit
 
@@ -145,7 +145,7 @@ public class CreatePersonsTableChangeUnit {
 
 ### Approach 2: Using a Flamingock SQL Template
 
-With the **SQL Template**, users define the same migration in **YAML** instead of Java:
+With the **SQL Template**, users define the same change in **YAML** instead of Java:
 
 ```yaml
 id: create-persons-table-from-template
@@ -166,5 +166,5 @@ rollback: "DROP TABLE Persons;"
 ### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
 - **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL execution manually.
 - **Faster onboarding**: YAML is easier for non-Java developers.
-- **Standardised migrations**: Ensures best practices and avoids custom implementation errors.
+- **Standardised changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.

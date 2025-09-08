@@ -12,7 +12,8 @@ import TabItem from '@theme/TabItem';
 :::caution Beta feature
 Templates are available in **beta**.  
 - You can already create **custom templates** for your own use cases.  
-- Our **official templates** (SQL, MongoDB, etc.) are **experimental** and not yet recommended for production.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
+- We're building a **comprehensive template catalog** where teams can discover, share, and contribute templates for common integration patterns.
 - Expect API and behavior changes before GA.  
 
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
@@ -20,7 +21,7 @@ This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ec
 
 ## Introduction
 
-Flamingock Templates are experimental modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define configuration changes in declarative format (such as **YAML** files), reducing the need for custom code-based ChangeUnits while ensuring execution and versioning of changes.
+Flamingock Templates are experimental modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define system changes in declarative format (such as **YAML** files), reducing the need for custom code-based ChangeUnits while ensuring execution and versioning of changes.
 
 ## How It Works
 
@@ -33,11 +34,11 @@ Templates can be:
 - **Offered by the community**
 - **Created internally by teams** to address common patterns in their own systems
 
-This makes them highly adaptable: whether you're integrating a database, messaging system, or internal service, templates give you a low-code mechanism to structure your changes cleanly and consistently.
+This makes them highly adaptable: whether you're integrating a database, messaging system, or internal service, templates give you a low-code mechanism to structure your system changes cleanly and consistently.
 
 ### Why Do Templates Exist?
 
-Templates exist to solve a common problem in traditional, code-based migrations: **duplicated logic across ChangeUnits**.
+Templates exist to solve a common problem in traditional, code-based changes: **duplicated logic across ChangeUnits**.
 
 Instead of repeating the same boilerplate code over and over, templates let you **externalize the logic** into a reusable definition and **parameterize** what's different.
 
@@ -45,36 +46,31 @@ Today, Flamingock templates can already be created and used in your own projects
 
 ## Key Features
 
-- **Experimental, reusable modules**: Each template provides a well-defined structure for managing migrations and configurations.
+- **Experimental, reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative ChangeUnits**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.
 - **Designed to encourage best practices, though still experimental**.
 - **Extensible by the community**: Developers can contribute new templates to expand Flamingock's ecosystem.
 
-## When to use Template-based ChangeUnits vs. code-based ChangeUnits
+## When Template-based ChangeUnits Shine
 
-| **Use Case** | **Template-Based ChangeUnit** | **Code-Based ChangeUnit** |
-|-------------|-----------------------------|-------------------------|
-| Integration with third-party services (e.g., Kafka, Twilio) | ✅ | ✅ |
-| Simple database migrations (e.g., SQL schema updates) | ✅ | ✅ |
-| Custom logic and advanced migrations | ☑️* | ✅ |
-| Complex, dynamic change sequences | ☑️** | ✅ |
-| Low-code, configuration-driven changes | ✅ | ❌ |
+Template-based ChangeUnits are ideal when you have **reusable patterns** in your system changes. They excel in scenarios where the same type of operation needs to be repeated with different parameters, allowing you to avoid duplicating boilerplate code across multiple ChangeUnits.
 
-☑️* Templates can handle custom logic if it can be abstracted and reused. Users can create custom templates to manage these scenarios.
+**Templates shine when:**
 
-☑️** While templates may support complex change sequences, full control and dynamic logic might be easier to implement in code when the scenario is highly specific or non-repetitive.
+- **You have repetitive patterns**: Creating database tables, indexes, Kafka topics, S3 buckets, or API configurations that follow the same structure but with different values
+- **Multiple team members need to make similar changes**: Templates provide a consistent, declarative way for developers to define changes without writing boilerplate code
+- **You want to enforce best practices**: Templates encapsulate proven logic and prevent implementation inconsistencies across your changes
+- **The change type already has a template**: Why reinvent the wheel when S3, Kafka, SQL, MongoDB, or other common templates already exist?
 
+**Stick with code-based ChangeUnits when:**
 
-## List of current Flamingock templates
+- **You have unique, one-off logic**: Complex business transformations that are specific to your application and unlikely to be repeated
+- **You need maximum flexibility**: Custom integrations or complex workflows that require full programmatic control
+- **No suitable template exists**: When your use case doesn't match any available templates and creating a custom template isn't justified
 
-| Template Name | Description | Status |
-|--------------|-------------|---------|
-| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits | 🟡 Experimental |
-| **MongoDB Template** | Manages MongoDB operations and schema changes using YAML definitions | 🟡 Experimental |
-| **Kafka Template** | Manages Kafka topics and configurations using YAML definitions | 🔴 Not yet available |
-| **S3 Template** | Manages S3 bucket operations and object configurations via YAML | 🔴 Not yet available |
+**Remember**: Templates can handle any level of complexity - from simple configuration updates to sophisticated multi-step operations. The decision isn't about complexity, but about **reusability** and whether the pattern is worth abstracting into a declarative format.
 
 ---
 
