@@ -864,9 +864,8 @@ id: add_status_column
 order: "0002"
 author: "db-team"
 templateName: sql-template
-templateConfiguration:
-  executionSql: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
-  rollbackSql: "ALTER TABLE orders DROP COLUMN status;"
+execution: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
+rollback: "ALTER TABLE orders DROP COLUMN status;"
 ```
 
 ## Safety and recovery
@@ -1173,14 +1172,20 @@ id: add_user_index
 order: "0001"
 author: "database-team"
 description: "Add index on user email field for faster lookups"
+targetSystem: "user-database"
 templateName: mongodb-index
-templateConfiguration:
+execution:
+  type: createIndex
   collection: users
   indexSpec:
     email: 1
   options:
     unique: true
     name: "idx_user_email"
+rollback:
+  type: removeIndex
+  collection: users
+  indexName: "idx_user_email"
 ```
 
 For more details about available templates and creating custom templates, see [Templates](../templates/introduction).
@@ -3590,11 +3595,10 @@ author: team
 order: "001"
 targetSystem: mysql-inventory
 template: sql-template
-templateConfiguration:
-  executionSql: |
-    ALTER TABLE products ADD COLUMN category VARCHAR(255)
-  rollbackSql: |
-    ALTER TABLE products DROP COLUMN category
+execution: |
+  ALTER TABLE products ADD COLUMN category VARCHAR(255)
+rollback: |
+  ALTER TABLE products DROP COLUMN category
 ```
 
   </TabItem>
@@ -4208,10 +4212,11 @@ order: 0001
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-templateConfiguration:
+execution:
   bucketName: "flamingock-app-bucket"
   region: "us-east-1"
-  rollbackBucketName: "flamingock-app-bucket"
+rollback:
+  bucketName: "flamingock-app-bucket"
 
 ---
 
@@ -4221,7 +4226,7 @@ order: 0002
 author: "devops"
 transactional: false
 templateName: kafka-template
-templateConfiguration:
+execution:
   topics:
     - "app-events"
     - "user-notifications"
@@ -4232,6 +4237,10 @@ templateConfiguration:
     user-notifications:
       partitions: 2
       replicationFactor: 1
+rollback:
+  topics:
+    - "app-events"
+    - "user-notifications"
   rollbackTopics:
     - "app-events"
     - "user-notifications"
@@ -4244,7 +4253,7 @@ order: 0003
 author: "devops"
 transactional: false
 templateName: aws-iam-template
-templateConfiguration:
+execution:
   roleName: "flamingock-app-role"
   assumeRolePolicy: |
     {
@@ -4257,6 +4266,8 @@ templateConfiguration:
         }
       ]
     }
+rollback:
+  roleName: "flamingock-app-role"
   rollbackRoleName: "flamingock-app-role"
 
 ---
@@ -4267,12 +4278,11 @@ order: 0004
 author: "devops"
 transactional: true
 templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    INSERT INTO tenants (id, name, created_at)
-    VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
-  rollbackSql: |
-    DELETE FROM tenants WHERE id IN (1, 2);
+execution: |
+  INSERT INTO tenants (id, name, created_at)
+  VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
+rollback: |
+  DELETE FROM tenants WHERE id IN (1, 2);
 
 ---
 
@@ -4282,12 +4292,16 @@ order: 0005
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-templateConfiguration:
+execution:
   # Enable versioning on an existing bucket
   bucketName: "flamingock-app-bucket"
   versioningConfiguration:
     status: "Enabled"
+rollback:
   # Rollback: suspend versioning
+  bucketName: "flamingock-app-bucket"
+  versioningConfiguration:
+    status: "Suspended"
   rollbackVersioningConfiguration:
     bucketName: "flamingock-app-bucket"
     versioningConfiguration:
@@ -7611,12 +7625,12 @@ Instead of repeating the same boilerplate code over and over, templates let you 
 
 ## List of current Flamingock templates
 
-| Template Name | Description |
-|--------------|-------------|
-| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits. |
-| **Kafka Template** (Upcoming) | Manages Kafka topics and configurations using YAML definitions. |
-| **Twilio Template** (Upcoming) | Simplifies Twilio messaging configurations via YAML. |
-| **Redis Template** (Upcoming) | Allows structured updates to Redis configurations. |
+| Template Name | Description | Status |
+|--------------|-------------|---------|
+| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits | In Development |
+| **MongoDB Template** | Manages MongoDB operations and schema changes using YAML definitions | In Development |
+| **Kafka Template** | Manages Kafka topics and configurations using YAML definitions | In Development |
+| **S3 Template** | Manages S3 bucket operations and object configurations via YAML | In Development |
 
 ---
 
@@ -7644,16 +7658,15 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-ce-sql-template")
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community-sql-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
-    <groupId>io.flamingock.template</groupId>
-    <artifactId>sql-template</artifactId>
-    <version>1.0.0</version>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-community-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>
@@ -7670,16 +7683,17 @@ Create a **YAML file** (e.g., `_0001_create_persons_table.yaml`) inside your app
 ```yaml
 id: create-persons-table-from-template
 order: 1
+targetSystem: "database-system"
 templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    CREATE TABLE Persons (
-      PersonID int,
-      LastName varchar(255),
-      FirstName varchar(255),
-      Address varchar(255),
-      City varchar(255)
-    )
+execution: |
+  CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255)
+  )
+rollback: "DROP TABLE Persons;"
 ```
 
 :::info
@@ -7690,12 +7704,13 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
 - **`order`**: Execution order relative to other changes (also shared with code-based).
+- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based ChangeUnits.
 - **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
-- **`templateConfiguration`**: Section where you define the input parameters for the selected template. These parameters vary depending on the template.
-  - In this example, the template expects an `executionSql` field.
-- **Other fields**: Some templates may define additional, custom configuration fields (e.g., `rollbackSql` for SQL template).
+- **`execution`**: Direct execution logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **Other fields**: Templates may define additional configuration fields as needed.
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but introduce a flexible configuration model where each template defines its own behavior through external parameters.
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but use a standardized format with `execution` and `rollback` sections that each template interprets according to its specific requirements.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -7763,16 +7778,17 @@ With the **SQL Template**, users define the same migration in **YAML** instead o
 ```yaml
 id: create-persons-table-from-template
 order: 1
+targetSystem: "database-system"
 templateName: sql-template
-templateConfiguration:
-    executionSql: |
-        CREATE TABLE Persons (
-            PersonID int,
-            LastName varchar(255),
-            FirstName varchar(255),
-            Address varchar(255),
-            City varchar(255)
-        )
+execution: |
+    CREATE TABLE Persons (
+        PersonID int,
+        LastName varchar(255),
+        FirstName varchar(255),
+        Address varchar(255),
+        City varchar(255)
+    )
+rollback: "DROP TABLE Persons;"
 ```
 
 ### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
@@ -8056,18 +8072,24 @@ In a template-based change unit (declarative format), Flamingock uses the `execu
 - The method annotated with `@RollbackExecution` is **mandatory** for the template developer.
 - The `rollback` section in the declarative change unit is **optional** for the user.
 
-The behavior of rollback varies depending on context:
+The behavior of rollback varies depending on the target system capabilities and the `transactional` flag:
+
+> For detailed information on transaction behavior, see [Transactions](../flamingock-library-config/transactions.md).
 
 **Rollback during execution failure**
 
-- If the system is **transactional** (e.g., MySQL), Flamingock relies on the system’s native transaction handling. It will not call the rollback method.
-- If the system is **non-transactional**, Flamingock will:
-  - Attempt to call the `@RollbackExecution` method only if the user provides a `rollback` section in the declarative file.
-  - If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
+**For transactional target systems** (e.g., MySQL, PostgreSQL, MongoDB):
+- **With `transactional = true` (default)**: Flamingock relies on the system's native transaction handling for automatic rollback. The `@RollbackExecution` method is NOT called.
+- **With `transactional = false`**: Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
 
-**Rollback during Undo operations (manual reversion)**
+**For non-transactional target systems** (e.g., Kafka, S3, REST APIs):
+- **The `transactional` flag is ignored** - behavior is always the same:
+- Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
+- If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
 
-- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method — even if the change was previously applied successfully.
+**Rollback during Undo operations (manual reversion via CLI)**
+
+- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method regardless of target system type.
 - If no `rollback` is provided, Flamingock skips the rollback logic, but still marks the change as **ROLLED_BACK** in the audit.
 
 :::note 
