@@ -8,7 +8,20 @@ import TabItem from '@theme/TabItem';
 
 # How to use Flamingock Templates
 
-Using a Flamingock Template is straightforward. Here’s an example of how you can apply an SQL-based migration using the **SQL Template**.
+:::caution Beta feature
+Templates are available in **beta**.  
+- You can already create **custom templates** for your own use cases.  
+- Our **official templates** (SQL, MongoDB, etc.) are **experimental** and not yet recommended for production.  
+- Expect API and behavior changes before GA.  
+
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+:::
+
+Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based migration using the **SQL Template**.
+
+:::note
+This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+:::
 
 ### Step 1: Add the Template dependency
 
