@@ -4,201 +4,374 @@ sidebar_position: 999
 ---
 
 # Flamingock CLI
-*Enterprise-grade operational control for distributed system evolution*
 
-Flamingock's Command-Line Interface (CLI) provides complete operational control over your system changes, enabling maintenance, troubleshooting, and governance tasks outside your application's normal startup cycle.
+Management tool for audit control and issue resolution in distributed system evolution.
 
----
+> **Beta Release**  
+> This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full migration execution capabilities is in development.
 
-## Enterprise Operational Capabilities
+## Overview
 
-### **Issue Resolution & Recovery**
-The CLI is central to Flamingock's recovery strategy workflow, providing enterprise-grade operational excellence:
+The Flamingock CLI is a lightweight management tool that helps you maintain consistency and resolve issues in your distributed system changes. When migrations fail or get interrupted, the CLI provides the operational control needed to investigate, understand, and resolve these issues.
 
-- **Issue Detection**: Identify failed or incomplete changes across your distributed systems
-- **Guided Resolution**: Get specific guidance for resolving each type of failure
-- **Audit Management**: Mark changes as resolved after manual verification or correction
-- **Compliance Workflow**: Maintain complete audit trails during issue resolution
+## Installation
 
-### **Operational Control**
-- **Change Execution**: Run changes on-demand without full application startup
-- **Dry-Run Analysis**: Preview pending changes and their execution order
-- **Rollback Operations**: Safely revert changes using compensation logic
-- **Lock Management**: Clear stale distributed locks from interrupted processes
-
-### **Enterprise Integration**
-- **CI/CD Pipeline Integration**: Embed Flamingock operations in deployment workflows
-- **Automation Scripts**: Script common operational tasks and maintenance procedures
-- **Compliance Reporting**: Generate audit reports and change history analysis
-
----
-
-## Core CLI Operations
-
-### **Issue Resolution Workflow**
-The primary CLI workflow for operational excellence:
+### Download
 
 ```bash
-# 1. Discover issues requiring attention
-flamingock issue list
+# Download the latest CLI distribution
+curl -L https://github.com/flamingock/flamingock-java/releases/latest/download/flamingock-cli.tar.gz -o flamingock-cli.tar.gz
 
-# 2. Get the next issue to resolve (automatic prioritization)
-flamingock issue get
+# Extract the archive
+tar -xzf flamingock-cli.tar.gz
 
-# 3. Get specific issue with detailed guidance
-flamingock issue get -c change-id --guidance
-
-# 4. Resolve the issue after manual verification/correction
-flamingock audit fix -c change-id --resolution APPLIED
-flamingock audit fix -c change-id --resolution ROLLED_BACK
-```
-
-### **Change Execution & Management**
-- **Execute Changes**: Run pending changes on-demand
-- **Dry-Run Analysis**: Preview execution order and dependencies without applying changes
-- **Rollback Operations**: Safely revert changes using `@RollbackExecution` methods
-- **Audit Inspection**: Query execution history with filtering by author, date, status
-
-### **Operational Maintenance** 
-- **Lock Management**: View and clear distributed locks from interrupted processes
-- **Consistency Checks**: Validate change definitions against audit log entries
-- **Integrity Verification**: Ensure audit store consistency and detect anomalies
-
-### **Enterprise Reporting**
-- **Audit Trails**: Generate compliance reports and change history analysis
-- **Issue Analytics**: Track resolution patterns and operational metrics
-- **Change Impact**: Analyze cross-system dependencies and execution patterns
-
----
-
-## Operational Workflows
-
-### **Issue Resolution Workflow**
-The most common CLI usage pattern for enterprise operations:
-
-```bash
-# Daily operational workflow
-flamingock issue list
-# Output: Shows all unresolved issues across your distributed systems
-
-flamingock issue get  
-# Output: Returns next priority issue with detailed context and guidance
-
-# After manual investigation and correction:
-flamingock audit fix -c user-data-update-v2 --resolution APPLIED
-# Output: ✅ Issue resolved - change marked as successfully applied
-
-# Alternative resolution:
-flamingock audit fix -c problematic-change --resolution ROLLED_BACK
-# Output: ✅ Issue resolved - change marked as rolled back
-```
-
-### **Change Management Operations**
-```bash
-# Execute pending changes on-demand
-flamingock run --app-jar /path/to/app.jar --config application.yaml
-
-# Preview what would execute (dry-run)
-flamingock dry-run --config application.yaml --profile production
-
-# Execute specific change by ID
-flamingock run -c user-schema-update --app-jar /path/to/app.jar
-
-# Rollback/undo specific change
-flamingock undo -c user-schema-update --app-jar /path/to/app.jar
-```
-
-### **Audit and Compliance Operations**
-```bash
-# List all executed changes with filtering
-flamingock audit list --author platform-team --from 2024-01-01
-
-# Generate compliance report
-flamingock audit report --format csv --output /reports/compliance-2024.csv
-
-# Verify audit store integrity
-flamingock audit verify --config application.yaml
-```
-
-### **Maintenance Operations**
-```bash
-# Clear stale distributed locks
-flamingock lock clear --config application.yaml
-
-# Check consistency between code and audit store
-flamingock consistency-check --app-jar /path/to/app.jar --config application.yaml
-```
-
----
-
-## Enterprise Integration Patterns
-
-### **CI/CD Pipeline Integration**
-```yaml
-# Example: Jenkins/GitHub Actions integration
-deploy:
-  steps:
-    - name: Execute Flamingock Changes
-      run: |
-        flamingock run --app-jar dist/app.jar --config prod.yaml
-        
-    - name: Verify No Issues
-      run: |
-        flamingock issue list --fail-if-any
-```
-
-### **Operational Runbooks**
-```bash
-# Daily operations checklist
-#!/bin/bash
-echo "Checking for Flamingock issues..."
-flamingock issue list
-
-if [ $? -ne 0 ]; then
-  echo "Issues detected - resolving..."
-  while flamingock issue get > /dev/null; do
-    echo "Resolve the displayed issue manually, then press Enter"
-    read
-    flamingock issue get -c $(flamingock issue get --format id) --resolution APPLIED
-  done
-fi
-```
-
-### **Emergency Response**
-```bash
-# Emergency rollback procedure
-flamingock undo -c problematic-change --app-jar emergency-build.jar
-flamingock audit fix -c problematic-change --resolution ROLLED_BACK
-```
-
----
-
-## Installation & Setup
-
-### **Download CLI**
-```bash
-# Linux/macOS
-curl -L https://releases.flamingock.io/cli/latest/flamingock-cli-linux -o flamingock
+# Make it executable
 chmod +x flamingock
 
-# Windows
-# Download from: https://releases.flamingock.io/cli/latest/flamingock-cli-windows.exe
+# Run the CLI
+./flamingock --help
 ```
 
-### **Configuration**
-The CLI uses your existing Flamingock configuration files:
-- `application.yaml` / `application.properties`
-- `flamingock.yaml` / `flamingock.properties`
+### Configuration
 
-### **JAR Requirements**
-Supply `--app-jar` only for commands that execute change logic:
-- **Required**: `run`, `undo`, `rollback` commands
-- **Not required**: `issue`, `audit`, `lock` commands
+Create a `flamingock.yml` configuration file in your working directory:
 
----
+#### MongoDB Configuration
+```yaml
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
+audit:
+  mongodb:
+    connectionString: mongodb://localhost:27017
+    database: myapp
+    # Or use individual properties:
+    # host: localhost
+    # port: 27017
+    # username: admin
+    # password: secret
+```
 
-## Enterprise Support
+#### DynamoDB Configuration
+```yaml
+serviceIdentifier: my-service
+audit:
+  dynamodb:
+    region: us-east-1
+    # Optional endpoint for local development:
+    # endpoint: http://localhost:8000
+    # accessKey: local
+    # secretKey: local
+```
 
-The Flamingock CLI is production-ready and provides enterprise-grade operational capabilities for managing distributed system evolution at scale.
+You can specify a custom configuration file using the `-c` or `--config` option:
+```bash
+flamingock -c custom-config.yml audit list
+```
 
-**Need help?** Contact support@flamingock.io for enterprise support and training.
+## Core Commands
+
+### View Audit Entries
+
+List the current state of all changes (snapshot view):
+```bash
+flamingock audit list
+```
+
+View the complete chronological history:
+```bash
+flamingock audit list --history
+```
+
+View changes since a specific date:
+```bash
+flamingock audit list --since 2025-01-01T00:00:00
+```
+
+Show extended information including execution details:
+```bash
+flamingock audit list --extended
+```
+
+### Find Issues
+
+List all change units with inconsistent audit states:
+```bash
+flamingock issue list
+```
+
+Output in JSON format for automation:
+```bash
+flamingock issue list --json
+```
+
+### Investigate Issues
+
+Get detailed information about a specific issue:
+```bash
+flamingock issue get -c user-migration-v2
+```
+
+Include resolution guidance:
+```bash
+flamingock issue get -c user-migration-v2 --guidance
+```
+
+Get the next priority issue (when no change ID specified):
+```bash
+flamingock issue get --guidance
+```
+
+### Resolve Issues
+
+After manually verifying or fixing the state, mark the change as resolved:
+
+If the change was successfully applied:
+```bash
+flamingock audit fix -c user-migration-v2 -r APPLIED
+```
+
+If the change was not applied or rolled back:
+```bash
+flamingock audit fix -c user-migration-v2 -r ROLLED_BACK
+```
+
+## Understanding Issues
+
+An issue occurs when a change didn't complete properly, such as:
+- The change was interrupted during execution (network failure, server restart, etc.)
+- The change failed but the failure wasn't properly recorded
+- The system crashed while applying the change
+
+### Resolution Process
+
+1. **Identify the issue**
+   ```bash
+   flamingock issue list
+   ```
+
+2. **Get detailed information**
+   ```bash
+   flamingock issue get -c <change-id> --guidance
+   ```
+
+3. **Verify actual state** in your target system (database, service, etc.)
+
+4. **Fix the audit state** based on your findings:
+   - If the change was successfully applied despite the audit failure:
+     ```bash
+     flamingock audit fix -c <change-id> -r APPLIED
+     ```
+   - If the change was not applied or you manually rolled it back:
+     ```bash
+     flamingock audit fix -c <change-id> -r ROLLED_BACK
+     ```
+
+## Command Reference
+
+### Global Options
+
+```bash
+flamingock [global-options] <command> [command-options]
+```
+
+- `-c, --config <file>` - Configuration file path (default: `flamingock.yml`)
+- `--verbose` - Enable verbose logging
+- `--debug` - Enable debug logging
+- `--quiet` - Suppress non-essential output
+- `--help` - Show help information
+- `--version` - Show version information
+
+### `audit list`
+
+Display audit entries from the audit store.
+
+**Options:**
+- `--history` - Show full chronological history (all entries)
+- `--since <datetime>` - Show entries since date (ISO-8601 format: `2025-01-01T00:00:00`)
+- `-e, --extended` - Show extended information (execution ID, duration, class, method, hostname)
+
+**Examples:**
+```bash
+# View current state (latest per change unit)
+flamingock audit list
+
+# View all historical entries
+flamingock audit list --history
+
+# View changes from last 24 hours
+flamingock audit list --since 2025-01-07T00:00:00
+
+# View with extended details
+flamingock audit list --extended
+```
+
+### `audit fix`
+
+Resolve an inconsistent audit state after manual intervention.
+
+**Options:**
+- `-c, --change-id <id>` - Change unit ID to fix (required)
+- `-r, --resolution <type>` - Resolution type: `APPLIED` or `ROLLED_BACK` (required)
+
+**Examples:**
+```bash
+# Mark as successfully applied
+flamingock audit fix -c create-user-index -r APPLIED
+
+# Mark as rolled back (will be retried on next execution)
+flamingock audit fix -c create-user-index -r ROLLED_BACK
+```
+
+### `issue list`
+
+List all change units with inconsistent audit states.
+
+**Options:**
+- `-j, --json` - Output in JSON format
+
+**Examples:**
+```bash
+# List issues in table format
+flamingock issue list
+
+# Output as JSON for automation
+flamingock issue list --json
+```
+
+### `issue get`
+
+Show detailed information about an issue.
+
+**Options:**
+- `-c, --change-id <id>` - Specific change unit ID (optional, shows next issue if omitted)
+- `-g, --guidance` - Include resolution guidance
+- `-j, --json` - Output in JSON format
+
+**Examples:**
+```bash
+# Get next priority issue
+flamingock issue get --guidance
+
+# Get specific issue details
+flamingock issue get -c user-migration-v3
+
+# Get with resolution guidance
+flamingock issue get -c user-migration-v3 --guidance
+
+# Output as JSON
+flamingock issue get -c user-migration-v3 --json
+```
+
+## Example Output
+
+### Audit List Output
+```
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✗      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total entries: 3
+```
+
+### Issue Details Output
+```
+Issue Details: seed-initial-data
+==================================================
+
+📋 OVERVIEW
+  Change ID: seed-initial-data
+  State: STARTED (❌)
+  Target System: user-database
+  Author: data-team
+  Time: 2025-01-07 10:15:25
+  Execution ID: exec-123456
+  Duration: 1523ms
+
+⚠️  ERROR DETAILS
+  Execution interrupted unexpectedly
+
+  Technical Details:
+  - Class: i.f.changes.SeedData
+  - Method: execute
+  - Hostname: prod-server-01
+
+🔧 Resolution Process:
+
+     1. Review the error details above to understand the root cause
+
+     2. Verify the actual state in your target system (user-database):
+        • Check if the change was successfully applied despite the audit failure
+        • Determine if the change was partially applied or not applied at all
+
+     3. Fix the audit state based on your findings:
+
+        ✅ If change was successfully applied:
+           flamingock audit fix -c seed-initial-data -r APPLIED
+
+        ↩️  If change was not applied or you've manually rolled it back:
+           flamingock audit fix -c seed-initial-data -r ROLLED_BACK
+           (Flamingock will retry this change in the next execution)
+
+     ⚠️  Important: For partially applied changes, you must either:
+         • Manually complete the change, then fix it with resolution(-r) APPLIED
+         • Manually revert the change, then fix it with resolution(-r) ROLLED_BACK
+```
+
+## Logging Levels
+
+Control the verbosity of output using logging options:
+
+```bash
+# Normal output (default)
+flamingock audit list
+
+# Verbose output with info logs
+flamingock --verbose audit list
+
+# Debug output with detailed logs
+flamingock --debug audit list
+
+# Minimal output
+flamingock --quiet audit list
+```
+
+## Environment Variables
+
+You can set default values using environment variables:
+
+```bash
+export FLAMINGOCK_CONFIG=/path/to/config.yml
+export FLAMINGOCK_LOG_LEVEL=DEBUG
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+If you see "Cannot connect to audit store":
+1. Verify your configuration file exists and is valid YAML
+2. Check database connection parameters
+3. Ensure the database is accessible from your location
+4. Test with verbose logging: `flamingock --verbose audit list`
+
+### No Issues Found
+
+If `issue list` shows no issues but you expect some:
+1. Verify you're connecting to the correct audit store
+2. Check if issues were already resolved
+3. Use `audit list --history` to see all historical entries
+
+### Permission Errors
+
+If you get permission errors when running `audit fix`:
+1. Ensure your database credentials have write access
+2. Verify the audit collection/table permissions
+3. Check if the database user can modify audit entries
