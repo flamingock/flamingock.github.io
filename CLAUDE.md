@@ -363,6 +363,12 @@ yarn swizzle        # Eject Docusaurus components for customization
 - Keep technical documentation professional and clean
 - Focus on clarity and readability over decoration
 
+### Technology Examples
+- **CRITICAL**: When listing example technologies, ALWAYS include a mix of database and non-database technologies
+- **NEVER** list only database technologies (e.g., "SQL, MongoDB") as this incorrectly positions Flamingock as just a database tool
+- **ALWAYS** include diverse examples like: Kafka, S3, Redis, SQL, MongoDB, REST APIs, feature flags, etc.
+- Flamingock is a comprehensive change management platform for ALL external systems, not just databases
+
 ## Request Evaluation Framework
 
 **CRITICAL**: Before proceeding with any request, Claude must evaluate it against these three criteria and score each from 1-10. If any criterion scores below 8, Claude must ask for clarification to ensure all criteria reach at least 8 before proceeding:

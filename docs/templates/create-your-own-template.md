@@ -5,6 +5,18 @@ title: Create your template
 
 # Create your own Flamingock template
 
+
+:::caution Beta feature
+Templates are available in **beta**.  
+- You can already create **custom templates** for your own use cases.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
+- Expect API and behavior changes before GA.  
+
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+:::
+
+While official Flamingock templates are experimental, you can already build and use your own custom templates in production if needed. This page explains how.
+
 ## Introduction
 
 [Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
