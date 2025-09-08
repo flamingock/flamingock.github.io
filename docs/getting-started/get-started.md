@@ -102,11 +102,10 @@ author: team
 order: "001"
 targetSystem: mysql-inventory
 template: sql-template
-templateConfiguration:
-  executionSql: |
-    ALTER TABLE products ADD COLUMN category VARCHAR(255)
-  rollbackSql: |
-    ALTER TABLE products DROP COLUMN category
+execution: |
+  ALTER TABLE products ADD COLUMN category VARCHAR(255)
+rollback: |
+  ALTER TABLE products DROP COLUMN category
 ```
 
   </TabItem>

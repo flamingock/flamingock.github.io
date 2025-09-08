@@ -56,9 +56,8 @@ id: add_status_column
 order: "0002"
 author: "db-team"
 templateName: sql-template
-templateConfiguration:
-  executionSql: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
-  rollbackSql: "ALTER TABLE orders DROP COLUMN status;"
+execution: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
+rollback: "ALTER TABLE orders DROP COLUMN status;"
 ```
 
 ## Safety and recovery

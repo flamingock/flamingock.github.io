@@ -17,16 +17,15 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-ce-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-ce-sql-template")
+implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation("io.flamingock:flamingock-community-sql-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
-    <groupId>io.flamingock.template</groupId>
-    <artifactId>sql-template</artifactId>
-    <version>1.0.0</version>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-community-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>
@@ -43,16 +42,17 @@ Create a **YAML file** (e.g., `_0001_create_persons_table.yaml`) inside your app
 ```yaml
 id: create-persons-table-from-template
 order: 1
+targetSystem: "database-system"
 templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    CREATE TABLE Persons (
-      PersonID int,
-      LastName varchar(255),
-      FirstName varchar(255),
-      Address varchar(255),
-      City varchar(255)
-    )
+execution: |
+  CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255)
+  )
+rollback: "DROP TABLE Persons;"
 ```
 
 :::info
@@ -63,12 +63,13 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
 - **`order`**: Execution order relative to other changes (also shared with code-based).
+- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based ChangeUnits.
 - **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
-- **`templateConfiguration`**: Section where you define the input parameters for the selected template. These parameters vary depending on the template.
-  - In this example, the template expects an `executionSql` field.
-- **Other fields**: Some templates may define additional, custom configuration fields (e.g., `rollbackSql` for SQL template).
+- **`execution`**: Direct execution logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **Other fields**: Templates may define additional configuration fields as needed.
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but introduce a flexible configuration model where each template defines its own behavior through external parameters.
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but use a standardized format with `execution` and `rollback` sections that each template interprets according to its specific requirements.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -136,16 +137,17 @@ With the **SQL Template**, users define the same migration in **YAML** instead o
 ```yaml
 id: create-persons-table-from-template
 order: 1
+targetSystem: "database-system"
 templateName: sql-template
-templateConfiguration:
-    executionSql: |
-        CREATE TABLE Persons (
-            PersonID int,
-            LastName varchar(255),
-            FirstName varchar(255),
-            Address varchar(255),
-            City varchar(255)
-        )
+execution: |
+    CREATE TABLE Persons (
+        PersonID int,
+        LastName varchar(255),
+        FirstName varchar(255),
+        Address varchar(255),
+        City varchar(255)
+    )
+rollback: "DROP TABLE Persons;"
 ```
 
 ### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
