@@ -1536,204 +1536,377 @@ public void testWithRealisticData() {
 // File: cli/cli
 
 # Flamingock CLI
-*Enterprise-grade operational control for distributed system evolution*
 
-Flamingock's Command-Line Interface (CLI) provides complete operational control over your system changes, enabling maintenance, troubleshooting, and governance tasks outside your application's normal startup cycle.
+Management tool for audit control and issue resolution in distributed system evolution.
 
----
+> **Beta Release**  
+> This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full migration execution capabilities is in development.
 
-## Enterprise Operational Capabilities
+## Overview
 
-### **Issue Resolution & Recovery**
-The CLI is central to Flamingock's recovery strategy workflow, providing enterprise-grade operational excellence:
+The Flamingock CLI is a lightweight management tool that helps you maintain consistency and resolve issues in your distributed system changes. When migrations fail or get interrupted, the CLI provides the operational control needed to investigate, understand, and resolve these issues.
 
-- **Issue Detection**: Identify failed or incomplete changes across your distributed systems
-- **Guided Resolution**: Get specific guidance for resolving each type of failure
-- **Audit Management**: Mark changes as resolved after manual verification or correction
-- **Compliance Workflow**: Maintain complete audit trails during issue resolution
+## Installation
 
-### **Operational Control**
-- **Change Execution**: Run changes on-demand without full application startup
-- **Dry-Run Analysis**: Preview pending changes and their execution order
-- **Rollback Operations**: Safely revert changes using compensation logic
-- **Lock Management**: Clear stale distributed locks from interrupted processes
-
-### **Enterprise Integration**
-- **CI/CD Pipeline Integration**: Embed Flamingock operations in deployment workflows
-- **Automation Scripts**: Script common operational tasks and maintenance procedures
-- **Compliance Reporting**: Generate audit reports and change history analysis
-
----
-
-## Core CLI Operations
-
-### **Issue Resolution Workflow**
-The primary CLI workflow for operational excellence:
+### Download
 
 ```bash
-# 1. Discover issues requiring attention
-flamingock issue list
+# Download the latest CLI distribution
+curl -L https://github.com/flamingock/flamingock-java/releases/latest/download/flamingock-cli.tar.gz -o flamingock-cli.tar.gz
 
-# 2. Get the next issue to resolve (automatic prioritization)
-flamingock issue get
+# Extract the archive
+tar -xzf flamingock-cli.tar.gz
 
-# 3. Get specific issue with detailed guidance
-flamingock issue get -c change-id --guidance
-
-# 4. Resolve the issue after manual verification/correction
-flamingock audit fix -c change-id --resolution APPLIED
-flamingock audit fix -c change-id --resolution ROLLED_BACK
-```
-
-### **Change Execution & Management**
-- **Execute Changes**: Run pending changes on-demand
-- **Dry-Run Analysis**: Preview execution order and dependencies without applying changes
-- **Rollback Operations**: Safely revert changes using `@RollbackExecution` methods
-- **Audit Inspection**: Query execution history with filtering by author, date, status
-
-### **Operational Maintenance** 
-- **Lock Management**: View and clear distributed locks from interrupted processes
-- **Consistency Checks**: Validate change definitions against audit log entries
-- **Integrity Verification**: Ensure audit store consistency and detect anomalies
-
-### **Enterprise Reporting**
-- **Audit Trails**: Generate compliance reports and change history analysis
-- **Issue Analytics**: Track resolution patterns and operational metrics
-- **Change Impact**: Analyze cross-system dependencies and execution patterns
-
----
-
-## Operational Workflows
-
-### **Issue Resolution Workflow**
-The most common CLI usage pattern for enterprise operations:
-
-```bash
-# Daily operational workflow
-flamingock issue list
-# Output: Shows all unresolved issues across your distributed systems
-
-flamingock issue get  
-# Output: Returns next priority issue with detailed context and guidance
-
-# After manual investigation and correction:
-flamingock audit fix -c user-data-update-v2 --resolution APPLIED
-# Output: ✅ Issue resolved - change marked as successfully applied
-
-# Alternative resolution:
-flamingock audit fix -c problematic-change --resolution ROLLED_BACK
-# Output: ✅ Issue resolved - change marked as rolled back
-```
-
-### **Change Management Operations**
-```bash
-# Execute pending changes on-demand
-flamingock run --app-jar /path/to/app.jar --config application.yaml
-
-# Preview what would execute (dry-run)
-flamingock dry-run --config application.yaml --profile production
-
-# Execute specific change by ID
-flamingock run -c user-schema-update --app-jar /path/to/app.jar
-
-# Rollback/undo specific change
-flamingock undo -c user-schema-update --app-jar /path/to/app.jar
-```
-
-### **Audit and Compliance Operations**
-```bash
-# List all executed changes with filtering
-flamingock audit list --author platform-team --from 2024-01-01
-
-# Generate compliance report
-flamingock audit report --format csv --output /reports/compliance-2024.csv
-
-# Verify audit store integrity
-flamingock audit verify --config application.yaml
-```
-
-### **Maintenance Operations**
-```bash
-# Clear stale distributed locks
-flamingock lock clear --config application.yaml
-
-# Check consistency between code and audit store
-flamingock consistency-check --app-jar /path/to/app.jar --config application.yaml
-```
-
----
-
-## Enterprise Integration Patterns
-
-### **CI/CD Pipeline Integration**
-```yaml
-# Example: Jenkins/GitHub Actions integration
-deploy:
-  steps:
-    - name: Execute Flamingock Changes
-      run: |
-        flamingock run --app-jar dist/app.jar --config prod.yaml
-        
-    - name: Verify No Issues
-      run: |
-        flamingock issue list --fail-if-any
-```
-
-### **Operational Runbooks**
-```bash
-# Daily operations checklist
-#!/bin/bash
-echo "Checking for Flamingock issues..."
-flamingock issue list
-
-if [ $? -ne 0 ]; then
-  echo "Issues detected - resolving..."
-  while flamingock issue get > /dev/null; do
-    echo "Resolve the displayed issue manually, then press Enter"
-    read
-    flamingock issue get -c $(flamingock issue get --format id) --resolution APPLIED
-  done
-fi
-```
-
-### **Emergency Response**
-```bash
-# Emergency rollback procedure
-flamingock undo -c problematic-change --app-jar emergency-build.jar
-flamingock audit fix -c problematic-change --resolution ROLLED_BACK
-```
-
----
-
-## Installation & Setup
-
-### **Download CLI**
-```bash
-# Linux/macOS
-curl -L https://releases.flamingock.io/cli/latest/flamingock-cli-linux -o flamingock
+# Make it executable
 chmod +x flamingock
 
-# Windows
-# Download from: https://releases.flamingock.io/cli/latest/flamingock-cli-windows.exe
+# Run the CLI
+./flamingock --help
 ```
 
-### **Configuration**
-The CLI uses your existing Flamingock configuration files:
-- `application.yaml` / `application.properties`
-- `flamingock.yaml` / `flamingock.properties`
+### Configuration
 
-### **JAR Requirements**
-Supply `--app-jar` only for commands that execute change logic:
-- **Required**: `run`, `undo`, `rollback` commands
-- **Not required**: `issue`, `audit`, `lock` commands
+Create a `flamingock.yml` configuration file in your working directory:
 
----
+#### MongoDB Configuration
+```yaml
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
+audit:
+  mongodb:
+    connectionString: mongodb://localhost:27017
+    database: myapp
+    # Or use individual properties:
+    # host: localhost
+    # port: 27017
+    # username: admin
+    # password: secret
+```
 
-## Enterprise Support
+#### DynamoDB Configuration
+```yaml
+serviceIdentifier: my-service
+audit:
+  dynamodb:
+    region: us-east-1
+    # Optional endpoint for local development:
+    # endpoint: http://localhost:8000
+    # accessKey: local
+    # secretKey: local
+```
 
-The Flamingock CLI is production-ready and provides enterprise-grade operational capabilities for managing distributed system evolution at scale.
+You can specify a custom configuration file using the `-c` or `--config` option:
+```bash
+flamingock -c custom-config.yml audit list
+```
 
-**Need help?** Contact support@flamingock.io for enterprise support and training.
+## Core Commands
+
+### View Audit Entries
+
+List the current state of all changes (snapshot view):
+```bash
+flamingock audit list
+```
+
+View the complete chronological history:
+```bash
+flamingock audit list --history
+```
+
+View changes since a specific date:
+```bash
+flamingock audit list --since 2025-01-01T00:00:00
+```
+
+Show extended information including execution details:
+```bash
+flamingock audit list --extended
+```
+
+### Find Issues
+
+List all change units with inconsistent audit states:
+```bash
+flamingock issue list
+```
+
+Output in JSON format for automation:
+```bash
+flamingock issue list --json
+```
+
+### Investigate Issues
+
+Get detailed information about a specific issue:
+```bash
+flamingock issue get -c user-migration-v2
+```
+
+Include resolution guidance:
+```bash
+flamingock issue get -c user-migration-v2 --guidance
+```
+
+Get the next priority issue (when no change ID specified):
+```bash
+flamingock issue get --guidance
+```
+
+### Resolve Issues
+
+After manually verifying or fixing the state, mark the change as resolved:
+
+If the change was successfully applied:
+```bash
+flamingock audit fix -c user-migration-v2 -r APPLIED
+```
+
+If the change was not applied or rolled back:
+```bash
+flamingock audit fix -c user-migration-v2 -r ROLLED_BACK
+```
+
+## Understanding Issues
+
+An issue occurs when a change didn't complete properly, such as:
+- The change was interrupted during execution (network failure, server restart, etc.)
+- The change failed but the failure wasn't properly recorded
+- The system crashed while applying the change
+
+### Resolution Process
+
+1. **Identify the issue**
+   ```bash
+   flamingock issue list
+   ```
+
+2. **Get detailed information**
+   ```bash
+   flamingock issue get -c <change-id> --guidance
+   ```
+
+3. **Verify actual state** in your target system (database, service, etc.)
+
+4. **Fix the audit state** based on your findings:
+   - If the change was successfully applied despite the audit failure:
+     ```bash
+     flamingock audit fix -c <change-id> -r APPLIED
+     ```
+   - If the change was not applied or you manually rolled it back:
+     ```bash
+     flamingock audit fix -c <change-id> -r ROLLED_BACK
+     ```
+
+## Command Reference
+
+### Global Options
+
+```bash
+flamingock [global-options] <command> [command-options]
+```
+
+- `-c, --config <file>` - Configuration file path (default: `flamingock.yml`)
+- `--verbose` - Enable verbose logging
+- `--debug` - Enable debug logging
+- `--quiet` - Suppress non-essential output
+- `--help` - Show help information
+- `--version` - Show version information
+
+### `audit list`
+
+Display audit entries from the audit store.
+
+**Options:**
+- `--history` - Show full chronological history (all entries)
+- `--since <datetime>` - Show entries since date (ISO-8601 format: `2025-01-01T00:00:00`)
+- `-e, --extended` - Show extended information (execution ID, duration, class, method, hostname)
+
+**Examples:**
+```bash
+# View current state (latest per change unit)
+flamingock audit list
+
+# View all historical entries
+flamingock audit list --history
+
+# View changes from last 24 hours
+flamingock audit list --since 2025-01-07T00:00:00
+
+# View with extended details
+flamingock audit list --extended
+```
+
+### `audit fix`
+
+Resolve an inconsistent audit state after manual intervention.
+
+**Options:**
+- `-c, --change-id <id>` - Change unit ID to fix (required)
+- `-r, --resolution <type>` - Resolution type: `APPLIED` or `ROLLED_BACK` (required)
+
+**Examples:**
+```bash
+# Mark as successfully applied
+flamingock audit fix -c create-user-index -r APPLIED
+
+# Mark as rolled back (will be retried on next execution)
+flamingock audit fix -c create-user-index -r ROLLED_BACK
+```
+
+### `issue list`
+
+List all change units with inconsistent audit states.
+
+**Options:**
+- `-j, --json` - Output in JSON format
+
+**Examples:**
+```bash
+# List issues in table format
+flamingock issue list
+
+# Output as JSON for automation
+flamingock issue list --json
+```
+
+### `issue get`
+
+Show detailed information about an issue.
+
+**Options:**
+- `-c, --change-id <id>` - Specific change unit ID (optional, shows next issue if omitted)
+- `-g, --guidance` - Include resolution guidance
+- `-j, --json` - Output in JSON format
+
+**Examples:**
+```bash
+# Get next priority issue
+flamingock issue get --guidance
+
+# Get specific issue details
+flamingock issue get -c user-migration-v3
+
+# Get with resolution guidance
+flamingock issue get -c user-migration-v3 --guidance
+
+# Output as JSON
+flamingock issue get -c user-migration-v3 --json
+```
+
+## Example Output
+
+### Audit List Output
+```
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✗      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total entries: 3
+```
+
+### Issue Details Output
+```
+Issue Details: seed-initial-data
+==================================================
+
+📋 OVERVIEW
+  Change ID: seed-initial-data
+  State: STARTED (❌)
+  Target System: user-database
+  Author: data-team
+  Time: 2025-01-07 10:15:25
+  Execution ID: exec-123456
+  Duration: 1523ms
+
+⚠️  ERROR DETAILS
+  Execution interrupted unexpectedly
+
+  Technical Details:
+  - Class: i.f.changes.SeedData
+  - Method: execute
+  - Hostname: prod-server-01
+
+🔧 Resolution Process:
+
+     1. Review the error details above to understand the root cause
+
+     2. Verify the actual state in your target system (user-database):
+        • Check if the change was successfully applied despite the audit failure
+        • Determine if the change was partially applied or not applied at all
+
+     3. Fix the audit state based on your findings:
+
+        ✅ If change was successfully applied:
+           flamingock audit fix -c seed-initial-data -r APPLIED
+
+        ↩️  If change was not applied or you've manually rolled it back:
+           flamingock audit fix -c seed-initial-data -r ROLLED_BACK
+           (Flamingock will retry this change in the next execution)
+
+     ⚠️  Important: For partially applied changes, you must either:
+         • Manually complete the change, then fix it with resolution(-r) APPLIED
+         • Manually revert the change, then fix it with resolution(-r) ROLLED_BACK
+```
+
+## Logging Levels
+
+Control the verbosity of output using logging options:
+
+```bash
+# Normal output (default)
+flamingock audit list
+
+# Verbose output with info logs
+flamingock --verbose audit list
+
+# Debug output with detailed logs
+flamingock --debug audit list
+
+# Minimal output
+flamingock --quiet audit list
+```
+
+## Environment Variables
+
+You can set default values using environment variables:
+
+```bash
+export FLAMINGOCK_CONFIG=/path/to/config.yml
+export FLAMINGOCK_LOG_LEVEL=DEBUG
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+If you see "Cannot connect to audit store":
+1. Verify your configuration file exists and is valid YAML
+2. Check database connection parameters
+3. Ensure the database is accessible from your location
+4. Test with verbose logging: `flamingock --verbose audit list`
+
+### No Issues Found
+
+If `issue list` shows no issues but you expect some:
+1. Verify you're connecting to the correct audit store
+2. Check if issues were already resolved
+3. Use `audit list --history` to see all historical entries
+
+### Permission Errors
+
+If you get permission errors when running `audit fix`:
+1. Ensure your database credentials have write access
+2. Verify the audit collection/table permissions
+3. Check if the database user can modify audit entries
 
 ---
 
@@ -2981,12 +3154,6 @@ We have built a [complete example project for GraalVM](https://github.com/flamin
 - Native image generation process
 
 You can use this example as a reference implementation while following the steps in this guide.
-
----
-
-// File: frameworks/kubernetes
-
-# How does Flamingock work within a k8s ecosystem? (to-do)
 
 ---
 
@@ -7574,9 +7741,19 @@ import TabItem from '@theme/TabItem';
 
 # Templates
 
+:::caution Beta feature
+Templates are available in **beta**.  
+- You can already create **custom templates** for your own use cases.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
+- We're building a **comprehensive template catalog** where teams can discover, share, and contribute templates for common integration patterns.
+- Expect API and behavior changes before GA.  
+
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+:::
+
 ## Introduction
 
-Flamingock Templates are pre-built modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define configuration changes in declarative format (such as **YAML** files), reducing the need for custom code-based ChangeUnits while ensuring seamless execution and versioning of changes.
+Flamingock Templates are experimental modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define system changes in declarative format (such as **YAML** files), reducing the need for custom code-based ChangeUnits while ensuring execution and versioning of changes.
 
 ## How It Works
 
@@ -7589,52 +7766,47 @@ Templates can be:
 - **Offered by the community**
 - **Created internally by teams** to address common patterns in their own systems
 
-This makes them highly adaptable: whether you're integrating a database, messaging system, or internal service, templates give you a low-code mechanism to structure your changes cleanly and consistently.
+This makes them highly adaptable: whether you're integrating a database, messaging system, or internal service, templates give you a low-code mechanism to structure your system changes cleanly and consistently.
 
 ### Why Do Templates Exist?
 
-Templates exist to solve a common problem in traditional, code-based migrations: **duplicated logic across ChangeUnits**.
+Templates exist to solve a common problem in traditional, code-based changes: **duplicated logic across ChangeUnits**.
 
-Instead of repeating the same boilerplate code over and over, templates let you **externalize the logic** into a reusable definition and **parameterize** what’s different.
+Instead of repeating the same boilerplate code over and over, templates let you **externalize the logic** into a reusable definition and **parameterize** what's different.
 
-
+Today, Flamingock templates can already be created and used in your own projects. However, the official templates provided by the Flamingock team are experimental, and their APIs may change before GA.
 
 ## Key Features
 
-- **Pre-built, reusable modules**: Each template provides a well-defined structure for managing migrations and configurations.
+- **Experimental, reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative ChangeUnits**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
-- **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock’s change management process.
-- **Built-in best practices**: Ensures correctness and reliability for each integration.
-- **Extensible by the community**: Developers can contribute new templates to expand Flamingock’s ecosystem.
+- **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.
+- **Designed to encourage best practices, though still experimental**.
+- **Extensible by the community**: Developers can contribute new templates to expand Flamingock's ecosystem.
 
-## When to use Template-based ChangeUnits vs. code-based ChangeUnits
+## When Template-based ChangeUnits Shine
 
-| **Use Case** | **Template-Based ChangeUnit** | **Code-Based ChangeUnit** |
-|-------------|-----------------------------|-------------------------|
-| Integration with third-party services (e.g., Kafka, Twilio) | ✅ | ✅ |
-| Simple database migrations (e.g., SQL schema updates) | ✅ | ✅ |
-| Custom logic and advanced migrations | ☑️* | ✅ |
-| Complex, dynamic change sequences | ☑️** | ✅ |
-| Low-code, configuration-driven changes | ✅ | ❌ |
+Template-based ChangeUnits are ideal when you have **reusable patterns** in your system changes. They excel in scenarios where the same type of operation needs to be repeated with different parameters, allowing you to avoid duplicating boilerplate code across multiple ChangeUnits.
 
-☑️* Templates can handle custom logic if it can be abstracted and reused. Users can create custom templates to manage these scenarios.
+**Templates shine when:**
 
-☑️** While templates may support complex change sequences, full control and dynamic logic might be easier to implement in code when the scenario is highly specific or non-repetitive.
+- **You have repetitive patterns**: Creating database tables, indexes, Kafka topics, S3 buckets, or API configurations that follow the same structure but with different values
+- **Multiple team members need to make similar changes**: Templates provide a consistent, declarative way for developers to define changes without writing boilerplate code
+- **You want to enforce best practices**: Templates encapsulate proven logic and prevent implementation inconsistencies across your changes
+- **The change type already has a template**: Why reinvent the wheel when S3, Kafka, SQL, MongoDB, or other common templates already exist?
 
+**Stick with code-based ChangeUnits when:**
 
-## List of current Flamingock templates
+- **You have unique, one-off logic**: Complex business transformations that are specific to your application and unlikely to be repeated
+- **You need maximum flexibility**: Custom integrations or complex workflows that require full programmatic control
+- **No suitable template exists**: When your use case doesn't match any available templates and creating a custom template isn't justified
 
-| Template Name | Description | Status |
-|--------------|-------------|---------|
-| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits | In Development |
-| **MongoDB Template** | Manages MongoDB operations and schema changes using YAML definitions | In Development |
-| **Kafka Template** | Manages Kafka topics and configurations using YAML definitions | In Development |
-| **S3 Template** | Manages S3 bucket operations and object configurations via YAML | In Development |
+**Remember**: Templates can handle any level of complexity - from simple configuration updates to sophisticated multi-step operations. The decision isn't about complexity, but about **reusability** and whether the pattern is worth abstracting into a declarative format.
 
 ---
 
-Flamingock Templates unlock new possibilities for seamless application evolution. Whether you’re managing **databases, configurations, or third-party services**, templates simplify the process, ensuring **faster, safer, and more standardised migrations**. 
+Flamingock Templates unlock new possibilities for application evolution. Whether you're managing **databases, configurations, or third-party services**, templates simplify the process, though they are still experimental and not yet recommended for production use. 
 
 :::tip 
 Join the [**Flamingock community**](https://github.com/flamingock/flamingock-project/discussions) and start building your own templates today! 🚀
@@ -7649,7 +7821,20 @@ import TabItem from '@theme/TabItem';
 
 # How to use Flamingock Templates
 
-Using a Flamingock Template is straightforward. Here’s an example of how you can apply an SQL-based migration using the **SQL Template**.
+:::caution Beta feature
+Templates are available in **beta**.  
+- You can already create **custom templates** for your own use cases.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
+- Expect API and behavior changes before GA.  
+
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+:::
+
+Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
+
+:::note
+This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+:::
 
 ### Step 1: Add the Template dependency
 
@@ -7735,9 +7920,9 @@ At application startup, Flamingock will automatically detect the YAML file and p
 
 ---
 
-## Use case: SQL database migration
+## Use case: SQL database changes
 
-Let’s compare how an SQL migration is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
+Let's compare how an SQL change is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
 
 ### Approach 1: Using a Traditional Code-Based ChangeUnit
 
@@ -7773,7 +7958,7 @@ public class CreatePersonsTableChangeUnit {
 
 ### Approach 2: Using a Flamingock SQL Template
 
-With the **SQL Template**, users define the same migration in **YAML** instead of Java:
+With the **SQL Template**, users define the same change in **YAML** instead of Java:
 
 ```yaml
 id: create-persons-table-from-template
@@ -7794,7 +7979,7 @@ rollback: "DROP TABLE Persons;"
 ### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
 - **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL execution manually.
 - **Faster onboarding**: YAML is easier for non-Java developers.
-- **Standardised migrations**: Ensures best practices and avoids custom implementation errors.
+- **Standardised changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.
 
 ---
@@ -7802,6 +7987,18 @@ rollback: "DROP TABLE Persons;"
 // File: templates/create-your-own-template
 
 # Create your own Flamingock template
+
+
+:::caution Beta feature
+Templates are available in **beta**.  
+- You can already create **custom templates** for your own use cases.  
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
+- Expect API and behavior changes before GA.  
+
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+:::
+
+While official Flamingock templates are experimental, you can already build and use your own custom templates in production if needed. This page explains how.
 
 ## Introduction
 
@@ -8052,49 +8249,6 @@ Depending on your target:
 - Group multiple templates by domain when packaging a library.
 
 ---
-
----
-
-// File: templates/template-mapping-section
-
-### How Execution and Rollback Mapping Works
-
-In a template-based change unit (declarative format), Flamingock uses the `execution` and `rollback` sections to determine which methods to invoke in your template class.
-
-#### Execution
-
-- The method annotated with `@Execution` is **mandatory** for the template developer.
-- The `execution` section in the declarative change unit is **mandatory** for the user.
-- If the `execution` section is missing, Flamingock throws an exception at startup.
-
-#### Rollback
-
-- The method annotated with `@RollbackExecution` is **mandatory** for the template developer.
-- The `rollback` section in the declarative change unit is **optional** for the user.
-
-The behavior of rollback varies depending on the target system capabilities and the `transactional` flag:
-
-> For detailed information on transaction behavior, see [Transactions](../flamingock-library-config/transactions.md).
-
-**Rollback during execution failure**
-
-**For transactional target systems** (e.g., MySQL, PostgreSQL, MongoDB):
-- **With `transactional = true` (default)**: Flamingock relies on the system's native transaction handling for automatic rollback. The `@RollbackExecution` method is NOT called.
-- **With `transactional = false`**: Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
-
-**For non-transactional target systems** (e.g., Kafka, S3, REST APIs):
-- **The `transactional` flag is ignored** - behavior is always the same:
-- Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
-- If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
-
-**Rollback during Undo operations (manual reversion via CLI)**
-
-- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method regardless of target system type.
-- If no `rollback` is provided, Flamingock skips the rollback logic, but still marks the change as **ROLLED_BACK** in the audit.
-
-:::note 
-In undo operations, if rollback is not defined in the declarative file, the change is marked as reverted even though no actual rollback was executed. It’s up to the user to ensure reversibility when needed.
-:::
 
 ---
 
