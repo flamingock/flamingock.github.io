@@ -2,33 +2,78 @@
 title: Key features
 sidebar_position: 50
 ---
+# Key Features
 
-# Key features
+Flamingock brings **safety, auditability, and developer productivity** into the way distributed systems evolve.  
+These are the pillars you can rely on today, plus a glimpse of what’s coming next.
 
-With Flamingock, you can take advantage of the following features:
 
-- 🧱 **Change management of any component**: Manage configuration and data changes with your Application code for any component. NoSQL Databases are a first-class citizen, and we've expanded this capability for any type of component that requires configuration.
-  :::info
-  Currently supported languages: Java, Kotlin.
-  :::
-- 🔗 **Extended integrations and custom use case support**: Flamingock enables one-time or repeatable operational processes — such as fetching external data, initializing third-party services, or executing custom logic — ensuring they run safely, just once, and in the right context. It expands on Mongock's support to manage Database changes to all systems, databases, technologies and configurations  (ie. Kafka, Twilio, Auth0, etc) or any user-defined scenario.
 
-- 🧩 **Flexible migration Templates**: New mechanisms for defining changes, offering a no-code option to streamline and simplify change management.
+### Safety by Default
+- If Flamingock cannot guarantee a safe outcome, it stops automatically.  
+- Prevents silent corruption in production systems and ensures predictable deployments.  
 
-- 🚀 **Seamless deployment**: Deploy your application and systems together, ensuring version compatibility and reducing deployment friction.
+---
 
-- ⚡ **GraalVM support**: Enables the compilation of Java applications into native executables for improved performance.
+### Change-as-Code (CaC)
+- Define changes as **versioned ChangeUnits** that are executed once, safely, and auditable.  
+- All changes are tracked in the audit store and never silently skipped.  
+- Guarantees immutability: once applied, a ChangeUnit cannot be modified.  
 
-- 👥 **Multi-Tenant support (coming soon!)**: Designed to handle multiple tenants within the same infrastructure.
+---
 
-- 🔒 **Distributed Locking**: Ensures synchronized deployment of multiple service instances, maintaining consistency and preventing conflicts in distributed environments.
+### Dual Approach: Code and Templates
+Flamingock supports two complementary approaches for defining ChangeUnits:  
 
-- 🔄 **Auditing & Rollback**: Comprehensive auditing capabilities with support for rollback of changes to ensure consistency and control.
+- **Code-based ChangeUnits**: Full control using Java/Kotlin classes, annotations, and dependency injection.  
+- **Template-based ChangeUnits**: Declarative, YAML-based changes that reuse shared templates.  
 
-- ☁️ **Cloud offering (coming soon!)**: Offers a fully managed service by hosting Flamingock’s operational data on our servers, removing the need for users to set up and manage their own infrastructure whilst unlocking the full Flamingock suite of features.
+:::note 
+Templates are in **beta**. You can already create and use custom templates, while official ones are still evolving.  
+:::
 
-- 💻 **Management Operations via a Dashboard and CLI (coming soon!)**: Flamingock offers tools to simplify Operational management tasks. Some of these example are: List history of changes, execute Rollbacks, Undo deployment, Audit, etc. Additionally, offers a Dashboard with metrics and alerts.
+---
 
-- 🛠️ **Advanced Workflow Management**: Enables multiple streams of change units that can be organized to execute sequentially, in parallel, or as a combination, providing flexibility in managing complex processes.
+### Target System Abstraction
+- Explicitly declare the **systems you evolve** (databases, queues, APIs, S3, etc.).  
+- Transactional target systems are executed within transactions where possible.  
+- Non-transactional systems are safeguarded through audit tracking and rollback mechanisms.  
 
-- 🔀 **Parallel Synchronised Execution**: When workflows include parallel streams, they can be executed simultaneously by different service instances, maximizing efficiency in distributed deployments.
+---
+
+### Immutable, Auditable History (Audit Store)
+- All executions are recorded in a dedicated audit store, decoupled from business data.  
+- Provides a **single source of truth** for compliance, governance, and troubleshooting.  
+
+---
+
+### Staging and Grouping
+- Organize ChangeUnits into **stages** for modularity and separation of concerns.  
+- Execute subsets of changes independently while maintaining global audit consistency.  
+
+---
+
+### Startup Synchronization
+- Flamingock executes during **application startup**.  
+- Ensures your service and its dependent systems are aligned before going live.  
+
+---
+
+### Developer Experience
+- Built-in dependency injection for clean and testable change logic.  
+- Seamless Spring Boot integration with minimal setup.  
+- GraalVM support for native image compilation.  
+
+---
+
+### CLI
+- A lightweight CLI is available today for **maintenance and recovery**.  
+- Capabilities include:  
+  - Listing the history of executed changes  
+  - Auditing change status  
+  - Managing fixes in recovery scenarios  
+
+---
+
+### What about the Cloud Edition?
+The **Cloud Edition** is coming soon, extending Flamingock with **additional enterprise-grade features**.  
