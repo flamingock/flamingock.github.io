@@ -13,7 +13,7 @@ Flamingock provides intelligent transaction management that adapts to your targe
 
 Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
 
-### Transactional target systems
+### 🔄 Transactional target systems
 **Examples**: PostgreSQL, MySQL, MongoDB, SQL databases, DynamoDB, Couchbase
 
 These systems support native transaction capabilities:
@@ -29,7 +29,7 @@ These systems support native transaction capabilities:
 - **On failure**: Safety through compensation logic (@RollbackExecution)
 - Useful for DDL operations or large bulk operations that exceed transaction limits
 
-### Non-transactional target systems
+### ⚡ Non-transactional target systems
 **Examples**: Kafka, S3, REST APIs, file systems, message queues
 
 These systems have no native transaction support:
