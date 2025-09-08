@@ -49,14 +49,20 @@ id: add_user_index
 order: "0001"
 author: "database-team"
 description: "Add index on user email field for faster lookups"
+targetSystem: "user-database"
 templateName: mongodb-index
-templateConfiguration:
+execution:
+  type: createIndex
   collection: users
   indexSpec:
     email: 1
   options:
     unique: true
     name: "idx_user_email"
+rollback:
+  type: removeIndex
+  collection: users
+  indexName: "idx_user_email"
 ```
 
 For more details about available templates and creating custom templates, see [Templates](../templates/introduction).

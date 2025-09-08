@@ -60,12 +60,12 @@ Instead of repeating the same boilerplate code over and over, templates let you 
 
 ## List of current Flamingock templates
 
-| Template Name | Description |
-|--------------|-------------|
-| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits. |
-| **Kafka Template** (Upcoming) | Manages Kafka topics and configurations using YAML definitions. |
-| **Twilio Template** (Upcoming) | Simplifies Twilio messaging configurations via YAML. |
-| **Redis Template** (Upcoming) | Allows structured updates to Redis configurations. |
+| Template Name | Description | Status |
+|--------------|-------------|---------|
+| **SQL Template** | Enables SQL-based migrations using YAML-defined ChangeUnits | In Development |
+| **MongoDB Template** | Manages MongoDB operations and schema changes using YAML definitions | In Development |
+| **Kafka Template** | Manages Kafka topics and configurations using YAML definitions | In Development |
+| **S3 Template** | Manages S3 bucket operations and object configurations via YAML | In Development |
 
 ---
 

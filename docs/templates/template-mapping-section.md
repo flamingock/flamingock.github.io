@@ -18,18 +18,24 @@ In a template-based change unit (declarative format), Flamingock uses the `execu
 - The method annotated with `@RollbackExecution` is **mandatory** for the template developer.
 - The `rollback` section in the declarative change unit is **optional** for the user.
 
-The behavior of rollback varies depending on context:
+The behavior of rollback varies depending on the target system capabilities and the `transactional` flag:
+
+> For detailed information on transaction behavior, see [Transactions](../flamingock-library-config/transactions.md).
 
 **Rollback during execution failure**
 
-- If the system is **transactional** (e.g., MySQL), Flamingock relies on the system’s native transaction handling. It will not call the rollback method.
-- If the system is **non-transactional**, Flamingock will:
-  - Attempt to call the `@RollbackExecution` method only if the user provides a `rollback` section in the declarative file.
-  - If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
+**For transactional target systems** (e.g., MySQL, PostgreSQL, MongoDB):
+- **With `transactional = true` (default)**: Flamingock relies on the system's native transaction handling for automatic rollback. The `@RollbackExecution` method is NOT called.
+- **With `transactional = false`**: Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
 
-**Rollback during Undo operations (manual reversion)**
+**For non-transactional target systems** (e.g., Kafka, S3, REST APIs):
+- **The `transactional` flag is ignored** - behavior is always the same:
+- Flamingock will call the `@RollbackExecution` method if the user provides a `rollback` section in the declarative file.
+- If no rollback config is provided, Flamingock skips the method call and logs the change as **FAILED**.
 
-- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method — even if the change was previously applied successfully.
+**Rollback during Undo operations (manual reversion via CLI)**
+
+- If a `rollback` section is present in the declarative file, Flamingock will call the `@RollbackExecution` method regardless of target system type.
 - If no `rollback` is provided, Flamingock skips the rollback logic, but still marks the change as **ROLLED_BACK** in the audit.
 
 :::note 

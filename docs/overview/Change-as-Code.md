@@ -213,10 +213,11 @@ order: 0001
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-templateConfiguration:
+execution:
   bucketName: "flamingock-app-bucket"
   region: "us-east-1"
-  rollbackBucketName: "flamingock-app-bucket"
+rollback:
+  bucketName: "flamingock-app-bucket"
 
 ---
 
@@ -226,7 +227,7 @@ order: 0002
 author: "devops"
 transactional: false
 templateName: kafka-template
-templateConfiguration:
+execution:
   topics:
     - "app-events"
     - "user-notifications"
@@ -237,6 +238,10 @@ templateConfiguration:
     user-notifications:
       partitions: 2
       replicationFactor: 1
+rollback:
+  topics:
+    - "app-events"
+    - "user-notifications"
   rollbackTopics:
     - "app-events"
     - "user-notifications"
@@ -249,7 +254,7 @@ order: 0003
 author: "devops"
 transactional: false
 templateName: aws-iam-template
-templateConfiguration:
+execution:
   roleName: "flamingock-app-role"
   assumeRolePolicy: |
     {
@@ -262,6 +267,8 @@ templateConfiguration:
         }
       ]
     }
+rollback:
+  roleName: "flamingock-app-role"
   rollbackRoleName: "flamingock-app-role"
 
 ---
@@ -272,12 +279,11 @@ order: 0004
 author: "devops"
 transactional: true
 templateName: sql-template
-templateConfiguration:
-  executionSql: |
-    INSERT INTO tenants (id, name, created_at)
-    VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
-  rollbackSql: |
-    DELETE FROM tenants WHERE id IN (1, 2);
+execution: |
+  INSERT INTO tenants (id, name, created_at)
+  VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
+rollback: |
+  DELETE FROM tenants WHERE id IN (1, 2);
 
 ---
 
@@ -287,12 +293,16 @@ order: 0005
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-templateConfiguration:
+execution:
   # Enable versioning on an existing bucket
   bucketName: "flamingock-app-bucket"
   versioningConfiguration:
     status: "Enabled"
+rollback:
   # Rollback: suspend versioning
+  bucketName: "flamingock-app-bucket"
+  versioningConfiguration:
+    status: "Suspended"
   rollbackVersioningConfiguration:
     bucketName: "flamingock-app-bucket"
     versioningConfiguration:
