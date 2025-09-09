@@ -58,7 +58,6 @@ public AuditStore auditStore(MongoClient mongoClient) {
 ```
 
 
----
 
 **Key takeaway**: The audit store is critical for Flamingock's safety guarantees. Cloud Edition provides this fully managed, while Community Audit Stores requires you to configure one of the supported databases.
 
@@ -76,7 +75,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -150,7 +148,6 @@ MongoSyncAuditStore auditStore = MongoSyncAuditStore
     .withReadConcern(ReadConcern.LOCAL);
 ```
 
----
 
 ## Supported versions
 
@@ -159,7 +156,6 @@ MongoSyncAuditStore auditStore = MongoSyncAuditStore
 | `mongodb-driver-sync` 4.0–5.x | 3.6 – 7.0      | Full support    |
 | `mongodb-driver-sync` 3.12.x  | 3.4 – 4.4      | Legacy support  |
 
----
 
 ## Dependencies
 
@@ -209,7 +205,6 @@ implementation("org.mongodb:mongodb-driver-sync:5.2.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -243,7 +238,6 @@ Flamingock.builder()
 ⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
 Recommended only for dev/test environments.
 
----
 
 ## Next steps
 
@@ -264,7 +258,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -334,7 +327,6 @@ MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
     .withReadConcern(ReadConcern.LOCAL);
 ```
 
----
 
 ## Supported versions
 
@@ -347,7 +339,6 @@ Flamingock provides two editions for different Spring Data MongoDB versions:
 
 Choose the edition that matches your Spring Data MongoDB and JDK version.
 
----
 
 ## Dependencies
 
@@ -396,7 +387,6 @@ implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -443,7 +433,6 @@ Flamingock.builder()
 ⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
 Recommended only for dev/test environments.
 
----
 
 ## Spring Boot integration
 
@@ -464,7 +453,6 @@ Spring Boot will automatically:
 - Apply configuration from `application.yml`
 - Set up the audit store
 
----
 
 ## Next steps
 
@@ -485,7 +473,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -540,7 +527,6 @@ Flamingock.builder()
     .run();
 ```
 
----
 
 ## Supported versions
 
@@ -548,7 +534,6 @@ Flamingock.builder()
 |--------------------------------|----------------|-----------------|
 | `dynamodb` 2.25.29+            | All versions   | Full support    |
 
----
 
 ## Dependencies
 
@@ -604,7 +589,6 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -634,7 +618,6 @@ Flamingock.builder()
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.  
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
----
 
 ## Next steps
 
@@ -655,7 +638,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -713,7 +695,6 @@ Flamingock.builder()
     .run();
 ```
 
----
 
 ## Supported versions
 
@@ -721,7 +702,6 @@ Flamingock.builder()
 |--------------------------------|------------------|-----------------|
 | `java-client` 3.6.0+           | 7.0+             | Full support    |
 
----
 
 ## Dependencies
 
@@ -771,7 +751,6 @@ implementation("com.couchbase.client:java-client:3.7.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -800,7 +779,6 @@ Flamingock.builder()
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
----
 
 ## Next steps
 
@@ -1967,7 +1945,6 @@ Configuration is divided into two distinct scopes:
 
 - **Runtime configuration** includes optional parameters such as locking, metadata, author, etc., and can be provided via builder or (depending on the environment) a file.
 
----
 
 ## What you can configure
 
@@ -1985,7 +1962,6 @@ Configuration is divided into two distinct scopes:
 
 Each of these topics is explained in its own section.
 
----
 
 
 
@@ -2001,7 +1977,6 @@ Runtime configuration (everything except the pipeline) can be applied in the fol
 You can combine both approaches. If a property is defined in both, the builder value takes precedence.
 :::
 
----
 
 ## Next steps
 
@@ -2036,7 +2011,6 @@ The Flamingock **setup** organizes and executes your changes using **stages**. B
 
 Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
 
----
 
 ## Setup configuration
 
@@ -2044,7 +2018,6 @@ Flamingock is configured using the `@EnableFlamingock` annotation on any class i
 
 The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
 
----
 
 ## Defining the setup
 
@@ -2082,7 +2055,6 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
----
 
 ## Stage Types
 
@@ -2114,7 +2086,6 @@ For specific scenarios, Flamingock provides special stage types that require exp
 
 To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/upgrade-from-mongock) which demonstrates their practical usage.
 
----
 
 ## Multiple Stages (Advanced)
 
@@ -2211,7 +2182,6 @@ Conditional stage execution based on dependencies or conditions is planned for f
 - Defining explicit dependencies between stages
 - More sophisticated stage orchestration patterns
 :::
----
 
 ## Required fields
 
@@ -2219,7 +2189,6 @@ Each stage must define:
 - `name` (optional): A unique identifier - if not provided, it will be auto-derived from the location
 - `location`: The package or directory where changes are located
 
----
 
 ## Stage fields
 
@@ -2229,7 +2198,6 @@ Each stage must define:
 | `name`           | :x:                 | Unique identifier for the stage (auto-derived from location if not provided) |
 | `description`    | :x:                 | Optional text explaining the stage's purpose                                |
 
----
 
 ## Where Changes are located
 
@@ -2272,7 +2240,6 @@ tasks.withType<JavaCompile> {
 </Tabs>
 
 
----
 
 ## Example Pipeline
 
@@ -2298,7 +2265,6 @@ src/
               _0002_ADD_INDEX.yaml
 ```
 
----
 
 ## Best Practices
 
@@ -2331,7 +2297,6 @@ We strongly recommend placing all your changes — code-based and template-based
   - Avoids needing two locations if one template-based change requires fallback to code
   - Keeps everything in one logical location
 
----
 
 ### Naming Convention for Changes
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
@@ -2366,8 +2331,6 @@ While Java typically avoids underscores and leading digits, change units are not
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
 - For template-based changes, check file names and YAML formatting
-
----
 
 ---
 
@@ -2468,7 +2431,6 @@ Remember that target system contexts are isolated. Dependencies in one target sy
 - **Global**: Shared services, utilities, application-wide configuration
 - **Framework**: Let Spring manage beans, services, and repositories
 
----
 
 **Key takeaway**: Flamingock's hierarchical dependency resolution provides flexibility while maintaining clear separation of concerns. Use target system contexts for system-specific dependencies and global context for shared resources.
 
@@ -2485,7 +2447,6 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 - In **Cloud Edition**, the lock is managed by Flamingock’s backend
 - In **Community Audit Stores**, the lock is stored in your configured database (e.g., MongoDB, DynamoDB)
 
----
 
 ## Configurable properties
 
@@ -2497,7 +2458,6 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 | `throwExceptionIfCannotObtainLock`   | `true`           | Whether Flamingock should fail if the lock can't be acquired.                       |
 | `enableRefreshDaemon`                | `true`           | Whether to run a background thread that periodically extends the lock.              |
 
----
 
 ## Why locking matters
 
@@ -2510,7 +2470,6 @@ In distributed systems, multiple app instances may start simultaneously — but 
 :::info
 If no pending changes exist, the lock is not acquired and startup proceeds normally.
 :::
----
 
 ## Refresh Daemon (safety net)
 
@@ -2528,7 +2487,6 @@ By default, Flamingock uses proxy-based injection guards. Before executing any i
 
 If you're injecting **non-critical components** (e.g., a local list or stateless helper), you can annotate them with `@NonLockGuarded` to avoid the proxy overhead.
 
----
 
 ## Configuration Examples
 
@@ -2543,7 +2501,6 @@ FlamingockStandalone
   ...
 ```
 
----
 
 ## When to tweak Lock settings
 
@@ -2553,7 +2510,6 @@ Most projects can use the default configuration. You may need to adjust values i
 - You run **many app instances** and want to reduce startup wait (decrease `lockTryFrequencyMillis`)
 - You want Flamingock to **fail fast** if it can't acquire a lock (keep `throwExceptionIfCannotObtainLock` as `true`)
 
----
 
 ## ✅ Best Practices
 
@@ -2571,13 +2527,11 @@ Most projects can use the default configuration. You may need to adjust values i
 
 Flamingock provides intelligent transaction management that adapts to your target systems' capabilities. Understanding when and how changes are executed transactionally is key to building reliable system evolution.
 
----
-
 ## How Flamingock handles transactions
 
 Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
 
-### Transactional target systems
+### 🔄 Transactional target systems
 **Examples**: PostgreSQL, MySQL, MongoDB, SQL databases, DynamoDB, Couchbase
 
 These systems support native transaction capabilities:
@@ -2593,7 +2547,7 @@ These systems support native transaction capabilities:
 - **On failure**: Safety through compensation logic (@RollbackExecution)
 - Useful for DDL operations or large bulk operations that exceed transaction limits
 
-### Non-transactional target systems
+### ⚡ Non-transactional target systems
 **Examples**: Kafka, S3, REST APIs, file systems, message queues
 
 These systems have no native transaction support:
@@ -2610,8 +2564,6 @@ These systems have no native transaction support:
 | **Transactional** | Native transaction rollback on failure | `@RollbackExecution` on failure |
 | **Non-transactional** | **Flag ignored** - `@RollbackExecution` on failure | **Flag ignored** - `@RollbackExecution` on failure |
 
----
-
 ## Best practices
 
 ### Always provide @RollbackExecution
@@ -2624,9 +2576,6 @@ These systems have no native transaction support:
 - **Keep default `transactional = true`** for regular data changes on transactional systems
 - **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
 - **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
-
-
----
 
 **Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @RollbackExecution). For non-transactional systems, the flag is ignored and @RollbackExecution is always used.
 
@@ -2650,7 +2599,6 @@ This section includes additional settings for customizing defaults and adding co
 :::note
 These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
 :::
----
 
 ## Metadata
 
@@ -2688,7 +2636,6 @@ FlamingockStandalone
     </TabItem>
 </Tabs>
 
----
 
 ### Default Author
 
@@ -2714,7 +2661,6 @@ FlamingockStandalone
     </TabItem>
 </Tabs>
 
----
 
 ## Disable flamingock process
 
@@ -2928,7 +2874,6 @@ Flamingock provides **first-class support for GraalVM native images**, enabling 
 
 This page explains how to generate a GraalVM native image for a Flamingock-enabled application, using the **reflection metadata** produced by the **annotation processor** and Flamingock’s built-in GraalVM **registration feature**.
 
----
 
 ## How it works
 
@@ -2944,7 +2889,6 @@ At native image generation time, Flamingock’s **GraalVM feature** picks up the
 Learn more about the basics of GraalVM native image compilation in the [GraalVM Native Image basics guide](https://www.graalvm.org/latest/reference-manual/native-image/basics/).
 :::
 
----
 
 ## Step-by-step setup
 
@@ -2973,7 +2917,6 @@ implementation("io.flamingock:flamingock-graalvm:$flamingockVersion")
 </TabItem>
 </Tabs>
 
----
 
 ### 2. Add plugin management (only for Gradle)
 
@@ -2989,7 +2932,6 @@ pluginManagement {
 }
 ```
 
----
 
 ### 3. Add GraalVM resource config
 
@@ -3011,7 +2953,6 @@ This file declares which resource files should be accessible to your native imag
 See the [GraalVM resource configuration documentation](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#resources) for more details.
 :::
 
----
 
 ### 4. Build the application
 
@@ -3061,7 +3002,6 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </details>
 
 
----
 
 ### 5. Create the native image
 
@@ -3135,7 +3075,6 @@ The actual output may differ slightly depending on the modules you’ve included
 For more information on image creation and options, refer to the [GraalVM build overview documentation](https://www.graalvm.org/latest/reference-manual/native-image/overview/Build-Overview/).
 :::
 
----
 
 ### 6. Run the native image
 
@@ -3143,7 +3082,6 @@ For more information on image creation and options, refer to the [GraalVM build 
 ./your-app
 ```
 
----
 
 ## Example project
 
@@ -3168,7 +3106,6 @@ Flamingock integrates seamlessly with Spring Boot, offering a powerful and flexi
 
 This integration leverages Spring Boot’s features—such as dependency injection, profiles, event publishing, and property configuration—to provide a streamlined and production-ready experience.
 
----
 
 ## Why integrate Flamingock with Spring Boot?
 
@@ -3180,7 +3117,6 @@ Using Flamingock with Spring Boot allows you to:
 - Receive execution lifecycle events using `ApplicationEventPublisher`
 - Choose between Spring Boot lifecycle hooks (`ApplicationRunner` or `InitializingBean`) to run Flamingock.
 
----
 
 ## Two setup approaches
 
@@ -3197,7 +3133,6 @@ This is recommended for advanced users or highly customized environments.
 
 > See: [Builder-based setup](./builder-based-setup.md)
 
----
 
 ### Automatic setup
 
@@ -3213,7 +3148,6 @@ Ideal for most users who prefer convention over configuration.
 
 > See: [Automatic setup](./enable-flamingock-setup.md)
 
----
 
 ## Runner strategy: ApplicationRunner vs InitializingBean
 
@@ -3241,7 +3175,6 @@ This is intentional: Flamingock runs before the application is marked as ready. 
 
 This behavior ensures your application only starts when all change units have been applied successfully.
 
----
 
 ## Dependency
 
@@ -3294,7 +3227,6 @@ Choose the artifact that matches the JDK level of your application today; switch
 | `flamingock-springboot-integration`            | [3.0.0, 4.0.0)       |
 | `flamingock-springboot-integration-v2-legacy`  | [2.0.0, 3.0.0)       |
 
----
 
 ## :white_check_mark: Best practices
 
@@ -3326,7 +3258,6 @@ import TabItem from '@theme/TabItem';
 
 Flamingock provides a convenient automatic integration with Spring Boot using the `@Flamingock` annotation. This setup is ideal when you want Flamingock to automatically detect and wire required components without writing explicit builder logic.
 
----
 
 ## Import the springboot integration library
 
@@ -3390,7 +3321,6 @@ The `@EnableFlamingock` annotation enables automatic Spring Boot integration, wh
 - Automatically configures the runner (e.g., ApplicationRunner or InitializingBean)
 - Processes the setup configuration from the annotation
 
----
 
 ## Providing configuration
 
@@ -3407,7 +3337,6 @@ flamingock:
 If the `runnerType` property is not provided, Flamingock defaults to using `ApplicationRunner`.
 :::
 
----
 
 ## Next steps
 
@@ -3428,7 +3357,6 @@ This unified approach makes it easy to switch between environments without chang
 
 It’s especially useful when integrating Flamingock alongside other frameworks, when you need fine-grained control over the setup process, or when you want to override or prioritize specific dependencies manually.
 
----
 
 ## Import the springboot integration library
 
@@ -3506,7 +3434,6 @@ FlamingockBuilder builder = Flamingock
 Platform components are registered using the same `.addDependency(...)` method used for change unit dependencies.  
 For details, see the [Platform component injection](../../flamingock-library-config/platform-component-injection.md) page.
 :::
----
 ## Overriding Spring-provided dependencies
 When using the builder-based setup, Flamingock will attempt to resolve dependencies using the Spring context.
 
@@ -3525,7 +3452,6 @@ In a nutshell, Flamingock resolves dependencies using the following order:
 - Manually added dependencies via .addDependency(...)
 - Beans from the Spring context (if ApplicationContext was registered)
 
----
 
 ## Running Flamingock
 
@@ -3561,7 +3487,6 @@ public InitializingBean flamingockRunner() {
 
 This ensures Flamingock executes automatically as part of the Spring Boot startup sequence.
 
----
 
 ## Next steps
 
@@ -3577,7 +3502,6 @@ Flamingock supports **Spring Boot profiles** out of the box. This allows you to 
 
 This is useful for managing environment-specific changes, such as different initialization data for `dev`, `staging`, or `prod` environments.
 
----
 
 ## What is a Spring profile?
 
@@ -3606,7 +3530,6 @@ You can define profiles like `dev`, `test`, `staging`, or `prod`, and activate *
 
 When multiple profiles are active, Flamingock evaluates each change unit against **all active profiles**, and includes it if any match.
 
----
 
 ## How Flamingock uses profiles
 
@@ -3624,7 +3547,6 @@ public class AddTestDataChangeUnit {
 
 Flamingock applies the same logic as Spring Boot when evaluating whether a change unit should run.
 
----
 
 ## Multiple profiles
 
@@ -3636,7 +3558,6 @@ You can declare multiple profiles in a single `@Profile` expression:
 
 This change unit will run if **any** of the listed profiles is active.
 
----
 
 ## Excluding profiles
 
@@ -3648,7 +3569,6 @@ To exclude a change unit from a specific profile, you can use Spring Expression 
 
 This will run the change unit in **all environments except `prod`**.
 
----
 
 ## ✅ Best practices
 
@@ -3675,7 +3595,6 @@ Let's walk through a simple scenario: evolving your inventory service with a few
 Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.  
 This guide walks you through the process in 5 simple steps.
 
----
 
 ## 1. Set up Flamingock in your project
 
@@ -3738,7 +3657,6 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 
 For more about editions, see [Community Audit Stores](../community-audit-stores/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
----
 
 ## 2. Define your first ChangeUnits
 
@@ -3801,7 +3719,6 @@ public class _002_CreateS3Bucket {
 
 For more details, see [Concepts → ChangeUnits](../overview/core-concepts.md).
 
----
 
 ## 3. Create target systems
 
@@ -3821,7 +3738,6 @@ DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
 
 See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.
 
----
 
 ## 4. Configure stages
 
@@ -3842,7 +3758,6 @@ public class App {}
 
 See [Stages](../flamingock-library-config/setup-and-stages.md) for more details and advanced setups.
 
----
 
 ## 5. Configure Flamingock runtime
 
@@ -3879,7 +3794,6 @@ FlamingockStandalone
   </TabItem>
 </Tabs>
 
----
 
 ## 6. Run your application
 
@@ -3931,7 +3845,6 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </Tabs>
 </details>
 
----
 
 ## Next steps
 
@@ -3964,7 +3877,6 @@ flowchart LR
 :::tip Flamingock helps development teams **release faster**, **with confidence**, and **without surprises**. It provides an auditable traceable system where all Changes are centrally managed.
 :::
 
----
 
 ## 1. Define your changes as ChangeUnits
 
@@ -3973,7 +3885,6 @@ Every change — whether it’s a database migration, a feature flag update, or 
 - Each ChangeUnit is uniquely identified, versioned, and optionally includes rollback logic.
 - Changes can be defined in code (Java/Kotlin) or declaratively (YAML/JSON) via reusable templates [**templates**](../templates/templates-introduction.md).
 
----
 
 ## 2. Organize changes into Workflows
 
@@ -3982,7 +3893,6 @@ ChangeUnits are grouped into stages and structured into a [**Workflow**](../over
 - Workflows allow you to define how changes should be applied: sequentially or (in future releases) in parallel or conditionally.
 - This logical grouping simplifies the orchestration and order of changes across systems / services / components.
 
----
 
 ## 3. Execute at startup (or on demand)
 
@@ -3994,7 +3904,6 @@ When your application starts, Flamingock automatically:
 
 Flamingock can also run in standalone mode, ideal for setups that don't use an underlying framework (ie. Spring).
 
----
 
 ## 4. Locking for safety in distributed environments
 
@@ -4005,7 +3914,6 @@ Using **distributed locking**, Flamingock ensures only one instance (or one node
   - Flamingock Community Audit Stores, with native driver compatibility with MongoDB, Couchbase, DynamoDB
   - Flamingock SaaS or Flamingock self-hosted options to leverage Flamingock's provisioned storage.
 
----
 
 ## 5. Audit everything, rollback when needed
 
@@ -4017,7 +3925,6 @@ Every change applied is **fully audited**:
 
 In case of failure or rollback scenario, Flamingock uses defined compensating logic to revert changes and restore consistency.
 
----
 
 ## Example Use Cases
 
@@ -4045,7 +3952,6 @@ Flamingock rolls back automatically in case of failure(if defined), ensuring the
 
 The result? Faster deployments, consistent environments, and complete traceability.
 
----
 
 ### Example 2: Synchronizing Changes across domain services
 
@@ -4073,14 +3979,11 @@ This ensures that changes in the Database, messaging, and APIs exposed in the ga
 
 ---
 
----
-
 // File: overview/Introduction
 
 ![Flamingock logo](../../static/img/Flamingock-04.png)  
 *The safety-first platform for distributed system evolution*
 
----
 
 ## The Flamingock Guarantee
 **"Your system will always be left in a known, auditable, and consistent state — no matter what happens."**
@@ -4090,7 +3993,6 @@ Traditional tools optimize for the *happy path*, but real-world deployments face
 
 **Flamingock** is built for this reality. It provides safety-first distributed system evolution with **complete auditability** and **configurable recovery strategies**, ensuring that change is never left in doubt.
 
----
 
 ## Why Flamingock?
 
@@ -4110,7 +4012,6 @@ Traditional tools optimize for the *happy path*, but real-world deployments face
 - **Increase velocity**: Developers can evolve their systems independently, without waiting on infrastructure teams.  
 - **Enable governance**: Clear ownership, auditability, and rollback capabilities across all environments.  
 
----
 
 ## Use Cases
 
@@ -4137,14 +4038,12 @@ Flamingock enables controlled, auditable evolution across your technology stack:
 
 **...and other systems requiring safe, auditable evolution**
 
----
 
 ## What Flamingock Is Not
 - **Not Infrastructure-as-Code**: We evolve systems already provisioned by your infrastructure.  
 - **Not generic batch processing**: Optimized for deterministic, auditable changes — not arbitrary long-running jobs.  
 - **Not a CI/CD replacement**: Complements your pipeline but focuses exclusively on safe system evolution.  
 
----
 
 ## How Flamingock Works
 
@@ -4158,7 +4057,6 @@ Developers define **ChangeUnits** in code or templates. Each ChangeUnit is versi
 4. **Audit** – Records all outcomes for visibility and compliance  
 5. **Recovery** – Provides CLI (and Cloud UI) tools for resolution if needed  
 
----
 
 ## Next Steps
 - [Quickstart Guide](../getting-started/get-started.md)  
@@ -4175,9 +4073,7 @@ import TabItem from '@theme/TabItem';
 **Automate changes. Version changes. Control changes.**  
 Change-as-Code (CaC) means every system change—whether it’s an S3 bucket toggle, a new database schema, or a Kafka topic configuration—is authored, versioned, and audited just like application code.
 
-At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual “clicks” in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
-
----
+At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual "clicks" in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
 
 ## Why CaC matters today
 
@@ -4195,9 +4091,7 @@ Modern applications increasingly span dozens of external systems—ranging from 
 - **Increased risk of human error**  
   Pasting commands into a console or clicking UI checkboxes invites typos, misconfigurations, and stress during deployment windows.
 
-Flamingock’s CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
-
----
+Flamingock's CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
 
 ## Four Pillars of Change-as-Code
 
@@ -4211,11 +4105,9 @@ Flamingock’s CaC approach solves these problems by treating every external-sys
    Every ChangeUnit outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query “who ran what change, and when,” ensuring full compliance.
 
 4. **Cross-Component Support**  
-   Whether it’s SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
+   Whether it's SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
 
----
-
-## “Hello, CaC” Code Snippet
+## "Hello, CaC" Code Snippet
 
 Imagine you need to toggle a feature flag in a downstream service (not a database). In Flamingock, you’d write:
 
@@ -4240,16 +4132,12 @@ public class _0005_EnableAutoSaveFeature {
 - **Auditable**: Upon success, an audit entry is written to your audit store.
 - **Cross-Component**: The same pattern works for a DynamoDB schema change, a Kafka topic creation, or any REST API call.
 
----
-
 ## Illustration: CaC vs. IaC
 
 ![](../../static/img/Change%20as%20code-2.png)
 
 - **Infrastructure as Code (IaC)**: Use Terraform, CloudFormation, Pulumi, etc., to provision VMs, networks, and databases (the “foundation”).
 - **Change as Code (CaC)**: Use Flamingock to version and apply everything that lives on that foundation—database schemas, feature flags, SaaS configurations, message topics, and more.
-
----
 
 ## Real-World Use Cases
 
@@ -4483,8 +4371,6 @@ rollback:
 
 Flamingock ensures these four steps run in sequence—never twice—and logs them in your audit store for future reference.
 
----
-
 ## Change-as-Code Checklist
 
 - ✅ **Change lives in VCS**: Every ChangeUnit class (or YAML template) is versioned.
@@ -4493,8 +4379,6 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 - ✅ **Rollback logic**: Each ChangeUnit provides `@RollbackExecution` to undo or compensate if needed.
 - ✅ **Consistent ordering**: All ChangeUnits follow a strict, declared ordering (via the `order` attribute).
 - ✅ **Cross-component**: You can target databases, SaaS APIs, feature flags, message systems—anything with a client API.
-
----
 
 ## Next Steps
 
@@ -4517,14 +4401,10 @@ These are the pillars you can rely on today, plus a glimpse of what’s coming n
 - If Flamingock cannot guarantee a safe outcome, it stops automatically.  
 - Prevents silent corruption in production systems and ensures predictable deployments.  
 
----
-
 ### Change-as-Code (CaC)
 - Define changes as **versioned ChangeUnits** that are executed once, safely, and auditable.  
 - All changes are tracked in the audit store and never silently skipped.  
 - Guarantees immutability: once applied, a ChangeUnit cannot be modified.  
-
----
 
 ### Dual Approach: Code and Templates
 Flamingock supports two complementary approaches for defining ChangeUnits:  
@@ -4536,39 +4416,27 @@ Flamingock supports two complementary approaches for defining ChangeUnits:
 Templates are in **beta**. You can already create and use custom templates, while official ones are still evolving.  
 :::
 
----
-
 ### Target System Abstraction
 - Explicitly declare the **systems you evolve** (databases, queues, APIs, S3, etc.).  
 - Transactional target systems are executed within transactions where possible.  
 - Non-transactional systems are safeguarded through audit tracking and rollback mechanisms.  
 
----
-
 ### Immutable, Auditable History (Audit Store)
 - All executions are recorded in a dedicated audit store, decoupled from business data.  
 - Provides a **single source of truth** for compliance, governance, and troubleshooting.  
-
----
 
 ### Staging and Grouping
 - Organize ChangeUnits into **stages** for modularity and separation of concerns.  
 - Execute subsets of changes independently while maintaining global audit consistency.  
 
----
-
 ### Startup Synchronization
 - Flamingock executes during **application startup**.  
 - Ensures your service and its dependent systems are aligned before going live.  
-
----
 
 ### Developer Experience
 - Built-in dependency injection for clean and testable change logic.  
 - Seamless Spring Boot integration with minimal setup.  
 - GraalVM support for native image compilation.  
-
----
 
 ### CLI
 - A lightweight CLI is available today for **maintenance and recovery**.  
@@ -4577,133 +4445,8 @@ Templates are in **beta**. You can already create and use custom templates, whil
   - Auditing change status  
   - Managing fixes in recovery scenarios  
 
----
-
 ### What about the Cloud Edition?
 The **Cloud Edition** is coming soon, extending Flamingock with **additional enterprise-grade features**.
-
----
-
-// File: overview/Editions
-
-# Flamingock Editions
-*Progressive investment path for enterprise distributed system evolution*
-
-Flamingock provides a strategic investment path from open-source foundation to enterprise platform, ensuring you can start with essential safety guarantees and scale to full organizational transformation.
-
-![](../../static/img/Diagrams-Editions.drawio.png)
-
-## **🔹 Community Audit Stores (Open Source)**
-*Complete safety foundation for distributed system evolution*
-
-**The Foundation**: All core safety guarantees and audit capabilities that make Flamingock unique.
-
-### What You Get:
-- **Safety-First Architecture**: MANUAL_INTERVENTION default strategy prevents silent data corruption
-- **Complete Audit Trail**: Full execution history, compliance reporting, issue tracking
-- **Intelligent Recovery**: Configurable strategies (MANUAL_INTERVENTION, ALWAYS_RETRY)
-- **Enterprise-Grade CLI**: Issue resolution, audit management, rollback operations
-- **Universal Target Support**: Databases, APIs, message queues, cloud services, SaaS platforms
-- **Distributed Coordination**: Safe execution across clustered deployments
-
-### Infrastructure:
-- **Your Database**: MongoDB, DynamoDB, CosmosDB, or Couchbase as audit store
-- **Self-Managed**: Full control over your audit and execution infrastructure
-- **Extensible**: Driver architecture supports additional database integrations
-
-### Ideal For:
-- Teams requiring enterprise-grade safety without managed infrastructure
-- Organizations with strong operational capabilities
-- Development teams seeking autonomous change management
-- Projects requiring complete audit trails and governance
-
-
-## **☁️ Flamingock Cloud Edition**
-*Enterprise platform for organizational transformation*
-
-**Launch Timeline**: Early 2025 | **Beta Program**: Now accepting participants
-
-### Three-Tier Value Proposition
-
-#### **Foundation** (All Community Audit Stores capabilities included)
-- Complete safety guarantees and audit capabilities
-- All recovery strategies and CLI operations
-- Universal target system support with distributed coordination
-
-#### **Enhanced Execution** (Same configuration, better outcomes)
-- **Intelligent Automation**: Advanced reconciliation and marker mechanisms
-- **Enhanced Recovery**: Automatic issue resolution for operations that would require manual intervention in Community Audit Stores
-- **Smart Retry Logic**: Sophisticated backoff and circuit breaker patterns
-- **Cross-System Coordination**: Advanced transaction protocols for distributed changes
-
-#### **Enterprise Platform Features**
-- **Real-Time Dashboards**: Executive visibility, team metrics, compliance reporting
-- **Advanced RBAC**: Team-based access control, approval workflows, audit delegation
-- **Multi-Environment Management**: Coordinated rollouts, environment promotion, configuration drift detection  
-- **Enterprise Integrations**: SSO, LDAP, external audit systems, notification platforms
-- **SLA Guarantees**: Committed uptime, support response times, data durability
-- **Compliance Automation**: Regulatory reporting, policy enforcement, audit trail management
-
-### **Strategic Investment Path**
-**"Same safety foundations → Enhanced automatic outcomes → Enterprise platform capabilities"**
-
-Start with Community Audit Stores's complete safety guarantees, then enhance with Cloud's automatic resolution and enterprise features. Your configurations and change definitions remain unchanged - Cloud Edition amplifies their effectiveness.
-
-### **Join the Beta Program**
-:::tip **Early Access Available**
-Flamingock Cloud Edition beta program is accepting enterprise participants.
-
-**What you get:**
-- Early access to enterprise platform features
-- Direct influence on product roadmap and prioritization  
-- Dedicated technical support and onboarding assistance
-- Grandfathered pricing for early adopters
-
-**Contact**: support@flamingock.io with "Cloud Beta Program" in the subject line
-:::
-
-
-## **💎 Flamingock Self-Hosted Edition**
-*Cloud platform capabilities in your infrastructure*
-
-**Status**: Available by request for enterprise customers
-
-### What You Get:
-All Flamingock Cloud Edition capabilities deployed and managed within your infrastructure:
-
-- **Full Cloud Platform Features**: Dashboards, RBAC, multi-environment management
-- **Your Infrastructure**: Complete data sovereignty and infrastructure control  
-- **Enterprise Security**: Meets stringent compliance requirements for regulated industries
-- **Custom Integrations**: Tailored integrations with your existing enterprise systems
-
-### Ideal For:
-- **Regulated Industries**: Financial services, healthcare, government requiring data sovereignty
-- **Enterprise Security**: Organizations with strict infrastructure and data policies
-- **Custom Requirements**: Teams needing specialized integrations or compliance features
-- **Hybrid Architectures**: Organizations requiring both cloud and on-premises capabilities
-
-:::info **Enterprise Availability**
-Flamingock Self-Hosted Edition is available by request for qualifying enterprise customers.
-
-**Requirements**: Enterprise contract, dedicated technical onboarding, infrastructure requirements assessment
-
-**Contact**: support@flamingock.io with "Self-Hosted Edition" in the subject line
-:::
-
----
-
-## **Choosing Your Edition**
-
-| Need | Community Audit Stores | Cloud Edition | Self-Hosted |
-|------|------------------|---------------|-------------|
-| **Enterprise Safety** | ✅ Complete | ✅ Enhanced | ✅ Enhanced |
-| **Audit & Compliance** | ✅ Full capabilities | ✅ Advanced automation | ✅ Advanced + sovereignty |
-| **Team Collaboration** | CLI-based | ✅ Platform features | ✅ Platform features |
-| **Multi-Environment** | Manual coordination | ✅ Automated | ✅ Automated |
-| **Infrastructure Management** | Self-managed | Fully managed | Self-managed |
-| **Data Sovereignty** | ✅ Your control | Flamingock managed | ✅ Your control |
-
-**Start your journey**: [Community Audit Stores](../getting-started/get-started.md) → [Cloud Beta Program](#join-the-beta-program) → [Enterprise Self-Hosted](#flamingock-self-hosted-edition)
 
 ---
 
@@ -4727,7 +4470,6 @@ ChangeUnits can be implemented in two forms:
 
 For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
 
----
 
 ### Templates
 Templates provide a reusable layer on top of ChangeUnits for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
@@ -4741,7 +4483,6 @@ This approach is particularly useful for:
 
 For more information about templates, see the [Templates](../templates/templates-introduction.md) section.
 
----
 
 ## Recovery strategies
 
@@ -4755,7 +4496,6 @@ The choice of strategy depends on whether your changes are idempotent and how cr
 
 For detailed configuration and implementation, see the [Recovery configuration](../flamingock-library-config/recovery-configuration.md) section.
 
----
 
 ## Audit store
 The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which ChangeUnits have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
@@ -4765,7 +4505,6 @@ The **target system** is where your actual business changes are applied. These a
 
 For more details about how these systems work together, see the [Audit store vs target system](../overview/audit-store-vs-target-system.md) section.
 
----
 
 ## Transaction handling
 Flamingock adapts its behavior based on the transactional capabilities of your target systems:
@@ -4778,7 +4517,6 @@ Systems like Kafka, S3, REST APIs, or file systems that don't support transactio
 
 For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
 
----
 
 ## Stages
 Stages organize your changes into logical groups within Flamingock's execution pipeline. By default, you work with a single stage that contains all your changes, ensuring they execute sequentially in a deterministic order.
@@ -4791,7 +4529,6 @@ Key characteristics:
 
 For detailed information about stages and advanced configurations, see the [Setup and stages](../flamingock-library-config/setup-and-stages.md) section.
 
----
 
 ## Events
 Flamingock can notify your application about the execution status of changes through events. This enables integration with monitoring systems, custom logging, or triggering downstream processes based on change completion.
@@ -4810,7 +4547,6 @@ Building on the foundations of Mongock, Flamingock goes beyond traditional datab
 
 This document introduces Flamingock’s core concepts and outlines its architecture to help you understand how it simplifies the orchestration of system changes.
 
----
 
 ## Architectural Overview
 
@@ -4852,7 +4588,6 @@ On the other hand, if any ChangeUnit fails, the runner stops the migration at th
 
 Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
 
----
 
 ## The dual-system architecture
 
@@ -4872,7 +4607,6 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Modified by**: Flamingock framework automatically (never your code)
 - **Configuration**: See [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md) for technical setup
 
----
 
 ## Why this separation matters
 
@@ -4882,7 +4616,6 @@ Flamingock's architecture separates business changes from execution tracking thr
 3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
 4. **Compliance Independence**: Audit integrity is maintained even during business system issues
 
----
 
 ## Target system types
 
@@ -4900,7 +4633,6 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 - **Community Audit Stores**: Reliable execution tracking and rollback-based recovery
 - **Cloud Edition**: Enhanced recoverability with custom validation options
 
----
 
 ## Audit store types
 
@@ -4911,7 +4643,6 @@ Flamingock Cloud provides a fully managed audit store with superior synchronizat
 User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Community audit store configuration](../flamingock-library-config/audit-store-configuration.md) for setup.
 
 
----
 
 ## How it works
 
@@ -4980,7 +4711,6 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 3. **Target systems evolve** - Your business systems get updated
 4. **Audit store tracks everything** - Complete history for compliance and recovery
 
----
 
 ## Key takeaways
 
@@ -5010,7 +4740,6 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 
 Flamingock's recovery strategies are a key differentiator from traditional tools. While others retry blindly or fail silently, Flamingock provides intelligent, configurable recovery based on operation characteristics.
 
----
 
 ## The Safety-First Philosophy
 
@@ -5024,7 +4753,6 @@ Traditional tools assume the "happy path" - they retry operations blindly or fai
 
 **Flamingock's Approach**: Configurable recovery strategies that match your operation's risk profile.
 
----
 
 ## Recovery Strategy Types
 
@@ -5115,7 +4843,6 @@ public class WarmUserCache {
 - Index creation
 - File operations with overwrite
 
----
 
 ## Decision Framework
 
@@ -5144,7 +4871,6 @@ public class WarmUserCache {
 - **Low Risk + High Criticality**: Simple user data updates, critical configuration
 - **Low Risk + Low Criticality**: Cache operations, metrics collection
 
----
 
 ## Practical Implementation Patterns
 
@@ -5219,7 +4945,6 @@ public class UserDataCleanup {
 }
 ```
 
----
 
 ## Cloud Edition Enhanced Recovery
 
@@ -5246,7 +4971,6 @@ For transactional systems, Cloud Edition uses sophisticated coordination:
 
 This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Audit Stores.
 
----
 
 ## Operational Workflows
 
@@ -5277,7 +5001,6 @@ flamingock audit fix -c change-id --resolution ROLLED_BACK
 - **Metrics tracking**: Success rates, failure patterns, resolution times
 - **Dashboard visibility**: Real-time status across environments
 
----
 
 ## Best Practices
 
@@ -5321,7 +5044,6 @@ users.updateMany(
 - **Compliance documentation**: Maintain records of strategy decisions
 - **Regular assessment**: Review and update strategies based on operational experience
 
----
 
 **Key Takeaway**: Recovery strategies are not just error handling - they're a core architectural decision that affects operational safety, team productivity, and business risk. Choose wisely, document thoroughly, and evolve based on operational experience.
 
@@ -5334,7 +5056,6 @@ users.updateMany(
 
 Flamingock's issue resolution system transforms how organizations handle distributed system evolution failures. Instead of guesswork and manual database queries, you get structured workflows, detailed guidance, and complete audit trails.
 
----
 
 ## Understanding Issues
 
@@ -5352,7 +5073,6 @@ An "issue" is detected when:
 | **EXECUTION_FAILED** | `@Execution` method failed | Review and resolve |
 | **ROLLBACK_FAILED** | `@RollbackExecution` method failed | Manual cleanup |
 
----
 
 ## CLI-Driven Resolution Workflow
 
@@ -5456,7 +5176,6 @@ flamingock audit fix -c user-data-sync-v2 --resolution ROLLED_BACK
    Next Execution: Will skip this change (marked as completed)
 ```
 
----
 
 ## Resolution Types
 
@@ -5490,7 +5209,6 @@ flamingock audit fix -c change-id --resolution APPLIED
 flamingock audit fix -c change-id --resolution ROLLED_BACK
 ```
 
----
 
 ## Advanced Resolution Scenarios
 
@@ -5565,7 +5283,6 @@ flamingock audit fix -c notify-users-via-email --resolution ROLLED_BACK
 # This allows automatic retry on next execution
 ```
 
----
 
 ## Enterprise Operational Patterns
 
@@ -5659,7 +5376,6 @@ ISSUE_COUNT=$(flamingock issue list --format count 2>/dev/null || echo "0")
 echo "flamingock_unresolved_issues $ISSUE_COUNT" | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/flamingock
 ```
 
----
 
 ## Best Practices
 
@@ -5709,7 +5425,6 @@ done
 - Establish approval workflows for critical system changes
 - Regular review of resolution patterns for process improvement
 
----
 
 ## Troubleshooting Common Issues
 
@@ -5740,7 +5455,6 @@ flamingock audit list -c change-id --format detailed
 flamingock consistency-check
 ```
 
----
 
 **Key Takeaway**: Issue resolution is not just error handling - it's a structured operational discipline that ensures your distributed systems evolve safely and your team can respond confidently to any failure scenario.
 
@@ -5753,7 +5467,6 @@ flamingock consistency-check
 
 This guide presents battle-tested patterns that ensure safe, reliable system evolution in production environments. These patterns have been refined through real-world enterprise deployments and operational experience.
 
----
 
 ## Core Safety Principles
 
@@ -5840,7 +5553,6 @@ public class IncrementUserScores {
 }
 ```
 
----
 
 ## Enterprise Safety Patterns
 
@@ -6111,7 +5823,6 @@ public class SyncUserDataAcrossSystems {
 }
 ```
 
----
 
 ## Operational Safety Patterns
 
@@ -6234,7 +5945,6 @@ public class UpdateGdprConsent {
 }
 ```
 
----
 
 ## Anti-Patterns to Avoid
 
@@ -6323,7 +6033,6 @@ public void execute(List<ExternalService> services) {
 }
 ```
 
----
 
 ## Best Practices Summary
 
@@ -6362,7 +6071,6 @@ The **Flamingock Examples** repository showcases a growing collection of real-wo
 
 👉 **GitHub Repository**: [github.com/flamingock/flamingock-examples](https://github.com/flamingock/flamingock-examples)
 
----
 
 ## What you’ll find
 
@@ -6376,7 +6084,6 @@ Within each technology folder, you’ll find one or more example ​projects tha
 
 More examples are planned — including PostgreSQL, Redis, LocalStack, Kafka, Spring Native, multi‐module projects, and custom runners.
 
----
 
 ## How to use the examples
 
@@ -6411,7 +6118,6 @@ Each example folder and project includes its own `README.md` with detailed setup
      ```  
    - Follow any additional instructions in the project’s `README.md`. Some examples may use Testcontainers or LocalStack; if so, ensure Docker is running on your machine.
 
----
 
 ## Who this is for
 
@@ -6419,7 +6125,6 @@ Each example folder and project includes its own `README.md` with detailed setup
 - **Advanced users**: Discover integration patterns with external systems like Kafka, AWS, or NoSQL databases.
 - **Contributors**: Want to improve or submit a new example? Fork the repo, add your example folder, and create a pull request!
 
----
 
 ## Contributing
 
@@ -6439,7 +6144,6 @@ See the [CONTRIBUTING.md](https://github.com/flamingock/flamingock-examples/blob
 
 This FAQ addresses frequent questions about Flamingock's enterprise-grade distributed system evolution platform, from basic usage to advanced recovery strategies and operational concerns.
 
----
 
 ### Getting started
 
@@ -6466,7 +6170,6 @@ Most users on Java 8 can stick with the core and legacy integrations; if you’r
 **Is it possible to use Flamingock in GraalVM native images?**  
 Yes, Flamingock provides a dedicated [GraalVM integration guide](../frameworks/graalvm.md). Ensure your dependencies and reflection requirements are correctly configured.
 
----
 
 ### Editions and compatibility
 
@@ -6507,7 +6210,6 @@ Yes. Flamingock provides an importer that allows you to migrate seamlessly from 
 
 If you are working with different Community Audit Storess that use the **same underlying store** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver edition to the Spring Data edition.
 
----
 
 ### Behaviour and execution
 
@@ -6546,7 +6248,6 @@ For more details, see the [Events](../flamingock-library-config/events.md) guide
 **Is Flamingock compatible with Spring Boot profiles?**  
 Yes. You can conditionally run ChangeUnits using [`@Profile`](../frameworks/springboot-integration/profiles.md), allowing changes to vary by environment.
 
----
 
 ### Configuration
 
@@ -6559,7 +6260,6 @@ Yes. Flamingock supports full [dependency injection](../flamingock-library-confi
 **Can I define ChangeUnit dependencies and execution order?**  
 Yes. ChangeUnits can declare dependencies via annotations or configuration metadata. See [ChangeUnit deep dive](../flamingock-library-config/changeunits-deep-dive.md) for more.
 
----
 
 ### Testing and development
 
@@ -6569,7 +6269,6 @@ You can perform [unit](../testing/unit-testing.md), [integration](../testing/int
 **Can I use templates to generate ChangeUnits?**  
 Yes. Flamingock offers a templating mechanism for [creating new ChangeUnits](../templates/templates-how-to-use.md) and defining reusable components.
 
----
 
 ### Migrating from Mongock
 
@@ -6587,7 +6286,6 @@ While Flamingock retains conceptual compatibility with Mongock, it represents a 
 
 If you are currently using Mongock, we encourage you to [review the migration guide](upgrade-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
----
 
 ### Recovery Strategies & Safety
 
@@ -6642,7 +6340,6 @@ Cloud Edition uses the same recovery strategies but provides enhanced outcomes t
 
 Your change definitions remain identical - Cloud Edition just delivers better results.
 
----
 
 ### Enterprise & Operational Concerns
 
@@ -6709,7 +6406,6 @@ Absolutely. Flamingock is designed for distributed systems:
 - **Separation of concerns** between business and compliance data
 - **Cloud Edition features**: Advanced reporting, RBAC, multi-environment governance
 
----
 
 ### Other
 
@@ -6721,7 +6417,6 @@ For the Cloud and Self-managed editions, additional enterprise components such a
 **Is there a CLI available?**  
 Yes! The [Flamingock CLI](../cli/cli.md) provides enterprise-grade operational control for issue resolution, audit management, and maintenance tasks.
 
----
 
 If your question is not listed here, please check the corresponding edition’s guide or open an issue on our GitHub repository.
 
@@ -6741,7 +6436,6 @@ Flamingock is the next evolution of Mongock. **Upgrading** from Mongock to Flami
 
 Because the codebase remains the same and ChangeUnits are kept intact, we call this an _upgrade_, not a migration.
 
----
 
 ## Upgrade steps (at a glance)
 
@@ -6905,7 +6599,6 @@ Stage: Application Changes
 - ✅ All audit logs are properly created in Flamingock format
 - ✅ Database changes match the expected results
 
----
 
 ## Why upgrade instead of removing or starting fresh?
 
@@ -6916,7 +6609,6 @@ Stage: Application Changes
 
 
 
----
 
 Ready to upgrade? See the [pipeline & stages guide](../flamingock-library-config/setup-and-stages.md) and [ChangeUnit reference](../flamingock-library-config/changeunits-deep-dive.md).  
 
@@ -6938,7 +6630,6 @@ A ChangeUnit always declares which target system it belongs to. This ensures Fla
 
 > **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Why target systems matter
 
@@ -6985,7 +6676,6 @@ In this example, Flamingock resolves dependencies as follows:
 ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
 :::
 
----
 
 ## Registering target systems
 
@@ -7031,7 +6721,6 @@ Spring Boot's auto-configuration will automatically register these target system
 For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
 
 
----
 
 ## Linking ChangeUnits to target systems
 
@@ -7046,7 +6735,6 @@ public class _001_AddCategory {
 ```
 
 
----
 
 ## Cloud Edition visibility
 
@@ -7057,7 +6745,6 @@ In the Cloud Edition, target systems become a first-class part of the dashboard:
 
 This makes it easier to govern and audit distributed environments at scale.
 
----
 
 ## Best practices
 
@@ -7067,7 +6754,6 @@ This makes it easier to govern and audit distributed environments at scale.
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
 
----
 
 ## Available target system implementations
 
@@ -7090,7 +6776,6 @@ For any system that doesn't require specialized handling:
 
 **Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 
----
 
 **Key Takeaway**: Target systems provide the foundation for safe, auditable changes across your entire technology stack. By explicitly declaring and configuring them, you enable Flamingock to orchestrate complex distributed system evolution with confidence.
 
@@ -7850,8 +7535,6 @@ Template-based ChangeUnits are ideal when you have **reusable patterns** in your
 
 **Remember**: Templates can handle any level of complexity - from simple configuration updates to sophisticated multi-step operations. The decision isn't about complexity, but about **reusability** and whether the pattern is worth abstracting into a declarative format.
 
----
-
 Flamingock Templates unlock new possibilities for application evolution. Whether you're managing **databases, configurations, or third-party services**, templates simplify the process, though they are still experimental and not yet recommended for production use. 
 
 :::tip 
@@ -7964,8 +7647,6 @@ If you prefer to use a pipeline YAML file for configuration, refer to the [Setup
 
 At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same execution flow as code-based changes.
 
----
-
 ## Use case: SQL database changes
 
 Let's compare how an SQL change is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
@@ -8050,8 +7731,6 @@ While official Flamingock templates are experimental, you can already build and 
 
 [Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
----
-
 ## Overview of the required components
 
 To create a template, you need:
@@ -8061,8 +7740,6 @@ To create a template, you need:
 - (Optionally) A `@RollbackExecution` method for undo support
 - A service loader registration file (`META-INF/services`)
 - (Optional) Package and distribute your template
-
----
 
 ## 1. Implement the Template class
 
@@ -8111,8 +7788,6 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 :::note 
 See [**2. Define Execution and Rollback methods** ](./create-your-own-template#2-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the execution/rollback data and dependency injection
 :::
-
----
 
 ## 2. Define Execution and Rollback methods
 Each template must include an `@Execution` method, and may optionally include a `@RollbackExecution` method.
@@ -8234,9 +7909,6 @@ Flamingock will apply lock-safety guards unless you annotate the parameter with 
 
 For details on how Flamingock maps the `execution` and `rollback` sections in your declarative change unit to the methods in your template class, refer to the [Template mapping](template-mapping-section.md) documentation.
 
-
----
-
 ## 3. Register the Template with ServiceLoader
 
 Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
@@ -8260,8 +7932,6 @@ io.flamingock.template.kafka.DeleteTopicTemplate
 Group templates by domain or technology for better maintainability.
 :::
 
----
-
 ## 4. Package and distribute the Template
 
 Depending on your target:
@@ -8282,8 +7952,6 @@ Depending on your target:
 - Public classes must be Javadoc-documented
 - Submit a Pull Request adding the template's documentation to [flamingock.github.io](https://github.com/flamingock/flamingock.github.io)
 
----
-
 ## ✅ Best Practices
 
 - Use `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>` with the appropriate generic types for your use case.
@@ -8293,8 +7961,6 @@ Depending on your target:
 - Document your template's purpose and generic types clearly for users.
 - Ensure all custom types are registered for reflection by passing them to the superclass constructor, especially when targeting native builds.
 - Group multiple templates by domain when packaging a library.
-
----
 
 ---
 
@@ -8308,7 +7974,6 @@ Whether you are running Flamingock in a local development environment, as part o
 
 Flamingock is not limited to database systems — it supports a wide range of targets (e.g., message brokers, file systems, APIs). Your testing strategy should reflect the behavior of the underlying systems you integrate with.
 
----
 
 ## What to test
 
@@ -8323,7 +7988,6 @@ Isolate and test the logic inside your `@Execution` and `@RollbackExecution` met
 
 👉 See [Unit testing your change units](./unit-testing.md)
 
----
 
 ### 2. Integration test: Flamingock execution
 Run Flamingock end-to-end in a controlled environment to verify:
@@ -8336,7 +8000,6 @@ This usually requires a real or containerized backend system (e.g., using **Test
 
 👉 See [Integration testing Flamingock](./integration-testing.md)
 
----
 
 ### 3. Spring Boot integration
 For applications using **Spring Boot**, test how Flamingock integrates with your app lifecycle:
@@ -8362,7 +8025,6 @@ They are fast, isolated, and ideal for validating:
 
 Unit tests are most useful when your change unit contains business logic, computation, validation, or decisions.
 
----
 
 ## Example: Creating an S3 bucket
 
@@ -8388,7 +8050,6 @@ public class _0001_CreateS3BucketChange {
 }
 ```
 
----
 
 ## Writing a unit test
 
@@ -8421,7 +8082,6 @@ class _0001_CreateS3BucketChangeTest {
 }
 ```
 
----
 
 ## ✅ Best practices
 
@@ -8447,7 +8107,6 @@ These tests involve spinning up the actual backend system and running Flamingock
 
 Integration tests should be used to validate that the full pipeline behaves as expected — from execution to rollback.
 
----
 
 ## Example: Creating an S3 bucket
 
@@ -8473,7 +8132,6 @@ public class _0001_CreateS3BucketChange {
 }
 ```
 
----
 
 ## Integration test with Testcontainers
 
@@ -8533,7 +8191,6 @@ class IntegrationTest {
 }
 ```
 
----
 
 ## ✅ Best practices
 
@@ -8559,7 +8216,6 @@ With this setup:
 
 > This test style is ideal for verifying that Flamingock interacts correctly with both its audit backend and any external systems.
 
----
 
 ## Example: Modifying a Kafka topic and auditing to DynamoDB
 
@@ -8591,7 +8247,6 @@ public class _0002_ModifyKafkaTopicConfig {
 }
 ```
 
----
 
 ## Writing the test
 
@@ -8662,7 +8317,6 @@ public class FlamingockSpringbootTest {
 }
 ```
 
----
 
 ## Advanced configuration
 
@@ -8684,7 +8338,6 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
 
 These properties allow Flamingock to connect to the appropriate DynamoDB instance and create its internal metadata tables automatically.
 
----
 
 ## Best practices
 
