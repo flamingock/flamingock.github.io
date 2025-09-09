@@ -20,7 +20,6 @@ ChangeUnits can be implemented in two forms:
 
 For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
 
----
 
 ### Templates
 Templates provide a reusable layer on top of ChangeUnits for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
@@ -34,7 +33,6 @@ This approach is particularly useful for:
 
 For more information about templates, see the [Templates](../templates/templates-introduction.md) section.
 
----
 
 ## Recovery strategies
 
@@ -48,7 +46,6 @@ The choice of strategy depends on whether your changes are idempotent and how cr
 
 For detailed configuration and implementation, see the [Recovery configuration](../flamingock-library-config/recovery-configuration.md) section.
 
----
 
 ## Audit store
 The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which ChangeUnits have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
@@ -58,7 +55,6 @@ The **target system** is where your actual business changes are applied. These a
 
 For more details about how these systems work together, see the [Audit store vs target system](../overview/audit-store-vs-target-system.md) section.
 
----
 
 ## Transaction handling
 Flamingock adapts its behavior based on the transactional capabilities of your target systems:
@@ -71,7 +67,6 @@ Systems like Kafka, S3, REST APIs, or file systems that don't support transactio
 
 For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
 
----
 
 ## Stages
 Stages organize your changes into logical groups within Flamingock's execution pipeline. By default, you work with a single stage that contains all your changes, ensuring they execute sequentially in a deterministic order.
@@ -84,7 +79,6 @@ Key characteristics:
 
 For detailed information about stages and advanced configurations, see the [Setup and stages](../flamingock-library-config/setup-and-stages.md) section.
 
----
 
 ## Events
 Flamingock can notify your application about the execution status of changes through events. This enables integration with monitoring systems, custom logging, or triggering downstream processes based on change completion.

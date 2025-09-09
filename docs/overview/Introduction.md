@@ -7,7 +7,6 @@ title: " "
 ![Flamingock logo](../../static/img/Flamingock-04.png)  
 *The safety-first platform for distributed system evolution*
 
----
 
 ## The Flamingock Guarantee
 **"Your system will always be left in a known, auditable, and consistent state — no matter what happens."**
@@ -17,7 +16,6 @@ Traditional tools optimize for the *happy path*, but real-world deployments face
 
 **Flamingock** is built for this reality. It provides safety-first distributed system evolution with **complete auditability** and **configurable recovery strategies**, ensuring that change is never left in doubt.
 
----
 
 ## Why Flamingock?
 
@@ -37,7 +35,6 @@ Traditional tools optimize for the *happy path*, but real-world deployments face
 - **Increase velocity**: Developers can evolve their systems independently, without waiting on infrastructure teams.  
 - **Enable governance**: Clear ownership, auditability, and rollback capabilities across all environments.  
 
----
 
 ## Use Cases
 
@@ -64,14 +61,12 @@ Flamingock enables controlled, auditable evolution across your technology stack:
 
 **...and other systems requiring safe, auditable evolution**
 
----
 
 ## What Flamingock Is Not
 - **Not Infrastructure-as-Code**: We evolve systems already provisioned by your infrastructure.  
 - **Not generic batch processing**: Optimized for deterministic, auditable changes — not arbitrary long-running jobs.  
 - **Not a CI/CD replacement**: Complements your pipeline but focuses exclusively on safe system evolution.  
 
----
 
 ## How Flamingock Works
 
@@ -85,7 +80,6 @@ Developers define **ChangeUnits** in code or templates. Each ChangeUnit is versi
 4. **Audit** – Records all outcomes for visibility and compliance  
 5. **Recovery** – Provides CLI (and Cloud UI) tools for resolution if needed  
 
----
 
 ## Next Steps
 - [Quickstart Guide](../getting-started/get-started.md)  

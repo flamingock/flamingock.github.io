@@ -9,7 +9,9 @@
       "Bash(npm start)",
       "Bash(npx docusaurus:*)",
       "Bash(rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(yarn start)",
+      "Bash(PORT=3001 yarn start)"
     ],
     "deny": []
   }

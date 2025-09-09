@@ -9,7 +9,6 @@ Flamingock supports **Spring Boot profiles** out of the box. This allows you to 
 
 This is useful for managing environment-specific changes, such as different initialization data for `dev`, `staging`, or `prod` environments.
 
----
 
 ## What is a Spring profile?
 
@@ -38,7 +37,6 @@ You can define profiles like `dev`, `test`, `staging`, or `prod`, and activate *
 
 When multiple profiles are active, Flamingock evaluates each change unit against **all active profiles**, and includes it if any match.
 
----
 
 ## How Flamingock uses profiles
 
@@ -56,7 +54,6 @@ public class AddTestDataChangeUnit {
 
 Flamingock applies the same logic as Spring Boot when evaluating whether a change unit should run.
 
----
 
 ## Multiple profiles
 
@@ -68,7 +65,6 @@ You can declare multiple profiles in a single `@Profile` expression:
 
 This change unit will run if **any** of the listed profiles is active.
 
----
 
 ## Excluding profiles
 
@@ -80,7 +76,6 @@ To exclude a change unit from a specific profile, you can use Spring Expression 
 
 This will run the change unit in **all environments except `prod`**.
 
----
 
 ## ✅ Best practices
 

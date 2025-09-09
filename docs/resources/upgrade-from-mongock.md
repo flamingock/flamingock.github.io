@@ -14,7 +14,6 @@ Flamingock is the next evolution of Mongock. **Upgrading** from Mongock to Flami
 
 Because the codebase remains the same and ChangeUnits are kept intact, we call this an _upgrade_, not a migration.
 
----
 
 ## Upgrade steps (at a glance)
 
@@ -178,7 +177,6 @@ Stage: Application Changes
 - ✅ All audit logs are properly created in Flamingock format
 - ✅ Database changes match the expected results
 
----
 
 ## Why upgrade instead of removing or starting fresh?
 
@@ -189,7 +187,6 @@ Stage: Application Changes
 
 
 
----
 
 Ready to upgrade? See the [pipeline & stages guide](../flamingock-library-config/setup-and-stages.md) and [ChangeUnit reference](../flamingock-library-config/changeunits-deep-dive.md).  
 

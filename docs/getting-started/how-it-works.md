@@ -23,7 +23,6 @@ flowchart LR
 :::tip Flamingock helps development teams **release faster**, **with confidence**, and **without surprises**. It provides an auditable traceable system where all Changes are centrally managed.
 :::
 
----
 
 ## 1. Define your changes as ChangeUnits
 
@@ -32,7 +31,6 @@ Every change — whether it’s a database migration, a feature flag update, or 
 - Each ChangeUnit is uniquely identified, versioned, and optionally includes rollback logic.
 - Changes can be defined in code (Java/Kotlin) or declaratively (YAML/JSON) via reusable templates [**templates**](../templates/templates-introduction.md).
 
----
 
 ## 2. Organize changes into Workflows
 
@@ -41,7 +39,6 @@ ChangeUnits are grouped into stages and structured into a [**Workflow**](../over
 - Workflows allow you to define how changes should be applied: sequentially or (in future releases) in parallel or conditionally.
 - This logical grouping simplifies the orchestration and order of changes across systems / services / components.
 
----
 
 ## 3. Execute at startup (or on demand)
 
@@ -53,7 +50,6 @@ When your application starts, Flamingock automatically:
 
 Flamingock can also run in standalone mode, ideal for setups that don't use an underlying framework (ie. Spring).
 
----
 
 ## 4. Locking for safety in distributed environments
 
@@ -64,7 +60,6 @@ Using **distributed locking**, Flamingock ensures only one instance (or one node
   - Flamingock Community Audit Stores, with native driver compatibility with MongoDB, Couchbase, DynamoDB
   - Flamingock SaaS or Flamingock self-hosted options to leverage Flamingock's provisioned storage.
 
----
 
 ## 5. Audit everything, rollback when needed
 
@@ -76,7 +71,6 @@ Every change applied is **fully audited**:
 
 In case of failure or rollback scenario, Flamingock uses defined compensating logic to revert changes and restore consistency.
 
----
 
 ## Example Use Cases
 
@@ -104,7 +98,6 @@ Flamingock rolls back automatically in case of failure(if defined), ensuring the
 
 The result? Faster deployments, consistent environments, and complete traceability.
 
----
 
 ### Example 2: Synchronizing Changes across domain services
 
@@ -130,5 +123,4 @@ Here’s how Flamingock makes this seamless:
 
 This ensures that changes in the Database, messaging, and APIs exposed in the gateway are synchronized, reducing integration errors and deployment friction across microservices.
 
----
 

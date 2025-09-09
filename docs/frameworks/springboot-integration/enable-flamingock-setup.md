@@ -9,7 +9,6 @@ import TabItem from '@theme/TabItem';
 
 Flamingock provides a convenient automatic integration with Spring Boot using the `@Flamingock` annotation. This setup is ideal when you want Flamingock to automatically detect and wire required components without writing explicit builder logic.
 
----
 
 ## Import the springboot integration library
 
@@ -73,7 +72,6 @@ The `@EnableFlamingock` annotation enables automatic Spring Boot integration, wh
 - Automatically configures the runner (e.g., ApplicationRunner or InitializingBean)
 - Processes the setup configuration from the annotation
 
----
 
 ## Providing configuration
 
@@ -90,7 +88,6 @@ flamingock:
 If the `runnerType` property is not provided, Flamingock defaults to using `ApplicationRunner`.
 :::
 
----
 
 ## Next steps
 

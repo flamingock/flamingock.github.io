@@ -9,9 +9,7 @@ import TabItem from '@theme/TabItem';
 **Automate changes. Version changes. Control changes.**  
 Change-as-Code (CaC) means every system change—whether it’s an S3 bucket toggle, a new database schema, or a Kafka topic configuration—is authored, versioned, and audited just like application code.
 
-At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual “clicks” in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
-
----
+At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual "clicks" in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
 
 ## Why CaC matters today
 
@@ -29,9 +27,7 @@ Modern applications increasingly span dozens of external systems—ranging from 
 - **Increased risk of human error**  
   Pasting commands into a console or clicking UI checkboxes invites typos, misconfigurations, and stress during deployment windows.
 
-Flamingock’s CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
-
----
+Flamingock's CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
 
 ## Four Pillars of Change-as-Code
 
@@ -45,11 +41,9 @@ Flamingock’s CaC approach solves these problems by treating every external-sys
    Every ChangeUnit outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query “who ran what change, and when,” ensuring full compliance.
 
 4. **Cross-Component Support**  
-   Whether it’s SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
+   Whether it's SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
 
----
-
-## “Hello, CaC” Code Snippet
+## "Hello, CaC" Code Snippet
 
 Imagine you need to toggle a feature flag in a downstream service (not a database). In Flamingock, you’d write:
 
@@ -74,16 +68,12 @@ public class _0005_EnableAutoSaveFeature {
 - **Auditable**: Upon success, an audit entry is written to your audit store.
 - **Cross-Component**: The same pattern works for a DynamoDB schema change, a Kafka topic creation, or any REST API call.
 
----
-
 ## Illustration: CaC vs. IaC
 
 ![](../../static/img/Change%20as%20code-2.png)
 
 - **Infrastructure as Code (IaC)**: Use Terraform, CloudFormation, Pulumi, etc., to provision VMs, networks, and databases (the “foundation”).
 - **Change as Code (CaC)**: Use Flamingock to version and apply everything that lives on that foundation—database schemas, feature flags, SaaS configurations, message topics, and more.
-
----
 
 ## Real-World Use Cases
 
@@ -317,8 +307,6 @@ rollback:
 
 Flamingock ensures these four steps run in sequence—never twice—and logs them in your audit store for future reference.
 
----
-
 ## Change-as-Code Checklist
 
 - ✅ **Change lives in VCS**: Every ChangeUnit class (or YAML template) is versioned.
@@ -327,8 +315,6 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 - ✅ **Rollback logic**: Each ChangeUnit provides `@RollbackExecution` to undo or compensate if needed.
 - ✅ **Consistent ordering**: All ChangeUnits follow a strict, declared ordering (via the `order` attribute).
 - ✅ **Cross-component**: You can target databases, SaaS APIs, feature flags, message systems—anything with a client API.
-
----
 
 ## Next Steps
 

@@ -61,6 +61,5 @@ public AuditStore auditStore(MongoClient mongoClient) {
 ```
 
 
----
 
 **Key takeaway**: The audit store is critical for Flamingock's safety guarantees. Cloud Edition provides this fully managed, while Community Audit Stores requires you to configure one of the supported databases.

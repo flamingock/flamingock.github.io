@@ -12,7 +12,6 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 - In **Cloud Edition**, the lock is managed by Flamingock’s backend
 - In **Community Audit Stores**, the lock is stored in your configured database (e.g., MongoDB, DynamoDB)
 
----
 
 ## Configurable properties
 
@@ -24,7 +23,6 @@ This mechanism is **mandatory** and applies in both Cloud and Community editions
 | `throwExceptionIfCannotObtainLock`   | `true`           | Whether Flamingock should fail if the lock can't be acquired.                       |
 | `enableRefreshDaemon`                | `true`           | Whether to run a background thread that periodically extends the lock.              |
 
----
 
 ## Why locking matters
 
@@ -37,7 +35,6 @@ In distributed systems, multiple app instances may start simultaneously — but 
 :::info
 If no pending changes exist, the lock is not acquired and startup proceeds normally.
 :::
----
 
 ## Refresh Daemon (safety net)
 
@@ -55,7 +52,6 @@ By default, Flamingock uses proxy-based injection guards. Before executing any i
 
 If you're injecting **non-critical components** (e.g., a local list or stateless helper), you can annotate them with `@NonLockGuarded` to avoid the proxy overhead.
 
----
 
 ## Configuration Examples
 
@@ -70,7 +66,6 @@ FlamingockStandalone
   ...
 ```
 
----
 
 ## When to tweak Lock settings
 
@@ -80,7 +75,6 @@ Most projects can use the default configuration. You may need to adjust values i
 - You run **many app instances** and want to reduce startup wait (decrease `lockTryFrequencyMillis`)
 - You want Flamingock to **fail fast** if it can't acquire a lock (keep `throwExceptionIfCannotObtainLock` as `true`)
 
----
 
 ## ✅ Best Practices
 

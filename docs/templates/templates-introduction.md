@@ -72,8 +72,6 @@ Template-based ChangeUnits are ideal when you have **reusable patterns** in your
 
 **Remember**: Templates can handle any level of complexity - from simple configuration updates to sophisticated multi-step operations. The decision isn't about complexity, but about **reusability** and whether the pattern is worth abstracting into a declarative format.
 
----
-
 Flamingock Templates unlock new possibilities for application evolution. Whether you're managing **databases, configurations, or third-party services**, templates simplify the process, though they are still experimental and not yet recommended for production use. 
 
 :::tip 

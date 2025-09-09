@@ -15,7 +15,6 @@ These tests involve spinning up the actual backend system and running Flamingock
 
 Integration tests should be used to validate that the full pipeline behaves as expected — from execution to rollback.
 
----
 
 ## Example: Creating an S3 bucket
 
@@ -41,7 +40,6 @@ public class _0001_CreateS3BucketChange {
 }
 ```
 
----
 
 ## Integration test with Testcontainers
 
@@ -101,7 +99,6 @@ class IntegrationTest {
 }
 ```
 
----
 
 ## ✅ Best practices
 

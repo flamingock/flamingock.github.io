@@ -15,7 +15,6 @@ A ChangeUnit always declares which target system it belongs to. This ensures Fla
 
 > **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Why target systems matter
 
@@ -62,7 +61,6 @@ In this example, Flamingock resolves dependencies as follows:
 ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
 :::
 
----
 
 ## Registering target systems
 
@@ -108,7 +106,6 @@ Spring Boot's auto-configuration will automatically register these target system
 For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
 
 
----
 
 ## Linking ChangeUnits to target systems
 
@@ -123,7 +120,6 @@ public class _001_AddCategory {
 ```
 
 
----
 
 ## Cloud Edition visibility
 
@@ -134,7 +130,6 @@ In the Cloud Edition, target systems become a first-class part of the dashboard:
 
 This makes it easier to govern and audit distributed environments at scale.
 
----
 
 ## Best practices
 
@@ -144,7 +139,6 @@ This makes it easier to govern and audit distributed environments at scale.
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
 
----
 
 ## Available target system implementations
 
@@ -167,6 +161,5 @@ For any system that doesn't require specialized handling:
 
 **Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 
----
 
 **Key Takeaway**: Target systems provide the foundation for safe, auditable changes across your entire technology stack. By explicitly declaring and configuring them, you enable Flamingock to orchestrate complex distributed system evolution with confidence.

@@ -8,7 +8,6 @@ sidebar_position: 3
 
 This guide presents battle-tested patterns that ensure safe, reliable system evolution in production environments. These patterns have been refined through real-world enterprise deployments and operational experience.
 
----
 
 ## Core Safety Principles
 
@@ -95,7 +94,6 @@ public class IncrementUserScores {
 }
 ```
 
----
 
 ## Enterprise Safety Patterns
 
@@ -366,7 +364,6 @@ public class SyncUserDataAcrossSystems {
 }
 ```
 
----
 
 ## Operational Safety Patterns
 
@@ -489,7 +486,6 @@ public class UpdateGdprConsent {
 }
 ```
 
----
 
 ## Anti-Patterns to Avoid
 
@@ -578,7 +574,6 @@ public void execute(List<ExternalService> services) {
 }
 ```
 
----
 
 ## Best Practices Summary
 

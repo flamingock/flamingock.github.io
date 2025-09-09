@@ -8,7 +8,6 @@ sidebar_position: 2
 
 Flamingock's issue resolution system transforms how organizations handle distributed system evolution failures. Instead of guesswork and manual database queries, you get structured workflows, detailed guidance, and complete audit trails.
 
----
 
 ## Understanding Issues
 
@@ -26,7 +25,6 @@ An "issue" is detected when:
 | **EXECUTION_FAILED** | `@Execution` method failed | Review and resolve |
 | **ROLLBACK_FAILED** | `@RollbackExecution` method failed | Manual cleanup |
 
----
 
 ## CLI-Driven Resolution Workflow
 
@@ -130,7 +128,6 @@ flamingock audit fix -c user-data-sync-v2 --resolution ROLLED_BACK
    Next Execution: Will skip this change (marked as completed)
 ```
 
----
 
 ## Resolution Types
 
@@ -164,7 +161,6 @@ flamingock audit fix -c change-id --resolution APPLIED
 flamingock audit fix -c change-id --resolution ROLLED_BACK
 ```
 
----
 
 ## Advanced Resolution Scenarios
 
@@ -239,7 +235,6 @@ flamingock audit fix -c notify-users-via-email --resolution ROLLED_BACK
 # This allows automatic retry on next execution
 ```
 
----
 
 ## Enterprise Operational Patterns
 
@@ -333,7 +328,6 @@ ISSUE_COUNT=$(flamingock issue list --format count 2>/dev/null || echo "0")
 echo "flamingock_unresolved_issues $ISSUE_COUNT" | curl -X POST --data-binary @- http://pushgateway:9091/metrics/job/flamingock
 ```
 
----
 
 ## Best Practices
 
@@ -383,7 +377,6 @@ done
 - Establish approval workflows for critical system changes
 - Regular review of resolution patterns for process improvement
 
----
 
 ## Troubleshooting Common Issues
 
@@ -414,6 +407,5 @@ flamingock audit list -c change-id --format detailed
 flamingock consistency-check
 ```
 
----
 
 **Key Takeaway**: Issue resolution is not just error handling - it's a structured operational discipline that ensures your distributed systems evolve safely and your team can respond confidently to any failure scenario.

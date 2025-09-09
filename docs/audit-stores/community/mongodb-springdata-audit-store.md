@@ -13,7 +13,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -83,7 +82,6 @@ MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
     .withReadConcern(ReadConcern.LOCAL);
 ```
 
----
 
 ## Supported versions
 
@@ -96,7 +94,6 @@ Flamingock provides two editions for different Spring Data MongoDB versions:
 
 Choose the edition that matches your Spring Data MongoDB and JDK version.
 
----
 
 ## Dependencies
 
@@ -145,7 +142,6 @@ implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -192,7 +188,6 @@ Flamingock.builder()
 ⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
 Recommended only for dev/test environments.
 
----
 
 ## Spring Boot integration
 
@@ -213,7 +208,6 @@ Spring Boot will automatically:
 - Apply configuration from `application.yml`
 - Set up the audit store
 
----
 
 ## Next steps
 

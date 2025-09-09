@@ -12,7 +12,6 @@ This unified approach makes it easy to switch between environments without chang
 
 It’s especially useful when integrating Flamingock alongside other frameworks, when you need fine-grained control over the setup process, or when you want to override or prioritize specific dependencies manually.
 
----
 
 ## Import the springboot integration library
 
@@ -90,7 +89,6 @@ FlamingockBuilder builder = Flamingock
 Platform components are registered using the same `.addDependency(...)` method used for change unit dependencies.  
 For details, see the [Platform component injection](../../flamingock-library-config/platform-component-injection.md) page.
 :::
----
 ## Overriding Spring-provided dependencies
 When using the builder-based setup, Flamingock will attempt to resolve dependencies using the Spring context.
 
@@ -109,7 +107,6 @@ In a nutshell, Flamingock resolves dependencies using the following order:
 - Manually added dependencies via .addDependency(...)
 - Beans from the Spring context (if ApplicationContext was registered)
 
----
 
 ## Running Flamingock
 
@@ -145,7 +142,6 @@ public InitializingBean flamingockRunner() {
 
 This ensures Flamingock executes automatically as part of the Spring Boot startup sequence.
 
----
 
 ## Next steps
 

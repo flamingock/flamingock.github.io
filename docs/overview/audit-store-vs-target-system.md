@@ -8,7 +8,6 @@ sidebar_position: 100
 
 Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
 
----
 
 ## The dual-system architecture
 
@@ -28,7 +27,6 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Modified by**: Flamingock framework automatically (never your code)
 - **Configuration**: See [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md) for technical setup
 
----
 
 ## Why this separation matters
 
@@ -38,7 +36,6 @@ Flamingock's architecture separates business changes from execution tracking thr
 3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
 4. **Compliance Independence**: Audit integrity is maintained even during business system issues
 
----
 
 ## Target system types
 
@@ -56,7 +53,6 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 - **Community Audit Stores**: Reliable execution tracking and rollback-based recovery
 - **Cloud Edition**: Enhanced recoverability with custom validation options
 
----
 
 ## Audit store types
 
@@ -67,7 +63,6 @@ Flamingock Cloud provides a fully managed audit store with superior synchronizat
 User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Community audit store configuration](../flamingock-library-config/audit-store-configuration.md) for setup.
 
 
----
 
 ## How it works
 
@@ -136,7 +131,6 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 3. **Target systems evolve** - Your business systems get updated
 4. **Audit store tracks everything** - Complete history for compliance and recovery
 
----
 
 ## Key takeaways
 

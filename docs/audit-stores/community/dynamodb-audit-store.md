@@ -13,7 +13,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -68,7 +67,6 @@ Flamingock.builder()
     .run();
 ```
 
----
 
 ## Supported versions
 
@@ -76,7 +74,6 @@ Flamingock.builder()
 |--------------------------------|----------------|-----------------|
 | `dynamodb` 2.25.29+            | All versions   | Full support    |
 
----
 
 ## Dependencies
 
@@ -132,7 +129,6 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -162,7 +158,6 @@ Flamingock.builder()
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.  
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
----
 
 ## Next steps
 

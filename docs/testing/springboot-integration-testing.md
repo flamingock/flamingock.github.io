@@ -15,7 +15,6 @@ With this setup:
 
 > This test style is ideal for verifying that Flamingock interacts correctly with both its audit backend and any external systems.
 
----
 
 ## Example: Modifying a Kafka topic and auditing to DynamoDB
 
@@ -47,7 +46,6 @@ public class _0002_ModifyKafkaTopicConfig {
 }
 ```
 
----
 
 ## Writing the test
 
@@ -118,7 +116,6 @@ public class FlamingockSpringbootTest {
 }
 ```
 
----
 
 ## Advanced configuration
 
@@ -140,7 +137,6 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
 
 These properties allow Flamingock to connect to the appropriate DynamoDB instance and create its internal metadata tables automatically.
 
----
 
 ## Best practices
 

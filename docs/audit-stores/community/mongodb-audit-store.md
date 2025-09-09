@@ -13,7 +13,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -87,7 +86,6 @@ MongoSyncAuditStore auditStore = MongoSyncAuditStore
     .withReadConcern(ReadConcern.LOCAL);
 ```
 
----
 
 ## Supported versions
 
@@ -96,7 +94,6 @@ MongoSyncAuditStore auditStore = MongoSyncAuditStore
 | `mongodb-driver-sync` 4.0–5.x | 3.6 – 7.0      | Full support    |
 | `mongodb-driver-sync` 3.12.x  | 3.4 – 4.4      | Legacy support  |
 
----
 
 ## Dependencies
 
@@ -146,7 +143,6 @@ implementation("org.mongodb:mongodb-driver-sync:5.2.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -180,7 +176,6 @@ Flamingock.builder()
 ⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
 Recommended only for dev/test environments.
 
----
 
 ## Next steps
 

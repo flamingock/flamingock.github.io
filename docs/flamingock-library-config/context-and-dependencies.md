@@ -98,6 +98,5 @@ Remember that target system contexts are isolated. Dependencies in one target sy
 - **Global**: Shared services, utilities, application-wide configuration
 - **Framework**: Let Spring manage beans, services, and repositories
 
----
 
 **Key takeaway**: Flamingock's hierarchical dependency resolution provides flexibility while maintaining clear separation of concerns. Use target system contexts for system-specific dependencies and global context for shared resources.

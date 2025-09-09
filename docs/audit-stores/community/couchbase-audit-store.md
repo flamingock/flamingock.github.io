@@ -13,7 +13,6 @@ The audit store is where Flamingock records execution history and ensures safe c
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
 
----
 
 ## Minimum setup
 
@@ -71,7 +70,6 @@ Flamingock.builder()
     .run();
 ```
 
----
 
 ## Supported versions
 
@@ -79,7 +77,6 @@ Flamingock.builder()
 |--------------------------------|------------------|-----------------|
 | `java-client` 3.6.0+           | 7.0+             | Full support    |
 
----
 
 ## Dependencies
 
@@ -129,7 +126,6 @@ implementation("com.couchbase.client:java-client:3.7.0")
 
 </Tabs>
 
----
 
 ## Configuration options
 
@@ -158,7 +154,6 @@ Flamingock.builder()
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
----
 
 ## Next steps
 

@@ -9,7 +9,6 @@ The **Flamingock Examples** repository showcases a growing collection of real-wo
 
 👉 **GitHub Repository**: [github.com/flamingock/flamingock-examples](https://github.com/flamingock/flamingock-examples)
 
----
 
 ## What you’ll find
 
@@ -23,7 +22,6 @@ Within each technology folder, you’ll find one or more example ​projects tha
 
 More examples are planned — including PostgreSQL, Redis, LocalStack, Kafka, Spring Native, multi‐module projects, and custom runners.
 
----
 
 ## How to use the examples
 
@@ -58,7 +56,6 @@ Each example folder and project includes its own `README.md` with detailed setup
      ```  
    - Follow any additional instructions in the project’s `README.md`. Some examples may use Testcontainers or LocalStack; if so, ensure Docker is running on your machine.
 
----
 
 ## Who this is for
 
@@ -66,7 +63,6 @@ Each example folder and project includes its own `README.md` with detailed setup
 - **Advanced users**: Discover integration patterns with external systems like Kafka, AWS, or NoSQL databases.
 - **Contributors**: Want to improve or submit a new example? Fork the repo, add your example folder, and create a pull request!
 
----
 
 ## Contributing
 

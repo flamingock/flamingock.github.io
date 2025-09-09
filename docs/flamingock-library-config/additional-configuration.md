@@ -19,7 +19,6 @@ This section includes additional settings for customizing defaults and adding co
 :::note
 These options can currently be defined using the Flamingock builder. Support for config file (outside Spring Boot) will be added in a future release
 :::
----
 
 ## Metadata
 
@@ -57,7 +56,6 @@ FlamingockStandalone
     </TabItem>
 </Tabs>
 
----
 
 ### Default Author
 
@@ -83,7 +81,6 @@ FlamingockStandalone
     </TabItem>
 </Tabs>
 
----
 
 ## Disable flamingock process
 

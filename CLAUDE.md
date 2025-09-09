@@ -74,34 +74,81 @@ Flamingock is a **"Change-as-Code" platform** that versions and orchestrates any
 - **Complete audit trail**: Every action, success, and failure is tracked
 - **Deterministic state**: Always know exactly what happened and what needs to happen next
 
-## CRITICAL: Flamingock Positioning Strategy
+# CRITICAL: Flamingock Positioning Strategy
 
-**The validated dual positioning approach for Flamingock:**
+**Validated dual positioning approach for Flamingock**  
+Flamingock combines a **developer-first adoption path** with **enterprise-grade governance and control**, ensuring both grassroots traction and organizational readiness.  
 
-### 1. Community Edition (Developer-First, Bottom-Up)
-- **Message**: "Manage all your changes alongside your app, like Liquibase but for the whole stack."
-- **Goal**: Broad adoption by developers, ease of use, speed, and confidence in local/dev environments
-- **Target**: Individual developers and small teams looking for practical change management
+---
 
-### 2. Cloud/Self-Hosted Edition (Enterprise, Top-Down)
-- **Message**: "Audit, govern, and secure those changes at scale, like LaunchDarkly but for compliance."
-- **Goal**: Monetization, governance, compliance, observability, and premium features for enterprises
-- **Target**: Enterprise teams requiring governance, compliance, and organizational control
+## 1. Community Edition (Developer-First, Bottom-Up)
 
-**KEY INSIGHT**: Flamingock is developer-first for adoption and enterprise-ready for business.
+- **Message**  
+  *“Apply changes to your systems alongside your application code — safe, versioned, and auditable by default.”*  
 
-### Edition Positioning
-- **Community Audit Stores**: Secure + Functional
-  - Complete safety guarantees
-  - Manual intervention when needed
-  - Full audit capabilities
-  - Covers essential enterprise needs
+- **Core Benefits**  
+  - **Change-as-Code**: keep application and system changes in lockstep.  
+  - **Safe by default**: idempotent retry and manual intervention ensure reliability.  
+  - **Developer experience**: no extra pipelines, no manual scripts — changes run automatically at app startup.  
+  - **Transparency**: every change is versioned, ordered, and tracked.  
+  - **Lightweight templates**: ready-to-use drivers and official templates for common systems (MongoDB, DynamoDB, configs, etc.).  
 
-- **Cloud Edition**: Secure + Resilient + Automatic  
-  - Same configuration options as Community
-  - Enhanced automatic resolution through advanced mechanisms
-  - Better resilience through markers and reconciliation
-  - Premium value: "Same settings, better outcomes"
+- **Goal**  
+  - Drive adoption by becoming the easiest, most natural way for developers to manage changes across their stack.  
+
+- **Target**  
+  - Individual developers and small teams looking for simplicity, speed, and confidence in local and dev environments.  
+
+---
+
+## 2. Cloud / Self-Hosted Edition (Enterprise, Top-Down)
+
+- **Message**  
+  *“Audit, govern, and secure system changes at scale, with enterprise-grade visibility, safety, and organizational control.”*  
+
+- **Core Benefits**  
+  - **Advanced recovery**: automated safe retry keeps the system consistent across failures.  
+  - **Governance workflows**: approval steps, human-in-the-loop, and compliance checks.  
+  - **Observability**: centralized dashboards, monitoring, and audit logs across all services and teams.  
+  - **Security and control**: role-based access, policies, and multi-team environments.  
+  - **Premium templates**: advanced system integrations (e.g., Kafka/Avro schema evolution, multi-region S3 provisioning, advanced rollback strategies).  
+  - **More premium features**: additional enterprise-grade capabilities will continue to be added over time.  
+
+- **Goal**  
+  - Monetize adoption by providing the capabilities enterprises need for compliance, governance, resilience, and organizational scale.  
+
+- **Target**  
+  - Enterprises and larger teams requiring visibility, compliance, and organizational control over distributed system changes.  
+
+---
+
+## KEY INSIGHT  
+
+Flamingock is:  
+- **Developer-first for adoption** → intuitive, safe, and frictionless for engineers.  
+- **Enterprise-ready for business** → governance, compliance, and automation at scale.  
+
+---
+
+## SALES PITCH TO DEVELOPERS (No Hype)  
+
+*"Flamingock lets you apply changes to your systems the same way you version your code. No more manual scripts or ad-hoc processes. Every change is tracked, ordered, and safe to run. You focus on building, Flamingock makes sure your changes are applied consistently and reliably — from your laptop to production."*  
+
+---
+
+## STRATEGIC NOTES  
+
+- **Do not use the word “migration”** — Flamingock does not perform migrations, it applies versioned changes.  
+- **Recovery split**: Community offers baseline safety (idempotent retry + manual intervention). Cloud offers automation (safe retry + reconciliation).  
+- **Templates strategy**:  
+  - Community → free templates for popular systems.  
+  - Cloud → premium templates for complex, enterprise-grade integrations.  
+- **Premium features in Cloud**: governance, observability dashboards, org-level security, premium templates, automated recovery, and more premium features to be added.  
+
+---
+
+👉 This structure leaves no ambiguity: adoption comes from **Community (developer-first)**, monetization and scale come from **Cloud (enterprise)**.  
+
 
 ## Flamingock Architecture
 

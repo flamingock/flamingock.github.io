@@ -13,7 +13,6 @@ Flamingock integrates seamlessly with Spring Boot, offering a powerful and flexi
 
 This integration leverages Spring Boot’s features—such as dependency injection, profiles, event publishing, and property configuration—to provide a streamlined and production-ready experience.
 
----
 
 ## Why integrate Flamingock with Spring Boot?
 
@@ -25,7 +24,6 @@ Using Flamingock with Spring Boot allows you to:
 - Receive execution lifecycle events using `ApplicationEventPublisher`
 - Choose between Spring Boot lifecycle hooks (`ApplicationRunner` or `InitializingBean`) to run Flamingock.
 
----
 
 ## Two setup approaches
 
@@ -42,7 +40,6 @@ This is recommended for advanced users or highly customized environments.
 
 > See: [Builder-based setup](./builder-based-setup.md)
 
----
 
 ### Automatic setup
 
@@ -58,7 +55,6 @@ Ideal for most users who prefer convention over configuration.
 
 > See: [Automatic setup](./enable-flamingock-setup.md)
 
----
 
 ## Runner strategy: ApplicationRunner vs InitializingBean
 
@@ -86,7 +82,6 @@ This is intentional: Flamingock runs before the application is marked as ready. 
 
 This behavior ensures your application only starts when all change units have been applied successfully.
 
----
 
 ## Dependency
 
@@ -139,7 +134,6 @@ Choose the artifact that matches the JDK level of your application today; switch
 | `flamingock-springboot-integration`            | [3.0.0, 4.0.0)       |
 | `flamingock-springboot-integration-v2-legacy`  | [2.0.0, 3.0.0)       |
 
----
 
 ## :white_check_mark: Best practices
 

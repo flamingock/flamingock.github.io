@@ -17,7 +17,6 @@ Configuration is divided into two distinct scopes:
 
 - **Runtime configuration** includes optional parameters such as locking, metadata, author, etc., and can be provided via builder or (depending on the environment) a file.
 
----
 
 ## What you can configure
 
@@ -35,7 +34,6 @@ Configuration is divided into two distinct scopes:
 
 Each of these topics is explained in its own section.
 
----
 
 
 
@@ -51,7 +49,6 @@ Runtime configuration (everything except the pipeline) can be applied in the fol
 You can combine both approaches. If a property is defined in both, the builder value takes precedence.
 :::
 
----
 
 ## Next steps
 

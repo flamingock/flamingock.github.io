@@ -7,8 +7,6 @@ sidebar_position: 40
 
 Flamingock provides intelligent transaction management that adapts to your target systems' capabilities. Understanding when and how changes are executed transactionally is key to building reliable system evolution.
 
----
-
 ## How Flamingock handles transactions
 
 Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
@@ -46,8 +44,6 @@ These systems have no native transaction support:
 | **Transactional** | Native transaction rollback on failure | `@RollbackExecution` on failure |
 | **Non-transactional** | **Flag ignored** - `@RollbackExecution` on failure | **Flag ignored** - `@RollbackExecution` on failure |
 
----
-
 ## Best practices
 
 ### Always provide @RollbackExecution
@@ -60,8 +56,5 @@ These systems have no native transaction support:
 - **Keep default `transactional = true`** for regular data changes on transactional systems
 - **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
 - **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
-
-
----
 
 **Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @RollbackExecution). For non-transactional systems, the flag is ignored and @RollbackExecution is always used.

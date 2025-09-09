@@ -21,8 +21,6 @@ While official Flamingock templates are experimental, you can already build and 
 
 [Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
----
-
 ## Overview of the required components
 
 To create a template, you need:
@@ -32,8 +30,6 @@ To create a template, you need:
 - (Optionally) A `@RollbackExecution` method for undo support
 - A service loader registration file (`META-INF/services`)
 - (Optional) Package and distribute your template
-
----
 
 ## 1. Implement the Template class
 
@@ -82,8 +78,6 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 :::note 
 See [**2. Define Execution and Rollback methods** ](./create-your-own-template#2-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the execution/rollback data and dependency injection
 :::
-
----
 
 ## 2. Define Execution and Rollback methods
 Each template must include an `@Execution` method, and may optionally include a `@RollbackExecution` method.
@@ -205,9 +199,6 @@ Flamingock will apply lock-safety guards unless you annotate the parameter with 
 
 For details on how Flamingock maps the `execution` and `rollback` sections in your declarative change unit to the methods in your template class, refer to the [Template mapping](template-mapping-section.md) documentation.
 
-
----
-
 ## 3. Register the Template with ServiceLoader
 
 Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
@@ -231,8 +222,6 @@ io.flamingock.template.kafka.DeleteTopicTemplate
 Group templates by domain or technology for better maintainability.
 :::
 
----
-
 ## 4. Package and distribute the Template
 
 Depending on your target:
@@ -253,8 +242,6 @@ Depending on your target:
 - Public classes must be Javadoc-documented
 - Submit a Pull Request adding the template's documentation to [flamingock.github.io](https://github.com/flamingock/flamingock.github.io)
 
----
-
 ## ✅ Best Practices
 
 - Use `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>` with the appropriate generic types for your use case.
@@ -264,5 +251,3 @@ Depending on your target:
 - Document your template's purpose and generic types clearly for users.
 - Ensure all custom types are registered for reflection by passing them to the superclass constructor, especially when targeting native builds.
 - Group multiple templates by domain when packaging a library.
-
----

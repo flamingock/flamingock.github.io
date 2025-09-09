@@ -7,7 +7,6 @@ sidebar_position: 160
 
 This FAQ addresses frequent questions about Flamingock's enterprise-grade distributed system evolution platform, from basic usage to advanced recovery strategies and operational concerns.
 
----
 
 ### Getting started
 
@@ -34,7 +33,6 @@ Most users on Java 8 can stick with the core and legacy integrations; if you’r
 **Is it possible to use Flamingock in GraalVM native images?**  
 Yes, Flamingock provides a dedicated [GraalVM integration guide](../frameworks/graalvm.md). Ensure your dependencies and reflection requirements are correctly configured.
 
----
 
 ### Editions and compatibility
 
@@ -75,7 +73,6 @@ Yes. Flamingock provides an importer that allows you to migrate seamlessly from 
 
 If you are working with different Community Audit Storess that use the **same underlying store** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver edition to the Spring Data edition.
 
----
 
 ### Behaviour and execution
 
@@ -114,7 +111,6 @@ For more details, see the [Events](../flamingock-library-config/events.md) guide
 **Is Flamingock compatible with Spring Boot profiles?**  
 Yes. You can conditionally run ChangeUnits using [`@Profile`](../frameworks/springboot-integration/profiles.md), allowing changes to vary by environment.
 
----
 
 ### Configuration
 
@@ -127,7 +123,6 @@ Yes. Flamingock supports full [dependency injection](../flamingock-library-confi
 **Can I define ChangeUnit dependencies and execution order?**  
 Yes. ChangeUnits can declare dependencies via annotations or configuration metadata. See [ChangeUnit deep dive](../flamingock-library-config/changeunits-deep-dive.md) for more.
 
----
 
 ### Testing and development
 
@@ -137,7 +132,6 @@ You can perform [unit](../testing/unit-testing.md), [integration](../testing/int
 **Can I use templates to generate ChangeUnits?**  
 Yes. Flamingock offers a templating mechanism for [creating new ChangeUnits](../templates/templates-how-to-use.md) and defining reusable components.
 
----
 
 ### Migrating from Mongock
 
@@ -155,7 +149,6 @@ While Flamingock retains conceptual compatibility with Mongock, it represents a 
 
 If you are currently using Mongock, we encourage you to [review the migration guide](upgrade-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
----
 
 ### Recovery Strategies & Safety
 
@@ -210,7 +203,6 @@ Cloud Edition uses the same recovery strategies but provides enhanced outcomes t
 
 Your change definitions remain identical - Cloud Edition just delivers better results.
 
----
 
 ### Enterprise & Operational Concerns
 
@@ -277,7 +269,6 @@ Absolutely. Flamingock is designed for distributed systems:
 - **Separation of concerns** between business and compliance data
 - **Cloud Edition features**: Advanced reporting, RBAC, multi-environment governance
 
----
 
 ### Other
 
@@ -289,6 +280,5 @@ For the Cloud and Self-managed editions, additional enterprise components such a
 **Is there a CLI available?**  
 Yes! The [Flamingock CLI](../cli/cli.md) provides enterprise-grade operational control for issue resolution, audit management, and maintenance tasks.
 
----
 
 If your question is not listed here, please check the corresponding edition’s guide or open an issue on our GitHub repository.

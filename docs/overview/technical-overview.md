@@ -10,7 +10,6 @@ Building on the foundations of Mongock, Flamingock goes beyond traditional datab
 
 This document introduces Flamingock’s core concepts and outlines its architecture to help you understand how it simplifies the orchestration of system changes.
 
----
 
 ## Architectural Overview
 

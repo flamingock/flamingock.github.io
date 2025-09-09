@@ -11,7 +11,6 @@ Whether you are running Flamingock in a local development environment, as part o
 
 Flamingock is not limited to database systems — it supports a wide range of targets (e.g., message brokers, file systems, APIs). Your testing strategy should reflect the behavior of the underlying systems you integrate with.
 
----
 
 ## What to test
 
@@ -26,7 +25,6 @@ Isolate and test the logic inside your `@Execution` and `@RollbackExecution` met
 
 👉 See [Unit testing your change units](./unit-testing.md)
 
----
 
 ### 2. Integration test: Flamingock execution
 Run Flamingock end-to-end in a controlled environment to verify:
@@ -39,7 +37,6 @@ This usually requires a real or containerized backend system (e.g., using **Test
 
 👉 See [Integration testing Flamingock](./integration-testing.md)
 
----
 
 ### 3. Spring Boot integration
 For applications using **Spring Boot**, test how Flamingock integrates with your app lifecycle:

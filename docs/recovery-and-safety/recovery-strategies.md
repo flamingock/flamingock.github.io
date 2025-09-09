@@ -8,7 +8,6 @@ sidebar_position: 1
 
 Flamingock's recovery strategies are a key differentiator from traditional tools. While others retry blindly or fail silently, Flamingock provides intelligent, configurable recovery based on operation characteristics.
 
----
 
 ## The Safety-First Philosophy
 
@@ -22,7 +21,6 @@ Traditional tools assume the "happy path" - they retry operations blindly or fai
 
 **Flamingock's Approach**: Configurable recovery strategies that match your operation's risk profile.
 
----
 
 ## Recovery Strategy Types
 
@@ -113,7 +111,6 @@ public class WarmUserCache {
 - Index creation
 - File operations with overwrite
 
----
 
 ## Decision Framework
 
@@ -142,7 +139,6 @@ public class WarmUserCache {
 - **Low Risk + High Criticality**: Simple user data updates, critical configuration
 - **Low Risk + Low Criticality**: Cache operations, metrics collection
 
----
 
 ## Practical Implementation Patterns
 
@@ -217,7 +213,6 @@ public class UserDataCleanup {
 }
 ```
 
----
 
 ## Cloud Edition Enhanced Recovery
 
@@ -244,7 +239,6 @@ For transactional systems, Cloud Edition uses sophisticated coordination:
 
 This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Audit Stores.
 
----
 
 ## Operational Workflows
 
@@ -275,7 +269,6 @@ flamingock audit fix -c change-id --resolution ROLLED_BACK
 - **Metrics tracking**: Success rates, failure patterns, resolution times
 - **Dashboard visibility**: Real-time status across environments
 
----
 
 ## Best Practices
 
@@ -319,6 +312,5 @@ users.updateMany(
 - **Compliance documentation**: Maintain records of strategy decisions
 - **Regular assessment**: Review and update strategies based on operational experience
 
----
 
 **Key Takeaway**: Recovery strategies are not just error handling - they're a core architectural decision that affects operational safety, team productivity, and business risk. Choose wisely, document thoroughly, and evolve based on operational experience.

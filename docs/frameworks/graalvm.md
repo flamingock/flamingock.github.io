@@ -12,7 +12,6 @@ Flamingock provides **first-class support for GraalVM native images**, enabling 
 
 This page explains how to generate a GraalVM native image for a Flamingock-enabled application, using the **reflection metadata** produced by the **annotation processor** and Flamingock’s built-in GraalVM **registration feature**.
 
----
 
 ## How it works
 
@@ -28,7 +27,6 @@ At native image generation time, Flamingock’s **GraalVM feature** picks up the
 Learn more about the basics of GraalVM native image compilation in the [GraalVM Native Image basics guide](https://www.graalvm.org/latest/reference-manual/native-image/basics/).
 :::
 
----
 
 ## Step-by-step setup
 
@@ -57,7 +55,6 @@ implementation("io.flamingock:flamingock-graalvm:$flamingockVersion")
 </TabItem>
 </Tabs>
 
----
 
 ### 2. Add plugin management (only for Gradle)
 
@@ -73,7 +70,6 @@ pluginManagement {
 }
 ```
 
----
 
 ### 3. Add GraalVM resource config
 
@@ -95,7 +91,6 @@ This file declares which resource files should be accessible to your native imag
 See the [GraalVM resource configuration documentation](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#resources) for more details.
 :::
 
----
 
 ### 4. Build the application
 
@@ -145,7 +140,6 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </details>
 
 
----
 
 ### 5. Create the native image
 
@@ -219,7 +213,6 @@ The actual output may differ slightly depending on the modules you’ve included
 For more information on image creation and options, refer to the [GraalVM build overview documentation](https://www.graalvm.org/latest/reference-manual/native-image/overview/Build-Overview/).
 :::
 
----
 
 ### 6. Run the native image
 
@@ -227,7 +220,6 @@ For more information on image creation and options, refer to the [GraalVM build 
 ./your-app
 ```
 
----
 
 ## Example project
 

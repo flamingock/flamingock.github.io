@@ -87,3 +87,25 @@
 [data-theme='dark'] .theme-doc-sidebar-item-category-level-2 > .menu__list-item-collapsible > .menu__link {
   color: var(--ifm-color-content);
 }
+
+/* Documentation content header styling */
+.markdown h2 {
+  color: var(--ifm-color-primary); /* Flamingo coral */
+  border-bottom: 2px solid #e0e0e0; /* Light grey border */
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.markdown h3 {
+  color: #4a4a4a; /* Dark grey */
+}
+
+/* Dark mode styling for documentation headers */
+[data-theme='dark'] .markdown h2 {
+  color: var(--ifm-color-primary); /* Flamingo coral - same for both themes */
+  border-bottom: 2px solid #404040; /* Darker grey border for dark theme */
+}
+
+[data-theme='dark'] .markdown h3 {
+  color: #b0b0b0; /* Lighter grey for dark theme readability */
+}

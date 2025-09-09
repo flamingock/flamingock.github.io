@@ -12,7 +12,6 @@ The Flamingock **setup** organizes and executes your changes using **stages**. B
 
 Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
 
----
 
 ## Setup configuration
 
@@ -20,7 +19,6 @@ Flamingock is configured using the `@EnableFlamingock` annotation on any class i
 
 The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
 
----
 
 ## Defining the setup
 
@@ -58,7 +56,6 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
----
 
 ## Stage Types
 
@@ -90,7 +87,6 @@ For specific scenarios, Flamingock provides special stage types that require exp
 
 To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/upgrade-from-mongock) which demonstrates their practical usage.
 
----
 
 ## Multiple Stages (Advanced)
 
@@ -187,7 +183,6 @@ Conditional stage execution based on dependencies or conditions is planned for f
 - Defining explicit dependencies between stages
 - More sophisticated stage orchestration patterns
 :::
----
 
 ## Required fields
 
@@ -195,7 +190,6 @@ Each stage must define:
 - `name` (optional): A unique identifier - if not provided, it will be auto-derived from the location
 - `location`: The package or directory where changes are located
 
----
 
 ## Stage fields
 
@@ -205,7 +199,6 @@ Each stage must define:
 | `name`           | :x:                 | Unique identifier for the stage (auto-derived from location if not provided) |
 | `description`    | :x:                 | Optional text explaining the stage's purpose                                |
 
----
 
 ## Where Changes are located
 
@@ -248,7 +241,6 @@ tasks.withType<JavaCompile> {
 </Tabs>
 
 
----
 
 ## Example Pipeline
 
@@ -274,7 +266,6 @@ src/
               _0002_ADD_INDEX.yaml
 ```
 
----
 
 ## Best Practices
 
@@ -307,7 +298,6 @@ We strongly recommend placing all your changes — code-based and template-based
   - Avoids needing two locations if one template-based change requires fallback to code
   - Keeps everything in one logical location
 
----
 
 ### Naming Convention for Changes
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
@@ -342,5 +332,3 @@ While Java typically avoids underscores and leading digits, change units are not
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
 - For template-based changes, check file names and YAML formatting
-
----

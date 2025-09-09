@@ -15,7 +15,6 @@ Let's walk through a simple scenario: evolving your inventory service with a few
 Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.  
 This guide walks you through the process in 5 simple steps.
 
----
 
 ## 1. Set up Flamingock in your project
 
@@ -78,7 +77,6 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 
 For more about editions, see [Community Audit Stores](../community-audit-stores/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
----
 
 ## 2. Define your first ChangeUnits
 
@@ -141,7 +139,6 @@ public class _002_CreateS3Bucket {
 
 For more details, see [Concepts → ChangeUnits](../overview/core-concepts.md).
 
----
 
 ## 3. Create target systems
 
@@ -161,7 +158,6 @@ DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
 
 See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.
 
----
 
 ## 4. Configure stages
 
@@ -182,7 +178,6 @@ public class App {}
 
 See [Stages](../flamingock-library-config/setup-and-stages.md) for more details and advanced setups.
 
----
 
 ## 5. Configure Flamingock runtime
 
@@ -219,7 +214,6 @@ FlamingockStandalone
   </TabItem>
 </Tabs>
 
----
 
 ## 6. Run your application
 
@@ -271,7 +265,6 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 </Tabs>
 </details>
 
----
 
 ## Next steps
 

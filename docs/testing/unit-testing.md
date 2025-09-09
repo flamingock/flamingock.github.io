@@ -14,7 +14,6 @@ They are fast, isolated, and ideal for validating:
 
 Unit tests are most useful when your change unit contains business logic, computation, validation, or decisions.
 
----
 
 ## Example: Creating an S3 bucket
 
@@ -40,7 +39,6 @@ public class _0001_CreateS3BucketChange {
 }
 ```
 
----
 
 ## Writing a unit test
 
@@ -73,7 +71,6 @@ class _0001_CreateS3BucketChangeTest {
 }
 ```
 
----
 
 ## ✅ Best practices
 

@@ -105,8 +105,6 @@ If you prefer to use a pipeline YAML file for configuration, refer to the [Setup
 
 At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same execution flow as code-based changes.
 
----
-
 ## Use case: SQL database changes
 
 Let's compare how an SQL change is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
