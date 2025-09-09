@@ -74,6 +74,22 @@ Flamingock is a **"Change-as-Code" platform** that versions and orchestrates any
 - **Complete audit trail**: Every action, success, and failure is tracked
 - **Deterministic state**: Always know exactly what happened and what needs to happen next
 
+## CRITICAL: Flamingock Positioning Strategy
+
+**The validated dual positioning approach for Flamingock:**
+
+### 1. Community Edition (Developer-First, Bottom-Up)
+- **Message**: "Manage all your changes alongside your app, like Liquibase but for the whole stack."
+- **Goal**: Broad adoption by developers, ease of use, speed, and confidence in local/dev environments
+- **Target**: Individual developers and small teams looking for practical change management
+
+### 2. Cloud/Self-Hosted Edition (Enterprise, Top-Down)
+- **Message**: "Audit, govern, and secure those changes at scale, like LaunchDarkly but for compliance."
+- **Goal**: Monetization, governance, compliance, observability, and premium features for enterprises
+- **Target**: Enterprise teams requiring governance, compliance, and organizational control
+
+**KEY INSIGHT**: Flamingock is developer-first for adoption and enterprise-ready for business.
+
 ### Edition Positioning
 - **Community Audit Stores**: Secure + Functional
   - Complete safety guarantees
