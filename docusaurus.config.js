@@ -54,7 +54,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/flamingock/flamingock-java',
           lastVersion: 'current',
           versions: {
             current: {
@@ -72,7 +72,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/flamingock/flamingock-java',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -102,7 +102,7 @@ const config = {
         searchPagePath: 'search', // Enables the /search page
       },
       navbar: {
-        title: 'Flamingock Docs',
+        title: 'Flamingock',
         logo: {
           alt: 'Flamingock',
           src: 'img/flamingock.svg',
@@ -116,7 +116,7 @@ const config = {
           },
           { type: 'search', position: 'right' },
           {
-            href: 'https://github.com/flamingock',
+            href: 'https://github.com/flamingock/flamingock-java',
             label: 'GitHub',
             position: 'right',
           },
@@ -178,7 +178,7 @@ const config = {
               },*/
               {
                 label: 'GitHub',
-                href: 'https://github.com/flamingock',
+                href: 'https://github.com/flamingock/flamingock-java',
               },
             ],
           },
