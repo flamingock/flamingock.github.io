@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: Introduction
-sidebar_label: Templates Introduction
+sidebar_label: Introduction
 ---
 
 import Tabs from '@theme/Tabs';
