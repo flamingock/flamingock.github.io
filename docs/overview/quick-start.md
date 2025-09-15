@@ -138,7 +138,7 @@ public class _002_CreateS3Bucket {
   </TabItem>
 </Tabs>
 
-For more details, see [Concepts → ChangeUnits](../overview/core-concepts.md).
+For more details, see [Core concepts](core-concepts.md).
 
 
 ## 3. Create target systems
@@ -157,7 +157,7 @@ DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
 DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
 ```
 
-See [Target systems](../flamingock-library-config/target-system-configuration.md) for more details.
+See [Target systems](../target-systems/introduction.md) for more details.
 
 
 ## 4. Configure stages

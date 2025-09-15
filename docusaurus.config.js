@@ -86,7 +86,7 @@ const config = {
   ],
 
   customFields: {
-    homepageRedirect: '/docs/getting-started/get-started',
+    homepageRedirect: '/docs/overview/Introduction',
   },
 
   themeConfig:
@@ -108,12 +108,6 @@ const config = {
           src: 'img/flamingock.svg',
         },
         items: [
-          {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
-            position: 'left',
-            label: 'Docs',
-          },
           { type: 'search', position: 'right' },
           {
             href: 'https://github.com/flamingock/flamingock-java',
@@ -135,24 +129,28 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Getting Started',
-                to: '/docs/getting-started/get-started',
-              },
-              {
                 label: 'Overview',
-                to: '/docs/overview/core-concepts',
+                to: '/docs/overview/Introduction',
               },
               {
                 label: 'Library configuration',
                 to: '/docs/flamingock-library-config/introduction',
               },
               {
-                label: 'Community Audit Stores',
-                to: '/docs/community-audit-stores/introduction',
+                label: 'Target Systems',
+                to: '/docs/target-systems/introduction',
+              },
+              {
+                label: 'Audit Stores',
+                to: '/docs/audit-stores/introduction',
+              },
+              {
+                label: 'Recovery and Safety',
+                to: '/docs/recovery-and-safety/recovery-strategies',
               },
               {
                 label: 'Resources',
-                to: '/docs/resources/introduction',
+                to: '/docs/resources/faq',
               },
             ],
           },

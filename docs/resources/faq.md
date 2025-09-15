@@ -81,22 +81,22 @@ Yes. You can conditionally run ChangeUnits using [`@Profile`](../frameworks/spri
 ### Configuration
 
 **Where do I set MongoDB connection options like write concern or read preference?**  
-You can define these directly in the config using dedicated properties (e.g. `mongodb.writeConcern.w`, `readPreference`, etc.). Refer to the [extra configuration](../flamingock-library-config/extra-configuration.md) section for detailed examples.
+You can define these directly in the config using dedicated properties (e.g. `mongodb.writeConcern.w`, `readPreference`, etc.). Refer to the [additional configuration](../flamingock-library-config/additional-configuration.md) section for detailed examples.
 
 **Can I inject Spring beans or other services into my ChangeUnits?**  
-Yes. Flamingock supports full [dependency injection](../flamingock-library-config/changeunit-dependency-injection.md) in both Spring and non-Spring environments.
+Yes. Flamingock supports full [dependency injection](../flamingock-library-config/context-and-dependencies.md) in both Spring and non-Spring environments.
 
 **Can I define ChangeUnit dependencies and execution order?**  
-Yes. ChangeUnits can declare dependencies via annotations or configuration metadata. See [ChangeUnit deep dive](../flamingock-library-config/changeunits-deep-dive.md) for more.
+Yes. ChangeUnits can declare dependencies via annotations or configuration metadata. See [ChangeUnit anatomy](../change-units/anatomy-and-structure.md) for more.
 
 
 ### Testing and development
 
 **How do I test Flamingock ChangeUnits?**  
-You can perform [unit](../testing/unit-testing.md), [integration](../testing/integration-testing.md), and [Spring Boot integration](../testing/springboot-integration-testing.md) tests using test runners and mocking utilities.
+You can perform unit, integration, and Spring Boot integration tests using test runners and mocking utilities. See the [Testing](../testing/introduction.md) section for more details.
 
 **Can I use templates to generate ChangeUnits?**  
-Yes. Flamingock offers a templating mechanism for [creating new ChangeUnits](../templates/templates-how-to-use.md) and defining reusable components.
+Yes. Flamingock offers a templating mechanism for [creating new ChangeUnits](../templates/templates-introduction.md) and defining reusable components.
 
 
 ### Migrating from Mongock
@@ -113,7 +113,7 @@ Some of the key advancements introduced by Flamingock include:
 
 While Flamingock retains conceptual compatibility with Mongock, it represents a significant leap forward in flexibility, scalability, and developer experience.
 
-If you are currently using Mongock, we encourage you to [review the migration guide](upgrade-from-mongock.md) and explore what Flamingock can offer in modern change management.
+If you are currently using Mongock, we encourage you to [review the migration guide](coming-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
 
 ### Recovery Strategies & Safety

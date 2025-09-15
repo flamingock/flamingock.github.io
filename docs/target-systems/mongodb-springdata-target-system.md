@@ -18,7 +18,7 @@ While dependencies can be provided through the global context, we highly recomme
 
 ## Dependencies
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/target-system-configuration.md#dependency-resolution-hierarchy), you can provide dependencies via direct injection or global context.
+Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
 
 ### Required dependencies
 
@@ -108,6 +108,6 @@ For more information on Spring Boot integration, see [Spring Boot integration](.
 
 ## Next steps
 
-- Learn about [Target system configuration](../flamingock-library-config/target-system-configuration.md)
+- Learn about [Target systems](introduction.md)
 - Explore [ChangeUnits](../change-units/introduction.md)
 - See [MongoDB Spring Data examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb-springdata)

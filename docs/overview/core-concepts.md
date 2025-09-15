@@ -18,7 +18,7 @@ ChangeUnits can be implemented in two forms:
 - **Code-based**: Java classes with annotations that contain the change logic
 - **Template-based**: Declarative low-code approach using YAML configurations
 
-For a deeper dive around ChangeUnits, see the [ChangeUnits deep dive](../flamingock-library-config/changeunits-deep-dive.md) section.
+For a deeper dive around ChangeUnits, see the [ChangeUnits](../change-units/anatomy-and-structure.md) section.
 
 
 ### Templates
@@ -44,7 +44,7 @@ Flamingock provides two main strategies:
 
 The choice of strategy depends on whether your changes are idempotent and how critical they are to your system's integrity.
 
-For detailed configuration and implementation, see the [Recovery configuration](../flamingock-library-config/recovery-configuration.md) section.
+For detailed configuration and implementation, see the [Recovery strategies](../recovery-and-safety/recovery-strategies.md) section.
 
 
 ## Audit store
@@ -53,7 +53,7 @@ The **audit store** is where Flamingock records metadata about change executions
 ## Target system  
 The **target system** is where your actual business changes are applied. These are the systems your ChangeUnits modify - databases, message queues, APIs, configuration services, etc. Each ChangeUnit declares which target system it operates on.
 
-For more details about how these systems work together, see the [Audit store vs target system](../overview/audit-store-vs-target-system.md) section.
+For more details about how these systems work together, see the [Audit store vs target system](audit-store-vs-target-system.md) section.
 
 
 ## Transaction handling
