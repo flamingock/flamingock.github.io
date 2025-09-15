@@ -4,7 +4,7 @@ sidebar_position: 20
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get started
+# Quick start
 
 This guide shows you the minimum setup required to get Flamingock running. In just a few steps you will have it integrated in your application.
 

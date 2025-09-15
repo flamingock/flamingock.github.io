@@ -1,6 +1,6 @@
 ---
 title: Change-as-Code (CaC)
-sidebar_position: 20
+sidebar_position: 50
 ---
 
 import Tabs from '@theme/Tabs';
@@ -318,6 +318,6 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 
 ## Next Steps
 
-- [Quickstart Guide](../getting-started/get-started.md) → Learn how to create your first ChangeUnit and run Flamingock. 
+- [Quick start](quick-start.md) → Learn how to create your first ChangeUnit and run Flamingock. 
 - [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
 - [Real use case examples](../resources/examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.

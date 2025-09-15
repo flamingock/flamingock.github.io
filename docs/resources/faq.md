@@ -20,7 +20,7 @@ Yes, you can. You just need to import the Spring Boot integration module and ann
 See: [Spring Boot integration](../frameworks/springboot-integration/introduction.md)
 
 **Can I use Flamingock without Spring Boot?**  
-Yes. You can use Flamingock in any Java application by configuring it manually using the [`FlamingockBuilder`](../getting-started/get-started#5-configure-flamingock). This approach is ideal for applications that do not rely on Spring Boot or that require finer control.
+Yes. You can use Flamingock in any Java application by configuring it manually using the [`FlamingockBuilder`](../overview/quick-start#5-configure-flamingock-runtime). This approach is ideal for applications that do not rely on Spring Boot or that require finer control.
 
 **What Java version is required?**  
 Flamingock’s core engine runs on Java 8 and above. However, some optional integration modules (such as the Spring Boot support) target more recent ecosystems and require Java 17+. For those cases we publish two artifacts:

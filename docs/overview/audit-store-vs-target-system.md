@@ -1,6 +1,6 @@
 ---
 title: Target systems vs audit store
-sidebar_position: 100
+sidebar_position: 40
 ---
 
 # Target systems vs audit store

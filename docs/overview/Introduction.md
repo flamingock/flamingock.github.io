@@ -56,6 +56,6 @@ The fundamental unit of change. Each ChangeUnit:
 
 
 ## Next steps
-- [Get started](../getting-started/get-started.md) - Minimum setup to run Flamingock
+- [Quick start](quick-start.md) - Minimum setup to run Flamingock
 - [Core concepts](core-concepts.md) - Detailed explanation of key concepts
 - [Audit store vs target system](audit-store-vs-target-system.md) - Understanding the dual-system architecture  
