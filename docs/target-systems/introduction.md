@@ -5,13 +5,13 @@ sidebar_position: 0
 
 # Target systems
 
-Target systems are the real-world systems where your business changes are applied.  
-They can be message queues, databases, storage buckets, APIs, or any external service your application depends on.
+Target systems are the real-world systems where your business changes are applied.
+These include any external service your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
 
 A ChangeUnit always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
 - Guarantee safe execution across heterogeneous environments
-- Provide clear visibility (and, in the Cloud Edition, dashboards and filters per target system)
+- Provide clear visibility into which changes affect which systems
 
 > **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store](../overview/audit-store-vs-target-system.md).
 

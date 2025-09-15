@@ -214,30 +214,6 @@ public class UserDataCleanup {
 ```
 
 
-## Cloud Edition Enhanced Recovery
-
-Cloud Edition uses the same recovery strategies but provides enhanced outcomes:
-
-### Enhanced MANUAL_INTERVENTION
-- **Automatic issue detection** with real-time alerts
-- **Detailed diagnostic information** for faster resolution
-- **Workflow automation** for common resolution patterns  
-- **Team collaboration** features for complex issues
-
-### Enhanced ALWAYS_RETRY
-- **Intelligent retry backoff** prevents system overload
-- **Circuit breaker patterns** prevent cascading failures
-- **Automatic reconciliation** detects and resolves inconsistencies
-- **Advanced monitoring** provides visibility into retry patterns
-
-### Marker Mechanism (Cloud Edition)
-For transactional systems, Cloud Edition uses sophisticated coordination:
-1. **Intent markers** placed before execution
-2. **State tracking** during execution
-3. **Resolution markers** after completion
-4. **Automatic recovery** based on marker state
-
-This enables Cloud Edition to automatically resolve many issues that require manual intervention in Community Audit Stores.
 
 
 ## Operational Workflows

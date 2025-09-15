@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Spring Data Audit Store
 
-This page explains how to configure **MongoDB with Spring Data** as Flamingock's audit store in the **Community Edition**.  
+This page explains how to configure **MongoDB with Spring Data** as Flamingock's audit store.
 The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).

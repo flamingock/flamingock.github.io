@@ -5,7 +5,7 @@ sidebar_position: 160
 
 ## Introduction
 
-This FAQ addresses frequent questions about Flamingock's enterprise-grade distributed system evolution platform, from basic usage to advanced recovery strategies and operational concerns.
+This FAQ addresses frequent questions about Flamingock, from basic usage to advanced recovery strategies and operational concerns.
 
 
 ### Getting started
@@ -34,44 +34,10 @@ Most users on Java 8 can stick with the core and legacy integrations; if you’r
 Yes, Flamingock provides a dedicated [GraalVM integration guide](../frameworks/graalvm.md). Ensure your dependencies and reflection requirements are correctly configured.
 
 
-### Editions and compatibility
+### Compatibility
 
-**What edition of Flamingock should I use?**  
-Flamingock is available in three flavors—pick the one that best fits your needs and operational model:
-
-1. [**Cloud Edition (SaaS)**](../overview/Editions#%EF%B8%8F-flamingock-cloud-edition-coming-soon)
-
-    A fully managed, enterprise-grade service hosted by Flamingock:
-
-    - Zero ops: no infrastructure to manage, no database to configure
-    - Enterprise features: cross-service dashboards, RBAC, team & environment management, fully support for templates, batching, etc.
-    - 24×7 support & SLAs and seamless upgrades
-
-    Perfect for teams that need scalability, governance, and out-of-the-box observability.
-
-2. [**Self-hosted Edition**](../overview/Editions#-flamingock-self-hosted-edition-coming-soon)
-
-    All the same features as our Cloud Edition—dashboards, governance, transaction protocols—but deployed into your own infrastructure (on-premises or in your VPC):
-
-    - Full feature parity with SaaS Cloud
-    - Data residency & compliance: you control where audit records live
-
-    Ideal for organizations that require enterprise capabilities but cannot—or prefer not to—consume a hosted SaaS.
-
-3. [**Community Audit Stores**](../overview/Editions#-community-audit-stores-open-source)
-
-    Open-source, self-hosted library you run alongside your application:
-
-    - Lightweight & free: you supply your own audit store (MongoDB, DynamoDB, Couchbase, etc.)
-    - Core capabilities: ChangeUnits, audit logging, distributed locking, and transactional consistency where supported
-
-    Perfect for smaller teams or projects that need a robust, code-centric change framework.
-
-
-**Can I switch between editions?**  
-Yes. Flamingock provides an importer that allows you to migrate seamlessly from a **Community Audit Stores to the Cloud Edition**, making it easy to adopt a fully managed backend for storing internal data.
-
-If you are working with different Community Audit Storess that use the **same underlying store** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver edition to the Spring Data edition.
+**Can I switch between different audit stores?**
+If you are working with different audit stores that use the **same underlying database** (such as MongoDB), and they share the same structure and collection for storing metadata, it is possible to switch between them with minimal adjustments. This enables flexible integration depending on your preferred access layer, such as switching from the MongoDB Java Driver to the Spring Data implementation.
 
 
 ### Behaviour and execution

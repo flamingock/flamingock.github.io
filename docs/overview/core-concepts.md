@@ -60,7 +60,7 @@ For more details about how these systems work together, see the [Audit store vs 
 Flamingock adapts its behavior based on the transactional capabilities of your target systems:
 
 ### Transactional target systems
-Systems like PostgreSQL, MySQL, or MongoDB 4.0+ that support ACID transactions. When working with these systems, Flamingock can leverage native transaction support to ensure atomicity of changes. If a failure occurs mid-execution, the native rollback mechanism ensures no partial changes are left in the system.
+Systems that support ACID transactions, such as MongoDB 4.0+, PostgreSQL, MySQL, or other transactional stores. When working with these systems, Flamingock can leverage native transaction support to ensure atomicity of changes. If a failure occurs mid-execution, the native rollback mechanism ensures no partial changes are left in the system.
 
 ### Non-transactional target systems
 Systems like Kafka, S3, REST APIs, or file systems that don't support transactions. For these systems, Flamingock relies on explicit rollback methods and careful change design to maintain consistency. Recovery strategies become particularly important for handling failures in non-transactional contexts.
