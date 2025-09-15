@@ -32,7 +32,7 @@ Flamingock emits three types of events:
 The Success and Failure events are mutually exclusive, only one of them will be raised for a given migration execution.
 :::
 
-## Get started
+## Getting started with events
 
 Each runner's documentation page provides the necessary information for using events in accordance with that runner's specific implementation.
 

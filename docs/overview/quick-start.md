@@ -4,7 +4,9 @@ sidebar_position: 20
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get started
+# Quick start
+
+This guide shows you the minimum setup required to get Flamingock running. In just a few steps you will have it integrated in your application.
 
 Let's walk through a simple scenario: evolving your inventory service with a few typical changes:
 
@@ -75,7 +77,6 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
   </TabItem>
 </Tabs>
 
-For more about editions, see [Community Audit Stores](../community-audit-stores/introduction.md) and [Cloud Edition](../overview/Editions.md).
 
 
 ## 2. Define your first ChangeUnits

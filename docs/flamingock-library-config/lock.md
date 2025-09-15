@@ -7,10 +7,7 @@ sidebar_position: 30
 
 Flamingock uses a distributed lock to ensure that changes are only applied **once and only once**, even when multiple instances of your application start simultaneously in a distributed system.
 
-This mechanism is **mandatory** and applies in both Cloud and Community editions:
-
-- In **Cloud Edition**, the lock is managed by Flamingock’s backend
-- In **Community Audit Stores**, the lock is stored in your configured database (e.g., MongoDB, DynamoDB)
+The lock mechanism is **mandatory** and is stored in your configured audit store (e.g., MongoDB, DynamoDB).
 
 
 ## Configurable properties
