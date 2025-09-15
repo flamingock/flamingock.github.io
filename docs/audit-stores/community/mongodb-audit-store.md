@@ -11,7 +11,7 @@ import TabItem from '@theme/TabItem';
 This page explains how to configure **MongoDB** as Flamingock's audit store.
 The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
 
-> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../overview/audit-store-vs-target-system.md).
+> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
 
 ## Minimum setup
@@ -179,5 +179,5 @@ Recommended only for dev/test environments.
 
 ## Next steps
 
-- Learn about [Target systems](../targetsystems/configuration.md)  
+- Learn about [Target systems](../../target-systems/introduction.md)  
 - 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)  

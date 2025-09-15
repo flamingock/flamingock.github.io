@@ -197,7 +197,7 @@ Flamingock will apply lock-safety guards unless you annotate the parameter with 
 
 ### Mapping between template-base changeUnit file and template methods
 
-For details on how Flamingock maps the `execution` and `rollback` sections in your declarative change unit to the methods in your template class, refer to the [Template mapping](template-mapping-section.md) documentation.
+Flamingock automatically maps the `execution` and `rollback` sections in your declarative change unit to the corresponding methods in your template class.
 
 ## 3. Register the Template with ServiceLoader
 

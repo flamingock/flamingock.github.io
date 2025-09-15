@@ -17,7 +17,7 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
 - **Purpose**: Store and process your business data and configurations
 - **Modified by**: Your business logic through ChangeUnits
-- **Configuration**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) for technical setup
+- **Configuration**: See [Target Systems](../target-systems/introduction.md) for technical setup
 
 ### Audit store: where execution is tracked  
 **Audit store** is Flamingock's dedicated system for tracking what happened:
@@ -25,7 +25,7 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
 - **Purpose**: Record execution history, compliance data, issue tracking
 - **Modified by**: Flamingock framework automatically (never your code)
-- **Configuration**: See [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md) for technical setup
+- **Configuration**: See [Audit Stores](../audit-stores/introduction.md) for technical setup
 
 
 ## Why this separation matters
@@ -60,7 +60,7 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
 
 ### Community Audit Stores audit store  
-User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Community audit store configuration](../flamingock-library-config/audit-store-configuration.md) for setup.
+User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Audit stores](../audit-stores/introduction.md) for setup.
 
 
 
@@ -137,7 +137,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 ### For developers
 - **Target systems**: Where your business logic runs and makes changes
 - **Audit store**: Automatically managed by Flamingock for tracking and compliance
-- **Implementation**: See [Target System Configuration](../flamingock-library-config/target-system-configuration.md) and [Audit Store Configuration](../flamingock-library-config/audit-store-configuration.md)
+- **Implementation**: See [Target Systems](../target-systems/introduction.md) and [Audit Stores](../audit-stores/introduction.md)
 
 ### For architects  
 - **Clean separation**: Business logic separated from execution tracking

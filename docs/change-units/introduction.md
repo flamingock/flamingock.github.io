@@ -74,4 +74,4 @@ Dive deeper into specific aspects of ChangeUnits:
 
 Or continue to other key concepts:
 - **[Target Systems](../target-systems/introduction.md)** - Configure where your changes will be applied
-- **[Templates](../templates/introduction.md)** - Explore reusable change patterns
+- **[Templates](../templates/templates-introduction.md)** - Explore reusable change patterns
