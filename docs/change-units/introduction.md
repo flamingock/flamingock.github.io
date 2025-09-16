@@ -62,7 +62,9 @@ rollback: "ALTER TABLE orders DROP COLUMN status;"
 
 ## Safety and recovery
 
-Flamingock prioritizes safety over automation. If execution fails or results are uncertain, Flamingock stops and requires manual intervention rather than risking data corruption. This ensures you always know the exact state of your systems.
+While ChangeUnit executions typically complete successfully, Flamingock provides configurable recovery strategies to handle any exceptional circumstances that may arise. If results are uncertain, Flamingock stops and requires manual intervention rather than risking data corruption, ensuring you always know the exact state of your systems.
+
+You can configure different recovery strategies based on your requirements. For complete details on failure handling and recovery workflows, see [Safety and Recovery](../safety-and-recovery/introduction.md).
 
 ## Next steps
 
