@@ -85,6 +85,30 @@ Controls whether the change runs within a transaction (default: `true`).
 
 **Important:** For non-transactional target systems (S3, Kafka, etc.), this flag has no effect.
 
+### `recovery` - Failure handling strategy
+Controls how Flamingock handles execution failures (default: `MANUAL_INTERVENTION`).
+
+```java
+// Default behavior (manual intervention)
+@ChangeUnit(id = "critical-change", order = "0001", author = "team")
+public class CriticalChange {
+    // Execution stops on failure, requires manual resolution
+}
+
+// Automatic retry
+@Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
+@ChangeUnit(id = "idempotent-change", order = "0002", author = "team")
+public class IdempotentChange {
+    // Automatically retries on failure until successful
+}
+```
+
+**Recovery strategies:**
+- `MANUAL_INTERVENTION` (default): Stops execution on failure, requires CLI resolution
+- `ALWAYS_RETRY`: Automatically retries on subsequent executions until successful
+
+For detailed information on recovery strategies, see [Safety and Recovery](../safety-and-recovery/introduction.md).
+
 ## Required annotations
 
 ### `@TargetSystem` - System specification

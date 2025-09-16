@@ -5,14 +5,14 @@ sidebar_position: 999
 
 # Flamingock CLI
 
-Management tool for audit control and issue resolution in distributed system evolution.
+Command-line tool for audit management and maintenance operations.
 
 > **Beta Release**  
 > This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full migration execution capabilities is in development.
 
 ## Overview
 
-The Flamingock CLI is a lightweight management tool that helps you maintain consistency and resolve issues in your distributed system changes. When migrations fail or get interrupted, the CLI provides the operational control needed to investigate, understand, and resolve these issues.
+The Flamingock CLI provides operational commands for audit management and maintenance. Use these commands to view audit history, identify issues, and perform resolution operations.
 
 ## Installation
 
@@ -134,36 +134,7 @@ If the change was not applied or rolled back:
 flamingock audit fix -c user-migration-v2 -r ROLLED_BACK
 ```
 
-## Understanding Issues
-
-An issue occurs when a change didn't complete properly, such as:
-- The change was interrupted during execution (network failure, server restart, etc.)
-- The change failed but the failure wasn't properly recorded
-- The system crashed while applying the change
-
-### Resolution Process
-
-1. **Identify the issue**
-   ```bash
-   flamingock issue list
-   ```
-
-2. **Get detailed information**
-   ```bash
-   flamingock issue get -c <change-id> --guidance
-   ```
-
-3. **Verify actual state** in your target system (database, service, etc.)
-
-4. **Fix the audit state** based on your findings:
-   - If the change was successfully applied despite the audit failure:
-     ```bash
-     flamingock audit fix -c <change-id> -r APPLIED
-     ```
-   - If the change was not applied or you manually rolled it back:
-     ```bash
-     flamingock audit fix -c <change-id> -r ROLLED_BACK
-     ```
+For detailed workflows on issue resolution, see [Issue resolution](../safety-and-recovery/issue-resolution.md).
 
 ## Command Reference
 
