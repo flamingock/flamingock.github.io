@@ -271,4 +271,4 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 
 - [Spring Boot integration](../frameworks/springboot-integration/introduction.md)
 - [Configuration options](../flamingock-library-config/setup-and-stages.md)
-- [Recovery and safety](../recovery-and-safety/recovery-strategies.md)
+- [Recovery and safety](../safety-and-recovery/recovery-strategies.md)

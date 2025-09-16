@@ -44,7 +44,7 @@ Flamingock provides two main strategies:
 
 The choice of strategy depends on whether your changes are idempotent and how critical they are to your system's integrity.
 
-For detailed configuration and implementation, see the [Recovery strategies](../recovery-and-safety/recovery-strategies.md) section.
+For detailed configuration and implementation, see the [Recovery strategies](../safety-and-recovery/recovery-strategies.md) section.
 
 
 ## Audit store
