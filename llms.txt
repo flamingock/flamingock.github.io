@@ -1686,6 +1686,7 @@ flamingock [global-options] <command> [command-options]
 - `-c, --config <file>` - Configuration file path (default: `flamingock.yml`)
 - `--verbose` - Enable verbose logging
 - `--debug` - Enable debug logging
+- `--trace` - Enable trace logging (most detailed level)
 - `--quiet` - Suppress non-essential output
 - `--help` - Show help information
 - `--version` - Show version information
@@ -1731,7 +1732,7 @@ flamingock audit fix -c create-user-index -r APPLIED
 flamingock audit fix -c create-user-index -r ROLLED_BACK
 ```
 
-### `issue list`
+### `issue list` (alias: `ls`)
 
 List all change units with inconsistent audit states.
 
@@ -1747,7 +1748,7 @@ flamingock issue list
 flamingock issue list --json
 ```
 
-### `issue get`
+### `issue get` (alias: `describe`)
 
 Show detailed information about an issue.
 
@@ -1851,15 +1852,6 @@ flamingock --debug audit list
 
 # Minimal output
 flamingock --quiet audit list
-```
-
-## Environment Variables
-
-You can set default values using environment variables:
-
-```bash
-export FLAMINGOCK_CONFIG=/path/to/config.yml
-export FLAMINGOCK_LOG_LEVEL=DEBUG
 ```
 
 ## Troubleshooting
