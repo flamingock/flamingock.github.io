@@ -3,19 +3,19 @@ title: Anatomy & Structure
 sidebar_position: 2
 ---
 
-# ChangeUnit Anatomy & Structure
+# Change Anatomy & Structure
 
-Every ChangeUnit follows a consistent structure with required properties, optional configurations, and specific annotations. Understanding this anatomy is essential for creating reliable changes.
+Every Change follows a consistent structure with required properties, optional configurations, and specific annotations. Understanding this anatomy is essential for creating reliable changes.
 
 ## Required properties
 
-Every ChangeUnit must define these three properties:
+Every Change must define these three properties:
 
 ### `id` - Unique identifier
-The `id` must be unique across all ChangeUnits in your application.
+The `id` must be unique across all Changes in your application.
 
 ```java
-@ChangeUnit(id = "add-user-status", order = "0001", author = "dev-team")
+@Change(id = "add-user-status", order = "0001", author = "dev-team")
 ```
 
 **Rules:**
@@ -24,12 +24,12 @@ The `id` must be unique across all ChangeUnits in your application.
 - Cannot be modified once deployed
 
 ### `order` - Execution sequence
-The `order` determines when the ChangeUnit executes relative to others.
+The `order` determines when the Change executes relative to others.
 
 ```java
-@ChangeUnit(id = "create-indexes", order = "0001", author = "dev-team")
-@ChangeUnit(id = "migrate-data", order = "0002", author = "dev-team") 
-@ChangeUnit(id = "cleanup-temp-data", order = "0003", author = "dev-team")
+@Change(id = "create-indexes", order = "0001", author = "dev-team")
+@Change(id = "migrate-data", order = "0002", author = "dev-team")
+@Change(id = "cleanup-temp-data", order = "0003", author = "dev-team")
 ```
 
 **Requirements:**
@@ -42,8 +42,8 @@ The `order` determines when the ChangeUnit executes relative to others.
 Identifies who is responsible for this change.
 
 ```java
-@ChangeUnit(id = "update-schema", order = "0001", author = "database-team")
-@ChangeUnit(id = "migrate-users", order = "0002", author = "john.doe@company.com")
+@Change(id = "update-schema", order = "0001", author = "database-team")
+@Change(id = "migrate-users", order = "0002", author = "john.doe@company.com")
 ```
 
 **Best practices:**
@@ -57,9 +57,9 @@ Identifies who is responsible for this change.
 Briefly describes what the change does, especially useful for complex operations.
 
 ```java
-@ChangeUnit(
-    id = "optimize-user-queries", 
-    order = "0001", 
+@Change(
+    id = "optimize-user-queries",
+    order = "0001",
     author = "performance-team",
     description = "Add composite index on user table to improve search performance"
 )
@@ -69,9 +69,9 @@ Briefly describes what the change does, especially useful for complex operations
 Controls whether the change runs within a transaction (default: `true`).
 
 ```java
-@ChangeUnit(
-    id = "create-large-index", 
-    order = "0001", 
+@Change(
+    id = "create-large-index",
+    order = "0001",
     author = "db-team",
     transactional = false  // DDL operations may require this
 )
@@ -90,14 +90,14 @@ Controls how Flamingock handles execution failures (default: `MANUAL_INTERVENTIO
 
 ```java
 // Default behavior (manual intervention)
-@ChangeUnit(id = "critical-change", order = "0001", author = "team")
+@Change(id = "critical-change", order = "0001", author = "team")
 public class CriticalChange {
     // Execution stops on failure, requires manual resolution
 }
 
 // Automatic retry
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-@ChangeUnit(id = "idempotent-change", order = "0002", author = "team")
+@Change(id = "idempotent-change", order = "0002", author = "team")
 public class IdempotentChange {
     // Automatically retries on failure until successful
 }
@@ -112,24 +112,24 @@ For detailed information on recovery strategies, see [Safety and Recovery](../sa
 ## Required annotations
 
 ### `@TargetSystem` - System specification
-Declares which target system this ChangeUnit affects.
+Declares which target system this Change affects.
 
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(id = "add-user-fields", order = "0001", author = "api-team")
+@Change(id = "add-user-fields", order = "0001", author = "api-team")
 public class _0001_AddUserFields {
     // Implementation
 }
 ```
 
 
-### `@ChangeUnit` - Class marker
-Marks the class as a ChangeUnit and contains all metadata.
+### `@Change` - Class marker
+Marks the class as a Change and contains all metadata.
 
 ```java
-@ChangeUnit(
+@Change(
     id = "migrate-user-data",
-    order = "0001", 
+    order = "0001",
     author = "migration-team",
     description = "Migrate legacy user format to new schema",
     transactional = true
@@ -138,12 +138,12 @@ Marks the class as a ChangeUnit and contains all metadata.
 
 ## Required methods
 
-### `@Execution` - Change logic
+### `@Apply` - Change logic
 Contains the actual change implementation.
 
 ```java
-@Execution
-public void execute(MongoDatabase database, ClientSession session) {
+@Apply
+public void apply(MongoDatabase database, ClientSession session) {
     // Your change logic here
     database.getCollection("users")
             .insertOne(session, new Document("status", "active"));
@@ -156,11 +156,11 @@ public void execute(MongoDatabase database, ClientSession session) {
 - Parameters are dependency-injected by Flamingock
 - Should contain idempotent operations when possible
 
-### `@RollbackExecution` - Undo logic
+### `@Rollback` - Undo logic
 Provides logic to reverse the change, essential for safety and CLI undo operations.
 
 ```java
-@RollbackExecution
+@Rollback
 public void rollback(MongoDatabase database, ClientSession session) {
     // Undo the change
     database.getCollection("users")
@@ -176,18 +176,18 @@ public void rollback(MongoDatabase database, ClientSession session) {
 
 ## Method parameters and dependency injection
 
-ChangeUnits receive dependencies through method parameters, automatically injected by Flamingock from the target system's context, global context, or underlying framework context.
+Changes receive dependencies through method parameters, automatically injected by Flamingock from the target system's context, global context, or underlying framework context.
 
 ```java
 // MongoDB target system
-@Execution
-public void execute(MongoDatabase database, ClientSession session) {
+@Apply
+public void apply(MongoDatabase database, ClientSession session) {
     // database and session injected from target system or global context
 }
 
-// SQL target system  
-@Execution
-public void execute(DataSource dataSource) {
+// SQL target system
+@Apply
+public void apply(DataSource dataSource) {
     // dataSource and connection injected from target system or  global context
 }
 ```
@@ -196,7 +196,7 @@ For more details on how dependency resolution works, see [Context and dependenci
 
 ## File naming conventions
 
-All ChangeUnit files must follow the `_XXXX_DescriptiveName` pattern:
+All Change files must follow the `_XXXX_DescriptiveName` pattern:
 
 ```
 _0001_CreateUserIndexes.java
@@ -213,21 +213,21 @@ _0100_OptimizeQueries.java
 
 ## Complete example
 
-Here's a complete ChangeUnit showing all elements:
+Here's a complete Change showing all elements:
 
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(
-    id = "add-user-preferences", 
-    order = "0001", 
+@Change(
+    id = "add-user-preferences",
+    order = "0001",
     author = "user-experience-team",
     description = "Add preferences object to user documents with default values",
     transactional = true
 )
 public class _0001_AddUserPreferences {
     
-    @Execution
-    public void execute(MongoDatabase database, ClientSession session) {
+    @Apply
+    public void apply(MongoDatabase database, ClientSession session) {
         // Add preferences field with default values
         Document defaultPreferences = new Document()
             .append("notifications", true)
@@ -242,7 +242,7 @@ public class _0001_AddUserPreferences {
                 );
     }
     
-    @RollbackExecution
+    @Rollback
     public void rollback(MongoDatabase database, ClientSession session) {
         // Remove the preferences field
         database.getCollection("users")
@@ -257,6 +257,6 @@ public class _0001_AddUserPreferences {
 
 ## Next steps
 
-- **[ChangeUnit types & Implementation](./types-and-implementation)** - Deep dive into code-based vs template-based approaches
-- **[ChangeUnit best Practices](./best-practices)** - Learn proven patterns for reliable ChangeUnits
+- **[Change types & Implementation](./types-and-implementation)** - Deep dive into code-based vs template-based approaches
+- **[Change best Practices](./best-practices)** - Learn proven patterns for reliable Changes
 - **[Target Systems](../target-systems/introduction)** - Configure where your changes will be applied

@@ -3,23 +3,23 @@ title: Best Practices
 sidebar_position: 4
 ---
 
-# ChangeUnit Best Practices
+# Change Best Practices
 
-Following these proven patterns will help you create reliable, maintainable ChangeUnits that work safely in production environments.
+Following these proven patterns will help you create reliable, maintainable Changes that work safely in production environments.
 
 ## Core principles
 
-### Treat ChangeUnits as immutable
+### Treat Changes as immutable
 
-Once a ChangeUnit is deployed, never modify it. Create new ChangeUnits for corrections.
+Once a Change is deployed, never modify it. Create new Changes for corrections.
 
 **❌ Don't do this:**
 ```java
-// Modifying an existing ChangeUnit after deployment
-@ChangeUnit(id = "add-user-field", order = "0001", author = "team")
+// Modifying an existing Change after deployment
+@Change(id = "add-user-field", order = "0001", author = "team")
 public class _0001_AddUserField {
-    @Execution  
-    public void execute(MongoDatabase db) {
+    @Apply
+    public void apply(MongoDatabase db) {
         // Original: db.getCollection("users").updateMany(/* add field */)
         // Modified: db.getCollection("users").updateMany(/* different logic */)
     }
@@ -29,19 +29,19 @@ public class _0001_AddUserField {
 **✅ Do this instead:**
 ```java
 // Keep the original unchanged
-@ChangeUnit(id = "add-user-field", order = "0001", author = "team")
+@Change(id = "add-user-field", order = "0001", author = "team")
 public class _0001_AddUserField {
-    @Execution
-    public void execute(MongoDatabase db) {
+    @Apply
+    public void apply(MongoDatabase db) {
         // Original logic remains unchanged
     }
 }
 
-// Create a new ChangeUnit for corrections
-@ChangeUnit(id = "fix-user-field-values", order = "0002", author = "team")
+// Create a new Change for corrections
+@Change(id = "fix-user-field-values", order = "0002", author = "team")
 public class _0002_FixUserFieldValues {
-    @Execution
-    public void execute(MongoDatabase db) {
+    @Apply
+    public void apply(MongoDatabase db) {
         // Correction logic
     }
 }
@@ -49,7 +49,7 @@ public class _0002_FixUserFieldValues {
 
 ### Always provide rollback logic
 
-Every ChangeUnit must have a `@RollbackExecution` method, regardless of target system type.
+Every Change must have a `@Rollback` method, regardless of target system type.
 
 **Why rollback matters:**
 - **Non-transactional systems**: Automatic cleanup on failure
@@ -59,11 +59,11 @@ Every ChangeUnit must have a `@RollbackExecution` method, regardless of target s
 
 **Example with comprehensive rollback:**
 ```java
-@ChangeUnit(id = "setup-user-indexes", order = "0001", author = "db-team")
+@Change(id = "setup-user-indexes", order = "0001", author = "db-team")
 public class _0001_SetupUserIndexes {
     
-    @Execution
-    public void execute(MongoDatabase database) {
+    @Apply
+    public void apply(MongoDatabase database) {
         MongoCollection<Document> users = database.getCollection("users");
         
         // Create compound index for user queries
@@ -79,7 +79,7 @@ public class _0001_SetupUserIndexes {
         );
     }
     
-    @RollbackExecution
+    @Rollback
     public void rollback(MongoDatabase database) {
         MongoCollection<Document> users = database.getCollection("users");
         
@@ -101,14 +101,14 @@ public class _0001_SetupUserIndexes {
 
 ### Keep scope focused
 
-Each ChangeUnit should address one logical change. Avoid combining unrelated operations.
+Each Change should address one logical change. Avoid combining unrelated operations.
 
 **❌ Avoid mixing concerns:**
 ```java
-@ChangeUnit(id = "big-refactor", order = "0001", author = "team")
+@Change(id = "big-refactor", order = "0001", author = "team")
 public class _0001_BigRefactor {
-    @Execution
-    public void execute(MongoDatabase db, KafkaProducer producer) {
+    @Apply
+    public void apply(MongoDatabase db, KafkaProducer producer) {
         // Adding user field
         db.getCollection("users").updateMany(/* ... */);
         
@@ -124,13 +124,13 @@ public class _0001_BigRefactor {
 **✅ Separate concerns:**
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(id = "add-user-status", order = "0001", author = "team")
+@Change(id = "add-user-status", order = "0001", author = "team")
 public class _0001_AddUserStatus {
     // Focus: User schema change only
 }
 
 @TargetSystem("kafka-events")
-@ChangeUnit(id = "create-user-topic", order = "0001", author = "team") 
+@Change(id = "create-user-topic", order = "0001", author = "team") 
 public class _0001_CreateUserTopic {
     // Focus: Kafka topic creation only
 }
@@ -144,11 +144,11 @@ Make operations safe to re-run whenever possible.
 
 **Example: Idempotent field addition:**
 ```java
-@ChangeUnit(id = "add-user-preferences", order = "0001", author = "team")
+@Change(id = "add-user-preferences", order = "0001", author = "team")
 public class _0001_AddUserPreferences {
     
-    @Execution
-    public void execute(MongoDatabase database) {
+    @Apply
+    public void apply(MongoDatabase database) {
         // Only update users that don't already have preferences
         database.getCollection("users").updateMany(
             new Document("preferences", new Document("$exists", false)),
@@ -170,8 +170,8 @@ Don't catch exceptions unless you have specific recovery logic. Let Flamingock h
 
 **❌ Don't suppress errors:**
 ```java
-@Execution
-public void execute(MongoDatabase database) {
+@Apply
+public void apply(MongoDatabase database) {
     try {
         // Some operation
         database.getCollection("users").updateMany(/* ... */);
@@ -184,8 +184,8 @@ public void execute(MongoDatabase database) {
 
 **✅ Let exceptions bubble up:**
 ```java
-@Execution  
-public void execute(MongoDatabase database) {
+@Apply
+public void apply(MongoDatabase database) {
     // Let Flamingock handle exceptions and recovery
     database.getCollection("users").updateMany(/* ... */);
 }
@@ -197,19 +197,19 @@ Method names should clearly indicate their purpose.
 
 **Good examples:**
 ```java
-@Execution
+@Apply
 public void migrateUserProfilesToNewSchema(MongoDatabase db) { }
 
-@Execution  
+@Apply  
 public void addEmailIndexForFasterLookups(MongoDatabase db) { }
 
-@RollbackExecution
+@Rollback
 public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 ```
 
 ### Avoid domain objects
 
-Don't use domain objects in ChangeUnits. Since ChangeUnits are immutable and your domain evolves, using domain classes can cause compilation errors when fields are removed or modified in newer versions. Instead, work with primitive types, collections, or framework-native objects like `Document` for MongoDB.
+Don't use domain objects in Changes. Since Changes are immutable and your domain evolves, using domain classes can cause compilation errors when fields are removed or modified in newer versions. Instead, work with primitive types, collections, or framework-native objects like `Document` for MongoDB.
 
 
 ## Naming and organization
@@ -218,7 +218,7 @@ Don't use domain objects in ChangeUnits. Since ChangeUnits are immutable and you
 
 **File names:**
 - Use `_XXXX_DescriptiveName` format
-- Match the order in `@ChangeUnit` annotation
+- Match the order in `@Change` annotation
 - Use PascalCase for class names
 
 **Good examples:**
@@ -231,20 +231,20 @@ _0100_OptimizeUserQueries.java
 
 ### Use descriptive IDs and descriptions
 
-Make your ChangeUnits self-documenting:
+Make your Changes self-documenting:
 
 ```java
-@ChangeUnit(
+@Change(
     id = "migrate-legacy-user-format-to-v2",
     order = "0001",
-    author = "data-migration-team", 
+    author = "data-migration-team",
     description = "Migrate user documents from legacy format to v2 schema with new preference structure"
 )
 ```
 
 ### Organize by chronological order
 
-ChangeUnits should be organized chronologically by their order within stages. If you need logical grouping, use stages - but remember that execution order is only guaranteed within a stage, not between stages.
+Changes should be organized chronologically by their order within stages. If you need logical grouping, use stages - but remember that execution order is only guaranteed within a stage, not between stages.
 
 ```
 src/main/java/com/company/changes/
@@ -259,26 +259,26 @@ src/main/java/com/company/changes/
 
 ### Test both execution and rollback
 
-Create comprehensive tests for your ChangeUnits:
+Create comprehensive tests for your Changes:
 
 ```java
 @Test
-public void testUserMigrationChangeUnit() {
+public void testUserMigrationChange() {
     // Arrange
     MongoDatabase testDb = getTestDatabase();
     insertTestUsers(testDb);
     
-    _0001_MigrateUsers changeUnit = new _0001_MigrateUsers();
+    _0001_MigrateUsers change = new _0001_MigrateUsers();
     
     // Act - Test execution
-    changeUnit.execute(testDb);
+    change.execute(testDb);
     
     // Assert - Verify execution results
     MongoCollection<Document> users = testDb.getCollection("users");
     assertEquals(5, users.countDocuments(new Document("status", "active")));
     
     // Act - Test rollback  
-    changeUnit.rollback(testDb);
+    change.rollback(testDb);
     
     // Assert - Verify rollback results
     assertEquals(0, users.countDocuments(new Document("status", new Document("$exists", true))));
@@ -297,8 +297,8 @@ public void testWithRealisticData() {
     insertUsersWithMissingFields(); // Test data inconsistencies
     insertUsersWithEdgeCaseValues(); // Test boundary conditions
     
-    // Run your ChangeUnit
-    changeUnit.execute(database);
+    // Run your Change
+    change.execute(database);
     
     // Verify all scenarios handled correctly
 }
@@ -307,6 +307,6 @@ public void testWithRealisticData() {
 
 ## Next steps
 
-- **[Templates](../templates/introduction)** - Explore reusable change patterns
+- **[Templates](../templates/templates-introduction)** - Explore reusable change patterns
 - **[Target Systems](../target-systems/introduction)** - Configure where changes are applied
-- **[Testing](../testing/introduction)** - Comprehensive testing strategies for ChangeUnits
+- **[Testing](../testing/introduction)** - Comprehensive testing strategies for Changes

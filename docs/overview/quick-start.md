@@ -79,16 +79,16 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 
 
 
-## 2. Define your first ChangeUnits
+## 2. Define your first Changes
 
-Each ChangeUnit represents a single change.  
+Each Change represents a single change.  
 For our example, we'll define three:
 
 - **MySQL**: Add a column `category` to products
 - **S3**: Create a `product-images` bucket  
 - **Kafka**: Create a `stock-updates` topic
 
-ChangeUnits can be:
+Changes can be:
 - **Code-based**: Java classes with annotations
 - **Template-based**: YAML files using reusable templates
 
@@ -101,7 +101,7 @@ author: team
 order: "001"
 targetSystem: mysql-inventory
 template: sql-template
-execution: |
+apply: |
   ALTER TABLE products ADD COLUMN category VARCHAR(255)
 rollback: |
   ALTER TABLE products DROP COLUMN category
@@ -112,11 +112,11 @@ rollback: |
 
 ```java
 @TargetSystem("aws-s3")
-@ChangeUnit(id = "create-s3-bucket", order = "002", author = "team")
+@Change(id = "create-s3-bucket", order = "002", author = "team")
 public class _002_CreateS3Bucket {
 
-  @Execution
-  public void execute(S3Client s3Client) {
+  @Apply
+  public void apply(S3Client s3Client) {
     s3Client.createBucket(CreateBucketRequest.builder()
         .bucket("product-images")
         .createBucketConfiguration(
@@ -126,7 +126,7 @@ public class _002_CreateS3Bucket {
         .build());
   }
 
-  @RollbackExecution
+  @Rollback
   public void rollback(S3Client s3Client) {
     s3Client.deleteBucket(DeleteBucketRequest.builder()
         .bucket("product-images")
@@ -143,8 +143,8 @@ For more details, see [Core concepts](core-concepts.md).
 
 ## 3. Create target systems
 
-Target systems represent the external systems Flamingock will apply your changes to.  
-They are configured in the builder and shared across ChangeUnits.
+Target systems represent the external systems Flamingock will apply your changes to.
+They are configured in the builder and shared across Changes.
 
 For our example:
 - A MySQL database (`mysql-inventory`)
@@ -220,7 +220,7 @@ FlamingockStandalone
 
 When your service starts, Flamingock automatically:
 
-1. Discovers your ChangeUnits
+1. Discovers your Changes
 2. Checks pending changes  
 3. Executes them safely in order
 4. Records everything in the audit store
@@ -241,7 +241,7 @@ Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/
 Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock setup from annotation configuration
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
-Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 Note:    [Flamingock] Reading flamingock setup from annotation configuration
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
@@ -256,7 +256,7 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 [INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 [INFO]   [Flamingock] Reading flamingock setup from annotation configuration
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
-[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 [INFO]   [Flamingock] Reading flamingock setup from annotation configuration
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
 [INFO]   [Flamingock] Final processing round detected - skipping execution.

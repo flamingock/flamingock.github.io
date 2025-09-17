@@ -10,11 +10,11 @@ The audit store is Flamingock's dedicated system for tracking execution history,
 ## What is the audit store?
 
 The audit store tracks:
-- **Execution history**: Which ChangeUnits ran, when, and with what outcome
+- **Execution history**: Which Changes ran, when, and with what outcome
 - **Distributed locking**: Prevents concurrent executions across multiple instances  
 - **Issue tracking**: Failed or uncertain executions requiring resolution
 
-Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your ChangeUnits.
+Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your Changes.
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
 

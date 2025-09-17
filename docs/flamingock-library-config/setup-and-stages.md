@@ -62,7 +62,7 @@ pipeline:
 Flamingock supports two families of stages:
 
 ### Standard Stages (default)
-The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changeUnits in order and provide predictable, sequential execution.
+The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changes in order and provide predictable, sequential execution.
 
 ```java
 @EnableFlamingock(
@@ -85,7 +85,7 @@ For specific scenarios, Flamingock provides special stage types that require exp
 )
 ```
 
-To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/upgrade-from-mongock) which demonstrates their practical usage.
+To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/coming-from-mongock) which demonstrates their practical usage.
 
 
 ## Multiple Stages (Advanced)
@@ -204,7 +204,7 @@ Each stage must define:
 
 - **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.  
   - Template-based and code-based changes can co-exist if location is a source package.
-  - If location references a resource directory, it only accepts template-based changeUnits.
+  - If location references a resource directory, it only accepts template-based changes.
   - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`. 
   - Source root can be customized via the `sources` compiler option.
   - Resource root can be customized via the `resources` compiler option.
@@ -330,5 +330,5 @@ While Java typically avoids underscores and leading digits, change units are not
 
 ### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
-- For code-based changes, ensure the class is annotated with `@Change` or `@ChangeUnit`
+- For code-based changes, ensure the class is annotated with `@Change` or `@Change`
 - For template-based changes, check file names and YAML formatting

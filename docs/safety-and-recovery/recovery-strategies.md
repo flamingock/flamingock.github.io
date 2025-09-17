@@ -5,7 +5,7 @@ sidebar_position: 2
 
 # Recovery strategies
 
-Recovery strategies determine how Flamingock handles ChangeUnit execution failures. They provide configurable behavior to balance safety with automation based on your specific requirements.
+Recovery strategies determine how Flamingock handles Change execution failures. They provide configurable behavior to balance safety with automation based on your specific requirements.
 
 ## Strategy types
 
@@ -21,32 +21,32 @@ Recovery strategies determine how Flamingock handles ChangeUnit execution failur
 
 ## Configuration
 
-### Code-based ChangeUnits
+### Code-based Changes
 
 Use the `@Recovery` annotation to specify the strategy:
 
 ```java
 // Default behavior (manual intervention)
-@ChangeUnit(id = "example-change", order = "001", author = "team")
+@Change(id = "example-change", order = "001", author = "team")
 public class ExampleChange {
-    @Execution
-    public void execute() {
+    @Apply
+    public void apply() {
         // Change logic here
     }
 }
 
 // Explicit always retry
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-@ChangeUnit(id = "retry-change", order = "002", author = "team")
+@Change(id = "retry-change", order = "002", author = "team")
 public class RetryChange {
-    @Execution
-    public void execute() {
+    @Apply
+    public void apply() {
         // Idempotent change logic here
     }
 }
 ```
 
-### Template-based ChangeUnits
+### Template-based Changes
 
 Use the `recovery` field in your YAML configuration:
 
@@ -56,7 +56,7 @@ id: example-change
 order: "001"
 author: team
 template: example-template
-execution: |
+apply: |
   # Change logic here
 
 ---
@@ -67,7 +67,7 @@ order: "002"
 author: team
 recovery: ALWAYS_RETRY
 template: example-template
-execution: |
+apply: |
   # Idempotent change logic here
 ```
 
@@ -96,6 +96,6 @@ execution: |
 - Failures are typically transient (network, temporary unavailability)
 - Automatic recovery is acceptable
 
-For detailed information on ChangeUnit annotations and configuration, see [ChangeUnit anatomy](../change-units/anatomy-and-structure.md).
+For detailed information on Change annotations and configuration, see [Change anatomy](../changes/anatomy-and-structure.md).
 
 For operational workflows when issues occur, see [Issue resolution](issue-resolution.md).

@@ -45,9 +45,9 @@ Flamingock automatically retrieves the active profiles from Spring’s `Applicat
 You can then annotate any change unit with Spring’s native `@Profile` annotation to control whether it runs:
 
 ```java
-@ChangeUnit(id = "add-test-data", order = "001")
+@Change(id = "add-test-data", order = "001")
 @Profile("dev")
-public class AddTestDataChangeUnit {
+public class AddTestDataChange {
   // will only run if "dev" profile is active
 }
 ```

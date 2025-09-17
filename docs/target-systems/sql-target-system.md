@@ -24,7 +24,7 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** for both ChangeUnit execution and transaction management |
+| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** for both Change execution and transaction management |
 
 ### Optional configurations
 
@@ -53,7 +53,7 @@ Flamingock.builder()
     .build();
 ```
 
-**What gets resolved for ChangeUnits in "inventory-database":**
+**What gets resolved for Changes in "inventory-database":**
 - **DataSource**: Uses `inventoryDataSource` (from target system, not `defaultDataSource` from global)
 - **InventoryService**: Available from target system context
 - **EmailService**: Available from global context
@@ -62,17 +62,17 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+For a Change to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
 > For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
 
 ```java
 @TargetSystem("inventory-database")
-@ChangeUnit(id = "update-products", order = "001")
+@Change(id = "update-products", order = "001")
 public class UpdateProducts {
     
-    @Execution
-    public void execution(DataSource dataSource) throws SQLException {
+    @Apply
+    public void apply(DataSource dataSource) throws SQLException {
         // DataSource automatically participates in transactions
         // Flamingock uses the target system's DataSource for transaction management
         // and handles transaction start, commit, and rollback automatically
@@ -93,11 +93,11 @@ You can also inject a `Connection` directly if you prefer to work with connectio
 
 ```java
 @TargetSystem("inventory-database")
-@ChangeUnit(id = "create-indexes", order = "002")
+@Change(id = "create-indexes", order = "002")
 public class CreateIndexes {
     
-    @Execution
-    public void execution(Connection connection) throws SQLException {
+    @Apply
+    public void apply(Connection connection) throws SQLException {
         // Connection automatically participates in transactions
         // Flamingock uses the target system's connection for transaction operations
         // and handles transaction lifecycle automatically
@@ -115,14 +115,14 @@ public class CreateIndexes {
 
 Without the `DataSource` or `Connection` parameter, operations will execute but won't participate in transactions.
 
-## Available dependencies in ChangeUnits
+## Available dependencies in Changes
 
-Your ChangeUnits can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
 
 For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
 
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [ChangeUnits](../change-units/introduction.md)
+- Explore [Changes](../changes/introduction.md)
 - See [SQL examples](https://github.com/flamingock/flamingock-examples/tree/master/sql)

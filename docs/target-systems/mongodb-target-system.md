@@ -25,8 +25,8 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** for both ChangeUnit execution and transaction management |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** for both ChangeUnit execution and transaction management |
+| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** for both Change execution and transaction management |
+| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** for both Change execution and transaction management |
 
 ### Optional configurations
 
@@ -62,7 +62,7 @@ Flamingock.builder()
     .build();
 ```
 
-**What gets resolved for ChangeUnits in "user-database":**
+**What gets resolved for Changes in "user-database":**
 - **MongoClient**: Uses `productionMongoClient` (from target system, not `defaultMongoClient` from global)
 - **MongoDatabase**: Uses `userDatabase` (from target system, not `defaultDatabase` from global)
 - **AuditService**: Available from target system context
@@ -73,17 +73,17 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-For a ChangeUnit to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+For a Change to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
 > For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
 
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(id = "create-users", order = "001")
+@Change(id = "create-users", order = "001")
 public class CreateUsers {
     
-    @Execution
-    public void execution(MongoDatabase db, ClientSession session) {
+    @Apply
+    public void apply(MongoDatabase db, ClientSession session) {
         // The ClientSession is required for transactional execution
         // Flamingock uses the target system's MongoClient to create this session
         // and handles transaction start, commit, and rollback automatically
@@ -100,14 +100,14 @@ public class CreateUsers {
 
 Without the `ClientSession` parameter, operations will execute but won't participate in transactions.
 
-## Available dependencies in ChangeUnits
+## Available dependencies in Changes
 
-Your ChangeUnits can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
 
 For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
 
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [ChangeUnits](../change-units/introduction.md)
+- Explore [Changes](../changes/introduction.md)
 - See [MongoDB examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)

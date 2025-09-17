@@ -4,27 +4,27 @@ sidebar_position: 30
 
 # Core concepts
 
-## ChangeUnits
-**ChangeUnits** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
+## Changes
+**Changes** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
 
-Each ChangeUnit includes:
+Each Change includes:
 - **Unique identity**: ID, order, and metadata for tracking
 - **Target system**: Where the changes is applied to
 - **Execution logic**: The actual change implementation
 - **Rollback capability**: Compensation logic for governance and undo operations
 - **Recovery strategy**: Configurable behavior for handling failures
 
-ChangeUnits can be implemented in two forms:
+Changes can be implemented in two forms:
 - **Code-based**: Java classes with annotations that contain the change logic
 - **Template-based**: Declarative low-code approach using YAML configurations
 
-For a deeper dive around ChangeUnits, see the [ChangeUnits](../change-units/anatomy-and-structure.md) section.
+For a deeper dive around Changes, see the [Changes](../changes/anatomy-and-structure.md) section.
 
 
 ## Templates
-Templates provide a reusable layer on top of ChangeUnits for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
+Templates provide a reusable layer on top of Changes for common change patterns. When you have multiple changes that share similar logic (for example, executing SQL statements), templates allow you to abstract that common logic and reuse it.
 
-With templates, you create multiple ChangeUnits using a declarative, low-code approach. Each ChangeUnit uses a template and passes its specific configuration. For example, an SQL template receives the SQL statement as configuration, executes it, and handles errors consistently.
+With templates, you create multiple Changes using a declarative, low-code approach. Each Change uses a template and passes its specific configuration. For example, an SQL template receives the SQL statement as configuration, executes it, and handles errors consistently.
 
 This approach is particularly useful for:
 - Standardizing common operations across your codebase
@@ -36,7 +36,7 @@ For more information about templates, see the [Templates](../templates/templates
 
 ## Recovery strategies
 
-Recovery strategies define how Flamingock responds when a ChangeUnit fails during execution. They determine whether the system should stop and wait for manual intervention or automatically retry the operation.
+Recovery strategies define how Flamingock responds when a Change fails during execution. They determine whether the system should stop and wait for manual intervention or automatically retry the operation.
 
 Flamingock provides two main strategies:
 - **Manual intervention** (default): Stops execution and requires human review when failures occur
@@ -48,13 +48,13 @@ For detailed configuration and implementation, see the [Recovery strategies](../
 
 
 ## Audit store
-The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which ChangeUnits have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
+The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which Changes have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
   :::info
   In Cloud Edition, the audit store is automatically provided - no configuration needed in your builder. Community Edition users must configure their own audit store.
   :::
 
 ## Target system  
-The **target system** is where your actual business changes are applied. These are the systems your ChangeUnits modify - databases, message queues, APIs, configuration services, etc. Each ChangeUnit declares which target system it operates on.
+The **target system** is where your actual business changes are applied. These are the systems your Changes modify - databases, message queues, APIs, configuration services, etc. Each Change declares which target system it operates on.
 
 For more details about how these systems work together, see the [Audit store vs target system](audit-store-vs-target-system.md) section.
 

@@ -12,9 +12,9 @@ Issue resolution is an iterative process of identifying failures, investigating 
 
 ### What Creates an Issue?
 An "issue" is detected when:
-1. **Change execution fails** during the `@Execution` method
+1. **Change execution fails** during the `@Apply` method
 2. **Change starts but never completes** (process crash, timeout)
-3. **Rollback fails** during `@RollbackExecution` method
+3. **Rollback fails** during `@Rollback` method
 4. **Change needs to run again** but is in uncertain state
 
 

@@ -24,8 +24,8 @@ Suppose you have a change unit that modifies a Kafka topic configuration:
 @Change(id = "modify-topic-config", order = "0002", author = "dev-team")
 public class _0002_ModifyKafkaTopicConfig {
 
-  @Execution
-  public void execute(AdminClient adminClient) {
+  @Apply
+  public void apply(AdminClient adminClient) {
     Map<ConfigResource, Config> configs = Map.of(
       new ConfigResource(ConfigResource.Type.TOPIC, "orders"),
       new Config(List.of(new ConfigEntry("retention.ms", "86400000")))
@@ -34,7 +34,7 @@ public class _0002_ModifyKafkaTopicConfig {
     adminClient.alterConfigs(configs).all().join();
   }
 
-  @RollbackExecution
+  @Rollback
   public void rollback(AdminClient adminClient) {
     Map<ConfigResource, Config> configs = Map.of(
       new ConfigResource(ConfigResource.Type.TOPIC, "orders"),

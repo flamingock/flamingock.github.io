@@ -17,7 +17,7 @@ Flamingock is not limited to database systems — it supports a wide range of ta
 There are **three primary levels** at which Flamingock-related functionality can be tested:
 
 ### 1. Unit test: Change logic
-Isolate and test the logic inside your `@Execution` and `@RollbackExecution` methods without involving Flamingock’s runtime or audit mechanism.
+Isolate and test the logic inside your `@Apply` and `@Rollback` methods without involving Flamingock’s runtime or audit mechanism.
 
 - Use mocks for dependencies (e.g., `MongoTemplate`, `DynamoDbClient`, `S3Client`)
 - Focus on business correctness and expected side effects
@@ -29,7 +29,7 @@ Isolate and test the logic inside your `@Execution` and `@RollbackExecution` met
 ### 2. Integration test: Flamingock execution
 Run Flamingock end-to-end in a controlled environment to verify:
 
-- Execution of the `@Execution` method
+- Execution of the `@Apply` method
 - Audit log persistence
 - Rollback behavior on failure
 

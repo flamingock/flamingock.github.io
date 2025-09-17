@@ -16,7 +16,7 @@ Flamingock's architecture separates business changes from execution tracking thr
 
 - **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
 - **Purpose**: Store and process your business data and configurations
-- **Modified by**: Your business logic through ChangeUnits
+- **Modified by**: Your business logic through Changes
 - **Configuration**: See [Target Systems](../target-systems/introduction.md) for technical setup
 
 ### Audit store: where execution is tracked  
@@ -67,7 +67,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 ## How it works
 
 ```
-     Your ChangeUnits:
+     Your Changes:
      ┌──────────────────────────────────────────────────────────────────────────┐
      │ 1. Change[UpdateKafkaSchema] → Target System[Kafka Schema Registry]      │
      │ 2. Change[SeedKafkaEvents]   → Target System[Kafka Topics]               │
@@ -82,7 +82,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │
                                 │ Executes sequentially
                                 │
-                 ChangeUnit #1  │───────────────────────────┐
+                 Change #1  │───────────────────────────┐
             (UpdateKafkaSchema) │                           │
                                 │                           │
                                 │             ┌─────────────┴────────────┐
@@ -96,7 +96,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │     └─────────────────────┘      └──────────────┘
                                 │
                                 │
-                  ChangeUnit #2 │───────────────────────────┐
+                  Change #2 │───────────────────────────┐
               (SeedKafkaEvents) │                           │
                                 │                           │
                                 │             ┌─────────────┴────────────┐
@@ -110,7 +110,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │     └─────────────────────┘      └──────────────┘
                                 │
                                 │
-                  ChangeUnit #3 └───────────────────────────┐
+                  Change #3 └───────────────────────────┐
                 (AddUserStatus)                             │
                                                             │
                                               ┌─────────────┴────────────┐
@@ -126,7 +126,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 ```
 
 **The Flow:**
-1. **You create ChangeUnits** - Define what changes need to happen
+1. **You create Changes** - Define what changes need to happen
 2. **Flamingock orchestrates** - Safely applies changes across all your systems  
 3. **Target systems evolve** - Your business systems get updated
 4. **Audit store tracks everything** - Complete history for compliance and recovery

@@ -20,11 +20,11 @@ These systems support native transaction capabilities:
 - Execution runs within a native database transaction
 - **On failure**: Automatic rollback using database's native transaction mechanism
 - Session/connection managed automatically by Flamingock
-- `@RollbackExecution` used only for manual operations (CLI undo)
+- `@Rollback` used only for manual operations (CLI undo)
 
 **When `transactional = false`**:
 - Execution runs without transaction
-- **On failure**: Safety through compensation logic (@RollbackExecution)
+- **On failure**: Safety through compensation logic (@Rollback)
 - Useful for DDL operations or large bulk operations that exceed transaction limits
 
 ### ⚡ Non-transactional target systems
@@ -34,19 +34,19 @@ These systems have no native transaction support:
 
 **The `transactional` flag is ignored** - behavior is always the same:
 - Execution runs normally (no native transaction possible)
-- **On failure**: Safety through compensation logic (@RollbackExecution)
+- **On failure**: Safety through compensation logic (@Rollback)
 - Safety relies entirely on idempotent operations and rollback methods
 
 ### Behavior summary table
 
 | Target System Type | `transactional = true` (default) | `transactional = false` |
 |---------------------|-----------------------------------|-------------------------|
-| **Transactional** | Native transaction rollback on failure | `@RollbackExecution` on failure |
-| **Non-transactional** | **Flag ignored** - `@RollbackExecution` on failure | **Flag ignored** - `@RollbackExecution` on failure |
+| **Transactional** | Native transaction rollback on failure | `@Rollback` on failure |
+| **Non-transactional** | **Flag ignored** - `@Rollback` on failure | **Flag ignored** - `@Rollback` on failure |
 
 ## Best practices
 
-### Always provide @RollbackExecution
+### Always provide @Rollback
 - **Transactional systems with `transactional = true`**: Used for manual rollback operations (CLI undo)
 - **Transactional systems with `transactional = false`**: Called automatically on failure
 - **Non-transactional systems**: Always called automatically on failure (flag ignored)
@@ -57,4 +57,4 @@ These systems have no native transaction support:
 - **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
 - **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
 
-**Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @RollbackExecution). For non-transactional systems, the flag is ignored and @RollbackExecution is always used.
+**Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @Rollback). For non-transactional systems, the flag is ignored and @Rollback is always used.

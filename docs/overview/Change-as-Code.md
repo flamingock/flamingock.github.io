@@ -31,14 +31,14 @@ Flamingock's CaC approach solves these problems by treating every external-syste
 
 ## Four Pillars of Change-as-Code
 
-1. **One-Hundred-Percent Versioned**  
-   All ChangeUnits live in your Git repository (or other VCS). This means you can review, diff, and roll back changes just like application code.
+1. **One-Hundred-Percent Versioned**
+   All Changes live in your Git repository (or other VCS). This means you can review, diff, and roll back changes just like application code.
 
-2. **Automated Execution**  
-   Flamingock scans and applies ChangeUnits at application startup or on-demand via the CLI. No manual intervention—just code running code.
+2. **Automated Execution**
+   Flamingock scans and applies Changes at application startup or on-demand via the CLI. No manual intervention—just code running code.
 
-3. **Auditable & Traceable**  
-   Every ChangeUnit outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query “who ran what change, and when,” ensuring full compliance.
+3. **Auditable & Traceable**
+   Every Change outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query "who ran what change, and when," ensuring full compliance.
 
 4. **Cross-Component Support**  
    Whether it's SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
@@ -51,19 +51,19 @@ Imagine you need to toggle a feature flag in a downstream service (not a databas
 @Change(id = "enable-autosave", order = "0005", author = "ops-team")
 public class _0005_EnableAutoSaveFeature {
 
-  @Execution
+  @Apply
   public void enableAutoSave(FeatureFlagClient client) {
     client.setFlag("autosave_feature", true);
   }
 
-  @RollbackExecution
+  @Rollback
   public void disableAutoSave(FeatureFlagClient client) {
     client.setFlag("autosave_feature", false);
   }
 }
 ```
 
-- **Versioned**: This code-based or template-based ChangeUnit lives in your VCS.
+- **Versioned**: This code-based or template-based Change lives in your VCS.
 - **Automated**: Flamingock executes it in order (0005) at startup or via CLI.
 - **Auditable**: Upon success, an audit entry is written to your audit store.
 - **Cross-Component**: The same pattern works for a DynamoDB schema change, a Kafka topic creation, or any REST API call.
@@ -81,21 +81,21 @@ public class _0005_EnableAutoSaveFeature {
 
 **Problem**: Over the lifetime of your application, you might need to create and then later modify external resources—such as an S3 bucket, Kafka topics, IAM roles, and initial database state—as part of each new release. Doing this manually or with ad-hoc scripts risks drift, missing audits, and inconsistent environments..
 
-**CaC Solution**: Define a sequence of ChangeUnits that run in order on mutiple deployments, inserting audit entries and ensuring reproducible, versioned updates::
+**CaC Solution**: Define a sequence of Changes that run in order on mutiple deployments, inserting audit entries and ensuring reproducible, versioned updates::
 <Tabs groupId="config">
 <TabItem value="code-base" label="Code" default>
 ```java
-@ChangeUnit(id = "provision-bucket", order = "0001", author = "team-a", transactional = false)
+@Change(id = "provision-bucket", order = "0001", author = "team-a", transactional = false)
 public class _0001_ProvisionBucketChange {
 
-    @Execution
-    public void execute(S3Client s3) {
+    @Apply
+    public void apply(S3Client s3) {
         s3.createBucket(CreateBucketRequest.builder()
                 .bucket("flamingock-app-bucket")
                 .build());
     }
 
-    @RollbackExecution
+    @Rollback
     public void rollback(S3Client s3) {
         s3.deleteBucket(DeleteBucketRequest.builder()
                 .bucket("flamingock-app-bucket")
@@ -103,34 +103,34 @@ public class _0001_ProvisionBucketChange {
     }
 }
 
-@ChangeUnit(id = "create-kafka-topics", order = "0002", author = "devops", transactional = false)
+@Change(id = "create-kafka-topics", order = "0002", author = "devops", transactional = false)
 public class _0002_CreateKafkaTopicsChange {
 
-    @Execution
-    public void exec(KafkaAdminClient admin) {
+    @Apply
+    public void apply(KafkaAdminClient admin) {
         NewTopic topic1 = new NewTopic("app-events", 3, (short) 1);
         NewTopic topic2 = new NewTopic("user-notifications", 2, (short) 1);
         admin.createTopics(Arrays.asList(topic1, topic2));
     }
 
-    @RollbackExecution
+    @Rollback
     public void rollback(KafkaAdminClient admin) {
         admin.deleteTopics(Arrays.asList("app-events", "user-notifications"));
     }
 }
 
-@ChangeUnit(id = "setup-iam-roles", order = "0003", author = "devops", transactional = false)
+@Change(id = "setup-iam-roles", order = "0003", author = "devops", transactional = false)
 public class _0003_SetupIamRolesChange {
 
-    @Execution
-    public void exec(IamClient iam) {
+    @Apply
+    public void apply(IamClient iam) {
         CreateRoleResponse response = iam.createRole(CreateRoleRequest.builder()
                 .roleName("flamingock-app-role")
                 .assumeRolePolicyDocument("{...}") // truncated for brevity
                 .build());
     }
 
-    @RollbackExecution
+    @Rollback
     public void rollback(IamClient iam) {
         iam.deleteRole(DeleteRoleRequest.builder()
                 .roleName("flamingock-app-role")
@@ -138,11 +138,11 @@ public class _0003_SetupIamRolesChange {
     }
 }
 
-@ChangeUnit(id = "seed-database", order = "0004", author = "devops", transactional = true)
+@Change(id = "seed-database", order = "0004", author = "devops", transactional = true)
 public class _0004_SeedTenantDataChange {
 
-    @Execution
-    public void exec(DataSource ds) {
+    @Apply
+    public void apply(DataSource ds) {
         try (Connection conn = ds.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(
@@ -154,7 +154,7 @@ public class _0004_SeedTenantDataChange {
         }
     }
 
-    @RollbackExecution
+    @Rollback
     public void rollback(DataSource ds) {
         try (Connection conn = ds.getConnection();
              Statement stmt = conn.createStatement()) {
@@ -165,11 +165,11 @@ public class _0004_SeedTenantDataChange {
     }
 }
 
-@ChangeUnit(id = "update-bucket-settings", order = "0005", author = "team-a", transactional = false)
+@Change(id = "update-bucket-settings", order = "0005", author = "team-a", transactional = false)
 public class _0005_UpdateBucketSettingsChange {
 
-    @Execution
-    public void execute(S3Client s3) {
+    @Apply
+    public void apply(S3Client s3) {
         // Example: enable versioning on the bucket
         s3.putBucketVersioning(PutBucketVersioningRequest.builder()
                 .bucket("flamingock-app-bucket")
@@ -179,7 +179,7 @@ public class _0005_UpdateBucketSettingsChange {
                 .build());
     }
 
-    @RollbackExecution
+    @Rollback
     public void rollback(S3Client s3) {
         // Example: disable versioning on the bucket
         s3.putBucketVersioning(PutBucketVersioningRequest.builder()
@@ -203,7 +203,7 @@ order: 0001
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-execution:
+apply:
   bucketName: "flamingock-app-bucket"
   region: "us-east-1"
 rollback:
@@ -217,7 +217,7 @@ order: 0002
 author: "devops"
 transactional: false
 templateName: kafka-template
-execution:
+apply:
   topics:
     - "app-events"
     - "user-notifications"
@@ -244,7 +244,7 @@ order: 0003
 author: "devops"
 transactional: false
 templateName: aws-iam-template
-execution:
+apply:
   roleName: "flamingock-app-role"
   assumeRolePolicy: |
     {
@@ -269,7 +269,7 @@ order: 0004
 author: "devops"
 transactional: true
 templateName: sql-template
-execution: |
+apply: |
   INSERT INTO tenants (id, name, created_at)
   VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
 rollback: |
@@ -283,7 +283,7 @@ order: 0005
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
-execution:
+apply:
   # Enable versioning on an existing bucket
   bucketName: "flamingock-app-bucket"
   versioningConfiguration:
@@ -309,15 +309,15 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 
 ## Change-as-Code Checklist
 
-- ✅ **Change lives in VCS**: Every ChangeUnit class (or YAML template) is versioned.
+- ✅ **Change lives in VCS**: Every Change class (or YAML template) is versioned.
 - ✅ **Automated pipeline**: Flamingock applies changes automatically at startup or via CLI.
 - ✅ **Audit trail**: Query your audit store for a complete history of applied changes.
-- ✅ **Rollback logic**: Each ChangeUnit provides `@RollbackExecution` to undo or compensate if needed.
-- ✅ **Consistent ordering**: All ChangeUnits follow a strict, declared ordering (via the `order` attribute).
+- ✅ **Rollback logic**: Each Change provides `@Rollback` to undo or compensate if needed.
+- ✅ **Consistent ordering**: All Changes follow a strict, declared ordering (via the `order` attribute).
 - ✅ **Cross-component**: You can target databases, SaaS APIs, feature flags, message systems—anything with a client API.
 
 ## Next Steps
 
-- [Quick start](quick-start.md) → Learn how to create your first ChangeUnit and run Flamingock. 
+- [Quick start](quick-start.md) → Learn how to create your first Change and run Flamingock. 
 - [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
 - [Real use case examples](../resources/examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.

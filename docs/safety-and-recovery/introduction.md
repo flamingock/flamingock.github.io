@@ -27,7 +27,7 @@ Flamingock provides two recovery strategies to handle execution failures:
 
 ## How it works
 
-1. **Change execution** - Flamingock attempts to execute a ChangeUnit
+1. **Change execution** - Flamingock attempts to execute a Change
 2. **Failure detection** - If execution fails, the recovery strategy determines next steps
 3. **Strategy application** - Either automatic retry or manual intervention workflow
 4. **Issue resolution** - For manual intervention, use CLI tools to investigate and resolve

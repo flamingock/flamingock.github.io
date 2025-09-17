@@ -146,7 +146,7 @@ const config = {
               },
               {
                 label: 'Recovery and Safety',
-                to: '/docs/recovery-and-safety/recovery-strategies',
+                to: '/docs/safety-and-recovery/recovery-strategies',
               },
               {
                 label: 'Resources',

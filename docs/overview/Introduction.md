@@ -34,8 +34,8 @@ Flamingock can apply changes to any external service your application interacts 
 
 ## Architecture overview
 
-### ChangeUnits
-The fundamental unit of change. Each ChangeUnit:
+### Changes
+The fundamental unit of change. Each Change:
 - Has a unique identifier and execution order
 - Targets a specific system
 - Contains execution and rollback logic
@@ -47,7 +47,7 @@ The fundamental unit of change. Each ChangeUnit:
 
 ### Execution flow
 1. Application startup triggers Flamingock
-2. Flamingock discovers all ChangeUnits
+2. Flamingock discovers all Changes
 3. Checks audit store for pending changes
 4. Acquires distributed lock
 5. Executes changes in order

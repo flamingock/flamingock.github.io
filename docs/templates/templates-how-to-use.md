@@ -14,7 +14,7 @@ Templates are available in **beta**.
 - Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
 - Expect API and behavior changes before GA.  
 
-This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of ChangeUnits.
+This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
 
 Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
@@ -46,7 +46,7 @@ implementation("io.flamingock:flamingock-community-sql-template")
 
 ### Step 2: define a Template-based change
 
-In Flamingock, a **ChangeUnit** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
+In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
 
 When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 
@@ -57,7 +57,7 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
-execution: |
+apply: |
   CREATE TABLE Persons (
     PersonID int,
     LastName varchar(255),
@@ -76,13 +76,13 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
 - **`order`**: Execution order relative to other changes (also shared with code-based).
-- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based ChangeUnits.
+- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based Changes.
 - **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
-- **`execution`**: Direct execution logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **Other fields**: Templates may define additional configuration fields as needed.
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based ChangeUnits, but use a standardized format with `execution` and `rollback` sections that each template interprets according to its specific requirements.
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -103,26 +103,26 @@ If you prefer to use a pipeline YAML file for configuration, refer to the [Setup
 
 ### Step 4: Run Flamingock
 
-At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same execution flow as code-based changes.
+At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
 
 ## Use case: SQL database changes
 
-Let's compare how an SQL change is handled using a **template-based ChangeUnit** vs. a **traditional code-based ChangeUnit**.
+Let's compare how an SQL change is handled using a **template-based Change** vs. a **traditional code-based Change**.
 
-### Approach 1: Using a Traditional Code-Based ChangeUnit
+### Approach 1: Using a Traditional Code-Based Change
 
 ```java
-@ChangeUnit(id = "create-persons-table", order = 1, author = "developer")
-public class CreatePersonsTableChangeUnit {
+@Change(id = "create-persons-table", order = 1, author = "developer")
+public class CreatePersonsTableChange {
 
     private final DataSource dataSource;
 
-    public CreatePersonsTableChangeUnit(DataSource dataSource) {
+    public CreatePersonsTableChange(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    @Execution
-    public void execute() throws SQLException {
+    @Apply
+    public void apply() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
 
@@ -150,7 +150,7 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
-execution: |
+apply: |
     CREATE TABLE Persons (
         PersonID int,
         LastName varchar(255),
@@ -161,8 +161,8 @@ execution: |
 rollback: "DROP TABLE Persons;"
 ```
 
-### Key Benefits of Using a Template Instead of Code-Based ChangeUnits:
-- **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL execution manually.
+### Key Benefits of Using a Template Instead of Code-Based Changes:
+- **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL apply manually.
 - **Faster onboarding**: YAML is easier for non-Java developers.
 - **Standardised changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.

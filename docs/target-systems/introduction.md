@@ -8,7 +8,7 @@ sidebar_position: 0
 Target systems are the real-world systems where your business changes are applied.
 These include any external service your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
 
-A ChangeUnit always declares which target system it belongs to. This ensures Flamingock can:
+A Change always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
 - Guarantee safe execution across heterogeneous environments
 - Provide clear visibility into which changes affect which systems
@@ -31,7 +31,7 @@ This distinction is built into the target system definition.
 
 ### Dependency injection
 
-Each target system can expose the dependencies required by its ChangeUnits. For example:
+Each target system can expose the dependencies required by its Changes. For example:
 - A MongoDB target system provides a `MongoDatabase`
 - A Kafka target system provides a `KafkaTemplate`  
 - A SQL target system provides a `Connection` or `DataSource`
@@ -58,7 +58,7 @@ In this example, Flamingock resolves dependencies as follows:
 - If MongoClient is missing from the global context, Flamingock throws an exception since it's a required dependency
 
 :::info
-ChangeUnits are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
+Changes are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
 :::
 
 
@@ -83,7 +83,7 @@ Flamingock.builder()
   
 ```
 
-At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each ChangeUnit.
+At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each Change.
 
 ### Spring Boot Integration
 For Spring Boot applications, target systems are configured as beans:
@@ -107,13 +107,13 @@ For more details, see [Spring Boot Integration](../frameworks/springboot-integra
 
 
 
-## Linking ChangeUnits to target systems
+## Linking Changes to target systems
 
-When defining ChangeUnits, you specify which target system they belong to using the `@TargetSystem` annotation:
+When defining Changes, you specify which target system they belong to using the `@TargetSystem` annotation:
 
 ```java
 @TargetSystem("mysql-inventory")
-@ChangeUnit(id = "add-category", order = "001", author = "team")
+@Change(id = "add-category", order = "001", author = "team")
 public class _001_AddCategory {
     //...
 }
@@ -134,7 +134,7 @@ This makes it easier to govern and audit distributed environments at scale.
 ## Best practices
 
 - Use descriptive names (`mysql-inventory`, `aws-s3`, `kafka-stock`)
-- Be consistent across related ChangeUnits
+- Be consistent across related Changes
 - Avoid generic names like "database" or "api"
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific

@@ -24,14 +24,14 @@ Suppose you have a change unit that creates an Amazon S3 bucket:
 @Change(id = "create-bucket", order = "0001", author = "dev-team")
 public class _0001_CreateS3BucketChange {
 
-  @Execution
-  public void execute(S3Client s3Client) {
+  @Apply
+  public void apply(S3Client s3Client) {
     s3Client.createBucket(CreateBucketRequest.builder()
         .bucket("flamingock-test-bucket")
         .build());
   }
 
-  @RollbackExecution
+  @Rollback
   public void rollback(S3Client s3Client) {
     s3Client.deleteBucket(DeleteBucketRequest.builder()
         .bucket("flamingock-test-bucket")

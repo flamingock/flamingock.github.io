@@ -5,11 +5,11 @@ sidebar_position: 20
 
 # Context and dependencies
 
-Flamingock provides a sophisticated dependency injection system that automatically resolves dependencies for ChangeUnits from multiple sources. Understanding this system is crucial for building maintainable and well-structured changes.
+Flamingock provides a sophisticated dependency injection system that automatically resolves dependencies for Changes from multiple sources. Understanding this system is crucial for building maintainable and well-structured changes.
 
 ## What is the context?
 
-The context is Flamingock's dependency container that holds all the dependencies your ChangeUnits might need. It's organized hierarchically, allowing for proper scoping and isolation of dependencies.
+The context is Flamingock's dependency container that holds all the dependencies your Changes might need. It's organized hierarchically, allowing for proper scoping and isolation of dependencies.
 
 Contexts can contain:
 - System connectors (databases, message queues, storage services, APIs)
@@ -30,15 +30,15 @@ This approach ensures that system-specific dependencies are properly scoped whil
 
 ### How it works in practice
 
-When a ChangeUnit needs a dependency, Flamingock follows a specific search pattern. For example, imagine your ChangeUnit requires a `NotificationService`:
+When a Change needs a dependency, Flamingock follows a specific search pattern. For example, imagine your Change requires a `NotificationService`:
 
-**Scenario 1**: If the Kafka target system provides its own notification service specifically for event streaming, and your ChangeUnit belongs to that Kafka target system, Flamingock will use the Kafka-specific notification service. The target system context always wins.
+**Scenario 1**: If the Kafka target system provides its own notification service specifically for event streaming, and your Change belongs to that Kafka target system, Flamingock will use the Kafka-specific notification service. The target system context always wins.
 
-**Scenario 2**: If your MongoDB target system doesn't provide a notification service, but you've registered one globally in Flamingock's builder, the ChangeUnit will receive that global notification service. Flamingock searches the target system first, doesn't find it, then falls back to the global context.
+**Scenario 2**: If your MongoDB target system doesn't provide a notification service, but you've registered one globally in Flamingock's builder, the Change will receive that global notification service. Flamingock searches the target system first, doesn't find it, then falls back to the global context.
 
 **Scenario 3**: In a Spring Boot application, if neither the target system nor the global context provides the dependency, Flamingock will look for a Spring bean of that type. This allows seamless integration with your existing Spring components.
 
-This hierarchy ensures that specialized implementations (like a Kafka-optimized notification service) are used when available, while still allowing shared services to be accessible across all ChangeUnits.
+This hierarchy ensures that specialized implementations (like a Kafka-optimized notification service) are used when available, while still allowing shared services to be accessible across all Changes.
 
 ## Providing dependencies
 
@@ -65,7 +65,7 @@ This flexibility allows DefaultTargetSystem to inject any dependencies needed fo
 
 ### Global dependencies
 
-You can register dependencies globally to make them available to all ChangeUnits:
+You can register dependencies globally to make them available to all Changes:
 
 ```java
 Flamingock.builder()
@@ -83,12 +83,12 @@ When using frameworks like Spring Boot, Flamingock automatically accesses beans 
 ```java
 @Service
 public class UserService {
-    // This service is automatically available to ChangeUnits
+    // This service is automatically available to Changes
 }
 ```
 
 :::warning
-Remember that target system contexts are isolated. Dependencies in one target system aren't available to ChangeUnits in another target system.
+Remember that target system contexts are isolated. Dependencies in one target system aren't available to Changes in another target system.
 :::
 
 ## Best practices

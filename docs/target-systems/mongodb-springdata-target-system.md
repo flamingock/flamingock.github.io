@@ -24,7 +24,7 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 | Dependency | Method | Description |
 |------------|--------|-------------|
-| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** for both ChangeUnit execution and transaction management |
+| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** for both Change execution and transaction management |
 
 ### Optional configurations
 
@@ -58,7 +58,7 @@ Flamingock.builder()
     .build();
 ```
 
-**What gets resolved for ChangeUnits in "user-database":**
+**What gets resolved for Changes in "user-database":**
 - **MongoTemplate**: Uses `userMongoTemplate` (from target system, not `defaultMongoTemplate` from global)
 - **UserAuditService**: Available from target system context
 - **EmailService**: Available from global context
@@ -68,17 +68,17 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Transactional support
 
-Spring Data MongoDB target system integrates with Spring's transaction management. When a ChangeUnit is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
+Spring Data MongoDB target system integrates with Spring's transaction management. When a Change is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
 
 > For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
 
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(id = "create-users", order = "001")
+@Change(id = "create-users", order = "001")
 public class CreateUsers {
     
-    @Execution
-    public void execution(MongoTemplate mongoTemplate) {
+    @Apply
+    public void apply(MongoTemplate mongoTemplate) {
         // MongoTemplate automatically participates in Spring transactions
         // Flamingock uses the target system's MongoTemplate for transaction management
         // through Spring's @Transactional infrastructure
@@ -89,14 +89,14 @@ public class CreateUsers {
 
 **How transactions work:**
 1. **Spring integration**: Flamingock leverages the target system's `MongoTemplate` within Spring's transaction context
-2. **Transaction management**: The same `MongoTemplate` handles both ChangeUnit operations and transaction coordination
+2. **Transaction management**: The same `MongoTemplate` handles both Change operations and transaction coordination
 3. **Lifecycle**: Spring's transaction infrastructure manages start, commit, and rollback automatically
 
 The transaction lifecycle is managed through Spring's transaction infrastructure, ensuring consistency with your existing Spring Data operations.
 
-## Available dependencies in ChangeUnits
+## Available dependencies in Changes
 
-Your ChangeUnits can inject Spring Data dependencies like `MongoTemplate`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject Spring Data dependencies like `MongoTemplate`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
 
 For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
 
@@ -109,5 +109,5 @@ For more information on Spring Boot integration, see [Spring Boot integration](.
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [ChangeUnits](../change-units/introduction.md)
+- Explore [Changes](../changes/introduction.md)
 - See [MongoDB Spring Data examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb-springdata)

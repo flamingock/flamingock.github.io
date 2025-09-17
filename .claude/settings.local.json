@@ -11,7 +11,9 @@
       "Bash(rm:*)",
       "Bash(git add:*)",
       "Bash(yarn start)",
-      "Bash(PORT=3001 yarn start)"
+      "Bash(PORT=3001 yarn start)",
+      "Bash(sed:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

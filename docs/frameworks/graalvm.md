@@ -17,7 +17,7 @@ This page explains how to generate a GraalVM native image for a Flamingock-enabl
 
 When building your application, Flamingock's annotation processor:
 
-- Scans for all annotated code-based changes (`@ChangeUnit`)
+- Scans for all annotated code-based changes (`@Change`)
 - Discovers template-based changes from `sourcesPackage` and `resourcesDir`
 - Generates metadata files containing all required classes for reflection
 
@@ -114,7 +114,7 @@ Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/
 Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
-Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
@@ -129,7 +129,7 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 [INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
-[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @ChangeUnit annotations)
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
 [INFO]   [Flamingock] Final processing round detected - skipping execution.
@@ -174,18 +174,18 @@ The actual output may differ slightly depending on the modules you’ve included
     Registering class: io.flamingock.core.task.AbstractTaskDescriptor 
     Registering class: io.flamingock.core.preview.PreviewPipeline 
     Registering class: io.flamingock.core.preview.PreviewStage 
-    Registering class: io.flamingock.core.preview.CodePreviewChangeUnit 
-    Registering class: io.flamingock.core.preview.CodePreviewLegacyChangeUnit 
+    Registering class: io.flamingock.core.preview.CodePreviewChange 
+    Registering class: io.flamingock.core.preview.CodePreviewLegacyChange 
     Registering class: io.flamingock.core.preview.PreviewMethod 
     Registering class: io.flamingock.core.api.template.ChangeTemplateConfig 
-    Registering class: io.flamingock.core.preview.TemplatePreviewChangeUnit 
+    Registering class: io.flamingock.core.preview.TemplatePreviewChange 
     Registering class: io.flamingock.core.pipeline.Pipeline 
     Registering class: io.flamingock.core.pipeline.LoadedStage 
     Registering class: io.flamingock.core.task.loaded.AbstractLoadedTask 
     Registering class: io.flamingock.core.task.loaded.AbstractReflectionLoadedTask 
-    Registering class: io.flamingock.core.task.loaded.AbstractLoadedChangeUnit 
-    Registering class: io.flamingock.core.task.loaded.CodeLoadedChangeUnit 
-    Registering class: io.flamingock.core.task.loaded.TemplateLoadedChangeUnit 
+    Registering class: io.flamingock.core.task.loaded.AbstractLoadedChange 
+    Registering class: io.flamingock.core.task.loaded.CodeLoadedChange 
+    Registering class: io.flamingock.core.task.loaded.TemplateLoadedChange 
     Registering class: java.nio.charset.CoderResult 
 [Flamingock] Completed internal classes
 [Flamingock] Starting registration of templates
@@ -197,7 +197,7 @@ The actual output may differ slightly depending on the modules you’ve included
     Registering class: io.flamingock.template.mongodb.MongoChangeTemplateConfig 
 [Flamingock] Completed templates
 [Flamingock] Starting registration of system modules
-    Registering class: io.flamingock.core.engine.audit.importer.changeunit.MongockImporterChangeUnit 
+    Registering class: io.flamingock.core.engine.audit.importer.changeunit.MongockImporterChange 
     Registering class: io.flamingock.core.engine.audit.importer.ImporterModule 
 [Flamingock] Completed system modules
 [Flamingock] Starting registration of user classes

@@ -25,7 +25,7 @@ Configuration is divided into two distinct scopes:
 | ⭐ Setup & stages                | Organize changes into ordered stages - **Essential** | [Setup & stages](./setup-and-stages.md) |
 | ⭐ Target systems               | Configure target systems for your changes - **Essential** | [Target systems](../target-systems/introduction.md) |
 | ⭐ Audit store                  | Configure audit storage - **Essential** | [Audit stores](../audit-stores/introduction.md) |
-| Global dependency injection      | Dependency injection to ChangeUnits and environment | [Context and dependencies](./context-and-dependencies.md) |
+| Global dependency injection      | Dependency injection to Changes and environment | [Context and dependencies](./context-and-dependencies.md) |
 | Cloud Edition                    | Cloud-specific setup: token, env, service           | [Cloud Edition](../cloud-edition/cloud-edition.md) |
 | Framework integration            | Integration with frameworks (currently Spring Boot) | [Spring Boot integration](../frameworks/springboot-integration/introduction.md) |
 | Lock                             | Distributed locking and timing options              | [Lock configuration](./lock.md) |

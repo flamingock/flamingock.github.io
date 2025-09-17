@@ -27,7 +27,7 @@ DefaultTargetSystem is the fallback choice when there's no specialized target sy
 DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry");
 ```
 
-Unlike specialized target systems, DefaultTargetSystem requires no mandatory dependencies. You have complete flexibility to inject whatever dependencies your ChangeUnits need.
+Unlike specialized target systems, DefaultTargetSystem requires no mandatory dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
 
 ## Dependencies
 
@@ -68,7 +68,7 @@ Flamingock.builder()
     .build();
 ```
 
-**What gets resolved for ChangeUnits in "kafka-schema-registry":**
+**What gets resolved for Changes in "kafka-schema-registry":**
 - **SchemaRegistryClient**: Available from target system context
 - **Registry URL**: Available as "registry-url" from target system context  
 - **Compatibility level**: Available as property from target system context
@@ -79,19 +79,19 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 **How compensation works:**
 1. **No transaction boundaries**: Operations execute immediately with no automatic rollback
-2. **Rollback execution**: If any failure occurs, Flamingock calls the `@RollbackExecution` method
+2. **Rollback execution**: If any failure occurs, Flamingock calls the `@Rollback` method
 3. **Manual compensation**: You provide the logic to undo or compensate for the changes made
 
-**Important**: Always provide `@RollbackExecution` methods for DefaultTargetSystem ChangeUnits to ensure safe rollback capabilities.
+**Important**: Always provide `@Rollback` methods for DefaultTargetSystem Changes to ensure safe rollback capabilities.
 
-## Available dependencies in ChangeUnits
+## Available dependencies in Changes
 
-Your ChangeUnits can inject any dependencies you add to the target system context via `.addDependency()`, taking precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
+Your Changes can inject any dependencies you add to the target system context via `.addDependency()`, taking precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
 
 For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
 
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [ChangeUnits](../change-units/introduction.md)  
+- Explore [Changes](../changes/introduction.md)  
 - See [DefaultTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)

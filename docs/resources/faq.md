@@ -10,9 +10,9 @@ This FAQ addresses frequent questions about Flamingock, from basic usage to adva
 
 ### Getting started
 
-**Should I use a template-based or code-based ChangeUnit?**  
-Choose template-based ChangeUnits to eliminate boilerplate for common tools and integrations (SQL DDL, SaaS/API, etc) and for your custom ChangeUnits by defining changes declaratively in YAML or JSON.
-Use code-based ChangeUnits when you need custom or conditional logic in Java.
+**Should I use a template-based or code-based Change?**  
+Choose template-based Changes to eliminate boilerplate for common tools and integrations (SQL DDL, SaaS/API, etc) and for your custom Changes by defining changes declaratively in YAML or JSON.
+Use code-based Changes when you need custom or conditional logic in Java.
 See: [Template introduction](templates/templates-introduction.md)
 
 **Can I integrate Flamingock into a Spring Boot application?**  
@@ -43,19 +43,19 @@ If you are working with different audit stores that use the **same underlying da
 ### Behaviour and execution
 
 **Does Flamingock guarantee idempotent execution?**  
-Yes. Each `ChangeUnit` has a unique ID and Flamingock ensures it runs only once per system, even across multiple instances.
+Yes. Each `Change` has a unique ID and Flamingock ensures it runs only once per system, even across multiple instances.
 
-**What happens if a ChangeUnit execution fails midway?**  
+**What happens if a Change execution fails midway?**  
 Flamingock's behavior depends on your recovery strategy configuration:
 
 **With MANUAL_INTERVENTION (default)**:
 1. **Transactional changes**: Database automatically rolls back, issue logged for manual review
-2. **Non-transactional changes**: `@RollbackExecution` method called, issue logged for manual review
+2. **Non-transactional changes**: `@Rollback` method called, issue logged for manual review
 3. **Resolution required**: Use CLI (`flamingock issue get`, then `flamingock audit fix`) to resolve after investigation
 
 **With ALWAYS_RETRY**:
 1. **Transactional changes**: Database automatically rolls back, automatic retry on next execution
-2. **Non-transactional changes**: `@RollbackExecution` method called, automatic retry on next execution
+2. **Non-transactional changes**: `@Rollback` method called, automatic retry on next execution
 3. **No manual intervention**: Continues until successful
 
 This intelligent failure handling prevents silent data corruption and provides operational control.
@@ -63,19 +63,19 @@ This intelligent failure handling prevents silent data corruption and provides o
 **How can I ensure changes are transactional?**  
 If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../flamingock-library-config/transactions.md).
 
-**Should I implement the @RollbackExecution method in transactional environments?**
+**Should I implement the @Rollback method in transactional environments?**
 
-Yes, we highly recommend to implement the `@RollbackExecution` method. The main reason for this is that some other operations like undo, rely on this method to work. However it's a very good practice as it provides a robust system that is less affected when moving to non-transactional environments.
+Yes, we highly recommend to implement the `@Rollback` method. The main reason for this is that some other operations like undo, rely on this method to work. However it's a very good practice as it provides a robust system that is less affected when moving to non-transactional environments.
 
 **Can I react to the execution of Flamingock from my application?**  
-Yes. Flamingock provides an event system that allows your application to listen to key lifecycle moments, such as when a `ChangeUnit` starts or finishes execution. These events can be used to trigger logging, monitoring, or other side effects external to the change execution logic itself.
+Yes. Flamingock provides an event system that allows your application to listen to key lifecycle moments, such as when a `Change` starts or finishes execution. These events can be used to trigger logging, monitoring, or other side effects external to the change execution logic itself.
 
-This enables loose coupling between Flamingock’s core execution and your application-level behaviour, without modifying the `ChangeUnit` directly.
+This enables loose coupling between Flamingock’s core execution and your application-level behaviour, without modifying the `Change` directly.
 
 For more details, see the [Events](../flamingock-library-config/events.md) guide.
 
 **Is Flamingock compatible with Spring Boot profiles?**  
-Yes. You can conditionally run ChangeUnits using [`@Profile`](../frameworks/springboot-integration/profiles.md), allowing changes to vary by environment.
+Yes. You can conditionally run Changes using [`@Profile`](../frameworks/springboot-integration/profiles.md), allowing changes to vary by environment.
 
 
 ### Configuration
@@ -83,20 +83,20 @@ Yes. You can conditionally run ChangeUnits using [`@Profile`](../frameworks/spri
 **Where do I set MongoDB connection options like write concern or read preference?**  
 You can define these directly in the config using dedicated properties (e.g. `mongodb.writeConcern.w`, `readPreference`, etc.). Refer to the [additional configuration](../flamingock-library-config/additional-configuration.md) section for detailed examples.
 
-**Can I inject Spring beans or other services into my ChangeUnits?**  
+**Can I inject Spring beans or other services into my Changes?**  
 Yes. Flamingock supports full [dependency injection](../flamingock-library-config/context-and-dependencies.md) in both Spring and non-Spring environments.
 
-**Can I define ChangeUnit dependencies and execution order?**  
-Yes. ChangeUnits can declare dependencies via annotations or configuration metadata. See [ChangeUnit anatomy](../change-units/anatomy-and-structure.md) for more.
+**Can I define Change dependencies and execution order?**  
+Yes. Changes can declare dependencies via annotations or configuration metadata. See [Change anatomy](../changes/anatomy-and-structure.md) for more.
 
 
 ### Testing and development
 
-**How do I test Flamingock ChangeUnits?**  
+**How do I test Flamingock Changes?**  
 You can perform unit, integration, and Spring Boot integration tests using test runners and mocking utilities. See the [Testing](../testing/introduction.md) section for more details.
 
-**Can I use templates to generate ChangeUnits?**  
-Yes. Flamingock offers a templating mechanism for [creating new ChangeUnits](../templates/templates-introduction.md) and defining reusable components.
+**Can I use templates to generate Changes?**  
+Yes. Flamingock offers a templating mechanism for [creating new Changes](../templates/templates-introduction.md) and defining reusable components.
 
 
 ### Migrating from Mongock
@@ -107,9 +107,9 @@ Flamingock is the direct evolution of Mongock. While it inherits the core idea o
 Some of the key advancements introduced by Flamingock include:
 
 - **Cloud-native capabilities**: Support for cloud-managed storage and execution, enabling Flamingock to run in distributed, serverless, or ephemeral environments without additional setup.
-- **Execution stages and pipelines**: A structured way to group and orchestrate ChangeUnits by context, environment, or lifecycle stage.
+- **Execution stages and pipelines**: A structured way to group and orchestrate Changes by context, environment, or lifecycle stage.
 - **Modular architecture**: Clean separation of core, editions, templates, and integrations, enabling better extensibility and maintainability.
-- **Template-based ChangeUnits**: An additional declarative mechanism to define reusable changes without writing Java code, accelerating development and standardisation.
+- **Template-based Changes**: An additional declarative mechanism to define reusable changes without writing Java code, accelerating development and standardisation.
 
 While Flamingock retains conceptual compatibility with Mongock, it represents a significant leap forward in flexibility, scalability, and developer experience.
 
@@ -197,7 +197,7 @@ Flamingock uses a dual-architecture separating target systems (where changes are
 | **Safety Default** | None | None | MANUAL_INTERVENTION |
 
 **Can Flamingock handle multi-system coordination?**  
-Yes, Flamingock is designed for distributed systems. A single ChangeUnit can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining a unified audit trail and recovery strategy.
+Yes, Flamingock is designed for distributed systems. A single Change can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining a unified audit trail and recovery strategy.
 
 **How do I ensure my team adopts Flamingock safely?**  
 1. **Start conservative**: Use MANUAL_INTERVENTION (default) initially
@@ -215,7 +215,7 @@ Flamingock's safety guarantee: **No business changes applied without proper audi
 
 **Can I use Flamingock in microservices architectures?**  
 Absolutely. Flamingock is designed for distributed systems:
-- Each microservice can have its own ChangeUnits for its domain
+- Each microservice can have its own Changes for its domain
 - Shared audit store provides cross-service visibility (especially in Cloud Edition)  
 - CLI provides centralized operational control across all services
 - Recovery strategies can be tailored per service's risk profile
