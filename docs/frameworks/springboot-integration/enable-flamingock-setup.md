@@ -12,31 +12,19 @@ Flamingock provides a convenient automatic integration with Spring Boot using th
 
 ## Import the springboot integration library
 
-Add the appropriate Flamingock Spring Boot integration dependency, depending on your version:
+Add the Flamingock Spring Boot integration dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 3.x (Spring 6.x)
 implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
-
-// For Spring Boot 2.x (Spring 5.x, legacy)
-implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For Spring Boot 3.x (Spring 6.x) -->
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>flamingock-springboot-integration</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
-
-<!-- For Spring Boot 2.x (Spring 5.x, legacy) -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
@@ -45,7 +33,7 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 ### Version Compatibility
 
-Check [Version Compatibility](introduction.md#version-compatibility)
+The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. See [Version Compatibility](introduction.md#version-compatibility) for details.
 
 ## Configure setup and activate integration
 
@@ -72,6 +60,20 @@ The `@EnableFlamingock` annotation enables automatic Spring Boot integration, wh
 - Automatically configures the runner (e.g., ApplicationRunner or InitializingBean)
 - Processes the setup configuration from the annotation
 
+
+## Bean registration requirements
+
+With automatic setup, Flamingock needs access to your target systems and (for Community Edition) audit stores. Since these aren't configured directly via the builder, they must be registered as Spring beans:
+
+Example target system bean registration:
+```java
+@Bean
+public DefaultTargetSystem redisTargetSystem() {
+    return new DefaultTargetSystem("redis-cache");
+}
+```
+
+Flamingock will automatically detect and use these beans during execution.
 
 ## Providing configuration
 

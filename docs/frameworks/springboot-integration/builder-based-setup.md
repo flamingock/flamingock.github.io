@@ -15,31 +15,19 @@ It’s especially useful when integrating Flamingock alongside other frameworks,
 
 ## Import the springboot integration library
 
-Add the appropriate Flamingock Spring Boot integration dependency, depending on your version:
+Add the Flamingock Spring Boot integration dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 3.x
 implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
-
-// For Spring Boot 2.x (legacy)
-implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For Spring Boot 3.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>flamingock-springboot-integration</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
-
-<!-- For Spring Boot 2.x (legacy) -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
