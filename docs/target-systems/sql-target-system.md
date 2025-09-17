@@ -7,58 +7,62 @@ sidebar_position: 3
 
 The SQL target system (`SqlTargetSystem`) enables Flamingock to apply changes to relational databases including PostgreSQL, MySQL, Oracle, and SQL Server using standard JDBC connections. As a transactional target system, it supports automatic rollback through the database's native transaction capabilities.
 
-## Minimum recommended setup
+## Basic setup
 
 ```java
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database")
-    .withDatasource(dataSource);
+SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database", dataSource);
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name and DataSource. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+## Target System Configuration
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+The SQL target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Required dependencies
+### Constructor Dependencies (Mandatory)
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** for both Change execution and transaction management |
+These dependencies must be provided at target system creation time with **no global context fallback**:
 
-### Optional configurations
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `DataSource` | `dataSource` | JDBC DataSource connection pool - **required** for both target system configuration and change execution |
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `Connection` | `.withConnection(connection)` | None | Direct JDBC connection (alternative to DataSource) |
+### Dependencies Available to Changes
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `DataSource`, `Connection`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database")
-    .withDatasource(inventoryDataSource)       // Target-specific datasource
-    .addDependency(inventoryService);          // Custom service for this target
+// Target system configuration (mandatory via constructor)
+SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database", inventoryDataSource)
+    .addDependency(inventoryService);          // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultDataSource)          // Different datasource in global
-    .addDependency(emailService)               // Available to all targets
+    .addDependency(emailService)               // Available to all target systems
+    .addDependency(logService)                 // Available to all target systems
     .addTargetSystems(sqlTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "inventory-database":**
-- **DataSource**: Uses `inventoryDataSource` (from target system, not `defaultDataSource` from global)
-- **InventoryService**: Available from target system context
-- **EmailService**: Available from global context
+**Target system configuration resolution:**
+- **DataSource**: Must be provided via constructor (`inventoryDataSource`)
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "inventory-database":**
+- **DataSource**: From target system context (`inventoryDataSource`)
+- **Connection**: From target system context (derived from `inventoryDataSource`)
+- **InventoryService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
@@ -117,9 +121,9 @@ Without the `DataSource` or `Connection` parameter, operations will execute but 
 
 ## Available dependencies in Changes
 
-Your Changes can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 

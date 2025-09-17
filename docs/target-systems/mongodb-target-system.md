@@ -7,28 +7,38 @@ sidebar_position: 1
 
 The MongoDB Sync target system (`MongoSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
 
-## Minimum recommended setup
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| MongoDB | 4.0.0+ |
+
+MongoDB 4.0+ is required for transaction support.
+
+## Basic setup
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(mongoClient)
-    .withDatabase(database);
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database", mongoClient, "userDb");
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+## Target System Configuration
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+The MongoDB target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Required dependencies
+### Constructor Dependencies (Mandatory)
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** for both Change execution and transaction management |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** for both Change execution and transaction management |
+These dependencies must be provided at target system creation time with **no global context fallback**:
 
-### Optional configurations
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for both target system configuration and change execution |
+| `String` | `databaseName` | Target database name - **required** to identify which database changes will affect |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
 | Configuration | Method | Default | Description |
 |---------------|--------|---------|-------------|
@@ -38,38 +48,48 @@ Following Flamingock's [dependency resolution hierarchy](../flamingock-library-c
 
 **Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases where the defaults cannot be used (e.g., specific infrastructure limitations).
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
-- **Optional configurations** will use the defaults shown above
+### Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, `ClientSession`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(productionMongoClient)    // Target-specific client
-    .withDatabase(userDatabase)                // Target-specific database
-    .addDependency(auditService);              // Custom service for this target
+// Target system configuration (mandatory via constructor)
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database", productionMongoClient, "userDb")
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary())  // Optional configuration
+    .addDependency(auditService);              // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultMongoClient)         // Different client in global
-    .addDependency(defaultDatabase)            // Different database in global
-    .addDependency(emailService)               // Available to all targets
+    .addDependency(emailService)               // Available to all target systems
+    .addDependency(logService)                 // Available to all target systems
     .addTargetSystems(mongoTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "user-database":**
-- **MongoClient**: Uses `productionMongoClient` (from target system, not `defaultMongoClient` from global)
-- **MongoDatabase**: Uses `userDatabase` (from target system, not `defaultDatabase` from global)
-- **AuditService**: Available from target system context
-- **EmailService**: Available from global context
-- **WriteConcern/ReadConcern**: Use defaults (MAJORITY with journal)
+**Target system configuration resolution:**
+- **MongoClient**: Must be provided via constructor (`productionMongoClient`)
+- **Database name**: Must be provided via constructor (`"userDb"`)
+- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
+- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "user-database":**
+- **MongoClient**: From target system context (`productionMongoClient`)
+- **MongoDatabase**: From target system context (derived from `productionMongoClient` + `"userDb"`)
+- **ClientSession**: From target system context (created by Flamingock)
+- **AuditService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
@@ -102,9 +122,9 @@ Without the `ClientSession` parameter, operations will execute but won't partici
 
 ## Available dependencies in Changes
 
-Your Changes can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 

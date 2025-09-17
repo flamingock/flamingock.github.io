@@ -176,23 +176,25 @@ public void rollback(MongoDatabase database, ClientSession session) {
 
 ## Method parameters and dependency injection
 
-Changes receive dependencies through method parameters, automatically injected by Flamingock from the target system's context, global context, or underlying framework context.
+Changes receive dependencies through method parameters, automatically injected by Flamingock using a **flexible, multi-source approach** with fallback hierarchy.
 
-```java
-// MongoDB target system
-@Apply
-public void apply(MongoDatabase database, ClientSession session) {
-    // database and session injected from target system or global context
-}
+### Change Execution Dependency Resolution
 
-// SQL target system
-@Apply
-public void apply(DataSource dataSource) {
-    // dataSource and connection injected from target system or  global context
-}
-```
+Change execution uses a flexible dependency resolution flow(in this priority order):
 
-For more details on how dependency resolution works, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+1. **Target system context** - dependencies from **constructor** + `.withXXX()` methods 
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+
+### Key Benefits of This Architecture
+
+- **Target system isolation**: Each target system has its own dependency context
+- **Flexible fallback**: Changes can access both system-specific and shared dependencies
+- **Clear precedence**: Target system dependencies always override global ones
+- **Type safety**: Strongly typed dependency injection with compile-time checking
+
+For complete details on target system configuration vs change execution dependencies, see [Target Systems Introduction](../target-systems/introduction.md#dependency-injection).
 
 ## File naming conventions
 

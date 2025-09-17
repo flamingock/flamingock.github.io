@@ -7,57 +7,65 @@ sidebar_position: 5
 
 The Couchbase target system (`CouchbaseTargetSystem`) enables Flamingock to apply changes to Couchbase databases using the official Couchbase Java SDK. As a transactional target system, it supports automatic rollback through Couchbase's transaction capabilities.
 
-## Minimum recommended setup
+## Basic setup
 
 ```java
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database")
-    .withCluster(cluster)
-    .withBucket(bucket);
+CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database", cluster, bucket);
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+## Target System Configuration
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+The Couchbase target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Required dependencies
+### Constructor Dependencies (Mandatory)
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** for both Change execution and transaction management |
-| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** for both Change execution and transaction management |
+These dependencies must be provided at target system creation time with **no global context fallback**:
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `Cluster` | `cluster` | Couchbase cluster connection - **required** for both target system configuration and change execution |
+| `Bucket` | `bucket` | Target bucket instance - **required** for both target system configuration and change execution |
+
+### Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `Cluster`, `Bucket`, `AttemptContext`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database")
-    .withCluster(productionCluster)        // Target-specific cluster
-    .withBucket(userBucket)                // Target-specific bucket
-    .addDependency(auditService);          // Custom service for this target
+// Target system configuration (mandatory via constructor)
+CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
+    .addDependency(auditService);          // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultCluster)         // Different cluster in global
-    .addDependency(defaultBucket)          // Different bucket in global
-    .addDependency(emailService)           // Available to all targets
+    .addDependency(emailService)           // Available to all target systems
+    .addDependency(logService)             // Available to all target systems
     .addTargetSystems(couchbaseTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "user-database":**
-- **Cluster**: Uses `productionCluster` (from target system, not `defaultCluster` from global)
-- **Bucket**: Uses `userBucket` (from target system, not `defaultBucket` from global)
-- **AuditService**: Available from target system context
-- **EmailService**: Available from global context
+**Target system configuration resolution:**
+- **Cluster**: Must be provided via constructor (`productionCluster`)
+- **Bucket**: Must be provided via constructor (`userBucket`)
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "user-database":**
+- **Cluster**: From target system context (`productionCluster`)
+- **Bucket**: From target system context (`userBucket`)
+- **AttemptContext**: From target system context (created by Flamingock)
+- **AuditService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
@@ -116,9 +124,9 @@ Without the `AttemptContext` parameter, operations will execute but won't partic
 
 ## Available dependencies in Changes
 
-Your Changes can inject Couchbase-specific dependencies like `Cluster`, `Bucket`, and `AttemptContext` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject Couchbase-specific dependencies like `Cluster`, `Bucket`, and `AttemptContext` (for transactions), but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 

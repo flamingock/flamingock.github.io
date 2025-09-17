@@ -29,37 +29,60 @@ This distinction is built into the target system definition.
 
 > For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
 
-### Dependency injection
+### Dependency isolation
 
-Each target system can expose the dependencies required by its Changes. For example:
-- A MongoDB target system provides a `MongoDatabase`
-- A Kafka target system provides a `KafkaTemplate`  
-- A SQL target system provides a `Connection` or `DataSource`
+Each target system provides its own dependency context, ensuring **target system isolation**. This means each system has its own set of dependencies that are isolated from other target systems, providing clear boundaries and preventing dependency conflicts between different systems, while still supporting global dependency injection as a fallback.
 
-#### Dependency resolution hierarchy
+This isolation enables:
+- Clear ownership of dependencies per target system
+- Prevention of cross-system dependency conflicts
+- Easier testing and debugging of system-specific changes
 
-Each target system needs specific dependencies to function (except `DefaultTargetSystem` which requires none). When Flamingock initializes a target system, it resolves dependencies using this hierarchy:
+## Target system configuration
 
-1. **Direct injection** via `.withXXX()` methods (highest priority)
-2. **Global context** lookup if not directly injected
-3. **Default values** for optional configurations, or **exception** for required ones
+Target systems are configured using a **strict, no-fallback approach** with explicit parameters:
 
-This approach provides maximum flexibility while ensuring all requirements are met:
+**Mandatory configuration**: Provided through constructor parameters only
+- Must be provided at target system creation time
+- No fallback to global context
+- Example: `MongoClient` and `databaseName` for MongoDB target systems
+
+**Optional configuration**: Provided through `.withXXX()` methods only
+- No fallback to global context
+- Uses sensible defaults if not provided
+- Example: `WriteConcern`, connection pool settings
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
-    .withDatabase(database);
+// Mandatory configuration via constructor
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
+
+// Optional configuration via .withXXX() methods
+mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
+           .withConnectionTimeout(5000);
 ```
 
-In this example, Flamingock resolves dependencies as follows:
-- **MongoDatabase**: Provided directly via `.withDatabase()`, so it's immediately available
-- **MongoClient**: Not provided directly, so Flamingock searches the global context
-- **WriteConcern**: Not found in either place, so uses the default value (MAJORITY with journal)
-- If MongoClient is missing from the global context, Flamingock throws an exception since it's a required dependency
+**No global context fallback** - target system configuration must be explicit and complete.
 
-:::info
-Changes are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
+
+## Dependency injection
+
+Dependency injection is the mechanism used for **change execution**, providing the dependencies that Changes need to perform their operations. Each target system exposes specific dependencies required by its Changes:
+
+- A MongoDB target system provides a `MongoDatabase`, `ClientSession`
+- A Kafka target system provides a `KafkaTemplate`
+- A SQL target system provides a `Connection` or `DataSource`
+
+Flamingock uses a **flexible, multi-source approach** with fallback hierarchy for change execution:
+
+1. **Target system context** (highest priority) - includes configuration parameters from constructor + `.withXXX()` methods
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+:::info 
+Target system configuration parameters (from **constructor** and `.withXXX()` methods) are automatically available as change dependencies with highest priority.
 :::
+
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 
 ## Registering target systems
@@ -68,8 +91,7 @@ Target systems are registered at runtime with the Flamingock builder. You can de
 
 ```java
 
-SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
-    .withDatasource(ds);
+SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory", dataSource);
 
 DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
 
@@ -80,7 +102,7 @@ Flamingock.builder()
     .addTargetSystems(mysql, s3, kafka)
     .build()
     .run();
-  
+
 ```
 
 At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each Change.
@@ -91,11 +113,16 @@ For Spring Boot applications, target systems are configured as beans:
 ```java
 @Bean
 public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
-    return new SqlTargetSystem("mysql-inventory")
-        .withDatasource(dataSource);
+    return new SqlTargetSystem("mysql-inventory", dataSource);
 }
 
-@Bean  
+@Bean
+public MongoSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
+    return new MongoSyncTargetSystem("user-database", mongoClient, "userDb")
+        .withWriteConcern(WriteConcern.MAJORITY);
+}
+
+@Bean
 public DefaultTargetSystem kafkaTargetSystem() {
     return new DefaultTargetSystem("kafka-stock");
 }

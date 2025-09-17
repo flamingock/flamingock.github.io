@@ -21,61 +21,76 @@ DefaultTargetSystem is the fallback choice when there's no specialized target sy
 
 **Common systems using DefaultTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
 
-## Minimum recommended setup
+## Basic setup
 
 ```java
 DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry");
 ```
 
-Unlike specialized target systems, DefaultTargetSystem requires no mandatory dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
+Unlike specialized target systems, DefaultTargetSystem requires no mandatory constructor dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
 
-## Dependencies
+## Target System Configuration
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+The Default target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### No required dependencies
+### Constructor Dependencies (None)
 
-DefaultTargetSystem has no `.withXXX()` methods for required dependencies. This provides maximum flexibility for working with any type of system.
+Unlike specialized target systems, DefaultTargetSystem requires **no mandatory constructor dependencies**:
 
-### Generic dependency injection
+```java
+// Only requires the target system name
+DefaultTargetSystem targetSystem = new DefaultTargetSystem("system-name");
+```
 
-All dependencies are provided through generic methods:
+### Target System Configuration (Generic)
+
+All dependencies and configurations are provided through generic methods with **no global context fallback** during target system configuration:
 
 | Method | Description |
 |--------|-------------|
-| `.addDependency(object)` | Add a dependency by type |
-| `.addDependency(name, object)` | Add a named dependency |
-| `.setProperty(key, value)` | Set a configuration property |
+| `.addDependency(object)` | Add a dependency by type for changes |
+| `.addDependency(name, object)` | Add a named dependency for changes |
+| `.setProperty(key, value)` | Set a configuration property for changes |
 
-Remember: If not provided directly, Flamingock searches the global context for dependencies.
+### Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - any dependencies added via `.addDependency()` or properties via `.setProperty()`
+2. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with Kafka Schema Registry dependencies
+// Target system configuration (no mandatory constructor dependencies)
 DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry")
-    .addDependency(schemaRegistryClient)
-    .addDependency("registry-url", "http://schema-registry:8081")
-    .setProperty("compatibility.level", "BACKWARD");
+    .addDependency(schemaRegistryClient)     // Additional dependency for changes
+    .addDependency("registry-url", "http://schema-registry:8081")  // Named dependency
+    .setProperty("compatibility.level", "BACKWARD");  // Configuration property
 
 // Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(metricsService)           // Available to all targets
-    .addDependency(notificationService)      // Available to all targets
+    .addDependency(metricsService)           // Available to all target systems
+    .addDependency(notificationService)      // Available to all target systems
     .addTargetSystems(schemaRegistry)
     .build();
 ```
 
-**What gets resolved for Changes in "kafka-schema-registry":**
-- **SchemaRegistryClient**: Available from target system context
-- **Registry URL**: Available as "registry-url" from target system context  
-- **Compatibility level**: Available as property from target system context
-- **MetricsService**: Available from global context
-- **NotificationService**: Available from global context
+**Target system configuration resolution:**
+- **No mandatory dependencies**: Target system created with name only
+- **Additional dependencies**: Added via `.addDependency()` methods
+- **Configuration properties**: Added via `.setProperty()` method
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "kafka-schema-registry":**
+- **SchemaRegistryClient**: From target system additional dependencies
+- **Registry URL**: From target system context as named dependency ("registry-url")
+- **Compatibility level**: From target system context as property ("compatibility.level")
+- **MetricsService**: From global context (fallback)
+- **NotificationService**: From global context (fallback)
+
+This architecture provides maximum flexibility while maintaining clear separation between target system setup and change execution.
 
 **How compensation works:**
 1. **No transaction boundaries**: Operations execute immediately with no automatic rollback
@@ -86,9 +101,9 @@ The target system context always takes precedence, ensuring proper isolation bet
 
 ## Available dependencies in Changes
 
-Your Changes can inject any dependencies you add to the target system context via `.addDependency()`, taking precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
+Your Changes can inject any dependencies you add to the target system context via `.addDependency()` or properties via `.setProperty()`, which take precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 
