@@ -1,6 +1,6 @@
 ---
 title: DynamoDB
-sidebar_position: 4
+sidebar_position: 5
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,10 +43,14 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.12.0")
 Configure the target system:
 
 ```java
-DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database", dynamoDbClient);
+DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database-id", dynamoDbClient);
 ```
 
 The constructor requires the target system name and DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
 ## Target System Configuration
 
@@ -60,7 +64,7 @@ These dependencies must be provided at target system creation time with **no glo
 |------------|----------------------|-------------|
 | `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for both target system configuration and change execution |
 
-### Dependencies Available to Changes
+## Dependencies Available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
@@ -104,7 +108,7 @@ For a Change to leverage DynamoDB's transactional capabilities, it must use the 
 > For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "update-inventory", order = "001")
 public class UpdateInventory {
     

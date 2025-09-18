@@ -1,6 +1,6 @@
 ---
 title: SQL
-sidebar_position: 3
+sidebar_position: 2
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,10 +43,14 @@ You can use any JDBC driver for your database. Common examples include:
 Configure the target system:
 
 ```java
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database", dataSource);
+SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database-id", dataSource);
 ```
 
 The constructor requires the target system name and DataSource. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
 ## Target System Configuration
 
@@ -60,7 +64,7 @@ These dependencies must be provided at target system creation time with **no glo
 |------------|----------------------|-------------|
 | `DataSource` | `dataSource` | JDBC DataSource connection pool - **required** for both target system configuration and change execution |
 
-### Dependencies Available to Changes
+## Dependencies Available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
@@ -104,7 +108,7 @@ For a Change to leverage SQL's transactional capabilities, it must use either th
 > For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "update-products", order = "001")
 public class UpdateProducts {
     
@@ -129,7 +133,7 @@ public class UpdateProducts {
 You can also inject a `Connection` directly if you prefer to work with connections instead of DataSource:
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "create-indexes", order = "002")
 public class CreateIndexes {
     

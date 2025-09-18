@@ -3,6 +3,9 @@ title: Introduction
 sidebar_position: 0
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Target systems
 
 Target systems are the real-world systems where your business changes are applied.
@@ -64,6 +67,77 @@ mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
 **No global context fallback** - target system configuration must be explicit and complete.
 
 
+## Registering target systems
+
+Target systems are registered at runtime. You can define and register as many as you need:
+
+<Tabs groupId="registration">
+  <TabItem value="builder" label="Flamingock Builder" default>
+
+Use the Flamingock builder for standalone applications:
+
+```java
+SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory-id", dataSource);
+
+NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3-id");
+
+NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka-stock-id");
+
+Flamingock.builder()
+    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+    .addTargetSystems(mysql, s3, kafka)
+    .build()
+    .run();
+```
+
+At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each Change.
+
+  </TabItem>
+  <TabItem value="springboot" label="Spring Boot">
+
+For Spring Boot applications, register target systems as beans:
+
+```java
+@Bean
+public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
+    return new SqlTargetSystem("mysql-inventory-id", dataSource);
+}
+
+@Bean
+public MongoSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
+    return new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb")
+        .withWriteConcern(WriteConcern.MAJORITY);
+}
+
+@Bean
+public NonTransactionalTargetSystem kafkaTargetSystem() {
+    return new NonTransactionalTargetSystem("kafka-stock-id");
+}
+```
+
+Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
+
+For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
+
+  </TabItem>
+</Tabs>
+
+
+
+## Linking Changes to target systems
+
+When defining Changes, you specify which target system they belong to using the `@TargetSystem` annotation:
+
+```java
+@TargetSystem("mysql-inventory-id")
+@Change(id = "add-category", order = "001", author = "team")
+public class _001_AddCategory {
+    //...
+}
+```
+
+
+
 ## Dependency injection
 
 Dependency injection is the mechanism used for **change execution**, providing the dependencies that Changes need to perform their operations. Each target system exposes specific dependencies required by its Changes:
@@ -83,69 +157,6 @@ Target system configuration parameters (from **constructor** and `.withXXX()` me
 :::
 
 For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
-
-
-## Registering target systems
-
-Target systems are registered at runtime with the Flamingock builder. You can define and register as many as you need:
-
-```java
-
-SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory", dataSource);
-
-DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
-
-DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
-
-Flamingock.builder()
-    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
-    .addTargetSystems(mysql, s3, kafka)
-    .build()
-    .run();
-
-```
-
-At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each Change.
-
-### Spring Boot Integration
-For Spring Boot applications, target systems are configured as beans:
-
-```java
-@Bean
-public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
-    return new SqlTargetSystem("mysql-inventory", dataSource);
-}
-
-@Bean
-public MongoSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
-    return new MongoSyncTargetSystem("user-database", mongoClient, "userDb")
-        .withWriteConcern(WriteConcern.MAJORITY);
-}
-
-@Bean
-public DefaultTargetSystem kafkaTargetSystem() {
-    return new DefaultTargetSystem("kafka-stock");
-}
-```
-
-Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
-
-For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
-
-
-
-## Linking Changes to target systems
-
-When defining Changes, you specify which target system they belong to using the `@TargetSystem` annotation:
-
-```java
-@TargetSystem("mysql-inventory")
-@Change(id = "add-category", order = "001", author = "team")
-public class _001_AddCategory {
-    //...
-}
-```
-
 
 
 ## Cloud Edition visibility
@@ -184,7 +195,7 @@ These target systems provide optimized handling for specific technologies:
 ### Universal fallback
 For any system that doesn't require specialized handling:
 
-- [Default target system](../target-systems/default-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
+- [Non-transactional target system](../target-systems/non-transactional-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
 
 **Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 

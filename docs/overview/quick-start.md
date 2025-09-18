@@ -79,13 +79,32 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 
 
 
-## 2. Define your first Changes
+## 2. Create target systems
 
-Each Change represents a single change.  
+Target systems represent the external systems Flamingock will apply your changes to.
+They are configured in the builder and shared across Changes.
+
+For our example:
+- A MySQL database (`mysql-inventory`)
+- An S3 bucket service (`aws-s3`)
+- A Kafka cluster (`kafka`)
+
+```java
+SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3-id");
+NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka-id");
+```
+
+See [Target systems](../target-systems/introduction.md) for more details.
+
+
+## 3. Define your first Changes
+
+Each Change represents a single change.
 For our example, we'll define three:
 
 - **MySQL**: Add a column `category` to products
-- **S3**: Create a `product-images` bucket  
+- **S3**: Create a `product-images` bucket
 - **Kafka**: Create a `stock-updates` topic
 
 Changes can be:
@@ -139,25 +158,6 @@ public class _002_CreateS3Bucket {
 </Tabs>
 
 For more details, see [Core concepts](core-concepts.md).
-
-
-## 3. Create target systems
-
-Target systems represent the external systems Flamingock will apply your changes to.
-They are configured in the builder and shared across Changes.
-
-For our example:
-- A MySQL database (`mysql-inventory`)
-- An S3 bucket service (`aws-s3`)  
-- A Kafka cluster (`kafka`)
-
-```java
-SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
-DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
-DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
-```
-
-See [Target systems](../target-systems/introduction.md) for more details.
 
 
 ## 4. Configure stages

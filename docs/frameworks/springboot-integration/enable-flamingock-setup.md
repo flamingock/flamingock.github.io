@@ -68,8 +68,8 @@ With automatic setup, Flamingock needs access to your target systems and (for Co
 Example target system bean registration:
 ```java
 @Bean
-public DefaultTargetSystem redisTargetSystem() {
-    return new DefaultTargetSystem("redis-cache");
+public NonTransactionalTargetSystem redisTargetSystem() {
+    return new NonTransactionalTargetSystem("redis-cache-id");
 }
 ```
 

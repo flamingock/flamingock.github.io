@@ -1,6 +1,6 @@
 ---
 title: MongoDB Sync
-sidebar_position: 1
+sidebar_position: 3
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,10 +43,14 @@ implementation("org.mongodb:mongodb-driver-sync:4.0.0")
 Configure the target system:
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database", mongoClient, "userDb");
+MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb");
 ```
 
 The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
 ## Target System Configuration
 
@@ -71,9 +75,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases where the defaults cannot be used (e.g., specific infrastructure limitations).
 
-### Dependencies Available to Changes
+## Dependencies Available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
@@ -123,7 +126,7 @@ For a Change to leverage MongoDB's transactional capabilities, it must use the `
 > For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("user-database")
+@TargetSystem("user-database-id")
 @Change(id = "create-users", order = "001")
 public class CreateUsers {
     

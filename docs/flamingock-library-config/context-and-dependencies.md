@@ -53,15 +53,15 @@ MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
     .withMongoClient(client);    // MongoDB-specific method
 ```
 
-**Generic methods** - All target systems (including DefaultTargetSystem) support generic dependency injection:
+**Generic methods** - All target systems (including NonTransactionalTargetSystem) support generic dependency injection:
 ```java
-DefaultTargetSystem kafkaTarget = new DefaultTargetSystem("events")
+NonTransactionalTargetSystem kafkaTarget = new NonTransactionalTargetSystem("events-id")
     .addDependency(kafkaProducer)
     .addDependency("notification-service", notificationService)
     .setProperty("batch.size", 1000);
 ```
 
-This flexibility allows DefaultTargetSystem to inject any dependencies needed for non-transactional systems, while specialized target systems provide convenience methods for their common dependencies.
+This flexibility allows NonTransactionalTargetSystem to inject any dependencies needed for non-transactional systems, while specialized target systems provide convenience methods for their common dependencies.
 
 ### Global dependencies
 

@@ -1,19 +1,19 @@
 ---
-title: Default (Non-transactional)
-sidebar_position: 6
+title: Non transactional
+sidebar_position: 1
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Default Target System
+# Non-transactional Target System
 
-The Default target system (`DefaultTargetSystem`) is Flamingock's generic target system for any system that doesn't require specialized handling. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
+The Non-transactional target system (`NonTransactionalTargetSystem`) is Flamingock's generic target system for any system that doesn't require specialized handling. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
 
-## Why use DefaultTargetSystem?
+## Why use NonTransactionalTargetSystem?
 
-DefaultTargetSystem is the fallback choice when there's no specialized target system implementation available for your technology. While Flamingock provides dedicated target systems for technologies that benefit from specific handling (like transactional systems that leverage native rollback capabilities), many systems don't require such specialization.
+NonTransactionalTargetSystem is the fallback choice when there's no specialized target system implementation available for your technology. While Flamingock provides dedicated target systems for technologies that benefit from specific handling (like transactional systems that leverage native rollback capabilities), many systems don't require such specialization.
 
-**When to use DefaultTargetSystem:**
+**When to use NonTransactionalTargetSystem:**
 - No dedicated target system exists for your technology
 - Your system doesn't have unique characteristics that warrant specialized handling
 - You need a simple, flexible solution without technology-specific optimizations
@@ -21,7 +21,7 @@ DefaultTargetSystem is the fallback choice when there's no specialized target sy
 **Future extensibility:** The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. 
 
 
-**Common systems using DefaultTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
+**Common systems using NonTransactionalTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
 
 ## Installation
 
@@ -32,22 +32,26 @@ No specific dependencies are required for DefaultTargetSystem. You can add any d
 Configure the target system:
 
 ```java
-DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry");
+NonTransactionalTargetSystem schemaRegistry = new NonTransactionalTargetSystem("kafka-schema-registry-id");
 ```
 
-Unlike specialized target systems, DefaultTargetSystem requires no mandatory constructor dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
+Unlike specialized target systems, NonTransactionalTargetSystem requires no mandatory constructor dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
 ## Target System Configuration
 
-The Default target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
+The Non-transactional target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
 ### Constructor Dependencies (None)
 
-Unlike specialized target systems, DefaultTargetSystem requires **no mandatory constructor dependencies**:
+Unlike specialized target systems, NonTransactionalTargetSystem requires **no mandatory constructor dependencies**:
 
 ```java
 // Only requires the target system name
-DefaultTargetSystem targetSystem = new DefaultTargetSystem("system-name");
+NonTransactionalTargetSystem targetSystem = new NonTransactionalTargetSystem("system-name-id");
 ```
 
 ### Target System Configuration (Generic)
@@ -60,7 +64,7 @@ All dependencies and configurations are provided through generic methods with **
 | `.addDependency(name, object)` | Add a named dependency for changes |
 | `.setProperty(key, value)` | Set a configuration property for changes |
 
-### Dependencies Available to Changes
+## Dependencies Available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
@@ -105,7 +109,7 @@ This architecture provides maximum flexibility while maintaining clear separatio
 2. **Rollback execution**: If any failure occurs, Flamingock calls the `@Rollback` method
 3. **Manual compensation**: You provide the logic to undo or compensate for the changes made
 
-**Important**: Always provide `@Rollback` methods for DefaultTargetSystem Changes to ensure safe rollback capabilities.
+**Important**: Always provide `@Rollback` methods for NonTransactionalTargetSystem Changes to ensure safe rollback capabilities.
 
 ## Available dependencies in Changes
 
@@ -117,4 +121,4 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 
 - Learn about [Target systems](introduction.md)
 - Explore [Changes](../changes/introduction.md)  
-- See [DefaultTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)
+- See [NonTransactionalTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)
