@@ -8,48 +8,69 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Audit Store
 
-This page explains how to configure **MongoDB** as Flamingock's audit store.
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The MongoDB audit store (`MongoSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using MongoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| MongoDB Java Driver | 4.0.0+ |
 
-To use MongoDB as your audit store you need to provide:  
-- A **MongoClient**  
-- A **MongoDatabase**
+MongoDB 4.0+ is recommended for optimal performance and feature support.
 
-That's all. Flamingock will take care of collections, indexes, and consistency defaults.  
+## Installation
 
-Example:
+Add the MongoDB Java sync driver dependency to your project:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.mongodb:mongodb-driver-sync:5.2.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongodb-driver-sync</artifactId>
+    <version>5.2.0</version> <!-- 4.0.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the audit store:
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    MongoClient client = MongoClients.create("mongodb://localhost:27017");
-    MongoDatabase db = client.getDatabase("flamingock_audit");
-
-    Flamingock.builder()
-      .setAuditStore(new MongoSyncAuditStore()
-          .withMongoClient(client)
-          .withDatabase(db))
-      .build()
-      .run();
-  }
-}
+var auditStore = new MongoSyncAuditStore("audit-store-id", mongoClient, mongoDatabase);
 ```
 
-## Dependencies
+The constructor requires the audit store name, MongoDB client, and database. Optional configurations can be added via `.withXXX()` methods.
 
-### Required dependencies
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+:::
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** |
+## Audit Store Configuration
 
-### Optional configurations
+The MongoDB audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for audit store configuration |
+| `MongoDatabase` | `mongoDatabase` | Target database instance - **required** for storing audit data |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
 | Configuration | Method | Default | Description |
 |---------------|--------|---------|-------------|
@@ -57,91 +78,32 @@ public class App {
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
 
-## Reusing target system dependencies
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
 
-If you're already using a MongoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
 
 ```java
-// Reuse dependencies from existing target system
-var mongoTargetSystem = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(client)
-    .withDatabase(userDatabase);
+// Audit store configuration (mandatory via constructor)
+var auditStore = new MongoSyncAuditStore("audit-store-id", mongoClient, auditDatabase)
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary());  // Optional configuration
 
-// Create audit store reusing the same dependencies
-var auditStore = MongoSyncAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem);
-
+// Register with Flamingock
 Flamingock.builder()
     .setAuditStore(auditStore)
-    .addTargetSystems(mongoTargetSystem)
-    .build()
-    .run();
+    .addTargetSystems(targetSystems...)
+    .build();
 ```
 
-You can still override specific settings if needed:
+**Audit store configuration resolution:**
+- **MongoClient**: Must be provided via constructor
+- **MongoDatabase**: Must be provided via constructor
+- **WriteConcern**: Uses explicit configuration instead of default
+- **ReadPreference**: Uses explicit configuration instead of default
 
-```java
-var auditStore = MongoSyncAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem)
-    .withReadConcern(ReadConcern.LOCAL);
-```
-
-
-## Supported versions
-
-| MongoDB Driver                 | MongoDB Server | Support level   |
-|--------------------------------|----------------|-----------------|
-| `mongodb-driver-sync` 4.0–5.x | 3.6 – 7.0      | Full support    |
-| `mongodb-driver-sync` 3.12.x  | 3.4 – 4.4      | Legacy support  |
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
-```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// MongoDB driver (if not already present)
-implementation("org.mongodb:mongodb-driver-sync:5.2.0")
-```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
-```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
-<dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- MongoDB driver (if not already present) -->
-<dependency>
-  <groupId>org.mongodb</groupId>
-  <artifactId>mongodb-driver-sync</artifactId>
-  <version>5.2.0</version>
-</dependency>
-```
-
-</TabItem>
-
-</Tabs>
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
 ## Configuration options

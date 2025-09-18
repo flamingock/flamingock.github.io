@@ -8,126 +8,87 @@ import TabItem from '@theme/TabItem';
 
 # DynamoDB Audit Store
 
-This page explains how to configure **Amazon DynamoDB** as Flamingock's audit store.
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The DynamoDB audit store (`DynamoSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Amazon DynamoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| AWS SDK DynamoDB Enhanced | 2.12.0+ |
 
-To use DynamoDB as your audit store you need to provide:  
-- A **DynamoDbClient**
+AWS SDK DynamoDB Enhanced 2.12.0+ is required and must be included in your project dependencies.
 
-That's all. Flamingock will take care of tables, indexes, and capacity defaults.
+## Installation
 
-Example:
+Add the AWS SDK DynamoDB Enhanced dependency to your project:
 
-```java
-public class App {
-  public static void main(String[] args) {
-    DynamoDbClient client = DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .build();
-
-    Flamingock.builder()
-      .setAuditStore(new DynamoSyncAuditStore()
-          .withClient(client))
-      .build()
-      .run();
-  }
-}
-```
-
-## Dependencies
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `DynamoDbClient` | `.withClient(client)` | AWS DynamoDB client - **required** |
-
-## Reusing target system dependencies
-
-If you're already using a DynamoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
-
-```java
-// Reuse dependencies from existing target system
-var dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
-    .withDynamoDBClient(dynamoDbClient);
-
-// Create audit store reusing the same dependencies
-var auditStore = DynamoSyncAuditStore
-    .reusingDependenciesFrom(dynamoTargetSystem);
-
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(dynamoTargetSystem)
-    .build()
-    .run();
-```
-
-
-## Supported versions
-
-| AWS SDK                        | DynamoDB       | Support level   |
-|--------------------------------|----------------|-----------------|
-| `dynamodb` 2.25.29+            | All versions   | Full support    |
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// AWS SDK (if not already present)
-implementation("software.amazon.awssdk:dynamodb:2.28.0")
 implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 ```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 ```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
 <dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- AWS SDK (if not already present) -->
-<dependency>
-  <groupId>software.amazon.awssdk</groupId>
-  <artifactId>dynamodb</artifactId>
-  <version>2.28.0</version>
-</dependency>
-<dependency>
-  <groupId>software.amazon.awssdk</groupId>
-  <artifactId>dynamodb-enhanced</artifactId>
-  <version>2.28.0</version>
+    <groupId>software.amazon.awssdk</groupId>
+    <artifactId>dynamodb-enhanced</artifactId>
+    <version>2.28.0</version> <!-- 2.12.0+ supported -->
 </dependency>
 ```
-
-</TabItem>
-
+  </TabItem>
 </Tabs>
+
+## Basic setup
+
+Configure the audit store:
+
+```java
+var auditStore = new DynamoSyncAuditStore("audit-store-id", dynamoDbClient);
+```
+
+The constructor requires the audit store name and DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+:::
+
+## Audit Store Configuration
+
+The DynamoDB audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for audit store configuration and data access |
+
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Audit store configuration (mandatory via constructor)
+var auditStore = new DynamoSyncAuditStore("audit-store-id", dynamoDbClient)
+    .withProperty("dynamodb.readCapacityUnits", 10)     // Optional configuration
+    .withProperty("dynamodb.writeCapacityUnits", 10);   // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **DynamoDbClient**: Must be provided via constructor
+- **Capacity settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
 ## Configuration options

@@ -8,123 +8,89 @@ import TabItem from '@theme/TabItem';
 
 # Couchbase Audit Store
 
-This page explains how to configure **Couchbase** as Flamingock's audit store.  
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The Couchbase audit store (`CouchbaseSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| Couchbase Java Client | 3.6.0+ |
 
-To use Couchbase as your audit store you need to provide:  
-- A **Cluster**
-- A **Bucket**
+Couchbase Java Client 3.6.0+ is required and must be included in your project dependencies.
 
-That's all. Flamingock will take care of collections, indexes, and scope defaults.
+## Installation
 
-Example:
+Add the Couchbase Java Client dependency to your project:
 
-```java
-public class App {
-  public static void main(String[] args) {
-    Cluster cluster = Cluster.connect("localhost", "username", "password");
-    Bucket bucket = cluster.bucket("audit-bucket");
-    
-    Flamingock.builder()
-      .setAuditStore(new CouchbaseSyncAuditStore()
-          .withCluster(cluster)
-          .withBucket(bucket))
-      .build()
-      .run();
-  }
-}
-```
-
-## Dependencies
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** |
-| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** |
-
-## Reusing target system dependencies
-
-If you're already using a Couchbase target system, you can reuse its dependencies to avoid duplicating connection configuration:
-
-```java
-// Reuse dependencies from existing target system
-var couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
-    .withCluster(cluster)
-    .withBucket(bucket);
-
-// Create audit store reusing the same dependencies
-var auditStore = CouchbaseSyncAuditStore
-    .reusingDependenciesFrom(couchbaseTargetSystem);
-
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(couchbaseTargetSystem)
-    .build()
-    .run();
-```
-
-
-## Supported versions
-
-| Couchbase SDK                  | Couchbase Server | Support level   |
-|--------------------------------|------------------|-----------------|
-| `java-client` 3.6.0+           | 7.0+             | Full support    |
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// Couchbase SDK (if not already present)
 implementation("com.couchbase.client:java-client:3.7.0")
 ```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 ```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
 <dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- Couchbase SDK (if not already present) -->
-<dependency>
-  <groupId>com.couchbase.client</groupId>
-  <artifactId>java-client</artifactId>
-  <version>3.7.0</version>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>java-client</artifactId>
+    <version>3.7.0</version> <!-- 3.6.0+ supported -->
 </dependency>
 ```
-
-</TabItem>
-
+  </TabItem>
 </Tabs>
+
+## Basic setup
+
+Configure the audit store:
+
+```java
+var auditStore = new CouchbaseSyncAuditStore("audit-store-id", cluster, bucket);
+```
+
+The constructor requires the audit store name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+:::
+
+## Audit Store Configuration
+
+The Couchbase audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `Cluster` | `cluster` | Couchbase cluster connection - **required** for audit store configuration |
+| `Bucket` | `bucket` | Target bucket instance - **required** for storing audit data |
+
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Audit store configuration (mandatory via constructor)
+var auditStore = new CouchbaseSyncAuditStore("audit-store-id", cluster, bucket)
+    .withProperty("couchbase.scopeName", "custom-scope")     // Optional configuration
+    .withProperty("couchbase.autoCreate", true);             // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **Cluster**: Must be provided via constructor
+- **Bucket**: Must be provided via constructor
+- **Scope settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
 ## Configuration options

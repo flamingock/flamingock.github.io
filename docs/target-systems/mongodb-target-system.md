@@ -13,7 +13,7 @@ The MongoDB Sync target system (`MongoSyncTargetSystem`) enables Flamingock to a
 
 | Component | Version Requirement |
 |-----------|-------------------|
-| MongoDB | 4.0.0+ |
+| MongoDB Java Driver | 4.0.0+ |
 
 MongoDB 4.0+ is required for transaction support.
 
