@@ -2,12 +2,45 @@
 title: SQL
 sidebar_position: 3
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # SQL Target System
 
 The SQL target system (`SqlTargetSystem`) enables Flamingock to apply changes to relational databases including PostgreSQL, MySQL, Oracle, and SQL Server using standard JDBC connections. As a transactional target system, it supports automatic rollback through the database's native transaction capabilities.
 
+## Installation
+
+Add a JDBC driver dependency for your database. For example, for PostgreSQL:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.postgresql:postgresql:42.3.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.3.0</version>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+You can use any JDBC driver for your database. Common examples include:
+- **MySQL**: `com.mysql:mysql-connector-j`
+- **Oracle**: `com.oracle.database.jdbc:ojdbc8`
+- **SQL Server**: `com.microsoft.sqlserver:mssql-jdbc`
+- **H2**: `com.h2database:h2`
+- **HSQLDB**: `org.hsqldb:hsqldb`
+- And any other JDBC-compliant driver
+
 ## Basic setup
+
+Configure the target system:
 
 ```java
 SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database", dataSource);
@@ -68,7 +101,7 @@ This architecture ensures explicit target system configuration while providing f
 
 For a Change to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
 @TargetSystem("inventory-database")

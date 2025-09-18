@@ -2,6 +2,8 @@
 title: MongoDB Spring Data
 sidebar_position: 2
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # MongoDB Spring Data Target System
 
@@ -11,11 +13,35 @@ The MongoDB Spring Data target system (`MongoSpringDataTargetSystem`) enables Fl
 
 | Component | Version Requirement |
 |-----------|-------------------|
-| Spring Data MongoDB | 3.1.x+ |
+| Spring Data MongoDB | 3.1.x - 4.x |
 
-Spring Data MongoDB 3.1.x+ is included in Spring Boot 2.4.3+.
+Spring Data MongoDB versions from 3.1.x through 4.x are supported. Version 3.1.x+ is included in Spring Boot 2.4.3+.
+
+## Installation
+
+Add the Spring Data MongoDB dependency to your project (versions 3.1.x - 4.x supported):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.springframework.data:spring-data-mongodb:3.1.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-mongodb</artifactId>
+    <version>3.1.0</version> <!-- 3.1.x - 4.x supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
 
 ## Basic setup
+
+Configure the target system:
 
 ```java
 MongoSpringDataTargetSystem mongoTarget = new MongoSpringDataTargetSystem("user-database", mongoTemplate);
@@ -91,7 +117,7 @@ This architecture ensures explicit target system configuration while providing f
 
 Spring Data MongoDB target system integrates with Spring's transaction management. When a Change is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
 @TargetSystem("user-database")

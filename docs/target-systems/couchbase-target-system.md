@@ -2,12 +2,45 @@
 title: Couchbase
 sidebar_position: 5
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Couchbase Target System
 
 The Couchbase target system (`CouchbaseTargetSystem`) enables Flamingock to apply changes to Couchbase databases using the official Couchbase Java SDK. As a transactional target system, it supports automatic rollback through Couchbase's transaction capabilities.
 
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| Couchbase Java Client | 3.6.0+ |
+
+Couchbase Java Client 3.6.0+ is required and must be included in your project dependencies.
+
+## Installation
+
+Add the Couchbase Java Client dependency to your project (version 3.6.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("com.couchbase.client:java-client:3.6.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>java-client</artifactId>
+    <version>3.6.0</version> <!-- 3.6.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
 ## Basic setup
+
+Configure the target system:
 
 ```java
 CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database", cluster, bucket);
@@ -71,7 +104,7 @@ This architecture ensures explicit target system configuration while providing f
 
 For a Change to leverage Couchbase's transactional capabilities, it must use the `AttemptContext` parameter. Flamingock uses the injected `Cluster` and `Bucket` dependencies to create and manage this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
 @TargetSystem("user-database")

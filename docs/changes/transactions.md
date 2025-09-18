@@ -1,6 +1,6 @@
 ---
 title: Transactions
-sidebar_position: 40
+sidebar_position: 3
 ---
 
 # Transactions
@@ -25,7 +25,7 @@ These systems support native transaction capabilities:
 **When `transactional = false`**:
 - Execution runs without transaction
 - **On failure**: Safety through compensation logic (@Rollback)
-- Useful for DDL operations or large bulk operations that exceed transaction limits
+- Useful for DDL operations or any operation that requires not participating in a transaction
 
 ### ⚡ Non-transactional target systems
 **Examples**: Kafka, S3, REST APIs, file systems, message queues

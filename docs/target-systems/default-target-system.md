@@ -2,6 +2,8 @@
 title: Default (Non-transactional)
 sidebar_position: 6
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Default Target System
 
@@ -21,7 +23,13 @@ DefaultTargetSystem is the fallback choice when there's no specialized target sy
 
 **Common systems using DefaultTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
 
+## Installation
+
+No specific dependencies are required for DefaultTargetSystem. You can add any dependencies needed for your specific use case.
+
 ## Basic setup
+
+Configure the target system:
 
 ```java
 DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry");

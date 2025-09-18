@@ -27,7 +27,7 @@ Every change is tied to a named target system, avoiding ambiguity and enabling c
 
 This distinction is built into the target system definition.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ### Dependency isolation
 

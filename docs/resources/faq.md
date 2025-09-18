@@ -61,7 +61,7 @@ Flamingock's behavior depends on your recovery strategy configuration:
 This intelligent failure handling prevents silent data corruption and provides operational control.
 
 **How can I ensure changes are transactional?**  
-If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../flamingock-library-config/transactions.md).
+If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../changes/transactions.md).
 
 **Should I implement the @Rollback method in transactional environments?**
 

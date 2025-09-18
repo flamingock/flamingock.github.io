@@ -2,12 +2,45 @@
 title: DynamoDB
 sidebar_position: 4
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # DynamoDB Target System
 
 The DynamoDB target system (`DynamoDBTargetSystem`) enables Flamingock to apply changes to Amazon DynamoDB using the AWS SDK for Java. As a transactional target system, it supports automatic rollback through DynamoDB's transaction capabilities with `TransactWriteItems`.
 
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| AWS SDK DynamoDB Enhanced | 2.12.0+ |
+
+AWS SDK DynamoDB Enhanced 2.12.0+ is required and must be included in your project dependencies.
+
+## Installation
+
+Add the AWS SDK DynamoDB Enhanced dependency to your project (version 2.12.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("software.amazon.awssdk:dynamodb-enhanced:2.12.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>software.amazon.awssdk</groupId>
+    <artifactId>dynamodb-enhanced</artifactId>
+    <version>2.12.0</version> <!-- 2.12.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
 ## Basic setup
+
+Configure the target system:
 
 ```java
 DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database", dynamoDbClient);
@@ -68,7 +101,7 @@ This architecture ensures explicit target system configuration while providing f
 
 For a Change to leverage DynamoDB's transactional capabilities, it must use the `TransactWriteItemsEnhancedRequest.Builder` parameter. Flamingock uses the injected `DynamoDbClient` dependency to create and manage this builder's lifecycle - creating it before execution and executing the transaction with all operations on success.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
 @TargetSystem("inventory-database")

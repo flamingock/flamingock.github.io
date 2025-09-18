@@ -2,6 +2,8 @@
 title: MongoDB Sync
 sidebar_position: 1
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # MongoDB Sync Target System
 
@@ -15,7 +17,30 @@ The MongoDB Sync target system (`MongoSyncTargetSystem`) enables Flamingock to a
 
 MongoDB 4.0+ is required for transaction support.
 
+## Installation
+
+Add the MongoDB Java sync driver dependency to your project (version 4.0.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.mongodb:mongodb-driver-sync:4.0.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongodb-driver-sync</artifactId>
+    <version>4.0.0</version> <!-- 4.0.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
 ## Basic setup
+
+Configure the target system:
 
 ```java
 MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database", mongoClient, "userDb");
@@ -95,7 +120,7 @@ This architecture ensures explicit target system configuration while providing f
 
 For a Change to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
 @TargetSystem("user-database")

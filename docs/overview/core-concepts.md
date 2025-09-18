@@ -68,7 +68,7 @@ Systems that support ACID transactions, such as MongoDB 4.0+, PostgreSQL, MySQL,
 ### Non-transactional target systems
 Systems like Kafka, S3, REST APIs, or file systems that don't support transactions. For these systems, Flamingock relies on explicit rollback methods and careful change design to maintain consistency. Recovery strategies become particularly important for handling failures in non-transactional contexts.
 
-For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
+For implementation details, see the [Transactions](../changes/transactions.md) section.
 
 
 ## Stages

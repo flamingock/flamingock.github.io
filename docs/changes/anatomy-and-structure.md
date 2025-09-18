@@ -22,6 +22,7 @@ The `id` must be unique across all Changes in your application.
 - Must be unique application-wide
 - Use descriptive names (e.g., `add-user-status`, not `change1`)
 - Cannot be modified once deployed
+____
 
 ### `order` - Execution sequence
 The `order` determines when the Change executes relative to others.
@@ -37,7 +38,7 @@ The `order` determines when the Change executes relative to others.
 - Minimum 4 digits recommended for future expansion
 - Determines execution order across all target systems
 - Cannot be changed once deployed
-
+____
 ### `author` - Responsibility tracking
 Identifies who is responsible for this change.
 
@@ -53,18 +54,6 @@ Identifies who is responsible for this change.
 
 ## Optional properties
 
-### `description` - Change explanation
-Briefly describes what the change does, especially useful for complex operations.
-
-```java
-@Change(
-    id = "optimize-user-queries",
-    order = "0001",
-    author = "performance-team",
-    description = "Add composite index on user table to improve search performance"
-)
-```
-
 ### `transactional` - Transaction behavior
 Controls whether the change runs within a transaction (default: `true`).
 
@@ -77,13 +66,13 @@ Controls whether the change runs within a transaction (default: `true`).
 )
 ```
 
-**When to set `transactional = false`:**
-- DDL operations (CREATE INDEX, ALTER TABLE)
-- Large bulk operations that exceed transaction limits  
-- Cross-system changes spanning multiple databases
-- Operations that don't support transactions
-
 **Important:** For non-transactional target systems (S3, Kafka, etc.), this flag has no effect.
+
+:::tip
+For detailed information on transaction handling, see [Transactions](transactions.md).
+:::
+
+----
 
 ### `recovery` - Failure handling strategy
 Controls how Flamingock handles execution failures (default: `MANUAL_INTERVENTION`).
@@ -108,6 +97,19 @@ public class IdempotentChange {
 - `ALWAYS_RETRY`: Automatically retries on subsequent executions until successful
 
 For detailed information on recovery strategies, see [Safety and Recovery](../safety-and-recovery/introduction.md).
+
+---
+### `description` - Change explanation
+Briefly describes what the change does, especially useful for complex operations.
+
+```java
+@Change(
+    id = "optimize-user-queries",
+    order = "0001",
+    author = "performance-team",
+    description = "Add composite index on user table to improve search performance"
+)
+```
 
 ## Required annotations
 
