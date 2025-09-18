@@ -44,7 +44,7 @@ implementation("org.springframework.data:spring-data-mongodb:3.1.0")
 Configure the target system:
 
 ```java
-MongoSpringDataTargetSystem mongoTarget = new MongoSpringDataTargetSystem("user-database-id", mongoTemplate);
+var mongoTarget = new MongoSpringDataTargetSystem("user-database-id", mongoTemplate);
 ```
 
 The constructor requires the target system name and MongoDB template. Optional configurations can be added via `.withXXX()` methods.
@@ -90,7 +90,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-MongoSpringDataTargetSystem mongoTarget = new MongoSpringDataTargetSystem("user-database", userMongoTemplate)
+var mongoTarget = new MongoSpringDataTargetSystem("user-database", userMongoTemplate)
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(userAuditService);          // Additional dependency for changes

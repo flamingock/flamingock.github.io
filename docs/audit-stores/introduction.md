@@ -40,7 +40,7 @@ Register the audit store with the Flamingock builder:
 public class App {
   public static void main(String[] args) {
     // Create your audit store connection
-    AuditStore auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
+    var auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
     
     // Register with Flamingock
     FlamingockStandalone

@@ -66,11 +66,11 @@ class IntegrationTest {
 
     @Test
     void shouldExecuteChangeAgainstS3AndAuditToMongo() {
-        S3Client s3Client = S3Client.builder()
+        var s3Client = S3Client.builder()
                 .region(Region.EU_WEST_1)
                 .build();
 
-        MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+        var mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
 
         Runner runner = Flamingock.builder()
                 .addDependency(s3Client)
@@ -90,7 +90,7 @@ class IntegrationTest {
         MongoDatabase db = mongoClient.getDatabase("test-db");
         MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLogs");
 
-        Document document = new Document("changeId", "create-bucket")
+        var document = new Document("changeId", "create-bucket")
                 .append("state","EXECUTED");
         Document auditEntry = auditCollection.find(document).first();
         assertNotNull(auditEntry, "Flamingock audit log entry was not found in MongoDB");

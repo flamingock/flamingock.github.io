@@ -95,7 +95,7 @@ public class FlamingockSpringbootTest {
 
   @Bean
   public AdminClient kafkaAdminClient() {
-    Properties config = new Properties();
+    var config = new Properties();
     config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
     return AdminClient.create(config);
   }

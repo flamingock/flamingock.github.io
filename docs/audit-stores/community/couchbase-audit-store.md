@@ -55,12 +55,12 @@ If you're already using a Couchbase target system, you can reuse its dependencie
 
 ```java
 // Reuse dependencies from existing target system
-CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
+var couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
     .withCluster(cluster)
     .withBucket(bucket);
 
 // Create audit store reusing the same dependencies
-CouchbaseSyncAuditStore auditStore = CouchbaseSyncAuditStore
+var auditStore = CouchbaseSyncAuditStore
     .reusingDependenciesFrom(couchbaseTargetSystem);
 
 Flamingock.builder()

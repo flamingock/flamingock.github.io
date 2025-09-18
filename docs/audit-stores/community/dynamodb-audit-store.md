@@ -53,11 +53,11 @@ If you're already using a DynamoDB target system, you can reuse its dependencies
 
 ```java
 // Reuse dependencies from existing target system
-DynamoDBTargetSystem dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
+var dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
     .withDynamoDBClient(dynamoDbClient);
 
 // Create audit store reusing the same dependencies
-DynamoSyncAuditStore auditStore = DynamoSyncAuditStore
+var auditStore = DynamoSyncAuditStore
     .reusingDependenciesFrom(dynamoTargetSystem);
 
 Flamingock.builder()

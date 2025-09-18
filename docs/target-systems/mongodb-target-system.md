@@ -43,7 +43,7 @@ implementation("org.mongodb:mongodb-driver-sync:4.0.0")
 Configure the target system:
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb");
+var mongoTarget = new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb");
 ```
 
 The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
@@ -90,7 +90,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database", productionMongoClient, "userDb")
+var mongoTarget = new MongoSyncTargetSystem("user-database", productionMongoClient, "userDb")
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(auditService);              // Additional dependency for changes

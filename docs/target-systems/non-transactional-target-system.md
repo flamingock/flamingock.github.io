@@ -32,7 +32,7 @@ No specific dependencies are required for DefaultTargetSystem. You can add any d
 Configure the target system:
 
 ```java
-NonTransactionalTargetSystem schemaRegistry = new NonTransactionalTargetSystem("kafka-schema-registry-id");
+var schemaRegistry = new NonTransactionalTargetSystem("kafka-schema-registry-id");
 ```
 
 Unlike specialized target systems, NonTransactionalTargetSystem requires no mandatory constructor dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
@@ -51,7 +51,7 @@ Unlike specialized target systems, NonTransactionalTargetSystem requires **no ma
 
 ```java
 // Only requires the target system name
-NonTransactionalTargetSystem targetSystem = new NonTransactionalTargetSystem("system-name-id");
+var targetSystem = new NonTransactionalTargetSystem("system-name-id");
 ```
 
 ### Target System Configuration (Generic)
@@ -77,7 +77,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (no mandatory constructor dependencies)
-DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry")
+var schemaRegistry = new DefaultTargetSystem("kafka-schema-registry")
     .addDependency(schemaRegistryClient)     // Additional dependency for changes
     .addDependency("registry-url", "http://schema-registry:8081")  // Named dependency
     .setProperty("compatibility.level", "BACKWARD");  // Configuration property

@@ -48,14 +48,14 @@ Every target system provides two ways to add dependencies:
 
 **Specific methods** - Each concrete implementation offers `.withXXX()` methods for common dependencies:
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
+var mongoTarget = new MongoSyncTargetSystem("user-db")
     .withDatabase(database)      // MongoDB-specific method
     .withMongoClient(client);    // MongoDB-specific method
 ```
 
 **Generic methods** - All target systems (including NonTransactionalTargetSystem) support generic dependency injection:
 ```java
-NonTransactionalTargetSystem kafkaTarget = new NonTransactionalTargetSystem("events-id")
+var kafkaTarget = new NonTransactionalTargetSystem("events-id")
     .addDependency(kafkaProducer)
     .addDependency("notification-service", notificationService)
     .setProperty("batch.size", 1000);

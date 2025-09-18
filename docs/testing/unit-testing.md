@@ -53,7 +53,7 @@ class _0001_CreateS3BucketChangeTest {
 
   @Test
   void shouldCallCreateBucketOnExecution() {
-    S3Client s3Client = mock(S3Client.class);
+    var s3Client = mock(S3Client.class);
     new _0001_CreateS3BucketChange().apply(s3Client);
 
     verify(s3Client).createBucket(argThat(req ->
@@ -62,7 +62,7 @@ class _0001_CreateS3BucketChangeTest {
 
   @Test
   void shouldCallDeleteBucketOnRollback() {
-    S3Client s3Client = mock(S3Client.class);
+    var s3Client = mock(S3Client.class);
     new _0001_CreateS3BucketChange().rollback(s3Client);
     
     verify(s3Client).deleteBucket(argThat(req ->

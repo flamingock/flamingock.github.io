@@ -233,7 +233,7 @@ public class _0001_AddUserPreferences {
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {
         // Add preferences field with default values
-        Document defaultPreferences = new Document()
+        var defaultPreferences = new Document()
             .append("notifications", true)
             .append("theme", "light")
             .append("language", "en");

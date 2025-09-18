@@ -43,7 +43,7 @@ You can use any JDBC driver for your database. Common examples include:
 Configure the target system:
 
 ```java
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database-id", dataSource);
+var sqlTarget = new SqlTargetSystem("inventory-database-id", dataSource);
 ```
 
 The constructor requires the target system name and DataSource. Optional configurations can be added via `.withXXX()` methods.
@@ -78,7 +78,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database", inventoryDataSource)
+var sqlTarget = new SqlTargetSystem("inventory-database", inventoryDataSource)
     .addDependency(inventoryService);          // Additional dependency for changes
 
 // Global context with shared dependencies

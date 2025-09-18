@@ -43,7 +43,7 @@ implementation("com.couchbase.client:java-client:3.6.0")
 Configure the target system:
 
 ```java
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, bucket);
+var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, bucket);
 ```
 
 The constructor requires the target system name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
@@ -79,7 +79,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
+var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
     .addDependency(auditService);          // Additional dependency for changes
 
 // Global context with shared dependencies

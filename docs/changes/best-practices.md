@@ -268,7 +268,7 @@ public void testUserMigrationChange() {
     MongoDatabase testDb = getTestDatabase();
     insertTestUsers(testDb);
     
-    _0001_MigrateUsers change = new _0001_MigrateUsers();
+    var change = new _0001_MigrateUsers();
     
     // Act - Test execution
     change.execute(testDb);

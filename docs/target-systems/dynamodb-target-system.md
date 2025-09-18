@@ -43,7 +43,7 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.12.0")
 Configure the target system:
 
 ```java
-DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database-id", dynamoDbClient);
+var dynamoTarget = new DynamoDBTargetSystem("inventory-database-id", dynamoDbClient);
 ```
 
 The constructor requires the target system name and DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
@@ -78,7 +78,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database", inventoryDynamoClient)
+var dynamoTarget = new DynamoDBTargetSystem("inventory-database", inventoryDynamoClient)
     .addDependency(inventoryService);           // Additional dependency for changes
 
 // Global context with shared dependencies

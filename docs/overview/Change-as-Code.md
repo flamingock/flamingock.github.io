@@ -108,8 +108,8 @@ public class _0002_CreateKafkaTopicsChange {
 
     @Apply
     public void apply(KafkaAdminClient admin) {
-        NewTopic topic1 = new NewTopic("app-events", 3, (short) 1);
-        NewTopic topic2 = new NewTopic("user-notifications", 2, (short) 1);
+        var topic1 = new NewTopic("app-events", 3, (short) 1);
+        var topic2 = new NewTopic("user-notifications", 2, (short) 1);
         admin.createTopics(Arrays.asList(topic1, topic2));
     }
 

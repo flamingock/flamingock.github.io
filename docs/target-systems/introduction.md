@@ -57,7 +57,7 @@ Target systems are configured using a **strict, no-fallback approach** with expl
 
 ```java
 // Mandatory configuration via constructor
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
+var mongoTarget = new MongoSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
 
 // Optional configuration via .withXXX() methods
 mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
@@ -77,11 +77,11 @@ Target systems are registered at runtime. You can define and register as many as
 Use the Flamingock builder for standalone applications:
 
 ```java
-SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory-id", dataSource);
+var mysql = new SqlTargetSystem("mysql-inventory-id", dataSource);
 
-NonTransactionalTargetSystem s3 = new NonTransactionalTargetSystem("aws-s3-id");
+var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 
-NonTransactionalTargetSystem kafka = new NonTransactionalTargetSystem("kafka-stock-id");
+var kafka = new NonTransactionalTargetSystem("kafka-stock-id");
 
 Flamingock.builder()
     .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))

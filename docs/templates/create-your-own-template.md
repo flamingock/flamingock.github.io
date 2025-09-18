@@ -105,7 +105,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
     @Apply
     public void apply(AdminClient adminClient) throws Exception {
         // Create topic using the apply configuration
-        NewTopic newTopic = new NewTopic(
+        var newTopic = new NewTopic(
             this.apply.getName(),
             this.apply.getPartitions(),
             this.apply.getReplicationFactor()
@@ -147,7 +147,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .build();
         
         // Create bucket using apply configuration
-        CreateBucketRequest request = new CreateBucketRequest(this.apply.getBucketName())
+        var request = new CreateBucketRequest(this.apply.getBucketName())
             .withCannedAcl(this.apply.getAcl());
 
         if (this.apply.getEncryption() != null) {

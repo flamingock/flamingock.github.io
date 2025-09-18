@@ -63,12 +63,12 @@ If you're already using a MongoDB target system, you can reuse its dependencies 
 
 ```java
 // Reuse dependencies from existing target system
-MongoSyncTargetSystem mongoTargetSystem = new MongoSyncTargetSystem("user-database")
+var mongoTargetSystem = new MongoSyncTargetSystem("user-database")
     .withMongoClient(client)
     .withDatabase(userDatabase);
 
 // Create audit store reusing the same dependencies
-MongoSyncAuditStore auditStore = MongoSyncAuditStore
+var auditStore = MongoSyncAuditStore
     .reusingDependenciesFrom(mongoTargetSystem);
 
 Flamingock.builder()
@@ -81,7 +81,7 @@ Flamingock.builder()
 You can still override specific settings if needed:
 
 ```java
-MongoSyncAuditStore auditStore = MongoSyncAuditStore
+var auditStore = MongoSyncAuditStore
     .reusingDependenciesFrom(mongoTargetSystem)
     .withReadConcern(ReadConcern.LOCAL);
 ```
