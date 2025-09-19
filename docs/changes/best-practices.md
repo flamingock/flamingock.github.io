@@ -207,9 +207,25 @@ public void addEmailIndexForFasterLookups(MongoDatabase db) { }
 public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 ```
 
-### Avoid domain objects
+### Avoid domain object coupling
 
-Don't use domain objects in Changes. Since Changes are immutable and your domain evolves, using domain classes can cause compilation errors when fields are removed or modified in newer versions. Instead, work with primitive types, collections, or framework-native objects like `Document` for MongoDB.
+Changes are historical records that must remain stable over time, even as your application evolves. When Changes depend on domain classes that later change (fields removed, renamed, or restructured), your previously successful Changes can break compilation or execution.
+
+**The issue:** If a Change uses a `Customer` domain class and you later remove the `middleName` field from that class, the Change will no longer compile - breaking Flamingock's ability to verify or re-execute historical changes.
+
+**✅ Use generic structures instead:**
+```java
+// Instead of domain objects, use framework-native structures
+@Apply
+public void apply(JdbcTemplate jdbc) {
+    Map<String, Object> customer = jdbc.queryForMap(
+        "SELECT * FROM customers WHERE id = ?", customerId
+    );
+    // Work with the Map directly, not a Customer object
+}
+```
+
+→ **Learn more:** [Domain Coupling and Historical Immutability](domain-coupling.md) - Understand why this happens and explore different approaches to keep your Changes stable.
 
 
 ## Naming and organization
