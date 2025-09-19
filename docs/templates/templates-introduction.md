@@ -46,7 +46,7 @@ Today, Flamingock templates can already be created and used in your own projects
 
 ## Key Features
 
-- **Experimental, reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
+- **Reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative Changes**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.

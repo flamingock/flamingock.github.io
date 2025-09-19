@@ -57,15 +57,17 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
+recovery:
+  strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
 apply: |
-  CREATE TABLE Persons (
+  CREATE TABLE IF NOT EXISTS Persons (
     PersonID int,
     LastName varchar(255),
     FirstName varchar(255),
     Address varchar(255),
     City varchar(255)
   )
-rollback: "DROP TABLE Persons;"
+rollback: "DROP TABLE IF EXISTS Persons;"
 ```
 
 :::info
@@ -80,9 +82,17 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 - **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
 - **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`recovery`**: Optional failure handling configuration. Contains:
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
+- **`configuration`**: Optional configuration parameters accessible within the `apply` and `rollback` sections. The structure and available parameters are defined by the specific template being used.
+  ```yaml
+  configuration:
+    timeout: 30
+    retryCount: 3
+  ```
 - **Other fields**: Templates may define additional configuration fields as needed.
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements.
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements. Templates can also accept optional `configuration` parameters to customize their behavior.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -150,9 +160,11 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
+recovery:
+  strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
 apply: |
     CREATE TABLE Persons (
-        PersonID int,
+        PersonID int PRIMARY KEY,
         LastName varchar(255),
         FirstName varchar(255),
         Address varchar(255),
@@ -166,3 +178,4 @@ rollback: "DROP TABLE Persons;"
 - **Faster onboarding**: YAML is easier for non-Java developers.
 - **Standardised changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.
+- **Configurable flexibility**: Templates can be customized through configuration parameters without code changes.

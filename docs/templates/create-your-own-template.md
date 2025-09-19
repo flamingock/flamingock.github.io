@@ -53,7 +53,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
         if (this.isTransactional && clientSession == null) {
             throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
         }
-        executeOp(db, apply, clientSession);
+        executeOp(db, applyPayload, clientSession);
     }
 
     @Rollback
@@ -61,7 +61,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
         if (this.isTransactional && clientSession == null) {
             throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
         }
-        executeOp(db, rollback, clientSession);
+        executeOp(db, rollbackPayload, clientSession);
     }
 
     private void executeOp(MongoDatabase db, MongoOperation op, ClientSession clientSession) {
@@ -71,7 +71,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 ```
 
 #### Important notes
-- Access your apply and rollback data directly via `this.apply` and `this.rollback` fields.
+- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
 - Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
 - If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
@@ -85,8 +85,8 @@ These methods define the core logic that will be executed when Flamingock runs t
 
 Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
 
-- `this.apply` — the apply logic/data to apply during apply phase
-- `this.rollback` — the rollback logic/data to apply during rollback or undo  
+- `this.applyPayload` — the apply logic/data to apply during apply phase
+- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo  
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
 
 An example of a template for Kafka topic management:
@@ -106,11 +106,11 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
     public void apply(AdminClient adminClient) throws Exception {
         // Create topic using the apply configuration
         var newTopic = new NewTopic(
-            this.apply.getName(),
-            this.apply.getPartitions(),
-            this.apply.getReplicationFactor()
+            this.applyPayload.getName(),
+            this.applyPayload.getPartitions(),
+            this.applyPayload.getReplicationFactor()
         );
-        newTopic.configs(this.apply.getConfigs());
+        newTopic.configs(this.applyPayload.getConfigs());
         
         adminClient.createTopics(List.of(newTopic)).all().get();
     }
@@ -118,7 +118,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
     @Rollback
     public void rollback(AdminClient adminClient) throws Exception {
         // Delete topic using the rollback topic name
-        adminClient.deleteTopics(List.of(this.rollback)).all().get();
+        adminClient.deleteTopics(List.of(this.rollbackPayload)).all().get();
     }
 }
 ```
@@ -147,12 +147,12 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .build();
         
         // Create bucket using apply configuration
-        var request = new CreateBucketRequest(this.apply.getBucketName())
-            .withCannedAcl(this.apply.getAcl());
+        var request = new CreateBucketRequest(this.applyPayload.getBucketName())
+            .withCannedAcl(this.applyPayload.getAcl());
 
-        if (this.apply.getEncryption() != null) {
+        if (this.applyPayload.getEncryption() != null) {
             // Apply encryption settings
-            request.withObjectLockEnabledForBucket(this.apply.getEncryption().isEnabled());
+            request.withObjectLockEnabledForBucket(this.applyPayload.getEncryption().isEnabled());
         }
         
         s3Client.createBucket(request);
@@ -167,7 +167,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .build();
         
         // Delete bucket using rollback bucket name
-        s3Client.deleteBucket(this.rollback);
+        s3Client.deleteBucket(this.rollbackPayload);
     }
 }
 ```
