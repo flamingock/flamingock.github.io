@@ -57,7 +57,7 @@ Target systems are configured using a **strict, no-fallback approach** with expl
 
 ```java
 // Mandatory configuration via constructor
-var mongoTarget = new MongoSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
+var mongoTarget = new MongoDBSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
 
 // Optional configuration via .withXXX() methods
 mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
@@ -84,7 +84,7 @@ var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 var kafka = new NonTransactionalTargetSystem("kafka-stock-id");
 
 Flamingock.builder()
-    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+    .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
     .addTargetSystems(mysql, s3, kafka)
     .build()
     .run();
@@ -99,20 +99,21 @@ For Spring Boot applications, register target systems as beans:
 
 ```java
 @Bean
+public NonTransactionalTargetSystem kafkaTargetSystem() {
+    return new NonTransactionalTargetSystem("kafka-stock-id");
+}
+
+@Bean
 public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
     return new SqlTargetSystem("mysql-inventory-id", dataSource);
 }
 
 @Bean
-public MongoSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
-    return new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb")
+public MongoDBSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
+    return new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb")
         .withWriteConcern(WriteConcern.MAJORITY);
 }
 
-@Bean
-public NonTransactionalTargetSystem kafkaTargetSystem() {
-    return new NonTransactionalTargetSystem("kafka-stock-id");
-}
 ```
 
 Spring Boot's auto-configuration will automatically register these target systems with Flamingock.

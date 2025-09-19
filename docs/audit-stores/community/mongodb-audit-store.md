@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Audit Store
 
-The MongoDB audit store (`MongoSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using MongoDB as the storage backend.
+The MongoDB audit store (`MongoDBSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using MongoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
@@ -46,7 +46,7 @@ implementation("org.mongodb:mongodb-driver-sync:5.2.0")
 Configure the audit store:
 
 ```java
-var auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
+var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
 ```
 
 The constructor requires the MongoDB client and database. Optional configurations can be added via `.withXXX()` methods.
@@ -88,7 +88,7 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Audit store configuration (mandatory via constructor)
-var auditStore = new MongoSyncAuditStore(mongoClient, auditDatabase)
+var auditStore = new MongoDBSyncAuditStore(mongoClient, auditDatabase)
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary());  // Optional configuration
 

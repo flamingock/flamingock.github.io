@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Spring Data Target System
 
-The MongoDB Spring Data target system (`MongoSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. As a transactional target system, it integrates seamlessly with Spring's transaction management and supports automatic rollback through MongoDB's native transaction capabilities.
+The MongoDB Spring Data target system (`MongoDBSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. As a transactional target system, it integrates seamlessly with Spring's transaction management and supports automatic rollback through MongoDB's native transaction capabilities.
 
 ## Version Compatibility
 
@@ -44,7 +44,7 @@ implementation("org.springframework.data:spring-data-mongodb:3.1.0")
 Configure the target system:
 
 ```java
-var mongoTarget = new MongoSpringDataTargetSystem("user-database-id", mongoTemplate);
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database-id", mongoTemplate);
 ```
 
 The constructor requires the target system name and MongoDB template. Optional configurations can be added via `.withXXX()` methods.
@@ -90,7 +90,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-var mongoTarget = new MongoSpringDataTargetSystem("user-database", userMongoTemplate)
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database", userMongoTemplate)
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(userAuditService);          // Additional dependency for changes

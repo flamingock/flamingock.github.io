@@ -45,7 +45,7 @@ Register the audit store with the Flamingock builder:
 public class App {
   public static void main(String[] args) {
     // Create your audit store connection
-    var auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
+    var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
     
     // Register with Flamingock
     FlamingockStandalone
@@ -64,7 +64,7 @@ For Spring Boot applications, register target systems as beans:
 ```java
 @Bean
 public AuditStore auditStore(MongoClient mongoClient) {
-    return new MongoSyncAuditStore(mongoClient, "flamingock-audit");
+    return new MongoDBSyncAuditStore(mongoClient, "flamingock-audit");
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically

@@ -193,7 +193,7 @@ Finally, configure Flamingock before running your application.
 
 ```java
 FlamingockStandalone
-  .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+  .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
   .addTargetSystems(sql, s3, kafka)
   .build()
   .run();

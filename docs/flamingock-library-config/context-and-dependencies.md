@@ -48,7 +48,7 @@ Every target system provides two ways to add dependencies:
 
 **Specific methods** - Each concrete implementation offers `.withXXX()` methods for common dependencies:
 ```java
-var mongoTarget = new MongoSyncTargetSystem("user-db")
+var mongoTarget = new MongoDBSyncTargetSystem("user-db")
     .withDatabase(database)      // MongoDB-specific method
     .withMongoClient(client);    // MongoDB-specific method
 ```

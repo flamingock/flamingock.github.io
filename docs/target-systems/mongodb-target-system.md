@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Sync Target System
 
-The MongoDB Sync target system (`MongoSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
+The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
 
 ## Version Compatibility
 
@@ -43,7 +43,7 @@ implementation("org.mongodb:mongodb-driver-sync:4.0.0")
 Configure the target system:
 
 ```java
-var mongoTarget = new MongoSyncTargetSystem("user-database-id", mongoClient, "userDb");
+var mongoTarget = new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb");
 ```
 
 The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
@@ -90,7 +90,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-var mongoTarget = new MongoSyncTargetSystem("user-database", productionMongoClient, "userDb")
+var mongoTarget = new MongoDBSyncTargetSystem("user-database", productionMongoClient, "userDb")
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(auditService);              // Additional dependency for changes
