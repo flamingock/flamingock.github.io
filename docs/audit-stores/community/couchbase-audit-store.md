@@ -46,13 +46,13 @@ implementation("com.couchbase.client:java-client:3.7.0")
 Configure the audit store:
 
 ```java
-var auditStore = new CouchbaseSyncAuditStore("audit-store-id", cluster, bucket);
+var auditStore = new CouchbaseSyncAuditStore(cluster, bucket);
 ```
 
-The constructor requires the audit store name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
+The constructor requires the Couchbase cluster and bucket. Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
-Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
 ## Audit Store Configuration
@@ -74,9 +74,9 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Audit store configuration (mandatory via constructor)
-var auditStore = new CouchbaseSyncAuditStore("audit-store-id", cluster, bucket)
-    .withProperty("couchbase.scopeName", "custom-scope")     // Optional configuration
-    .withProperty("couchbase.autoCreate", true);             // Optional configuration
+var auditStore = new CouchbaseSyncAuditStore(cluster, bucket)
+    .withScopeName("custom-scope")     // Optional configuration
+    .withAutoCreate(true);             // Optional configuration
 
 // Register with Flamingock
 Flamingock.builder()
@@ -93,30 +93,16 @@ Flamingock.builder()
 This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-## Configuration options
+### Optional Configuration (.withXXX() methods)
 
-Couchbase audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Property                        | Default                | Description                                           |
-|---------------------------------|------------------------|-------------------------------------------------------|
-| `couchbase.autoCreate`          | `true`                 | Auto-create collections and indexes.                  |
-| `couchbase.scopeName`           | `_default`             | Scope where audit collections will be created.        |
-| `couchbase.auditRepositoryName` | `flamingockAuditLogs`  | Collection name for audit entries.                    |
-| `couchbase.lockRepositoryName`  | `flamingockLocks`      | Collection name for distributed locks.                |
-
-Example overriding defaults:
-
-```java
-Flamingock.builder()
-  .setAuditStore(new CouchbaseSyncAuditStore()
-      .withCluster(cluster)
-      .withBucket(bucket)
-      .withProperty("couchbase.scopeName", "custom-scope")
-      .withProperty("couchbase.autoCreate", true))
-  .build()
-  .run();
-```
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `Auto Create` | `.withAutoCreate(enabled)` | `true` | Auto-create collections and indexes |
+| `Scope Name` | `.withScopeName(name)` | `_default` | Scope where audit collections will be created |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 

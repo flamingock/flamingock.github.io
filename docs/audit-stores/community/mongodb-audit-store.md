@@ -46,13 +46,13 @@ implementation("org.mongodb:mongodb-driver-sync:5.2.0")
 Configure the audit store:
 
 ```java
-var auditStore = new MongoSyncAuditStore("audit-store-id", mongoClient, mongoDatabase);
+var auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
 ```
 
-The constructor requires the audit store name, MongoDB client, and database. Optional configurations can be added via `.withXXX()` methods.
+The constructor requires the MongoDB client and database. Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
-Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
 ## Audit Store Configuration
@@ -77,6 +77,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
 
 **Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
 
@@ -86,7 +88,7 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Audit store configuration (mandatory via constructor)
-var auditStore = new MongoSyncAuditStore("audit-store-id", mongoClient, auditDatabase)
+var auditStore = new MongoSyncAuditStore(mongoClient, auditDatabase)
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary());  // Optional configuration
 
@@ -106,37 +108,6 @@ Flamingock.builder()
 This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-## Configuration options
-
-MongoDB audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
-
-| Property                        | Default        | Description                                                                 |
-|---------------------------------|----------------|-----------------------------------------------------------------------------|
-| `mongodb.autoCreate`            | `true`         | Auto-create collections and indexes.                                        |
-| `mongodb.readConcern`           | `MAJORITY`     | Read isolation level.                                                       |
-| `mongodb.writeConcern.w`        | `MAJORITY`     | Write acknowledgment level.                                                 |
-| `mongodb.writeConcern.journal`  | `true`         | Requires journal commit for durability.                                     |
-| `mongodb.writeConcern.wTimeout` | `1s`           | Max wait time for write concern fulfillment.                                |
-| `mongodb.readPreference`        | `PRIMARY`      | Node selection for reads.                                                   |
-| `mongodb.auditRepositoryName`   | `flamingockAuditLogs` | Collection name for audit entries.                                   |
-| `mongodb.lockRepositoryName`    | `flamingockLocks`     | Collection name for distributed locks.                               |
-
-Example overriding defaults:
-
-```java
-Flamingock.builder()
-  .setAuditStore(new MongoSyncAuditStore()
-      .withClient(client)
-      .withDatabase(db)
-      .withProperty("mongodb.readConcern", "LOCAL")
-      .withProperty("mongodb.writeConcern.w", 1))
-  .build()
-  .run();
-```
-
-⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
-Recommended only for dev/test environments.
 
 
 ## Next steps

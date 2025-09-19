@@ -46,13 +46,13 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 Configure the audit store:
 
 ```java
-var auditStore = new DynamoSyncAuditStore("audit-store-id", dynamoDbClient);
+var auditStore = new DynamoSyncAuditStore(dynamoDbClient);
 ```
 
-The constructor requires the audit store name and DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+The constructor requires the DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
-Once created, you need to register this audit store with Flamingock using `.setAuditStore(auditStore)` in the builder.
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
 ## Audit Store Configuration
@@ -73,9 +73,9 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Audit store configuration (mandatory via constructor)
-var auditStore = new DynamoSyncAuditStore("audit-store-id", dynamoDbClient)
-    .withProperty("dynamodb.readCapacityUnits", 10)     // Optional configuration
-    .withProperty("dynamodb.writeCapacityUnits", 10);   // Optional configuration
+var auditStore = new DynamoSyncAuditStore(dynamoDbClient)
+    .withReadCapacityUnits(10)     // Optional configuration
+    .withWriteCapacityUnits(10);   // Optional configuration
 
 // Register with Flamingock
 Flamingock.builder()
@@ -91,32 +91,18 @@ Flamingock.builder()
 This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-## Configuration options
+### Optional Configuration (.withXXX() methods)
 
-DynamoDB audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Property                        | Default                | Description                                                     |
-|---------------------------------|------------------------|------------------------------------------------------------------|
-| `dynamodb.autoCreate`           | `true`                 | Auto-create tables if they don't exist.                         |
-| `dynamodb.readCapacityUnits`   | `5`                    | Read capacity units (PROVISIONED mode only).                    |
-| `dynamodb.writeCapacityUnits`  | `5`                    | Write capacity units (PROVISIONED mode only).                   |
-| `dynamodb.auditRepositoryName` | `flamingockAuditLogs`  | Table name for audit entries.                                   |
-| `dynamodb.lockRepositoryName`  | `flamingockLocks`      | Table name for distributed locks.                               |
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `Read Capacity Units` | `.withReadCapacityUnits(units)` | `5` | Read capacity units (PROVISIONED mode only) |
+| `Write Capacity Units` | `.withWriteCapacityUnits(units)` | `5` | Write capacity units (PROVISIONED mode only) |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Table name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Table name for distributed locks |
 
-Example overriding defaults:
-
-```java
-Flamingock.builder()
-  .setAuditStore(new DynamoSyncAuditStore()
-      .withClient(client)
-      .withProperty("dynamodb.readCapacityUnits", 10)
-      .withProperty("dynamodb.writeCapacityUnits", 10))
-  .build()
-  .run();
-```
-
-⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.  
+⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
 

@@ -3,6 +3,9 @@ title: Introduction
 sidebar_position: 1
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Audit stores
 
 The audit store is Flamingock's dedicated system for tracking execution history, preventing duplicate executions, and ensuring safe system evolution.
@@ -18,21 +21,23 @@ Unlike target systems (which your code modifies), the audit store is managed aut
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
 
-## Audit store options
 
-### Cloud Edition
+## Cloud audit store
 The audit store is **automatically provided and managed** by Flamingock Cloud. No configuration needed - just focus on your changes while Flamingock handles the audit infrastructure.
 
-### Community setup
+## Community audit store
 Alternatively, you can configure your own audit store using one of the supported databases:
 
 - [MongoDB audit store](./community/mongodb-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
 - [Couchbase audit store](./community/couchbase-audit-store.md)
+- SQL audit store(**coming next**)
 
 
-### Community configuration pattern
+### Registering the community audit store
 
+<Tabs groupId="registration">
+  <TabItem value="builder" label="Flamingock Builder" default>
 Register the audit store with the Flamingock builder:
 
 ```java
@@ -51,8 +56,11 @@ public class App {
   }
 }
 ```
+  </TabItem>
+  <TabItem value="springboot" label="Spring Boot">
 
-### Spring Boot configuration
+For Spring Boot applications, register target systems as beans:
+
 ```java
 @Bean
 public AuditStore auditStore(MongoClient mongoClient) {
@@ -62,6 +70,11 @@ public AuditStore auditStore(MongoClient mongoClient) {
 // Flamingock Spring Boot auto-configuration will pick this up automatically
 ```
 
+Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
+
+For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
+
+  </TabItem>
+</Tabs>
 
 
-The audit store is critical for Flamingock's safety guarantees and must be configured before running migrations.
