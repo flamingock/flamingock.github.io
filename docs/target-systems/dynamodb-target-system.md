@@ -13,18 +13,18 @@ The DynamoDB target system (`DynamoDBTargetSystem`) enables Flamingock to apply 
 
 | Component | Version Requirement |
 |-----------|-------------------|
-| AWS SDK DynamoDB Enhanced | 2.12.0+ |
+| AWS SDK DynamoDB Enhanced | 2.25.0+ |
 
-AWS SDK DynamoDB Enhanced 2.12.0+ is required and must be included in your project dependencies.
+AWS SDK DynamoDB Enhanced 2.25.0+ is required and must be included in your project dependencies.
 
 ## Installation
 
-Add the AWS SDK DynamoDB Enhanced dependency to your project (version 2.12.0+ required):
+Add the AWS SDK DynamoDB Enhanced dependency to your project (version 2.25.0+ required):
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
 ```kotlin
-implementation("software.amazon.awssdk:dynamodb-enhanced:2.12.0")
+implementation("software.amazon.awssdk:dynamodb-enhanced:2.25.0")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
@@ -32,7 +32,7 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.12.0")
 <dependency>
     <groupId>software.amazon.awssdk</groupId>
     <artifactId>dynamodb-enhanced</artifactId>
-    <version>2.12.0</version> <!-- 2.12.0+ supported -->
+    <version>2.25.0</version> <!-- 2.25.0+ supported -->
 </dependency>
 ```
   </TabItem>

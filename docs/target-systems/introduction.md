@@ -41,6 +41,24 @@ This isolation enables:
 - Prevention of cross-system dependency conflicts
 - Easier testing and debugging of system-specific changes
 
+## Target system implementations
+
+Flamingock provides target system implementations to handle specific behavior when needed. While most external systems work perfectly with the standard `NonTransactionalTargetSystem`, concrete implementations exist primarily to leverage native capabilities like transaction support. As the ecosystem evolves, new implementations may be added by the Flamingock team, community, or even custom-built by users - though custom implementations are rarely necessary.
+
+### Non-transactional target system
+The standard choice for systems without native transaction support:
+
+- [Non-transactional target system](../target-systems/non-transactional-target-system.md) - For Kafka, S3, REST APIs, feature flags, file systems, and any other non-transactional system
+
+### Transactional target systems
+These implementations leverage native transaction capabilities for automatic rollback:
+
+- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
+- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
+- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
+- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
+- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
+
 ## Target system configuration
 
 Target systems are configured using a **strict, no-fallback approach** with explicit parameters:
@@ -178,27 +196,6 @@ This makes it easier to govern and audit distributed environments at scale.
 - Provide rollback logic for non-transactional systems
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
 
-
-## Available target system implementations
-
-Flamingock provides several built-in target system implementations. The ecosystem includes specialized implementations for technologies that benefit from specific handling, and a universal fallback for everything else:
-
-### Specialized target systems
-These target systems provide optimized handling for specific technologies:
-
-**Transactional systems** - Leverage native transaction capabilities for automatic rollback:
-- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
-- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
-- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
-- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
-- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
-
-### Universal fallback
-For any system that doesn't require specialized handling:
-
-- [Non-transactional target system](../target-systems/non-transactional-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
-
-**Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
 
 
 **Key Takeaway**: Target systems provide the foundation for safe, auditable changes across your entire technology stack. By explicitly declaring and configuring them, you enable Flamingock to orchestrate complex distributed system evolution with confidence.

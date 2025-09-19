@@ -16,9 +16,9 @@ The DynamoDB audit store (`DynamoSyncAuditStore`) enables Flamingock to record e
 
 | Component | Version Requirement |
 |-----------|-------------------|
-| AWS SDK DynamoDB Enhanced | 2.12.0+ |
+| AWS SDK DynamoDB Enhanced | 2.25.0+ |
 
-AWS SDK DynamoDB Enhanced 2.12.0+ is required and must be included in your project dependencies.
+AWS SDK DynamoDB Enhanced 2.25.0+ is required and must be included in your project dependencies.
 
 ## Installation
 
@@ -35,7 +35,7 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 <dependency>
     <groupId>software.amazon.awssdk</groupId>
     <artifactId>dynamodb-enhanced</artifactId>
-    <version>2.28.0</version> <!-- 2.12.0+ supported -->
+    <version>2.28.0</version> <!-- 2.25.0+ supported -->
 </dependency>
 ```
   </TabItem>
