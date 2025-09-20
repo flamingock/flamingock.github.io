@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://docs.flamingock.io">📖 View Documentation</a> •
-  <a href="https://github.com/flamingock/flamingock">🏠 Main Repository</a> •
+  <a href="https://github.com/flamingock/flamingock-java">🏠 Main Repository</a> •
   <a href="https://github.com/flamingock/flamingock.github.io/issues">🐛 Report Issue</a>
 </p>
 
@@ -115,14 +115,14 @@ When contributing documentation:
 ## 🆘 Support
 
 - **Documentation Issues**: [Open an issue here](https://github.com/flamingock/flamingock.github.io/issues)
-- **Flamingock Issues**: [Main repository issues](https://github.com/flamingock/flamingock/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/flamingock/flamingock/discussions)
+- **Flamingock Issues**: [Main repository issues](https://github.com/flamingock/flamingock-java/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/flamingock/flamingock-java/discussions)
 - **Email**: development@flamingock.io
 
 ## 🔗 Links
 
 - **Live Documentation**: [https://docs.flamingock.io](https://docs.flamingock.io)
-- **Main Repository**: [github.com/flamingock/flamingock](https://github.com/flamingock/flamingock)
+- **Main Repository**: [github.com/flamingock/flamingock-java](https://github.com/flamingock/flamingock-java)
 - **Examples**: [github.com/flamingock/flamingock-examples](https://github.com/flamingock/flamingock-examples)
 - **Website**: [flamingock.io](https://flamingock.io)
 
