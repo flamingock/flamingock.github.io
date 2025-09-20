@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Non-transactional Target System
 
-The Non-transactional target system (`NonTransactionalTargetSystem`) is Flamingock's generic target system for any system that doesn't require specialized handling. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
+The Non-transactional target system (`NonTransactionalTargetSystem`) is Flamingock's generic target system **for any system that doesn't require specialized handling**. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
 
 ## Why use NonTransactionalTargetSystem?
 
@@ -54,19 +54,16 @@ Unlike specialized target systems, NonTransactionalTargetSystem requires **no ma
 var targetSystem = new NonTransactionalTargetSystem("system-name-id");
 ```
 
-### Target System Configuration (Generic)
 
-All dependencies and configurations are provided through generic methods with **no global context fallback** during target system configuration:
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
 | Method | Description |
 |--------|-------------|
 | `.addDependency(object)` | Add a dependency by type for changes |
 | `.addDependency(name, object)` | Add a named dependency for changes |
 | `.setProperty(key, value)` | Set a configuration property for changes |
-
-## Dependencies Available to Changes
-
-Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
 1. **Target system context** (highest priority) - any dependencies added via `.addDependency()` or properties via `.setProperty()`
 2. **Global context** (fallback) - shared dependencies available to all target systems

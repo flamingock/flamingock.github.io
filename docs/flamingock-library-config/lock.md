@@ -54,7 +54,7 @@ If you're injecting **non-critical components** (e.g., a local list or stateless
 
 ### Builder
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setLockAcquiredForMillis(120000)
   .setLockQuitTryingAfterMillis(300000)
   .setLockTryFrequencyMillis(2000)

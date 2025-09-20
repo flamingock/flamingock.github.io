@@ -167,9 +167,7 @@ Most applications only need one stage:
 
 ```java
 @EnableFlamingock(
-  stages = {
-    @Stage(location = "com.company.inventory.changes")
-  }
+  stages = { @Stage(location = "com.company.inventory.changes") }
 )
 public class App {}
 ```
@@ -192,7 +190,7 @@ Finally, configure Flamingock before running your application.
   <TabItem value="community" label="Community" default>
 
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
   .addTargetSystems(sql, s3, kafka)
   .build()
@@ -203,7 +201,7 @@ FlamingockStandalone
   <TabItem value="cloud" label="Cloud (coming soon)">
 
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setApiToken("your-flamingock-api-token") 
   .setEnvironment("dev")
   .setService("inventory-service")

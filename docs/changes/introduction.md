@@ -3,6 +3,10 @@ title: Introduction
 sidebar_position: 1
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
 # Changes
 
 A **Change** is the atomic, versioned, self-contained unit of change in Flamingock. It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
@@ -27,7 +31,9 @@ Changes enable you to version and track changes across your entire technology st
 
 ## Types of Changes
 
-### Code-based Changes
+
+<Tabs groupId="edition">
+  <TabItem value="template" label="Template based" default>
 Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or when you need full programmatic control.
 
 ```java
@@ -47,7 +53,8 @@ public class _0001_AddUserStatus {
 }
 ```
 
-### Template-based Changes
+  </TabItem>
+  <TabItem value="code" label="Code based">
 Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
@@ -59,6 +66,11 @@ templateName: sql-template
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
 rollback: "ALTER TABLE orders DROP COLUMN status;"
 ```
+
+  </TabItem>
+</Tabs>
+
+
 
 ## Safety and recovery
 

@@ -48,7 +48,7 @@ public class App {
     var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
     
     // Register with Flamingock
-    FlamingockStandalone
+    Flamingock.builder()
       .setAuditStore(auditStore)  // Set the audit store
       .addTargetSystems(myTargetSystem)
       .build()

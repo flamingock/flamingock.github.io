@@ -46,6 +46,29 @@ public class _0002_FixUserFieldValues {
     }
 }
 ```
+---
+
+### Avoid domain object coupling
+
+Building on the idea of immutability, another common pitfall is coupling Changes too tightly to domain objects. Changes are historical records that must remain stable over time, even as your application evolves. When Changes depend on domain classes that later change (fields removed, renamed, or restructured), your previously successful Changes can break compilation or execution.
+
+**The issue:** If a Change uses a `Customer` domain class and you later remove the `middleName` field from that class, the Change will no longer compile - breaking Flamingock's ability to verify or re-execute historical changes.
+
+**✅ Use generic structures instead:**
+```java
+// Instead of domain objects, use framework-native structures
+@Apply
+public void apply(JdbcTemplate jdbc) {
+    Map<String, Object> customer = jdbc.queryForMap(
+        "SELECT * FROM customers WHERE id = ?", customerId
+    );
+    // Work with the Map directly, not a Customer object
+}
+```
+
+→ **Learn more:** [Domain Coupling and Historical Immutability](domain-coupling.md) - Understand why this happens and explore different approaches to keep your Changes stable.
+
+---
 
 ### Always provide rollback logic
 
@@ -82,22 +105,20 @@ public class _0001_SetupUserIndexes {
     @Rollback
     public void rollback(MongoDatabase database) {
         MongoCollection<Document> users = database.getCollection("users");
-        
-        // Drop indexes in reverse order
-        try {
+
+        // Drop only if the index exists
+        if (isIndexCreated(users, "idx_user_search")) {
             users.dropIndex("idx_user_search");
-        } catch (Exception e) {
-            // Index might not exist - log but continue
         }
-        
-        try {
-            users.dropIndex("idx_user_email_status");  
-        } catch (Exception e) {
-            // Index might not exist - log but continue
+
+        if (isIndexCreated(users, "idx_user_email_status")) {
+            users.dropIndex("idx_user_email_status");
         }
     }
 }
 ```
+
+---
 
 ### Keep scope focused
 
@@ -164,6 +185,9 @@ public class _0001_AddUserPreferences {
 }
 ```
 
+
+---
+
 ### Handle errors gracefully
 
 Don't catch exceptions unless you have specific recovery logic. Let Flamingock handle error management.
@@ -191,6 +215,9 @@ public void apply(MongoDatabase database) {
 }
 ```
 
+
+---
+
 ### Use meaningful method names
 
 Method names should clearly indicate their purpose.
@@ -206,27 +233,6 @@ public void addEmailIndexForFasterLookups(MongoDatabase db) { }
 @Rollback
 public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 ```
-
-### Avoid domain object coupling
-
-Changes are historical records that must remain stable over time, even as your application evolves. When Changes depend on domain classes that later change (fields removed, renamed, or restructured), your previously successful Changes can break compilation or execution.
-
-**The issue:** If a Change uses a `Customer` domain class and you later remove the `middleName` field from that class, the Change will no longer compile - breaking Flamingock's ability to verify or re-execute historical changes.
-
-**✅ Use generic structures instead:**
-```java
-// Instead of domain objects, use framework-native structures
-@Apply
-public void apply(JdbcTemplate jdbc) {
-    Map<String, Object> customer = jdbc.queryForMap(
-        "SELECT * FROM customers WHERE id = ?", customerId
-    );
-    // Work with the Map directly, not a Customer object
-}
-```
-
-→ **Learn more:** [Domain Coupling and Historical Immutability](domain-coupling.md) - Understand why this happens and explore different approaches to keep your Changes stable.
-
 
 ## Naming and organization
 
@@ -245,6 +251,9 @@ _0003_AddUserPreferences.java
 _0100_OptimizeUserQueries.java
 ```
 
+
+---
+
 ### Use descriptive IDs and descriptions
 
 Make your Changes self-documenting:
@@ -257,6 +266,9 @@ Make your Changes self-documenting:
     description = "Migrate user documents from legacy format to v2 schema with new preference structure"
 )
 ```
+
+
+---
 
 ### Organize by chronological order
 
@@ -300,6 +312,9 @@ public void testUserMigrationChange() {
     assertEquals(0, users.countDocuments(new Document("status", new Document("$exists", true))));
 }
 ```
+
+
+---
 
 ### Validate with real-like data
 

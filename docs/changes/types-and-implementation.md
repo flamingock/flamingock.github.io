@@ -3,12 +3,53 @@ title: Types & Implementation
 sidebar_position: 3
 ---
 
+
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Change Types & Implementation
 
-Flamingock supports two approaches for implementing Changes: code-based and template-based. Each serves different use cases and provides the same safety guarantees.
+Flamingock supports two approaches for implementing Changes: **code-based** and **template-based**. Each serves different use cases and provides the same safety guarantees.
 
-## Code-based Changes
 
+
+
+
+
+
+<Tabs groupId="edition">
+  <TabItem value="template" label="Template based" default>
+Template-based Changes use YAML or JSON files with reusable templates. Templates provide a low-code, declarative approach for common patterns and repetitive operations. Templates can be as powerful and complex as code-based Changes - the difference is that templates are developed for reusable patterns and integrations.
+
+### Basic YAML structure
+
+```yaml
+# File: _0001_add_user_index.yml
+id: add_user_index
+order: "0001"
+author: "database-team"
+description: "Add index on user email field for faster lookups"
+targetSystem: "user-database"
+templateName: mongodb-index
+apply:
+  type: createIndex
+  collection: users
+  indexSpec:
+    email: 1
+  options:
+    unique: true
+    name: "idx_user_email"
+rollback:
+  type: removeIndex
+  collection: users
+  indexName: "idx_user_email"
+```
+
+For more details about available templates and creating custom templates, see [Templates](../templates/templates-introduction).
+
+  </TabItem>
+  <TabItem value="code" label="Code based">
 Code-based Changes are written in Java, Kotlin, or Groovy with annotations. They provide full programmatic control for custom logic or specific operations that don't fit existing templates.
 
 ### Basic structure
@@ -37,35 +78,14 @@ public class _0001_MigrateUserEmails {
 }
 ```
 
-## Template-based Changes
+  </TabItem>
+</Tabs>
 
-Template-based Changes use YAML or JSON files with reusable templates. Templates provide a low-code, declarative approach for common patterns and repetitive operations. Templates can be as powerful and complex as code-based Changes - the difference is that templates are developed for reusable patterns and integrations.
 
-### Basic YAML structure
 
-```yaml
-# File: _0001_add_user_index.yml
-id: add_user_index
-order: "0001"
-author: "database-team"
-description: "Add index on user email field for faster lookups"
-targetSystem: "user-database"
-templateName: mongodb-index
-apply:
-  type: createIndex
-  collection: users
-  indexSpec:
-    email: 1
-  options:
-    unique: true
-    name: "idx_user_email"
-rollback:
-  type: removeIndex
-  collection: users
-  indexName: "idx_user_email"
-```
 
-For more details about available templates and creating custom templates, see [Templates](../templates/templates-introduction).
+
+
 
 
 ## File organization

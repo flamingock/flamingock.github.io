@@ -45,7 +45,7 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-      FlamingockStandalone.local()
+      Flamingock.builder()
           .setPipelineStartedListener(new PipelineStartedListener())
           .setPipelineCompletedListener(new PipelineCompletedListener())
           .setPipelineFailedListener(new PipelineFailedListener())
@@ -58,7 +58,7 @@ In the Flamingock builder, you must configure the events you intend to use and i
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-      FlamingockStandalone.local()
+      Flamingock.builder()
           .setPipelineStartedListener(PipelineStartedListener())
           .setPipelineCompletedListener(PipelineCompletedListener())
           .setPipelineFailedListener(PipelineFailedListener())

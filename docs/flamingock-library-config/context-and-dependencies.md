@@ -22,7 +22,7 @@ Contexts can contain:
 
 Flamingock uses a **hierarchical resolution strategy** that searches for dependencies in this order:
 
-1. **Target system context** - Dependencies provided by the specific target system. For more information, see [Target systems](../target-systems/introduction.md).
+1. **Target system context** - Dependencies provided by the specific target system. For more information, see [Target systems](../target-systems/introduction.md#dependency-injection).
 2. **General application context** - Shared dependencies registered globally directly in the builder  
 3. **Framework context** - When using Spring Boot, beans from the Spring container. For more information, see [Spring Boot integration](../frameworks/springboot-integration/introduction.md).
 

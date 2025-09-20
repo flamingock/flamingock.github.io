@@ -13,7 +13,6 @@ This section includes additional settings for customizing defaults and adding co
 | Setting         | Purpose                                      | Default            |
 |-----------------|-----------------------------------------------|--------------------|
 | `metadata`      | Attach tags and labels for audit tracking     | _empty map_        |
-| `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
 | `enabled`       | Globally enable/disable Flamingock            | `true`             |
 
 :::note
@@ -49,34 +48,9 @@ Map<String, Object> metadata = new HashMap<>();
 metadata.put("owner", "platform-team");
 metadata.put("triggeredBy", "ci-cd-pipeline");
 
-FlamingockStandalone
+Flamingock.builder()
 .setMetadata(metadata)
 ...
-```
-    </TabItem>
-</Tabs>
-
-
-### Default Author
-
-If a change unit does not specify an `author`, Flamingock will use this value as the fallback.
-
-- Applies to both **code-based** and **template-based** changes
-- Default value: `"default_author"`
-- Ignored if the change itself defines an explicit author
-
-### Example
-
-<Tabs groupId="config">
-    <TabItem value="file" label="YAML" default>
-```yaml
-defaultAuthor: antonio
-```
-    </TabItem>
-    <TabItem value="builder" label="Builder">
-```java
-FlamingockStandalone
-        .setDefaultAuthor("antonio")
 ```
     </TabItem>
 </Tabs>
@@ -104,7 +78,7 @@ enabled: false
     </TabItem>
     <TabItem value="builder" label="Builder">
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setEnabled(false)
 ```
     </TabItem>

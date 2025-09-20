@@ -26,9 +26,7 @@ Here's the default single-stage configuration:
 
 ```java
 @EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")
-    }
+    stages = { @Stage(location = "com.yourcompany.changes") }
 )
 public class FlamingockConfig {
     // Configuration class
@@ -38,7 +36,7 @@ public class FlamingockConfig {
 Alternatively, using a YAML file:
 
 ```java
-@EnableFlamingock(pipelineFile = "config/setup.yaml")
+@EnableFlamingock( pipelineFile = "config/setup.yaml" )
 public class FlamingockConfig {}
 ```
 
@@ -56,36 +54,6 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
-
-## Stage Types
-
-Flamingock supports two families of stages:
-
-### Standard Stages (default)
-The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changes in order and provide predictable, sequential execution.
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
-    }
-)
-```
-
-### Special Stages
-For specific scenarios, Flamingock provides special stage types that require explicitly specifying a `type` parameter. Examples include `SYSTEM` and `LEGACY` stage types, which are used in particular contexts such as the Mongock upgrade process.
-
-```java
-@EnableFlamingock(
-        stages = {
-                @Stage(type = SYSTEM, location = "com.yourapp.system"),
-                @Stage(type = LEGACY, location = "com.yourapp.mongock"),
-                @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
-        }
-)
-```
-
-To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/coming-from-mongock) which demonstrates their practical usage.
 
 
 ## Multiple Stages (Advanced)
