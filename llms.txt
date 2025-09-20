@@ -1,5 +1,8 @@
 // File: audit-stores/introduction
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Audit stores
 
 The audit store is Flamingock's dedicated system for tracking execution history, preventing duplicate executions, and ensuring safe system evolution.
@@ -15,22 +18,23 @@ Unlike target systems (which your code modifies), the audit store is managed aut
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
 
-## Audit store options
 
-### Cloud Edition
+## Cloud audit store
 The audit store is **automatically provided and managed** by Flamingock Cloud. No configuration needed - just focus on your changes while Flamingock handles the audit infrastructure.
 
-### Community setup
+## Community audit store
 Alternatively, you can configure your own audit store using one of the supported databases:
 
 - [MongoDB audit store](./community/mongodb-audit-store.md)
-- [MongoDB Spring Data audit store](./community/mongodb-springdata-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
 - [Couchbase audit store](./community/couchbase-audit-store.md)
+- SQL audit store(**coming next**)
 
 
-### Community configuration pattern
+### Registering the community audit store
 
+<Tabs groupId="registration">
+  <TabItem value="builder" label="Flamingock Builder" default>
 Register the audit store with the Flamingock builder:
 
 ```java
@@ -38,10 +42,10 @@ Register the audit store with the Flamingock builder:
 public class App {
   public static void main(String[] args) {
     // Create your audit store connection
-    AuditStore auditStore = new MongoSyncAuditStore(mongoClient, mongoDatabase);
+    var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
     
     // Register with Flamingock
-    FlamingockStandalone
+    Flamingock.builder()
       .setAuditStore(auditStore)  // Set the audit store
       .addTargetSystems(myTargetSystem)
       .build()
@@ -49,20 +53,26 @@ public class App {
   }
 }
 ```
+  </TabItem>
+  <TabItem value="springboot" label="Spring Boot">
 
-### Spring Boot configuration
+For Spring Boot applications, register target systems as beans:
+
 ```java
 @Bean
 public AuditStore auditStore(MongoClient mongoClient) {
-    return new MongoSyncAuditStore(mongoClient, "flamingock-audit");
+    return new MongoDBSyncAuditStore(mongoClient, "flamingock-audit");
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically
 ```
 
+Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
 
+For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
 
-The audit store is critical for Flamingock's safety guarantees and must be configured before running migrations.
+  </TabItem>
+</Tabs>
 
 ---
 
@@ -73,394 +83,112 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Audit Store
 
-This page explains how to configure **MongoDB** as Flamingock's audit store.
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The MongoDB audit store (`MongoDBSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using MongoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| MongoDB Java Driver | 4.0.0+ |
 
-To use MongoDB as your audit store you need to provide:  
-- A **MongoClient**  
-- A **MongoDatabase**
+MongoDB 4.0+ is recommended for optimal performance and feature support.
 
-That's all. Flamingock will take care of collections, indexes, and consistency defaults.  
+## Installation
 
-Example:
+Add the MongoDB Java sync driver dependency to your project:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.mongodb:mongodb-driver-sync:5.2.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongodb-driver-sync</artifactId>
+    <version>5.2.0</version> <!-- 4.0.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the audit store:
 
 ```java
-public class App {
-  public static void main(String[] args) {
-    MongoClient client = MongoClients.create("mongodb://localhost:27017");
-    MongoDatabase db = client.getDatabase("flamingock_audit");
-
-    Flamingock.builder()
-      .setAuditStore(new MongoSyncAuditStore()
-          .withMongoClient(client)
-          .withDatabase(db))
-      .build()
-      .run();
-  }
-}
+var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
 ```
 
-## Dependencies
+The constructor requires the MongoDB client and database. Optional configurations can be added via `.withXXX()` methods.
 
-### Required dependencies
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
+:::
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** |
+## Audit Store Configuration
 
-### Optional configurations
+The MongoDB audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for audit store configuration |
+| `MongoDatabase` | `mongoDatabase` | Target database instance - **required** for storing audit data |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
 | Configuration | Method | Default | Description |
 |---------------|--------|---------|-------------|
 | `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
 
-## Reusing target system dependencies
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
 
-If you're already using a MongoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
 
 ```java
-// Reuse dependencies from existing target system
-MongoSyncTargetSystem mongoTargetSystem = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(client)
-    .withDatabase(userDatabase);
+// Audit store configuration (mandatory via constructor)
+var auditStore = new MongoDBSyncAuditStore(mongoClient, auditDatabase)
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary());  // Optional configuration
 
-// Create audit store reusing the same dependencies
-MongoSyncAuditStore auditStore = MongoSyncAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem);
-
+// Register with Flamingock
 Flamingock.builder()
     .setAuditStore(auditStore)
-    .addTargetSystems(mongoTargetSystem)
-    .build()
-    .run();
+    .addTargetSystems(targetSystems...)
+    .build();
 ```
 
-You can still override specific settings if needed:
+**Audit store configuration resolution:**
+- **MongoClient**: Must be provided via constructor
+- **MongoDatabase**: Must be provided via constructor
+- **WriteConcern**: Uses explicit configuration instead of default
+- **ReadPreference**: Uses explicit configuration instead of default
 
-```java
-MongoSyncAuditStore auditStore = MongoSyncAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem)
-    .withReadConcern(ReadConcern.LOCAL);
-```
-
-
-## Supported versions
-
-| MongoDB Driver                 | MongoDB Server | Support level   |
-|--------------------------------|----------------|-----------------|
-| `mongodb-driver-sync` 4.0–5.x | 3.6 – 7.0      | Full support    |
-| `mongodb-driver-sync` 3.12.x  | 3.4 – 4.4      | Legacy support  |
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
-```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// MongoDB driver (if not already present)
-implementation("org.mongodb:mongodb-driver-sync:5.2.0")
-```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
-```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
-<dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- MongoDB driver (if not already present) -->
-<dependency>
-  <groupId>org.mongodb</groupId>
-  <artifactId>mongodb-driver-sync</artifactId>
-  <version>5.2.0</version>
-</dependency>
-```
-
-</TabItem>
-
-</Tabs>
-
-
-## Configuration options
-
-MongoDB audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
-
-| Property                        | Default        | Description                                                                 |
-|---------------------------------|----------------|-----------------------------------------------------------------------------|
-| `mongodb.autoCreate`            | `true`         | Auto-create collections and indexes.                                        |
-| `mongodb.readConcern`           | `MAJORITY`     | Read isolation level.                                                       |
-| `mongodb.writeConcern.w`        | `MAJORITY`     | Write acknowledgment level.                                                 |
-| `mongodb.writeConcern.journal`  | `true`         | Requires journal commit for durability.                                     |
-| `mongodb.writeConcern.wTimeout` | `1s`           | Max wait time for write concern fulfillment.                                |
-| `mongodb.readPreference`        | `PRIMARY`      | Node selection for reads.                                                   |
-| `mongodb.auditRepositoryName`   | `flamingockAuditLogs` | Collection name for audit entries.                                   |
-| `mongodb.lockRepositoryName`    | `flamingockLocks`     | Collection name for distributed locks.                               |
-
-Example overriding defaults:
-
-```java
-Flamingock.builder()
-  .setAuditStore(new MongoSyncAuditStore()
-      .withClient(client)
-      .withDatabase(db)
-      .withProperty("mongodb.readConcern", "LOCAL")
-      .withProperty("mongodb.writeConcern.w", 1))
-  .build()
-  .run();
-```
-
-⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
-Recommended only for dev/test environments.
 
 
 ## Next steps
 
 - Learn about [Target systems](../../target-systems/introduction.md)  
 - 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
-
----
-
-// File: audit-stores/community/mongodb-springdata-audit-store
-
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-# MongoDB Spring Data Audit Store
-
-This page explains how to configure **MongoDB with Spring Data** as Flamingock's audit store.
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
-
-> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
-
-
-## Minimum setup
-
-To use MongoDB Spring Data as your audit store you need to provide:  
-- A **MongoTemplate**
-
-That's all. Flamingock will take care of collections, indexes, and consistency defaults.
-
-Example:
-
-```java
-public class App {
-  public static void main(String[] args) {
-    // Assuming MongoTemplate is configured via Spring
-    MongoTemplate mongoTemplate = // ... from Spring context
-    
-    Flamingock.builder()
-      .setAuditStore(new MongoSpringDataAuditStore()
-          .withMongoTemplate(mongoTemplate))
-      .build()
-      .run();
-  }
-}
-```
-
-## Dependencies
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** |
-
-### Optional configurations
-
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
-| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
-| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-
-## Reusing target system dependencies
-
-If you're already using a MongoDB Spring Data target system, you can reuse its dependencies to avoid duplicating connection configuration:
-
-```java
-// Reuse dependencies from existing target system
-MongoSpringDataTargetSystem mongoTargetSystem = new MongoSpringDataTargetSystem("user-database")
-    .withMongoTemplate(mongoTemplate);
-
-// Create audit store reusing the same dependencies
-MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem);
-
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(mongoTargetSystem)
-    .build()
-    .run();
-```
-
-You can still override specific settings if needed:
-
-```java
-MongoSpringDataAuditStore auditStore = MongoSpringDataAuditStore
-    .reusingDependenciesFrom(mongoTargetSystem)
-    .withReadConcern(ReadConcern.LOCAL);
-```
-
-
-## Supported versions
-
-Flamingock provides two editions for different Spring Data MongoDB versions:
-
-| Edition                                       | Spring Data MongoDB | JDK Required | Support level  |
-|-----------------------------------------------|---------------------|--------------|----------------|
-| `flamingock-community` (standard)            | 4.0.0 - 5.x         | 17+          | Full support   |
-| `flamingock-community` (with legacy flag)    | 3.1.4 - 3.x         | 8-11         | Legacy support |
-
-Choose the edition that matches your Spring Data MongoDB and JDK version.
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
-```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// Spring Data MongoDB (if not already present)
-implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
-```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
-<dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- Spring Data MongoDB (if not already present) -->
-<dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-data-mongodb</artifactId>
-</dependency>
-```
-
-</TabItem>
-
-</Tabs>
-
-
-## Configuration options
-
-MongoDB Spring Data audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
-
-| Property                        | Default                | Description                                               |
-|---------------------------------|------------------------|-----------------------------------------------------------|
-| `mongodb.autoCreate`            | `true`                 | Auto-create collections and indexes.                      |
-| `mongodb.readConcern`           | `MAJORITY`             | Read isolation level.                                     |
-| `mongodb.writeConcern.w`        | `MAJORITY`             | Write acknowledgment level.                               |
-| `mongodb.writeConcern.journal`  | `true`                 | Requires journal commit for durability.                   |
-| `mongodb.writeConcern.wTimeout` | `1s`                   | Max wait time for write concern fulfillment.              |
-| `mongodb.readPreference`        | `PRIMARY`              | Node selection for reads.                                 |
-| `mongodb.auditRepositoryName`   | `flamingockAuditLogs`  | Collection name for audit entries.                        |
-| `mongodb.lockRepositoryName`    | `flamingockLocks`      | Collection name for distributed locks.                    |
-
-Example with Spring Boot configuration:
-
-```yaml
-# application.yml
-flamingock:
-  mongodb:
-    autoCreate: true
-    readConcern: MAJORITY
-    writeConcern:
-      w: MAJORITY
-      journal: true
-      wTimeout: 1s
-```
-
-Or programmatically:
-
-```java
-Flamingock.builder()
-  .setAuditStore(new MongoSpringDataAuditStore()
-      .withMongoTemplate(mongoTemplate)
-      .withProperty("mongodb.readConcern", "LOCAL")
-      .withProperty("mongodb.writeConcern.w", 1))
-  .build()
-  .run();
-```
-
-⚠️ **Warning**: lowering concerns (e.g. `LOCAL`, `w=1`) increases performance but reduces safety.  
-Recommended only for dev/test environments.
-
-
-## Spring Boot integration
-
-For Spring Boot applications, use `@EnableFlamingock` for automatic configuration:
-
-```java
-@EnableFlamingock
-@SpringBootApplication
-public class MyApp {
-  public static void main(String[] args) {
-    SpringApplication.run(MyApp.class, args);
-  }
-}
-```
-
-Spring Boot will automatically:
-- Detect and use your configured `MongoTemplate`
-- Apply configuration from `application.yml`
-- Set up the audit store
-
-
-## Next steps
-
-- Learn about [Target systems](../../target-systems/introduction.md)  
-- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/mongodb-springdata)
 
 ---
 
@@ -471,154 +199,101 @@ import TabItem from '@theme/TabItem';
 
 # DynamoDB Audit Store
 
-This page explains how to configure **Amazon DynamoDB** as Flamingock's audit store.
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The DynamoDB audit store (`DynamoSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Amazon DynamoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| AWS SDK DynamoDB Enhanced | 2.25.0+ |
 
-To use DynamoDB as your audit store you need to provide:  
-- A **DynamoDbClient**
+AWS SDK DynamoDB Enhanced 2.25.0+ is required and must be included in your project dependencies.
 
-That's all. Flamingock will take care of tables, indexes, and capacity defaults.
+## Installation
 
-Example:
+Add the AWS SDK DynamoDB Enhanced dependency to your project:
 
-```java
-public class App {
-  public static void main(String[] args) {
-    DynamoDbClient client = DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .build();
-
-    Flamingock.builder()
-      .setAuditStore(new DynamoSyncAuditStore()
-          .withClient(client))
-      .build()
-      .run();
-  }
-}
-```
-
-## Dependencies
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `DynamoDbClient` | `.withClient(client)` | AWS DynamoDB client - **required** |
-
-## Reusing target system dependencies
-
-If you're already using a DynamoDB target system, you can reuse its dependencies to avoid duplicating connection configuration:
-
-```java
-// Reuse dependencies from existing target system
-DynamoDBTargetSystem dynamoTargetSystem = new DynamoDBTargetSystem("inventory-database")
-    .withDynamoDBClient(dynamoDbClient);
-
-// Create audit store reusing the same dependencies
-DynamoSyncAuditStore auditStore = DynamoSyncAuditStore
-    .reusingDependenciesFrom(dynamoTargetSystem);
-
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(dynamoTargetSystem)
-    .build()
-    .run();
-```
-
-
-## Supported versions
-
-| AWS SDK                        | DynamoDB       | Support level   |
-|--------------------------------|----------------|-----------------|
-| `dynamodb` 2.25.29+            | All versions   | Full support    |
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// AWS SDK (if not already present)
-implementation("software.amazon.awssdk:dynamodb:2.28.0")
 implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 ```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 ```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
 <dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- AWS SDK (if not already present) -->
-<dependency>
-  <groupId>software.amazon.awssdk</groupId>
-  <artifactId>dynamodb</artifactId>
-  <version>2.28.0</version>
-</dependency>
-<dependency>
-  <groupId>software.amazon.awssdk</groupId>
-  <artifactId>dynamodb-enhanced</artifactId>
-  <version>2.28.0</version>
+    <groupId>software.amazon.awssdk</groupId>
+    <artifactId>dynamodb-enhanced</artifactId>
+    <version>2.28.0</version> <!-- 2.25.0+ supported -->
 </dependency>
 ```
-
-</TabItem>
-
+  </TabItem>
 </Tabs>
 
+## Basic setup
 
-## Configuration options
-
-DynamoDB audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
-
-| Property                        | Default                | Description                                                     |
-|---------------------------------|------------------------|------------------------------------------------------------------|
-| `dynamodb.autoCreate`           | `true`                 | Auto-create tables if they don't exist.                         |
-| `dynamodb.readCapacityUnits`   | `5`                    | Read capacity units (PROVISIONED mode only).                    |
-| `dynamodb.writeCapacityUnits`  | `5`                    | Write capacity units (PROVISIONED mode only).                   |
-| `dynamodb.auditRepositoryName` | `flamingockAuditLogs`  | Table name for audit entries.                                   |
-| `dynamodb.lockRepositoryName`  | `flamingockLocks`      | Table name for distributed locks.                               |
-
-Example overriding defaults:
+Configure the audit store:
 
 ```java
-Flamingock.builder()
-  .setAuditStore(new DynamoSyncAuditStore()
-      .withClient(client)
-      .withProperty("dynamodb.readCapacityUnits", 10)
-      .withProperty("dynamodb.writeCapacityUnits", 10))
-  .build()
-  .run();
+var auditStore = new DynamoSyncAuditStore(dynamoDbClient);
 ```
 
-⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.  
+The constructor requires the DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
+:::
+
+## Audit Store Configuration
+
+The DynamoDB audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for audit store configuration and data access |
+
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Audit store configuration (mandatory via constructor)
+var auditStore = new DynamoSyncAuditStore(dynamoDbClient)
+    .withReadCapacityUnits(10)     // Optional configuration
+    .withWriteCapacityUnits(10);   // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **DynamoDbClient**: Must be provided via constructor
+- **Capacity settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
+
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `Read Capacity Units` | `.withReadCapacityUnits(units)` | `5` | Read capacity units (PROVISIONED mode only) |
+| `Write Capacity Units` | `.withWriteCapacityUnits(units)` | `5` | Write capacity units (PROVISIONED mode only) |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Table name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Table name for distributed locks |
+
+⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
 
@@ -636,149 +311,101 @@ import TabItem from '@theme/TabItem';
 
 # Couchbase Audit Store
 
-This page explains how to configure **Couchbase** as Flamingock's audit store.  
-The audit store is where Flamingock records execution history and ensures safe coordination across distributed deployments.
+The Couchbase audit store (`CouchbaseSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
 
+## Version Compatibility
 
-## Minimum setup
+| Component | Version Requirement |
+|-----------|-------------------|
+| Couchbase Java Client | 3.6.0+ |
 
-To use Couchbase as your audit store you need to provide:  
-- A **Cluster**
-- A **Bucket**
+Couchbase Java Client 3.6.0+ is required and must be included in your project dependencies.
 
-That's all. Flamingock will take care of collections, indexes, and scope defaults.
+## Installation
 
-Example:
+Add the Couchbase Java Client dependency to your project:
 
-```java
-public class App {
-  public static void main(String[] args) {
-    Cluster cluster = Cluster.connect("localhost", "username", "password");
-    Bucket bucket = cluster.bucket("audit-bucket");
-    
-    Flamingock.builder()
-      .setAuditStore(new CouchbaseSyncAuditStore()
-          .withCluster(cluster)
-          .withBucket(bucket))
-      .build()
-      .run();
-  }
-}
-```
-
-## Dependencies
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** |
-| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** |
-
-## Reusing target system dependencies
-
-If you're already using a Couchbase target system, you can reuse its dependencies to avoid duplicating connection configuration:
-
-```java
-// Reuse dependencies from existing target system
-CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("user-database")
-    .withCluster(cluster)
-    .withBucket(bucket);
-
-// Create audit store reusing the same dependencies
-CouchbaseSyncAuditStore auditStore = CouchbaseSyncAuditStore
-    .reusingDependenciesFrom(couchbaseTargetSystem);
-
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(couchbaseTargetSystem)
-    .build()
-    .run();
-```
-
-
-## Supported versions
-
-| Couchbase SDK                  | Couchbase Server | Support level   |
-|--------------------------------|------------------|-----------------|
-| `java-client` 3.6.0+           | 7.0+             | Full support    |
-
-
-## Dependencies
-
-<Tabs groupId="build_tool">
-
-<TabItem value="gradle" label="Gradle">
-
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community")
-
-// Couchbase SDK (if not already present)
 implementation("com.couchbase.client:java-client:3.7.0")
 ```
-
-</TabItem>
-
-<TabItem value="maven" label="Maven">
-
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 ```xml
-<dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
-      <version>${flamingock.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-  </dependencies>
-</dependencyManagement>
-
 <dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-community</artifactId>
-</dependency>
-
-<!-- Couchbase SDK (if not already present) -->
-<dependency>
-  <groupId>com.couchbase.client</groupId>
-  <artifactId>java-client</artifactId>
-  <version>3.7.0</version>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>java-client</artifactId>
+    <version>3.7.0</version> <!-- 3.6.0+ supported -->
 </dependency>
 ```
-
-</TabItem>
-
+  </TabItem>
 </Tabs>
 
+## Basic setup
 
-## Configuration options
-
-Couchbase audit store works out of the box with production-ready defaults.  
-Optional properties let you tune behavior if needed:
-
-| Property                        | Default                | Description                                           |
-|---------------------------------|------------------------|-------------------------------------------------------|
-| `couchbase.autoCreate`          | `true`                 | Auto-create collections and indexes.                  |
-| `couchbase.scopeName`           | `_default`             | Scope where audit collections will be created.        |
-| `couchbase.auditRepositoryName` | `flamingockAuditLogs`  | Collection name for audit entries.                    |
-| `couchbase.lockRepositoryName`  | `flamingockLocks`      | Collection name for distributed locks.                |
-
-Example overriding defaults:
+Configure the audit store:
 
 ```java
-Flamingock.builder()
-  .setAuditStore(new CouchbaseSyncAuditStore()
-      .withCluster(cluster)
-      .withBucket(bucket)
-      .withProperty("couchbase.scopeName", "custom-scope")
-      .withProperty("couchbase.autoCreate", true))
-  .build()
-  .run();
+var auditStore = new CouchbaseSyncAuditStore(cluster, bucket);
 ```
+
+The constructor requires the Couchbase cluster and bucket. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
+:::
+
+## Audit Store Configuration
+
+The Couchbase audit store uses explicit configuration with no global context fallback.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `Cluster` | `cluster` | Couchbase cluster connection - **required** for audit store configuration |
+| `Bucket` | `bucket` | Target bucket instance - **required** for storing audit data |
+
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Audit store configuration (mandatory via constructor)
+var auditStore = new CouchbaseSyncAuditStore(cluster, bucket)
+    .withScopeName("custom-scope")     // Optional configuration
+    .withAutoCreate(true);             // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **Cluster**: Must be provided via constructor
+- **Bucket**: Must be provided via constructor
+- **Scope settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
+
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `Auto Create` | `.withAutoCreate(enabled)` | `true` | Auto-create collections and indexes |
+| `Scope Name` | `.withScopeName(name)` | `_default` | Scope where audit collections will be created |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
@@ -791,6 +418,10 @@ Flamingock.builder()
 ---
 
 // File: changes/introduction
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 
 # Changes
 
@@ -816,7 +447,9 @@ Changes enable you to version and track changes across your entire technology st
 
 ## Types of Changes
 
-### Code-based Changes
+
+<Tabs groupId="edition">
+  <TabItem value="template" label="Template based" default>
 Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or when you need full programmatic control.
 
 ```java
@@ -836,7 +469,8 @@ public class _0001_AddUserStatus {
 }
 ```
 
-### Template-based Changes
+  </TabItem>
+  <TabItem value="code" label="Code based">
 Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
@@ -848,6 +482,11 @@ templateName: sql-template
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
 rollback: "ALTER TABLE orders DROP COLUMN status;"
 ```
+
+  </TabItem>
+</Tabs>
+
+
 
 ## Safety and recovery
 
@@ -890,6 +529,7 @@ The `id` must be unique across all Changes in your application.
 - Must be unique application-wide
 - Use descriptive names (e.g., `add-user-status`, not `change1`)
 - Cannot be modified once deployed
+____
 
 ### `order` - Execution sequence
 The `order` determines when the Change executes relative to others.
@@ -905,7 +545,7 @@ The `order` determines when the Change executes relative to others.
 - Minimum 4 digits recommended for future expansion
 - Determines execution order across all target systems
 - Cannot be changed once deployed
-
+____
 ### `author` - Responsibility tracking
 Identifies who is responsible for this change.
 
@@ -921,18 +561,6 @@ Identifies who is responsible for this change.
 
 ## Optional properties
 
-### `description` - Change explanation
-Briefly describes what the change does, especially useful for complex operations.
-
-```java
-@Change(
-    id = "optimize-user-queries",
-    order = "0001",
-    author = "performance-team",
-    description = "Add composite index on user table to improve search performance"
-)
-```
-
 ### `transactional` - Transaction behavior
 Controls whether the change runs within a transaction (default: `true`).
 
@@ -945,13 +573,13 @@ Controls whether the change runs within a transaction (default: `true`).
 )
 ```
 
-**When to set `transactional = false`:**
-- DDL operations (CREATE INDEX, ALTER TABLE)
-- Large bulk operations that exceed transaction limits  
-- Cross-system changes spanning multiple databases
-- Operations that don't support transactions
-
 **Important:** For non-transactional target systems (S3, Kafka, etc.), this flag has no effect.
+
+:::tip
+For detailed information on transaction handling, see [Transactions](transactions.md).
+:::
+
+----
 
 ### `recovery` - Failure handling strategy
 Controls how Flamingock handles execution failures (default: `MANUAL_INTERVENTION`).
@@ -976,6 +604,19 @@ public class IdempotentChange {
 - `ALWAYS_RETRY`: Automatically retries on subsequent executions until successful
 
 For detailed information on recovery strategies, see [Safety and Recovery](../safety-and-recovery/introduction.md).
+
+---
+### `description` - Change explanation
+Briefly describes what the change does, especially useful for complex operations.
+
+```java
+@Change(
+    id = "optimize-user-queries",
+    order = "0001",
+    author = "performance-team",
+    description = "Add composite index on user table to improve search performance"
+)
+```
 
 ## Required annotations
 
@@ -1044,23 +685,25 @@ public void rollback(MongoDatabase database, ClientSession session) {
 
 ## Method parameters and dependency injection
 
-Changes receive dependencies through method parameters, automatically injected by Flamingock from the target system's context, global context, or underlying framework context.
+Changes receive dependencies through method parameters, automatically injected by Flamingock using a **flexible, multi-source approach** with fallback hierarchy.
 
-```java
-// MongoDB target system
-@Apply
-public void apply(MongoDatabase database, ClientSession session) {
-    // database and session injected from target system or global context
-}
+### Change Execution Dependency Resolution
 
-// SQL target system
-@Apply
-public void apply(DataSource dataSource) {
-    // dataSource and connection injected from target system or  global context
-}
-```
+Change execution uses a flexible dependency resolution flow(in this priority order):
 
-For more details on how dependency resolution works, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+1. **Target system context** - dependencies from **constructor** + `.withXXX()` methods 
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+
+### Key Benefits of This Architecture
+
+- **Target system isolation**: Each target system has its own dependency context
+- **Flexible fallback**: Changes can access both system-specific and shared dependencies
+- **Clear precedence**: Target system dependencies always override global ones
+- **Type safety**: Strongly typed dependency injection with compile-time checking
+
+For complete details on target system configuration vs change execution dependencies, see [Target Systems Introduction](../target-systems/introduction.md#dependency-injection).
 
 ## File naming conventions
 
@@ -1097,7 +740,7 @@ public class _0001_AddUserPreferences {
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {
         // Add preferences field with default values
-        Document defaultPreferences = new Document()
+        var defaultPreferences = new Document()
             .append("notifications", true)
             .append("theme", "light")
             .append("language", "en");
@@ -1131,14 +774,113 @@ public class _0001_AddUserPreferences {
 
 ---
 
+// File: changes/transactions
+
+# Transactions
+
+Flamingock provides intelligent transaction management that adapts to your target systems' capabilities. Understanding when and how changes are executed transactionally is key to building reliable system evolution.
+
+## How Flamingock handles transactions
+
+Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
+
+### 🔄 Transactional target systems
+**Examples**: PostgreSQL, MySQL, MongoDB, SQL databases, DynamoDB, Couchbase
+
+These systems support native transaction capabilities:
+
+**When `transactional = true` (default)**:
+- Execution runs within a native database transaction
+- **On failure**: Automatic rollback using database's native transaction mechanism
+- Session/connection managed automatically by Flamingock
+- `@Rollback` used only for manual operations (CLI undo)
+
+**When `transactional = false`**:
+- Execution runs without transaction
+- **On failure**: Safety through compensation logic (@Rollback)
+- Useful for DDL operations or any operation that requires not participating in a transaction
+
+### ⚡ Non-transactional target systems
+**Examples**: Kafka, S3, REST APIs, file systems, message queues
+
+These systems have no native transaction support:
+
+**The `transactional` flag is ignored** - behavior is always the same:
+- Execution runs normally (no native transaction possible)
+- **On failure**: Safety through compensation logic (@Rollback)
+- Safety relies entirely on idempotent operations and rollback methods
+
+### Behavior summary table
+
+| Target System Type | `transactional = true` (default) | `transactional = false` |
+|---------------------|-----------------------------------|-------------------------|
+| **Transactional** | Native transaction rollback on failure | `@Rollback` on failure |
+| **Non-transactional** | **Flag ignored** - `@Rollback` on failure | **Flag ignored** - `@Rollback` on failure |
+
+## Best practices
+
+### Always provide @Rollback
+- **Transactional systems with `transactional = true`**: Used for manual rollback operations (CLI undo)
+- **Transactional systems with `transactional = false`**: Called automatically on failure
+- **Non-transactional systems**: Always called automatically on failure (flag ignored)
+- **All cases**: Essential for complete change management
+
+### Use appropriate transactionality
+- **Keep default `transactional = true`** for regular data changes on transactional systems
+- **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
+- **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
+
+**Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @Rollback). For non-transactional systems, the flag is ignored and @Rollback is always used.
+
+---
+
 // File: changes/types-and-implementation
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Change Types & Implementation
 
-Flamingock supports two approaches for implementing Changes: code-based and template-based. Each serves different use cases and provides the same safety guarantees.
+Flamingock supports two approaches for implementing Changes: **code-based** and **template-based**. Each serves different use cases and provides the same safety guarantees.
 
-## Code-based Changes
 
+
+
+
+
+
+<Tabs groupId="edition">
+  <TabItem value="template" label="Template based" default>
+Template-based Changes use YAML or JSON files with reusable templates. Templates provide a low-code, declarative approach for common patterns and repetitive operations. Templates can be as powerful and complex as code-based Changes - the difference is that templates are developed for reusable patterns and integrations.
+
+### Basic YAML structure
+
+```yaml
+# File: _0001_add_user_index.yml
+id: add_user_index
+order: "0001"
+author: "database-team"
+description: "Add index on user email field for faster lookups"
+targetSystem: "user-database"
+templateName: mongodb-index
+apply:
+  type: createIndex
+  collection: users
+  indexSpec:
+    email: 1
+  options:
+    unique: true
+    name: "idx_user_email"
+rollback:
+  type: removeIndex
+  collection: users
+  indexName: "idx_user_email"
+```
+
+For more details about available templates and creating custom templates, see [Templates](../templates/templates-introduction).
+
+  </TabItem>
+  <TabItem value="code" label="Code based">
 Code-based Changes are written in Java, Kotlin, or Groovy with annotations. They provide full programmatic control for custom logic or specific operations that don't fit existing templates.
 
 ### Basic structure
@@ -1167,35 +909,14 @@ public class _0001_MigrateUserEmails {
 }
 ```
 
-## Template-based Changes
+  </TabItem>
+</Tabs>
 
-Template-based Changes use YAML or JSON files with reusable templates. Templates provide a low-code, declarative approach for common patterns and repetitive operations. Templates can be as powerful and complex as code-based Changes - the difference is that templates are developed for reusable patterns and integrations.
 
-### Basic YAML structure
 
-```yaml
-# File: _0001_add_user_index.yml
-id: add_user_index
-order: "0001"
-author: "database-team"
-description: "Add index on user email field for faster lookups"
-targetSystem: "user-database"
-templateName: mongodb-index
-apply:
-  type: createIndex
-  collection: users
-  indexSpec:
-    email: 1
-  options:
-    unique: true
-    name: "idx_user_email"
-rollback:
-  type: removeIndex
-  collection: users
-  indexName: "idx_user_email"
-```
 
-For more details about available templates and creating custom templates, see [Templates](../templates/templates-introduction).
+
+
 
 
 ## File organization
@@ -1273,6 +994,29 @@ public class _0002_FixUserFieldValues {
     }
 }
 ```
+---
+
+### Avoid domain object coupling
+
+Building on the idea of immutability, another common pitfall is coupling Changes too tightly to domain objects. Changes are historical records that must remain stable over time, even as your application evolves. When Changes depend on domain classes that later change (fields removed, renamed, or restructured), your previously successful Changes can break compilation or execution.
+
+**The issue:** If a Change uses a `Customer` domain class and you later remove the `middleName` field from that class, the Change will no longer compile - breaking Flamingock's ability to verify or re-execute historical changes.
+
+**✅ Use generic structures instead:**
+```java
+// Instead of domain objects, use framework-native structures
+@Apply
+public void apply(JdbcTemplate jdbc) {
+    Map<String, Object> customer = jdbc.queryForMap(
+        "SELECT * FROM customers WHERE id = ?", customerId
+    );
+    // Work with the Map directly, not a Customer object
+}
+```
+
+→ **Learn more:** [Domain Coupling and Historical Immutability](domain-coupling.md) - Understand why this happens and explore different approaches to keep your Changes stable.
+
+---
 
 ### Always provide rollback logic
 
@@ -1309,22 +1053,20 @@ public class _0001_SetupUserIndexes {
     @Rollback
     public void rollback(MongoDatabase database) {
         MongoCollection<Document> users = database.getCollection("users");
-        
-        // Drop indexes in reverse order
-        try {
+
+        // Drop only if the index exists
+        if (isIndexCreated(users, "idx_user_search")) {
             users.dropIndex("idx_user_search");
-        } catch (Exception e) {
-            // Index might not exist - log but continue
         }
-        
-        try {
-            users.dropIndex("idx_user_email_status");  
-        } catch (Exception e) {
-            // Index might not exist - log but continue
+
+        if (isIndexCreated(users, "idx_user_email_status")) {
+            users.dropIndex("idx_user_email_status");
         }
     }
 }
 ```
+
+---
 
 ### Keep scope focused
 
@@ -1391,6 +1133,9 @@ public class _0001_AddUserPreferences {
 }
 ```
 
+
+---
+
 ### Handle errors gracefully
 
 Don't catch exceptions unless you have specific recovery logic. Let Flamingock handle error management.
@@ -1418,6 +1163,9 @@ public void apply(MongoDatabase database) {
 }
 ```
 
+
+---
+
 ### Use meaningful method names
 
 Method names should clearly indicate their purpose.
@@ -1433,11 +1181,6 @@ public void addEmailIndexForFasterLookups(MongoDatabase db) { }
 @Rollback
 public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 ```
-
-### Avoid domain objects
-
-Don't use domain objects in Changes. Since Changes are immutable and your domain evolves, using domain classes can cause compilation errors when fields are removed or modified in newer versions. Instead, work with primitive types, collections, or framework-native objects like `Document` for MongoDB.
-
 
 ## Naming and organization
 
@@ -1456,6 +1199,9 @@ _0003_AddUserPreferences.java
 _0100_OptimizeUserQueries.java
 ```
 
+
+---
+
 ### Use descriptive IDs and descriptions
 
 Make your Changes self-documenting:
@@ -1468,6 +1214,9 @@ Make your Changes self-documenting:
     description = "Migrate user documents from legacy format to v2 schema with new preference structure"
 )
 ```
+
+
+---
 
 ### Organize by chronological order
 
@@ -1495,7 +1244,7 @@ public void testUserMigrationChange() {
     MongoDatabase testDb = getTestDatabase();
     insertTestUsers(testDb);
     
-    _0001_MigrateUsers change = new _0001_MigrateUsers();
+    var change = new _0001_MigrateUsers();
     
     // Act - Test execution
     change.execute(testDb);
@@ -1511,6 +1260,9 @@ public void testUserMigrationChange() {
     assertEquals(0, users.countDocuments(new Document("status", new Document("$exists", true))));
 }
 ```
+
+
+---
 
 ### Validate with real-like data
 
@@ -1537,6 +1289,169 @@ public void testWithRealisticData() {
 - **[Templates](../templates/templates-introduction)** - Explore reusable change patterns
 - **[Target Systems](../target-systems/introduction)** - Configure where changes are applied
 - **[Testing](../testing/introduction)** - Comprehensive testing strategies for Changes
+
+---
+
+// File: changes/domain-coupling
+
+# Domain Coupling and Historical Immutability
+
+## Why this matters
+
+Here's something that might surprise you: Changes that ran successfully in the past can break your build today. This happens when Changes depend on domain classes that evolve over time. Let's understand why this matters and how to keep your Changes stable.
+
+## The coupling problem
+
+Changes in Flamingock are meant to be **historically immutable** - they represent past changes that have been applied and audited. Their code should remain untouched over time to ensure:
+
+- **Repeatability**: The same Change produces the same result
+- **Auditability**: Historical changes can be verified
+- **Reliability**: Past Changes continue to work in new environments
+
+However, when a Change depends on a domain class and that class evolves (fields removed, renamed, or restructured), your older Changes will no longer compile or run correctly.
+
+### A practical example
+
+Consider a PostgreSQL database with a `customers` table. Initially, your domain model includes:
+
+```java
+public class Customer {
+    private Long id;
+    private String firstName;
+    private String middleName;  // Will be removed later
+    private String lastName;
+    private String email;
+    // getters/setters...
+}
+```
+
+You create a Change that uses this domain class:
+
+```java
+@Change(id = "add-premium-customers", order = "0001", author = "team")
+public class _0001_AddPremiumCustomers {
+
+    @Apply
+    public void apply(CustomerRepository repository) {
+        Customer customer = new Customer();
+        customer.setFirstName("John");
+        customer.setMiddleName("William");  // Uses the field
+        customer.setLastName("Smith");
+        customer.setEmail("john.smith@example.com");
+        repository.save(customer);
+    }
+}
+```
+
+Six months later, your team decides `middleName` is unnecessary and removes it from the `Customer` class. Now:
+
+- ✅ Your application works fine with the updated model
+- ❌ The Change `_0001_AddPremiumCustomers` no longer compiles
+- ❌ You can't run Flamingock in new environments
+- ❌ CI/CD pipelines break
+
+This breaks the principle of historical immutability and undermines Flamingock's reliability.
+
+## The solution: Generic structures
+
+To ensure stability, avoid injecting domain classes or anything tightly coupled to your evolving business model. Instead, use schema-free or generic structures.
+
+Here's how the same Change looks using generic structures:
+
+```java
+@Change(id = "add-premium-customers", order = "0001", author = "team")
+public class _0001_AddPremiumCustomers {
+
+    @Apply
+    public void apply(RestTemplate restTemplate) {
+        // Using a Map instead of the Customer domain class
+        Map<String, Object> customerData = new HashMap<>();
+        customerData.put("firstName", "John");
+        customerData.put("middleName", "William");
+        customerData.put("lastName", "Smith");
+        customerData.put("email", "john.smith@example.com");
+        customerData.put("status", "PREMIUM");
+
+        // Send to customer service API
+        restTemplate.postForObject(
+            "/api/customers",
+            customerData,
+            Map.class
+        );
+    }
+
+    @Rollback
+    public void rollback(RestTemplate restTemplate) {
+        // Remove the customer using email as identifier
+        restTemplate.delete("/api/customers/john.smith@example.com");
+    }
+}
+```
+
+This Change remains stable even if the `Customer` domain class evolves or the `middleName` field is removed. The Map structure is decoupled from your domain model.
+
+## When you need reusable logic
+
+If you have complex logic that needs to be shared across Changes, consider these approaches:
+
+### Utility classes for Changes
+
+Create utilities specifically for your Changes that are isolated from your domain:
+
+```java
+public class ChangeUtils {
+    public static Map<String, Object> createCustomerData(
+        String firstName, String lastName, String email) {
+        return Map.of(
+            "firstName", firstName,
+            "lastName", lastName,
+            "email", email,
+            "createdAt", Instant.now().toString()
+        );
+    }
+}
+```
+
+### SQL files or scripts
+
+For complex SQL operations, consider external scripts:
+
+```java
+@Apply
+public void apply(JdbcTemplate jdbc) throws IOException {
+    String sql = Files.readString(
+        Paths.get("changes/sql/001_create_premium_customers.sql")
+    );
+    jdbc.execute(sql);
+}
+```
+
+## Best practices summary
+
+1. **Treat Changes as historical artifacts** - They are versioned records of the past, not part of your live business logic
+
+2. **Use generic structures** - Maps, Documents, ResultSets, or direct queries instead of domain objects
+
+3. **Keep Changes self-contained** - Minimize dependencies on external classes that might change
+
+4. **Test with evolution in mind** - Ensure your Changes compile and run even as your domain evolves
+
+5. **Document data structures** - When using generic structures, add comments explaining the expected schema
+
+## The balance
+
+We're not suggesting you should never use any classes in your Changes. The key is understanding the trade-off:
+
+- **Domain classes**: Type safety now, brittleness over time
+- **Generic structures**: Less type safety, long-term stability
+
+Choose based on your context, but be aware of the implications. For most production systems where Changes need to remain stable for years, generic structures are the safer choice.
+
+## Next steps
+
+- Review existing Changes for domain coupling
+- Establish team conventions for Change implementations
+- Consider using [Templates](../templates/templates-introduction.md) for standardized, decoupled change patterns
 
 ---
 
@@ -2017,9 +1932,7 @@ Here's the default single-stage configuration:
 
 ```java
 @EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")
-    }
+    stages = { @Stage(location = "com.yourcompany.changes") }
 )
 public class FlamingockConfig {
     // Configuration class
@@ -2029,7 +1942,7 @@ public class FlamingockConfig {
 Alternatively, using a YAML file:
 
 ```java
-@EnableFlamingock(pipelineFile = "config/setup.yaml")
+@EnableFlamingock( pipelineFile = "config/setup.yaml" )
 public class FlamingockConfig {}
 ```
 
@@ -2047,36 +1960,6 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
-
-## Stage Types
-
-Flamingock supports two families of stages:
-
-### Standard Stages (default)
-The default stage type where users place their changes. This is where you'll put all your application changes (Kafka, MongoDB, SQL, S3, etc.). Standard stages execute changes in order and provide predictable, sequential execution.
-
-```java
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
-    }
-)
-```
-
-### Special Stages
-For specific scenarios, Flamingock provides special stage types that require explicitly specifying a `type` parameter. Examples include `SYSTEM` and `LEGACY` stage types, which are used in particular contexts such as the Mongock upgrade process.
-
-```java
-@EnableFlamingock(
-        stages = {
-                @Stage(type = SYSTEM, location = "com.yourapp.system"),
-                @Stage(type = LEGACY, location = "com.yourapp.mongock"),
-                @Stage(location = "com.yourcompany.changes")  // Standard stage (default type)
-        }
-)
-```
-
-To see these special stages in action, refer to the [Upgrade from Mongock guide](../resources/coming-from-mongock) which demonstrates their practical usage.
 
 
 ## Multiple Stages (Advanced)
@@ -2347,7 +2230,7 @@ Contexts can contain:
 
 Flamingock uses a **hierarchical resolution strategy** that searches for dependencies in this order:
 
-1. **Target system context** - Dependencies provided by the specific target system. For more information, see [Target systems](../target-systems/introduction.md).
+1. **Target system context** - Dependencies provided by the specific target system. For more information, see [Target systems](../target-systems/introduction.md#dependency-injection).
 2. **General application context** - Shared dependencies registered globally directly in the builder  
 3. **Framework context** - When using Spring Boot, beans from the Spring container. For more information, see [Spring Boot integration](../frameworks/springboot-integration/introduction.md).
 
@@ -2373,20 +2256,20 @@ Every target system provides two ways to add dependencies:
 
 **Specific methods** - Each concrete implementation offers `.withXXX()` methods for common dependencies:
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
+var mongoTarget = new MongoDBSyncTargetSystem("user-db")
     .withDatabase(database)      // MongoDB-specific method
     .withMongoClient(client);    // MongoDB-specific method
 ```
 
-**Generic methods** - All target systems (including DefaultTargetSystem) support generic dependency injection:
+**Generic methods** - All target systems (including NonTransactionalTargetSystem) support generic dependency injection:
 ```java
-DefaultTargetSystem kafkaTarget = new DefaultTargetSystem("events")
+var kafkaTarget = new NonTransactionalTargetSystem("events-id")
     .addDependency(kafkaProducer)
     .addDependency("notification-service", notificationService)
     .setProperty("batch.size", 1000);
 ```
 
-This flexibility allows DefaultTargetSystem to inject any dependencies needed for non-transactional systems, while specialized target systems provide convenience methods for their common dependencies.
+This flexibility allows NonTransactionalTargetSystem to inject any dependencies needed for non-transactional systems, while specialized target systems provide convenience methods for their common dependencies.
 
 ### Global dependencies
 
@@ -2481,7 +2364,7 @@ If you're injecting **non-critical components** (e.g., a local list or stateless
 
 ### Builder
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setLockAcquiredForMillis(120000)
   .setLockQuitTryingAfterMillis(300000)
   .setLockTryFrequencyMillis(2000)
@@ -2510,66 +2393,6 @@ Most projects can use the default configuration. You may need to adjust values i
 
 ---
 
-// File: flamingock-library-config/transactions
-
-# Transactions
-
-Flamingock provides intelligent transaction management that adapts to your target systems' capabilities. Understanding when and how changes are executed transactionally is key to building reliable system evolution.
-
-## How Flamingock handles transactions
-
-Flamingock's transaction handling is determined by the **target system's capabilities**, not just the `transactional` flag. The behavior differs fundamentally between transactional and non-transactional target systems.
-
-### 🔄 Transactional target systems
-**Examples**: PostgreSQL, MySQL, MongoDB, SQL databases, DynamoDB, Couchbase
-
-These systems support native transaction capabilities:
-
-**When `transactional = true` (default)**:
-- Execution runs within a native database transaction
-- **On failure**: Automatic rollback using database's native transaction mechanism
-- Session/connection managed automatically by Flamingock
-- `@Rollback` used only for manual operations (CLI undo)
-
-**When `transactional = false`**:
-- Execution runs without transaction
-- **On failure**: Safety through compensation logic (@Rollback)
-- Useful for DDL operations or large bulk operations that exceed transaction limits
-
-### ⚡ Non-transactional target systems
-**Examples**: Kafka, S3, REST APIs, file systems, message queues
-
-These systems have no native transaction support:
-
-**The `transactional` flag is ignored** - behavior is always the same:
-- Execution runs normally (no native transaction possible)
-- **On failure**: Safety through compensation logic (@Rollback)
-- Safety relies entirely on idempotent operations and rollback methods
-
-### Behavior summary table
-
-| Target System Type | `transactional = true` (default) | `transactional = false` |
-|---------------------|-----------------------------------|-------------------------|
-| **Transactional** | Native transaction rollback on failure | `@Rollback` on failure |
-| **Non-transactional** | **Flag ignored** - `@Rollback` on failure | **Flag ignored** - `@Rollback` on failure |
-
-## Best practices
-
-### Always provide @Rollback
-- **Transactional systems with `transactional = true`**: Used for manual rollback operations (CLI undo)
-- **Transactional systems with `transactional = false`**: Called automatically on failure
-- **Non-transactional systems**: Always called automatically on failure (flag ignored)
-- **All cases**: Essential for complete change management
-
-### Use appropriate transactionality
-- **Keep default `transactional = true`** for regular data changes on transactional systems
-- **Use `transactional = false`** only when necessary on transactional systems (DDL, bulk operations)
-- **For non-transactional systems**: The flag doesn't matter - design idempotent operations and robust rollback logic
-
-**Key takeaway**: Flamingock's transaction behavior is determined by your target system's capabilities. For transactional systems, the `transactional` flag controls failure handling (native rollback vs @Rollback). For non-transactional systems, the flag is ignored and @Rollback is always used.
-
----
-
 // File: flamingock-library-config/additional-configuration
 
 import Tabs from '@theme/Tabs';
@@ -2582,7 +2405,6 @@ This section includes additional settings for customizing defaults and adding co
 | Setting         | Purpose                                      | Default            |
 |-----------------|-----------------------------------------------|--------------------|
 | `metadata`      | Attach tags and labels for audit tracking     | _empty map_        |
-| `defaultAuthor` | Used when no author is specified in a change  | `"default_author"` |
 | `enabled`       | Globally enable/disable Flamingock            | `true`             |
 
 :::note
@@ -2618,34 +2440,9 @@ Map<String, Object> metadata = new HashMap<>();
 metadata.put("owner", "platform-team");
 metadata.put("triggeredBy", "ci-cd-pipeline");
 
-FlamingockStandalone
+Flamingock.builder()
 .setMetadata(metadata)
 ...
-```
-    </TabItem>
-</Tabs>
-
-
-### Default Author
-
-If a change unit does not specify an `author`, Flamingock will use this value as the fallback.
-
-- Applies to both **code-based** and **template-based** changes
-- Default value: `"default_author"`
-- Ignored if the change itself defines an explicit author
-
-### Example
-
-<Tabs groupId="config">
-    <TabItem value="file" label="YAML" default>
-```yaml
-defaultAuthor: antonio
-```
-    </TabItem>
-    <TabItem value="builder" label="Builder">
-```java
-FlamingockStandalone
-        .setDefaultAuthor("antonio")
 ```
     </TabItem>
 </Tabs>
@@ -2673,7 +2470,7 @@ enabled: false
     </TabItem>
     <TabItem value="builder" label="Builder">
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setEnabled(false)
 ```
     </TabItem>
@@ -2726,7 +2523,7 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-      FlamingockStandalone.local()
+      Flamingock.builder()
           .setPipelineStartedListener(new PipelineStartedListener())
           .setPipelineCompletedListener(new PipelineCompletedListener())
           .setPipelineFailedListener(new PipelineFailedListener())
@@ -2739,7 +2536,7 @@ In the Flamingock builder, you must configure the events you intend to use and i
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-      FlamingockStandalone.local()
+      Flamingock.builder()
           .setPipelineStartedListener(PipelineStartedListener())
           .setPipelineCompletedListener(PipelineCompletedListener())
           .setPipelineFailedListener(PipelineFailedListener())
@@ -3167,31 +2964,19 @@ This behavior ensures your application only starts when all change units have be
 
 ## Dependency
 
-To use the Spring Boot integration, add the appropriate module for your version:
+To use the Spring Boot integration, add the following dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 3.x
 implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
-
-// For Spring Boot 2.x (legacy)
-implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For Spring Boot 3.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>flamingock-springboot-integration</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
-
-<!-- For Spring Boot 2.x (legacy) -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
@@ -3200,21 +2985,11 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 ### Version Compatibility
 
-Flamingock provides two editions for Spring Boot integration.
+The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. Your project's Spring Boot version determines the appropriate Spring framework and JDK requirements.
 
-### Why are there two Spring Boot integration artifacts?
-
-The only difference is the Java version they target:
-
-- `flamingock-springboot-integration` — requires JDK 17 or newer.
-- `flamingock-springboot-integration-v2-legacy` — kept for teams still on Spring Boot 2 who must stay on JDK 8 – 11.
-
-Choose the artifact that matches the JDK level of your application today; switching later is as simple as changing the dependency.
-
-| Package Name                                   | Spring Boot Version  |
-|------------------------------------------------|----------------------|
-| `flamingock-springboot-integration`            | [3.0.0, 4.0.0)       |
-| `flamingock-springboot-integration-v2-legacy`  | [2.0.0, 3.0.0)       |
+| Package Name                         | Spring Boot Version  |
+|-------------------------------------|----------------------|
+| `flamingock-springboot-integration` | 2.x and 3.x         |
 
 
 ## :white_check_mark: Best practices
@@ -3250,31 +3025,19 @@ Flamingock provides a convenient automatic integration with Spring Boot using th
 
 ## Import the springboot integration library
 
-Add the appropriate Flamingock Spring Boot integration dependency, depending on your version:
+Add the Flamingock Spring Boot integration dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 3.x (Spring 6.x)
 implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
-
-// For Spring Boot 2.x (Spring 5.x, legacy)
-implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For Spring Boot 3.x (Spring 6.x) -->
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>flamingock-springboot-integration</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
-
-<!-- For Spring Boot 2.x (Spring 5.x, legacy) -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
@@ -3283,7 +3046,7 @@ implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flami
 
 ### Version Compatibility
 
-Check [Version Compatibility](introduction.md#version-compatibility)
+The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. See [Version Compatibility](introduction.md#version-compatibility) for details.
 
 ## Configure setup and activate integration
 
@@ -3310,6 +3073,20 @@ The `@EnableFlamingock` annotation enables automatic Spring Boot integration, wh
 - Automatically configures the runner (e.g., ApplicationRunner or InitializingBean)
 - Processes the setup configuration from the annotation
 
+
+## Bean registration requirements
+
+With automatic setup, Flamingock needs access to your target systems and (for Community Edition) audit stores. Since these aren't configured directly via the builder, they must be registered as Spring beans:
+
+Example target system bean registration:
+```java
+@Bean
+public NonTransactionalTargetSystem redisTargetSystem() {
+    return new NonTransactionalTargetSystem("redis-cache-id");
+}
+```
+
+Flamingock will automatically detect and use these beans during execution.
 
 ## Providing configuration
 
@@ -3349,31 +3126,19 @@ It’s especially useful when integrating Flamingock alongside other frameworks,
 
 ## Import the springboot integration library
 
-Add the appropriate Flamingock Spring Boot integration dependency, depending on your version:
+Add the Flamingock Spring Boot integration dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-// For Spring Boot 3.x
 implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
-
-// For Spring Boot 2.x (legacy)
-implementation("io.flamingock:flamingock-springboot-integration-v2-legacy:$flamingockVersion")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
-<!-- For Spring Boot 3.x -->
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>flamingock-springboot-integration</artifactId>
-    <version>${flamingock.version}</version>
-</dependency>
-
-<!-- For Spring Boot 2.x (legacy) -->
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-integration-v2-legacy</artifactId>
     <version>${flamingock.version}</version>
 </dependency>
 ```
@@ -3708,13 +3473,32 @@ annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
 
 
 
-## 2. Define your first Changes
+## 2. Create target systems
 
-Each Change represents a single change.  
+Target systems represent the external systems Flamingock will apply your changes to.
+They are configured in the builder and shared across Changes.
+
+For our example:
+- A MySQL database (`mysql-inventory`)
+- An S3 bucket service (`aws-s3`)
+- A Kafka cluster (`kafka`)
+
+```java
+var sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+var s3 = new NonTransactionalTargetSystem("aws-s3-id");
+var kafka = new NonTransactionalTargetSystem("kafka-id");
+```
+
+See [Target systems](../target-systems/introduction.md) for more details.
+
+
+## 3. Define your first Changes
+
+Each Change represents a single change.
 For our example, we'll define three:
 
 - **MySQL**: Add a column `category` to products
-- **S3**: Create a `product-images` bucket  
+- **S3**: Create a `product-images` bucket
 - **Kafka**: Create a `stock-updates` topic
 
 Changes can be:
@@ -3770,25 +3554,6 @@ public class _002_CreateS3Bucket {
 For more details, see [Core concepts](core-concepts.md).
 
 
-## 3. Create target systems
-
-Target systems represent the external systems Flamingock will apply your changes to.
-They are configured in the builder and shared across Changes.
-
-For our example:
-- A MySQL database (`mysql-inventory`)
-- An S3 bucket service (`aws-s3`)  
-- A Kafka cluster (`kafka`)
-
-```java
-SqlTargetSystem sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
-DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
-DefaultTargetSystem kafka = new DefaultTargetSystem("kafka");
-```
-
-See [Target systems](../target-systems/introduction.md) for more details.
-
-
 ## 4. Configure stages
 
 Flamingock organizes your changes in stages.  
@@ -3796,9 +3561,7 @@ Most applications only need one stage:
 
 ```java
 @EnableFlamingock(
-  stages = {
-    @Stage(location = "com.company.inventory.changes")
-  }
+  stages = { @Stage(location = "com.company.inventory.changes") }
 )
 public class App {}
 ```
@@ -3821,8 +3584,8 @@ Finally, configure Flamingock before running your application.
   <TabItem value="community" label="Community" default>
 
 ```java
-FlamingockStandalone
-  .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+Flamingock.builder()
+  .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
   .addTargetSystems(sql, s3, kafka)
   .build()
   .run();
@@ -3832,7 +3595,7 @@ FlamingockStandalone
   <TabItem value="cloud" label="Cloud (coming soon)">
 
 ```java
-FlamingockStandalone
+Flamingock.builder()
   .setApiToken("your-flamingock-api-token") 
   .setEnvironment("dev")
   .setService("inventory-service")
@@ -3972,7 +3735,7 @@ Systems that support ACID transactions, such as MongoDB 4.0+, PostgreSQL, MySQL,
 ### Non-transactional target systems
 Systems like Kafka, S3, REST APIs, or file systems that don't support transactions. For these systems, Flamingock relies on explicit rollback methods and careful change design to maintain consistency. Recovery strategies become particularly important for handling failures in non-transactional contexts.
 
-For implementation details, see the [Transactions](../flamingock-library-config/transactions.md) section.
+For implementation details, see the [Transactions](../changes/transactions.md) section.
 
 
 ## Stages
@@ -4247,8 +4010,8 @@ public class _0002_CreateKafkaTopicsChange {
 
     @Apply
     public void apply(KafkaAdminClient admin) {
-        NewTopic topic1 = new NewTopic("app-events", 3, (short) 1);
-        NewTopic topic2 = new NewTopic("user-notifications", 2, (short) 1);
+        var topic1 = new NewTopic("app-events", 3, (short) 1);
+        var topic2 = new NewTopic("user-notifications", 2, (short) 1);
         admin.createTopics(Arrays.asList(topic1, topic2));
     }
 
@@ -4598,7 +4361,7 @@ Flamingock's behavior depends on your recovery strategy configuration:
 This intelligent failure handling prevents silent data corruption and provides operational control.
 
 **How can I ensure changes are transactional?**  
-If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../flamingock-library-config/transactions.md).
+If your database supports transactions (e.g. MongoDB ≥ 4.0 in replica set), you can enable them using [Flamingock’s transaction config](../changes/transactions.md).
 
 **Should I implement the @Rollback method in transactional environments?**
 
@@ -5087,6 +4850,9 @@ For operational workflows when issues occur, see [Issue resolution](issue-resolu
 
 // File: target-systems/introduction
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Target systems
 
 Target systems are the real-world systems where your business changes are applied.
@@ -5111,83 +4877,116 @@ Every change is tied to a named target system, avoiding ambiguity and enabling c
 
 This distinction is built into the target system definition.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
-### Dependency injection
+### Dependency isolation
 
-Each target system can expose the dependencies required by its Changes. For example:
-- A MongoDB target system provides a `MongoDatabase`
-- A Kafka target system provides a `KafkaTemplate`  
-- A SQL target system provides a `Connection` or `DataSource`
+Each target system provides its own dependency context, ensuring **target system isolation**. This means each system has its own set of dependencies that are isolated from other target systems, providing clear boundaries and preventing dependency conflicts between different systems, while still supporting global dependency injection as a fallback.
 
-#### Dependency resolution hierarchy
+This isolation enables:
+- Clear ownership of dependencies per target system
+- Prevention of cross-system dependency conflicts
+- Easier testing and debugging of system-specific changes
 
-Each target system needs specific dependencies to function (except `DefaultTargetSystem` which requires none). When Flamingock initializes a target system, it resolves dependencies using this hierarchy:
+## Target system implementations
 
-1. **Direct injection** via `.withXXX()` methods (highest priority)
-2. **Global context** lookup if not directly injected
-3. **Default values** for optional configurations, or **exception** for required ones
+Flamingock provides target system implementations to handle specific behavior when needed. While most external systems work perfectly with the standard `NonTransactionalTargetSystem`, concrete implementations exist primarily to leverage native capabilities like transaction support. As the ecosystem evolves, new implementations may be added by the Flamingock team, community, or even custom-built by users - though custom implementations are rarely necessary.
 
-This approach provides maximum flexibility while ensuring all requirements are met:
+### Non-transactional target system
+The standard choice for systems without native transaction support:
+
+- [Non-transactional target system](../target-systems/non-transactional-target-system.md) - For Kafka, S3, REST APIs, feature flags, file systems, and any other non-transactional system
+
+### Transactional target systems
+These implementations leverage native transaction capabilities for automatic rollback:
+
+- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
+- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
+- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
+- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
+- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
+
+## Target system configuration
+
+Target systems are configured using a **strict, no-fallback approach** with explicit parameters:
+
+**Mandatory configuration**: Provided through constructor parameters only
+- Must be provided at target system creation time
+- No fallback to global context
+- Example: `MongoClient` and `databaseName` for MongoDB target systems
+
+**Optional configuration**: Provided through `.withXXX()` methods only
+- No fallback to global context
+- Uses sensible defaults if not provided
+- Example: `WriteConcern`, connection pool settings
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-db")
-    .withDatabase(database);
+// Mandatory configuration via constructor
+var mongoTarget = new MongoDBSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
+
+// Optional configuration via .withXXX() methods
+mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
+           .withConnectionTimeout(5000);
 ```
 
-In this example, Flamingock resolves dependencies as follows:
-- **MongoDatabase**: Provided directly via `.withDatabase()`, so it's immediately available
-- **MongoClient**: Not provided directly, so Flamingock searches the global context
-- **WriteConcern**: Not found in either place, so uses the default value (MAJORITY with journal)
-- If MongoClient is missing from the global context, Flamingock throws an exception since it's a required dependency
-
-:::info
-Changes are not limited to target system dependencies. They can also request shared or application-level dependencies. Flamingock resolves them automatically, starting from the target system context and falling back to the general context.
-:::
+**No global context fallback** - target system configuration must be explicit and complete.
 
 
 ## Registering target systems
 
-Target systems are registered at runtime with the Flamingock builder. You can define and register as many as you need:
+Target systems are registered at runtime. You can define and register as many as you need:
+
+<Tabs groupId="registration">
+  <TabItem value="builder" label="Flamingock Builder" default>
+
+Use the Flamingock builder for standalone applications:
 
 ```java
+var mysql = new SqlTargetSystem("mysql-inventory-id", dataSource);
 
-SqlTargetSystem mysql = new SqlTargetSystem("mysql-inventory")
-    .withDatasource(ds);
+var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 
-DefaultTargetSystem s3 = new DefaultTargetSystem("aws-s3");
-
-DefaultTargetSystem kafka = new DefaultTargetSystem("kafka-stock");
+var kafka = new NonTransactionalTargetSystem("kafka-stock-id");
 
 Flamingock.builder()
-    .setAuditStore(new MongoSyncAuditStore(mongoClient, mongoDatabase))
+    .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
     .addTargetSystems(mysql, s3, kafka)
     .build()
     .run();
-  
 ```
 
 At startup, Flamingock automatically injects the right dependencies from the corresponding target system into each Change.
 
-### Spring Boot Integration
-For Spring Boot applications, target systems are configured as beans:
+  </TabItem>
+  <TabItem value="springboot" label="Spring Boot">
+
+For Spring Boot applications, register target systems as beans:
 
 ```java
 @Bean
-public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
-    return new SqlTargetSystem("mysql-inventory")
-        .withDatasource(dataSource);
+public NonTransactionalTargetSystem kafkaTargetSystem() {
+    return new NonTransactionalTargetSystem("kafka-stock-id");
 }
 
-@Bean  
-public DefaultTargetSystem kafkaTargetSystem() {
-    return new DefaultTargetSystem("kafka-stock");
+@Bean
+public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
+    return new SqlTargetSystem("mysql-inventory-id", dataSource);
 }
+
+@Bean
+public MongoDBSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
+    return new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb")
+        .withWriteConcern(WriteConcern.MAJORITY);
+}
+
 ```
 
 Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
 
 For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
+
+  </TabItem>
+</Tabs>
 
 
 
@@ -5196,13 +4995,34 @@ For more details, see [Spring Boot Integration](../frameworks/springboot-integra
 When defining Changes, you specify which target system they belong to using the `@TargetSystem` annotation:
 
 ```java
-@TargetSystem("mysql-inventory")
+@TargetSystem("mysql-inventory-id")
 @Change(id = "add-category", order = "001", author = "team")
 public class _001_AddCategory {
     //...
 }
 ```
 
+
+
+## Dependency injection
+
+Dependency injection is the mechanism used for **change execution**, providing the dependencies that Changes need to perform their operations. Each target system exposes specific dependencies required by its Changes:
+
+- A MongoDB target system provides a `MongoDatabase`, `ClientSession`
+- A Kafka target system provides a `KafkaTemplate`
+- A SQL target system provides a `Connection` or `DataSource`
+
+Flamingock uses a **flexible, multi-source approach** with fallback hierarchy for change execution:
+
+1. **Target system context** (highest priority) - includes configuration parameters from constructor + `.withXXX()` methods
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+:::info 
+Target system configuration parameters (from **constructor** and `.withXXX()` methods) are automatically available as change dependencies with highest priority.
+:::
+
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 
 ## Cloud Edition visibility
@@ -5224,325 +5044,242 @@ This makes it easier to govern and audit distributed environments at scale.
 - Keep dependencies scoped to the system they belong to — don’t overload the general context when they are system-specific
 
 
-## Available target system implementations
-
-Flamingock provides several built-in target system implementations. The ecosystem includes specialized implementations for technologies that benefit from specific handling, and a universal fallback for everything else:
-
-### Specialized target systems
-These target systems provide optimized handling for specific technologies:
-
-**Transactional systems** - Leverage native transaction capabilities for automatic rollback:
-- [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
-- [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
-- [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
-- [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
-- [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
-
-### Universal fallback
-For any system that doesn't require specialized handling:
-
-- [Default target system](../target-systems/default-target-system.md) - The fallback choice for any system without a dedicated implementation (Kafka Schema Registry, S3, REST APIs, file systems, etc.)
-
-**Future extensibility**: The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. These can be implemented by the Flamingock team, community contributions, or custom implementations by users.
-
 
 **Key Takeaway**: Target systems provide the foundation for safe, auditable changes across your entire technology stack. By explicitly declaring and configuring them, you enable Flamingock to orchestrate complex distributed system evolution with confidence.
 
 ---
 
-// File: target-systems/mongodb-target-system
+// File: target-systems/non-transactional-target-system
 
-# MongoDB Sync Target System
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-The MongoDB Sync target system (`MongoSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
+# Non-transactional Target System
 
-## Minimum recommended setup
+The Non-transactional target system (`NonTransactionalTargetSystem`) is Flamingock's generic target system **for any system that doesn't require specialized handling**. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
+
+## Why use NonTransactionalTargetSystem?
+
+NonTransactionalTargetSystem is the fallback choice when there's no specialized target system implementation available for your technology. While Flamingock provides dedicated target systems for technologies that benefit from specific handling (like transactional systems that leverage native rollback capabilities), many systems don't require such specialization.
+
+**When to use NonTransactionalTargetSystem:**
+- No dedicated target system exists for your technology
+- Your system doesn't have unique characteristics that warrant specialized handling
+- You need a simple, flexible solution without technology-specific optimizations
+
+**Future extensibility:** The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. 
+
+
+**Common systems using NonTransactionalTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
+
+## Installation
+
+No specific dependencies are required for DefaultTargetSystem. You can add any dependencies needed for your specific use case.
+
+## Basic setup
+
+Configure the target system:
 
 ```java
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(mongoClient)
-    .withDatabase(database);
+var schemaRegistry = new NonTransactionalTargetSystem("kafka-schema-registry-id");
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+Unlike specialized target systems, NonTransactionalTargetSystem requires no mandatory constructor dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
 
-## Dependencies
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+## Target System Configuration
 
-### Required dependencies
+The Non-transactional target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoClient` | `.withMongoClient(client)` | MongoDB connection client - **required** for both Change execution and transaction management |
-| `MongoDatabase` | `.withDatabase(database)` | Target database instance - **required** for both Change execution and transaction management |
+### Constructor Dependencies (None)
 
-### Optional configurations
+Unlike specialized target systems, NonTransactionalTargetSystem requires **no mandatory constructor dependencies**:
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
-| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
-| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+```java
+// Only requires the target system name
+var targetSystem = new NonTransactionalTargetSystem("system-name-id");
+```
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases where the defaults cannot be used (e.g., specific infrastructure limitations).
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
-- **Optional configurations** will use the defaults shown above
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+| Method | Description |
+|--------|-------------|
+| `.addDependency(object)` | Add a dependency by type for changes |
+| `.addDependency(name, object)` | Add a named dependency for changes |
+| `.setProperty(key, value)` | Set a configuration property for changes |
+
+1. **Target system context** (highest priority) - any dependencies added via `.addDependency()` or properties via `.setProperty()`
+2. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-MongoSyncTargetSystem mongoTarget = new MongoSyncTargetSystem("user-database")
-    .withMongoClient(productionMongoClient)    // Target-specific client
-    .withDatabase(userDatabase)                // Target-specific database
-    .addDependency(auditService);              // Custom service for this target
+// Target system configuration (no mandatory constructor dependencies)
+var schemaRegistry = new DefaultTargetSystem("kafka-schema-registry")
+    .addDependency(schemaRegistryClient)     // Additional dependency for changes
+    .addDependency("registry-url", "http://schema-registry:8081")  // Named dependency
+    .setProperty("compatibility.level", "BACKWARD");  // Configuration property
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultMongoClient)         // Different client in global
-    .addDependency(defaultDatabase)            // Different database in global
-    .addDependency(emailService)               // Available to all targets
-    .addTargetSystems(mongoTarget)
+    .addDependency(metricsService)           // Available to all target systems
+    .addDependency(notificationService)      // Available to all target systems
+    .addTargetSystems(schemaRegistry)
     .build();
 ```
 
-**What gets resolved for Changes in "user-database":**
-- **MongoClient**: Uses `productionMongoClient` (from target system, not `defaultMongoClient` from global)
-- **MongoDatabase**: Uses `userDatabase` (from target system, not `defaultDatabase` from global)
-- **AuditService**: Available from target system context
-- **EmailService**: Available from global context
-- **WriteConcern/ReadConcern**: Use defaults (MAJORITY with journal)
+**Target system configuration resolution:**
+- **No mandatory dependencies**: Target system created with name only
+- **Additional dependencies**: Added via `.addDependency()` methods
+- **Configuration properties**: Added via `.setProperty()` method
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "kafka-schema-registry":**
+- **SchemaRegistryClient**: From target system additional dependencies
+- **Registry URL**: From target system context as named dependency ("registry-url")
+- **Compatibility level**: From target system context as property ("compatibility.level")
+- **MetricsService**: From global context (fallback)
+- **NotificationService**: From global context (fallback)
 
-## Transactional support
+This architecture provides maximum flexibility while maintaining clear separation between target system setup and change execution.
 
-For a Change to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+**How compensation works:**
+1. **No transaction boundaries**: Operations execute immediately with no automatic rollback
+2. **Rollback execution**: If any failure occurs, Flamingock calls the `@Rollback` method
+3. **Manual compensation**: You provide the logic to undo or compensate for the changes made
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
-
-```java
-@TargetSystem("user-database")
-@Change(id = "create-users", order = "001")
-public class CreateUsers {
-    
-    @Apply
-    public void apply(MongoDatabase db, ClientSession session) {
-        // The ClientSession is required for transactional execution
-        // Flamingock uses the target system's MongoClient to create this session
-        // and handles transaction start, commit, and rollback automatically
-        db.getCollection("users")
-          .insertOne(session, new Document("name", "John"));
-    }
-}
-```
-
-**How transactions work:**
-1. **Session creation**: Flamingock uses the target system's `MongoClient` to create a `ClientSession`
-2. **Transaction management**: The same `MongoClient` and `MongoDatabase` handle transaction operations
-3. **Lifecycle**: Flamingock automatically starts the transaction, commits on success, or rolls back on failure
-
-Without the `ClientSession` parameter, operations will execute but won't participate in transactions.
+**Important**: Always provide `@Rollback` methods for NonTransactionalTargetSystem Changes to ensure safe rollback capabilities.
 
 ## Available dependencies in Changes
 
-Your Changes can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject any dependencies you add to the target system context via `.addDependency()` or properties via `.setProperty()`, which take precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [Changes](../changes/introduction.md)
-- See [MongoDB examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
-
----
-
-// File: target-systems/mongodb-springdata-target-system
-
-# MongoDB Spring Data Target System
-
-The MongoDB Spring Data target system (`MongoSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. As a transactional target system, it integrates seamlessly with Spring's transaction management and supports automatic rollback through MongoDB's native transaction capabilities.
-
-## Minimum recommended setup
-
-```java
-MongoSpringDataTargetSystem mongoTarget = new MongoSpringDataTargetSystem("user-database")
-    .withMongoTemplate(mongoTemplate);
-```
-
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
-
-## Dependencies
-
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
-
-### Required dependencies
-
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `MongoTemplate` | `.withMongoTemplate(template)` | Spring Data MongoDB template - **required** for both Change execution and transaction management |
-
-### Optional configurations
-
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
-| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
-| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases where the defaults cannot be used (e.g., specific infrastructure limitations).
-
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
-- **Optional configurations** will use the defaults shown above
-
-## Configuration example
-
-Here's a comprehensive example showing dependency resolution:
-
-```java
-// Target system with specific dependencies
-MongoSpringDataTargetSystem mongoTarget = new MongoSpringDataTargetSystem("user-database")
-    .withMongoTemplate(userMongoTemplate)      // Target-specific template
-    .addDependency(userAuditService);          // Custom service for this target
-
-// Global context with different dependencies
-Flamingock.builder()
-    .addDependency(defaultMongoTemplate)       // Different template in global
-    .addDependency(emailService)               // Available to all targets
-    .addTargetSystems(mongoTarget)
-    .build();
-```
-
-**What gets resolved for Changes in "user-database":**
-- **MongoTemplate**: Uses `userMongoTemplate` (from target system, not `defaultMongoTemplate` from global)
-- **UserAuditService**: Available from target system context
-- **EmailService**: Available from global context
-- **WriteConcern/ReadConcern**: Use defaults (MAJORITY with journal)
-
-The target system context always takes precedence, ensuring proper isolation between different systems.
-
-## Transactional support
-
-Spring Data MongoDB target system integrates with Spring's transaction management. When a Change is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
-
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
-
-```java
-@TargetSystem("user-database")
-@Change(id = "create-users", order = "001")
-public class CreateUsers {
-    
-    @Apply
-    public void apply(MongoTemplate mongoTemplate) {
-        // MongoTemplate automatically participates in Spring transactions
-        // Flamingock uses the target system's MongoTemplate for transaction management
-        // through Spring's @Transactional infrastructure
-        mongoTemplate.save(new User("john@example.com", "John Doe"));
-    }
-}
-```
-
-**How transactions work:**
-1. **Spring integration**: Flamingock leverages the target system's `MongoTemplate` within Spring's transaction context
-2. **Transaction management**: The same `MongoTemplate` handles both Change operations and transaction coordination
-3. **Lifecycle**: Spring's transaction infrastructure manages start, commit, and rollback automatically
-
-The transaction lifecycle is managed through Spring's transaction infrastructure, ensuring consistency with your existing Spring Data operations.
-
-## Available dependencies in Changes
-
-Your Changes can inject Spring Data dependencies like `MongoTemplate`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
-
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
-
-## Spring integration
-
-This target system is designed to work seamlessly with Spring Boot applications. When using Spring Boot auto-configuration, your existing `MongoTemplate` beans are automatically available for injection into target systems.
-
-For more information on Spring Boot integration, see [Spring Boot integration](../frameworks/springboot-integration/introduction.md).
-
-## Next steps
-
-- Learn about [Target systems](introduction.md)
-- Explore [Changes](../changes/introduction.md)
-- See [MongoDB Spring Data examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb-springdata)
+- Explore [Changes](../changes/introduction.md)  
+- See [NonTransactionalTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)
 
 ---
 
 // File: target-systems/sql-target-system
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # SQL Target System
 
 The SQL target system (`SqlTargetSystem`) enables Flamingock to apply changes to relational databases including PostgreSQL, MySQL, Oracle, and SQL Server using standard JDBC connections. As a transactional target system, it supports automatic rollback through the database's native transaction capabilities.
 
-## Minimum recommended setup
+## Installation
+
+Add a JDBC driver dependency for your database. For example, for PostgreSQL:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.postgresql:postgresql:42.3.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.3.0</version>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+You can use any JDBC driver for your database. Common examples include:
+- **MySQL**: `com.mysql:mysql-connector-j`
+- **Oracle**: `com.oracle.database.jdbc:ojdbc8`
+- **SQL Server**: `com.microsoft.sqlserver:mssql-jdbc`
+- **H2**: `com.h2database:h2`
+- **HSQLDB**: `org.hsqldb:hsqldb`
+- And any other JDBC-compliant driver
+
+## Basic setup
+
+Configure the target system:
 
 ```java
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database")
-    .withDatasource(dataSource);
+var sqlTarget = new SqlTargetSystem("inventory-database-id", dataSource);
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name and DataSource. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+## Target System Configuration
 
-### Required dependencies
+The SQL target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `DataSource` | `.withDatasource(dataSource)` | JDBC DataSource connection pool - **required** for both Change execution and transaction management |
+### Constructor Dependencies (Mandatory)
 
-### Optional configurations
+These dependencies must be provided at target system creation time with **no global context fallback**:
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `Connection` | `.withConnection(connection)` | None | Direct JDBC connection (alternative to DataSource) |
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `DataSource` | `dataSource` | JDBC DataSource connection pool - **required** for both target system configuration and change execution |
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `DataSource`, `Connection`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-SqlTargetSystem sqlTarget = new SqlTargetSystem("inventory-database")
-    .withDatasource(inventoryDataSource)       // Target-specific datasource
-    .addDependency(inventoryService);          // Custom service for this target
+// Target system configuration (mandatory via constructor)
+var sqlTarget = new SqlTargetSystem("inventory-database", inventoryDataSource)
+    .addDependency(inventoryService);          // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultDataSource)          // Different datasource in global
-    .addDependency(emailService)               // Available to all targets
+    .addDependency(emailService)               // Available to all target systems
+    .addDependency(logService)                 // Available to all target systems
     .addTargetSystems(sqlTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "inventory-database":**
-- **DataSource**: Uses `inventoryDataSource` (from target system, not `defaultDataSource` from global)
-- **InventoryService**: Available from target system context
-- **EmailService**: Available from global context
+**Target system configuration resolution:**
+- **DataSource**: Must be provided via constructor (`inventoryDataSource`)
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "inventory-database":**
+- **DataSource**: From target system context (`inventoryDataSource`)
+- **Connection**: From target system context (derived from `inventoryDataSource`)
+- **InventoryService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
 For a Change to leverage SQL's transactional capabilities, it must use either the `DataSource` or `Connection` parameter. Flamingock uses the injected `DataSource` dependency to create connections and manage the transaction lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "update-products", order = "001")
 public class UpdateProducts {
     
@@ -5567,7 +5304,7 @@ public class UpdateProducts {
 You can also inject a `Connection` directly if you prefer to work with connections instead of DataSource:
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "create-indexes", order = "002")
 public class CreateIndexes {
     
@@ -5592,9 +5329,9 @@ Without the `DataSource` or `Connection` parameter, operations will execute but 
 
 ## Available dependencies in Changes
 
-Your Changes can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject SQL-specific dependencies like `DataSource` and `Connection`, but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 
@@ -5604,67 +5341,441 @@ For more details on dependency resolution, see [Context and dependencies](../fla
 
 ---
 
+// File: target-systems/mongodb-target-system
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# MongoDB Sync Target System
+
+The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
+
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| MongoDB Java Driver | 4.0.0+ |
+
+MongoDB 4.0+ is required for transaction support.
+
+## Installation
+
+Add the MongoDB Java sync driver dependency to your project (version 4.0.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.mongodb:mongodb-driver-sync:4.0.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongodb-driver-sync</artifactId>
+    <version>4.0.0</version> <!-- 4.0.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the target system:
+
+```java
+var mongoTarget = new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb");
+```
+
+The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
+
+## Target System Configuration
+
+The MongoDB target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at target system creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for both target system configuration and change execution |
+| `String` | `databaseName` | Target database name - **required** to identify which database changes will affect |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, `ClientSession`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+## Configuration example
+
+Here's a comprehensive example showing the new architecture:
+
+```java
+// Target system configuration (mandatory via constructor)
+var mongoTarget = new MongoDBSyncTargetSystem("user-database", productionMongoClient, "userDb")
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary())  // Optional configuration
+    .addDependency(auditService);              // Additional dependency for changes
+
+// Global context with shared dependencies
+Flamingock.builder()
+    .addDependency(emailService)               // Available to all target systems
+    .addDependency(logService)                 // Available to all target systems
+    .addTargetSystems(mongoTarget)
+    .build();
+```
+
+**Target system configuration resolution:**
+- **MongoClient**: Must be provided via constructor (`productionMongoClient`)
+- **Database name**: Must be provided via constructor (`"userDb"`)
+- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
+- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
+
+**Change dependency resolution for Changes in "user-database":**
+- **MongoClient**: From target system context (`productionMongoClient`)
+- **MongoDatabase**: From target system context (derived from `productionMongoClient` + `"userDb"`)
+- **ClientSession**: From target system context (created by Flamingock)
+- **AuditService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
+
+## Transactional support
+
+For a Change to leverage MongoDB's transactional capabilities, it must use the `ClientSession` parameter. Flamingock uses the injected `MongoClient` and `MongoDatabase` dependencies to create and manage this session's lifecycle - starting the transaction before execution, committing on success, and rolling back on failure.
+
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
+
+```java
+@TargetSystem("user-database-id")
+@Change(id = "create-users", order = "001")
+public class CreateUsers {
+    
+    @Apply
+    public void apply(MongoDatabase db, ClientSession session) {
+        // The ClientSession is required for transactional execution
+        // Flamingock uses the target system's MongoClient to create this session
+        // and handles transaction start, commit, and rollback automatically
+        db.getCollection("users")
+          .insertOne(session, new Document("name", "John"));
+    }
+}
+```
+
+**How transactions work:**
+1. **Session creation**: Flamingock uses the target system's `MongoClient` to create a `ClientSession`
+2. **Transaction management**: The same `MongoClient` and `MongoDatabase` handle transaction operations
+3. **Lifecycle**: Flamingock automatically starts the transaction, commits on success, or rolls back on failure
+
+Without the `ClientSession` parameter, operations will execute but won't participate in transactions.
+
+## Available dependencies in Changes
+
+Your Changes can inject MongoDB-specific dependencies like `MongoClient`, `MongoDatabase`, and `ClientSession` (for transactions), but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
+
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
+
+## Next steps
+
+- Learn about [Target systems](introduction.md)
+- Explore [Changes](../changes/introduction.md)
+- See [MongoDB examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
+
+---
+
+// File: target-systems/mongodb-springdata-target-system
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# MongoDB Spring Data Target System
+
+The MongoDB Spring Data target system (`MongoDBSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. As a transactional target system, it integrates seamlessly with Spring's transaction management and supports automatic rollback through MongoDB's native transaction capabilities.
+
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| Spring Data MongoDB | 3.1.x - 4.x |
+
+Spring Data MongoDB versions from 3.1.x through 4.x are supported. Version 3.1.x+ is included in Spring Boot 2.4.3+.
+
+## Installation
+
+Add the Spring Data MongoDB dependency to your project (versions 3.1.x - 4.x supported):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("org.springframework.data:spring-data-mongodb:3.1.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-mongodb</artifactId>
+    <version>3.1.0</version> <!-- 3.1.x - 4.x supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+
+## Basic setup
+
+Configure the target system:
+
+```java
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database-id", mongoTemplate);
+```
+
+The constructor requires the target system name and MongoDB template. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
+
+## Target System Configuration
+
+The MongoDB Spring Data target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
+
+### Constructor Dependencies (Mandatory)
+
+These dependencies must be provided at target system creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `MongoTemplate` | `mongoTemplate` | Spring Data MongoDB template - **required** for both target system configuration and change execution |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration | Method | Default | Description |
+|---------------|--------|---------|-------------|
+| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
+| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
+
+
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `MongoTemplate`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
+
+## Configuration example
+
+Here's a comprehensive example showing the new architecture:
+
+```java
+// Target system configuration (mandatory via constructor)
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database", userMongoTemplate)
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary())  // Optional configuration
+    .addDependency(userAuditService);          // Additional dependency for changes
+
+// Global context with shared dependencies
+Flamingock.builder()
+    .addDependency(emailService)               // Available to all target systems
+    .addDependency(logService)                 // Available to all target systems
+    .addTargetSystems(mongoTarget)
+    .build();
+```
+
+**Target system configuration resolution:**
+- **MongoTemplate**: Must be provided via constructor (`userMongoTemplate`)
+- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
+- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
+
+**Change dependency resolution for Changes in "user-database":**
+- **MongoTemplate**: From target system context (`userMongoTemplate`)
+- **UserAuditService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
+
+## Transactional support
+
+Spring Data MongoDB target system integrates with Spring's transaction management. When a Change is marked as transactional (the default), Flamingock uses the injected `MongoTemplate` dependency to handle transaction operations through Spring's infrastructure.
+
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
+
+```java
+@TargetSystem("user-database-id")
+@Change(id = "create-users", order = "001")
+public class CreateUsers {
+    
+    @Apply
+    public void apply(MongoTemplate mongoTemplate) {
+        // MongoTemplate automatically participates in Spring transactions
+        // Flamingock uses the target system's MongoTemplate for transaction management
+        // through Spring's @Transactional infrastructure
+        mongoTemplate.save(new User("john@example.com", "John Doe"));
+    }
+}
+```
+
+**How transactions work:**
+1. **Spring integration**: Flamingock leverages the target system's `MongoTemplate` within Spring's transaction context
+2. **Transaction management**: The same `MongoTemplate` handles both Change operations and transaction coordination
+3. **Lifecycle**: Spring's transaction infrastructure manages start, commit, and rollback automatically
+
+The transaction lifecycle is managed through Spring's transaction infrastructure, ensuring consistency with your existing Spring Data operations.
+
+## Available dependencies in Changes
+
+Your Changes can inject Spring Data dependencies like `MongoTemplate`, but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
+
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
+
+## Spring integration
+
+This target system is designed to work seamlessly with Spring Boot applications. When using Spring Boot auto-configuration, your existing `MongoTemplate` beans are automatically available for injection into target systems.
+
+For more information on Spring Boot integration, see [Spring Boot integration](../frameworks/springboot-integration/introduction.md).
+
+## Next steps
+
+- Learn about [Target systems](introduction.md)
+- Explore [Changes](../changes/introduction.md)
+- See [MongoDB Spring Data examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb-springdata)
+
+---
+
 // File: target-systems/dynamodb-target-system
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # DynamoDB Target System
 
 The DynamoDB target system (`DynamoDBTargetSystem`) enables Flamingock to apply changes to Amazon DynamoDB using the AWS SDK for Java. As a transactional target system, it supports automatic rollback through DynamoDB's transaction capabilities with `TransactWriteItems`.
 
-## Minimum recommended setup
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| AWS SDK DynamoDB Enhanced | 2.25.0+ |
+
+AWS SDK DynamoDB Enhanced 2.25.0+ is required and must be included in your project dependencies.
+
+## Installation
+
+Add the AWS SDK DynamoDB Enhanced dependency to your project (version 2.25.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("software.amazon.awssdk:dynamodb-enhanced:2.25.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>software.amazon.awssdk</groupId>
+    <artifactId>dynamodb-enhanced</artifactId>
+    <version>2.25.0</version> <!-- 2.25.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the target system:
 
 ```java
-DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database")
-    .withDynamoDBClient(dynamoDbClient);
+var dynamoTarget = new DynamoDBTargetSystem("inventory-database-id", dynamoDbClient);
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name and DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+## Target System Configuration
 
-### Required dependencies
+The DynamoDB target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `DynamoDbClient` | `.withDynamoDBClient(client)` | AWS DynamoDB client - **required** for both Change execution and transaction management |
+### Constructor Dependencies (Mandatory)
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
+These dependencies must be provided at target system creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for both target system configuration and change execution |
+
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `DynamoDbClient`, `TransactWriteItemsEnhancedRequest.Builder`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-DynamoDBTargetSystem dynamoTarget = new DynamoDBTargetSystem("inventory-database")
-    .withDynamoDBClient(inventoryDynamoClient)  // Target-specific client
-    .addDependency(inventoryService);           // Custom service for this target
+// Target system configuration (mandatory via constructor)
+var dynamoTarget = new DynamoDBTargetSystem("inventory-database", inventoryDynamoClient)
+    .addDependency(inventoryService);           // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultDynamoClient)         // Different client in global
-    .addDependency(emailService)                // Available to all targets
+    .addDependency(emailService)                // Available to all target systems
+    .addDependency(logService)                  // Available to all target systems
     .addTargetSystems(dynamoTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "inventory-database":**
-- **DynamoDbClient**: Uses `inventoryDynamoClient` (from target system, not `defaultDynamoClient` from global)
-- **InventoryService**: Available from target system context
-- **EmailService**: Available from global context
+**Target system configuration resolution:**
+- **DynamoDbClient**: Must be provided via constructor (`inventoryDynamoClient`)
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "inventory-database":**
+- **DynamoDbClient**: From target system context (`inventoryDynamoClient`)
+- **TransactWriteItemsEnhancedRequest.Builder**: From target system context (created by Flamingock)
+- **InventoryService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
 For a Change to leverage DynamoDB's transactional capabilities, it must use the `TransactWriteItemsEnhancedRequest.Builder` parameter. Flamingock uses the injected `DynamoDbClient` dependency to create and manage this builder's lifecycle - creating it before execution and executing the transaction with all operations on success.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("inventory-database")
+@TargetSystem("inventory-database-id")
 @Change(id = "update-inventory", order = "001")
 public class UpdateInventory {
     
@@ -5698,9 +5809,9 @@ Without the `TransactWriteItemsEnhancedRequest.Builder` parameter, operations wi
 
 ## Available dependencies in Changes
 
-Your Changes can inject DynamoDB-specific dependencies like `DynamoDbClient` and `TransactWriteItemsEnhancedRequest.Builder`, but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject DynamoDB-specific dependencies like `DynamoDbClient` and `TransactWriteItemsEnhancedRequest.Builder`, but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 
@@ -5712,76 +5823,122 @@ For more details on dependency resolution, see [Context and dependencies](../fla
 
 // File: target-systems/couchbase-target-system
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Couchbase Target System
 
 The Couchbase target system (`CouchbaseTargetSystem`) enables Flamingock to apply changes to Couchbase databases using the official Couchbase Java SDK. As a transactional target system, it supports automatic rollback through Couchbase's transaction capabilities.
 
-## Minimum recommended setup
+## Version Compatibility
+
+| Component | Version Requirement |
+|-----------|-------------------|
+| Couchbase Java Client | 3.6.0+ |
+
+Couchbase Java Client 3.6.0+ is required and must be included in your project dependencies.
+
+## Installation
+
+Add the Couchbase Java Client dependency to your project (version 3.6.0+ required):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+implementation("com.couchbase.client:java-client:3.6.0")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>java-client</artifactId>
+    <version>3.6.0</version> <!-- 3.6.0+ supported -->
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the target system:
 
 ```java
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database")
-    .withCluster(cluster)
-    .withBucket(bucket);
+var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, bucket);
 ```
 
-While dependencies can be provided through the global context, we highly recommend injecting them directly at the target system level. This provides clearer scoping, better isolation between systems, and makes dependencies explicit and easier to track.
+The constructor requires the target system name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
 
-## Dependencies
+:::info Register Target System
+Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
+:::
 
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
+## Target System Configuration
 
-### Required dependencies
+The Couchbase target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-| Dependency | Method | Description |
-|------------|--------|-------------|
-| `Cluster` | `.withCluster(cluster)` | Couchbase cluster connection - **required** for both Change execution and transaction management |
-| `Bucket` | `.withBucket(bucket)` | Target bucket instance - **required** for both Change execution and transaction management |
+### Constructor Dependencies (Mandatory)
 
-Remember: If not provided directly via `.withXXX()`, Flamingock searches the global context. If still not found:
-- **Required dependencies** will throw an exception
+These dependencies must be provided at target system creation time with **no global context fallback**:
+
+| Dependency | Constructor Parameter | Description |
+|------------|----------------------|-------------|
+| `Cluster` | `cluster` | Couchbase cluster connection - **required** for both target system configuration and change execution |
+| `Bucket` | `bucket` | Target bucket instance - **required** for both target system configuration and change execution |
+
+## Dependencies Available to Changes
+
+Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+
+1. **Target system context** (highest priority) - `Cluster`, `Bucket`, `TransactionAttemptContext`, plus any added via `.addDependency()`
+2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
+3. **Global context** (fallback) - shared dependencies available to all target systems
 
 ## Configuration example
 
-Here's a comprehensive example showing dependency resolution:
+Here's a comprehensive example showing the new architecture:
 
 ```java
-// Target system with specific dependencies
-CouchbaseTargetSystem couchbaseTarget = new CouchbaseTargetSystem("user-database")
-    .withCluster(productionCluster)        // Target-specific cluster
-    .withBucket(userBucket)                // Target-specific bucket
-    .addDependency(auditService);          // Custom service for this target
+// Target system configuration (mandatory via constructor)
+var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
+    .addDependency(auditService);          // Additional dependency for changes
 
-// Global context with different dependencies
+// Global context with shared dependencies
 Flamingock.builder()
-    .addDependency(defaultCluster)         // Different cluster in global
-    .addDependency(defaultBucket)          // Different bucket in global
-    .addDependency(emailService)           // Available to all targets
+    .addDependency(emailService)           // Available to all target systems
+    .addDependency(logService)             // Available to all target systems
     .addTargetSystems(couchbaseTarget)
     .build();
 ```
 
-**What gets resolved for Changes in "user-database":**
-- **Cluster**: Uses `productionCluster` (from target system, not `defaultCluster` from global)
-- **Bucket**: Uses `userBucket` (from target system, not `defaultBucket` from global)
-- **AuditService**: Available from target system context
-- **EmailService**: Available from global context
+**Target system configuration resolution:**
+- **Cluster**: Must be provided via constructor (`productionCluster`)
+- **Bucket**: Must be provided via constructor (`userBucket`)
 
-The target system context always takes precedence, ensuring proper isolation between different systems.
+**Change dependency resolution for Changes in "user-database":**
+- **Cluster**: From target system context (`productionCluster`)
+- **Bucket**: From target system context (`userBucket`)
+- **TransactionAttemptContext**: From target system context (created by Flamingock)
+- **AuditService**: From target system additional dependencies
+- **EmailService**: From global context (fallback)
+- **LogService**: From global context (fallback)
+
+This architecture ensures explicit target system configuration while providing flexible dependency access for changes.
 
 ## Transactional support
 
-For a Change to leverage Couchbase's transactional capabilities, it must use the `AttemptContext` parameter. Flamingock uses the injected `Cluster` and `Bucket` dependencies to create and manage this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
+For a Change to leverage Couchbase's transactional capabilities, it must use the `TransactionAttemptContext` parameter. Flamingock uses the injected `Cluster` and `Bucket` dependencies to create and manage this context's lifecycle - creating the transaction context before execution, committing on success, and rolling back on failure.
 
-> For detailed information on transaction handling, see [Transactions](../flamingock-library-config/transactions.md).
+> For detailed information on transaction handling, see [Transactions](../changes/transactions.md).
 
 ```java
-@TargetSystem("user-database")
+@TargetSystem("user-database-id")
 @Change(id = "create-users", order = "001")
 public class CreateUsers {
     
     @Apply
-    public void apply(Cluster cluster, Bucket bucket, AttemptContext txContext) {
-        // AttemptContext is required for transactional execution
+    public void apply(Cluster cluster, Bucket bucket, TransactionAttemptContext txContext) {
+        // TransactionAttemptContext is required for transactional execution
         // Flamingock uses the target system's Cluster and Bucket to handle transaction operations
         // and manages transaction start, commit, and rollback automatically
         Collection collection = bucket.defaultCollection();
@@ -5798,13 +5955,13 @@ public class CreateUsers {
 You can also work with the Cluster and Bucket directly without transactions:
 
 ```java
-@TargetSystem("user-database")
+@TargetSystem("user-database-id")
 @Change(id = "update-configs", order = "002")
 public class UpdateConfigs {
     
     @Apply
     public void apply(Cluster cluster, Bucket bucket) {
-        // Operations without AttemptContext won't participate in transactions
+        // Operations without TransactionAttemptContext won't participate in transactions
         Collection collection = bucket.defaultCollection();
         
         JsonObject config = JsonObject.create()
@@ -5817,120 +5974,23 @@ public class UpdateConfigs {
 ```
 
 **How transactions work:**
-1. **Context creation**: Flamingock uses the target system's `Cluster` to create an `AttemptContext` for transaction management
+1. **Context creation**: Flamingock uses the target system's `Cluster` to create an `TransactionAttemptContext` for transaction management
 2. **Transaction management**: The same `Cluster` and `Bucket` handle transaction operations and coordinate with the context
 3. **Lifecycle**: Flamingock automatically creates the transaction context, commits on success, or rolls back on failure
 
-Without the `AttemptContext` parameter, operations will execute but won't participate in transactions.
+Without the `TransactionAttemptContext` parameter, operations will execute but won't participate in transactions.
 
 ## Available dependencies in Changes
 
-Your Changes can inject Couchbase-specific dependencies like `Cluster`, `Bucket`, and `AttemptContext` (for transactions), but are not limited to these. Any dependency can be added to the target system context via `.addDependency()`, taking precedence over global dependencies.
+Your Changes can inject Couchbase-specific dependencies like `Cluster`, `Bucket`, and `TransactionAttemptContext` (for transactions), but are not limited to these. The target system provides these dependencies through its context, and you can add additional dependencies via `.addDependency()` that take precedence over global dependencies.
 
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
+For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
 - Explore [Changes](../changes/introduction.md)
 - See [Couchbase examples](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)
-
----
-
-// File: target-systems/default-target-system
-
-# Default Target System
-
-The Default target system (`DefaultTargetSystem`) is Flamingock's generic target system for any system that doesn't require specialized handling. It serves as the universal option when no dedicated target system implementation exists or is needed for your specific technology.
-
-## Why use DefaultTargetSystem?
-
-DefaultTargetSystem is the fallback choice when there's no specialized target system implementation available for your technology. While Flamingock provides dedicated target systems for technologies that benefit from specific handling (like transactional systems that leverage native rollback capabilities), many systems don't require such specialization.
-
-**When to use DefaultTargetSystem:**
-- No dedicated target system exists for your technology
-- Your system doesn't have unique characteristics that warrant specialized handling
-- You need a simple, flexible solution without technology-specific optimizations
-
-**Future extensibility:** The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. 
-
-
-**Common systems using DefaultTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
-
-## Minimum recommended setup
-
-```java
-DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry");
-```
-
-Unlike specialized target systems, DefaultTargetSystem requires no mandatory dependencies. You have complete flexibility to inject whatever dependencies your Changes need.
-
-## Dependencies
-
-Following Flamingock's [dependency resolution hierarchy](../flamingock-library-config/context-and-dependencies.md), you can provide dependencies via direct injection or global context.
-
-### No required dependencies
-
-DefaultTargetSystem has no `.withXXX()` methods for required dependencies. This provides maximum flexibility for working with any type of system.
-
-### Generic dependency injection
-
-All dependencies are provided through generic methods:
-
-| Method | Description |
-|--------|-------------|
-| `.addDependency(object)` | Add a dependency by type |
-| `.addDependency(name, object)` | Add a named dependency |
-| `.setProperty(key, value)` | Set a configuration property |
-
-Remember: If not provided directly, Flamingock searches the global context for dependencies.
-
-## Configuration example
-
-Here's a comprehensive example showing dependency resolution:
-
-```java
-// Target system with Kafka Schema Registry dependencies
-DefaultTargetSystem schemaRegistry = new DefaultTargetSystem("kafka-schema-registry")
-    .addDependency(schemaRegistryClient)
-    .addDependency("registry-url", "http://schema-registry:8081")
-    .setProperty("compatibility.level", "BACKWARD");
-
-// Global context with shared dependencies
-Flamingock.builder()
-    .addDependency(metricsService)           // Available to all targets
-    .addDependency(notificationService)      // Available to all targets
-    .addTargetSystems(schemaRegistry)
-    .build();
-```
-
-**What gets resolved for Changes in "kafka-schema-registry":**
-- **SchemaRegistryClient**: Available from target system context
-- **Registry URL**: Available as "registry-url" from target system context  
-- **Compatibility level**: Available as property from target system context
-- **MetricsService**: Available from global context
-- **NotificationService**: Available from global context
-
-The target system context always takes precedence, ensuring proper isolation between different systems.
-
-**How compensation works:**
-1. **No transaction boundaries**: Operations execute immediately with no automatic rollback
-2. **Rollback execution**: If any failure occurs, Flamingock calls the `@Rollback` method
-3. **Manual compensation**: You provide the logic to undo or compensate for the changes made
-
-**Important**: Always provide `@Rollback` methods for DefaultTargetSystem Changes to ensure safe rollback capabilities.
-
-## Available dependencies in Changes
-
-Your Changes can inject any dependencies you add to the target system context via `.addDependency()`, taking precedence over global dependencies. Common examples include system clients, configuration values, custom services, and properties.
-
-For more details on dependency resolution, see [Context and dependencies](../flamingock-library-config/context-and-dependencies.md).
-
-## Next steps
-
-- Learn about [Target systems](introduction.md)
-- Explore [Changes](../changes/introduction.md)  
-- See [DefaultTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)
 
 ---
 
@@ -5978,7 +6038,7 @@ Today, Flamingock templates can already be created and used in your own projects
 
 ## Key Features
 
-- **Experimental, reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
+- **Reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative Changes**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.
@@ -6068,15 +6128,17 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
+recovery:
+  strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
 apply: |
-  CREATE TABLE Persons (
+  CREATE TABLE IF NOT EXISTS Persons (
     PersonID int,
     LastName varchar(255),
     FirstName varchar(255),
     Address varchar(255),
     City varchar(255)
   )
-rollback: "DROP TABLE Persons;"
+rollback: "DROP TABLE IF EXISTS Persons;"
 ```
 
 :::info
@@ -6091,9 +6153,17 @@ Note that your application must provide a `java.sql.Connection` instance as a de
 - **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
 - **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`recovery`**: Optional failure handling configuration. Contains:
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
+- **`configuration`**: Optional configuration parameters accessible within the `apply` and `rollback` sections. The structure and available parameters are defined by the specific template being used.
+  ```yaml
+  configuration:
+    timeout: 30
+    retryCount: 3
+  ```
 - **Other fields**: Templates may define additional configuration fields as needed.
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements.
+Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements. Templates can also accept optional `configuration` parameters to customize their behavior.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -6161,9 +6231,11 @@ id: create-persons-table-from-template
 order: 1
 targetSystem: "database-system"
 templateName: sql-template
+recovery:
+  strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
 apply: |
     CREATE TABLE Persons (
-        PersonID int,
+        PersonID int PRIMARY KEY,
         LastName varchar(255),
         FirstName varchar(255),
         Address varchar(255),
@@ -6177,6 +6249,7 @@ rollback: "DROP TABLE Persons;"
 - **Faster onboarding**: YAML is easier for non-Java developers.
 - **Standardised changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.
+- **Configurable flexibility**: Templates can be customized through configuration parameters without code changes.
 
 ---
 
@@ -6232,7 +6305,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
         if (this.isTransactional && clientSession == null) {
             throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
         }
-        executeOp(db, apply, clientSession);
+        executeOp(db, applyPayload, clientSession);
     }
 
     @Rollback
@@ -6240,7 +6313,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
         if (this.isTransactional && clientSession == null) {
             throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
         }
-        executeOp(db, rollback, clientSession);
+        executeOp(db, rollbackPayload, clientSession);
     }
 
     private void executeOp(MongoDatabase db, MongoOperation op, ClientSession clientSession) {
@@ -6250,7 +6323,7 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 ```
 
 #### Important notes
-- Access your apply and rollback data directly via `this.apply` and `this.rollback` fields.
+- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
 - Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
 - If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
@@ -6264,8 +6337,8 @@ These methods define the core logic that will be executed when Flamingock runs t
 
 Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
 
-- `this.apply` — the apply logic/data to apply during apply phase
-- `this.rollback` — the rollback logic/data to apply during rollback or undo  
+- `this.applyPayload` — the apply logic/data to apply during apply phase
+- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo  
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
 
 An example of a template for Kafka topic management:
@@ -6284,12 +6357,12 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
     @Apply
     public void apply(AdminClient adminClient) throws Exception {
         // Create topic using the apply configuration
-        NewTopic newTopic = new NewTopic(
-            this.apply.getName(),
-            this.apply.getPartitions(),
-            this.apply.getReplicationFactor()
+        var newTopic = new NewTopic(
+            this.applyPayload.getName(),
+            this.applyPayload.getPartitions(),
+            this.applyPayload.getReplicationFactor()
         );
-        newTopic.configs(this.apply.getConfigs());
+        newTopic.configs(this.applyPayload.getConfigs());
         
         adminClient.createTopics(List.of(newTopic)).all().get();
     }
@@ -6297,7 +6370,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
     @Rollback
     public void rollback(AdminClient adminClient) throws Exception {
         // Delete topic using the rollback topic name
-        adminClient.deleteTopics(List.of(this.rollback)).all().get();
+        adminClient.deleteTopics(List.of(this.rollbackPayload)).all().get();
     }
 }
 ```
@@ -6326,12 +6399,12 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .build();
         
         // Create bucket using apply configuration
-        CreateBucketRequest request = new CreateBucketRequest(this.apply.getBucketName())
-            .withCannedAcl(this.apply.getAcl());
+        var request = new CreateBucketRequest(this.applyPayload.getBucketName())
+            .withCannedAcl(this.applyPayload.getAcl());
 
-        if (this.apply.getEncryption() != null) {
+        if (this.applyPayload.getEncryption() != null) {
             // Apply encryption settings
-            request.withObjectLockEnabledForBucket(this.apply.getEncryption().isEnabled());
+            request.withObjectLockEnabledForBucket(this.applyPayload.getEncryption().isEnabled());
         }
         
         s3Client.createBucket(request);
@@ -6346,7 +6419,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .build();
         
         // Delete bucket using rollback bucket name
-        s3Client.deleteBucket(this.rollback);
+        s3Client.deleteBucket(this.rollbackPayload);
     }
 }
 ```
@@ -6533,7 +6606,7 @@ class _0001_CreateS3BucketChangeTest {
 
   @Test
   void shouldCallCreateBucketOnExecution() {
-    S3Client s3Client = mock(S3Client.class);
+    var s3Client = mock(S3Client.class);
     new _0001_CreateS3BucketChange().apply(s3Client);
 
     verify(s3Client).createBucket(argThat(req ->
@@ -6542,7 +6615,7 @@ class _0001_CreateS3BucketChangeTest {
 
   @Test
   void shouldCallDeleteBucketOnRollback() {
-    S3Client s3Client = mock(S3Client.class);
+    var s3Client = mock(S3Client.class);
     new _0001_CreateS3BucketChange().rollback(s3Client);
     
     verify(s3Client).deleteBucket(argThat(req ->
@@ -6627,11 +6700,11 @@ class IntegrationTest {
 
     @Test
     void shouldExecuteChangeAgainstS3AndAuditToMongo() {
-        S3Client s3Client = S3Client.builder()
+        var s3Client = S3Client.builder()
                 .region(Region.EU_WEST_1)
                 .build();
 
-        MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+        var mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
 
         Runner runner = Flamingock.builder()
                 .addDependency(s3Client)
@@ -6651,7 +6724,7 @@ class IntegrationTest {
         MongoDatabase db = mongoClient.getDatabase("test-db");
         MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLogs");
 
-        Document document = new Document("changeId", "create-bucket")
+        var document = new Document("changeId", "create-bucket")
                 .append("state","EXECUTED");
         Document auditEntry = auditCollection.find(document).first();
         assertNotNull(auditEntry, "Flamingock audit log entry was not found in MongoDB");
@@ -6765,7 +6838,7 @@ public class FlamingockSpringbootTest {
 
   @Bean
   public AdminClient kafkaAdminClient() {
-    Properties config = new Properties();
+    var config = new Properties();
     config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
     return AdminClient.create(config);
   }
