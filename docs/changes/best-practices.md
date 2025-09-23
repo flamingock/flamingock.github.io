@@ -239,9 +239,10 @@ public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 ### Follow consistent naming patterns
 
 **File names:**
-- Use `_XXXX_DescriptiveName` format
-- Match the order in `@Change` annotation
+- Use `_ORDER_DescriptiveName` format where ORDER is extracted between first and last underscores
+- When using this naming pattern, the order in `@Change` annotation or YAML is optional
 - Use PascalCase for class names
+- Pattern supports flexible ordering: timestamps, hierarchical numbering, etc.
 
 **Good examples:**
 ```
@@ -249,8 +250,25 @@ _0001_CreateUserIndexes.java
 _0002_MigrateUserData.java
 _0003_AddUserPreferences.java
 _0100_OptimizeUserQueries.java
+_2025_09_01_MigrateToNewFormat.java
+_2025_09_01_09_00_0001_ComplexMigration.yaml
 ```
 
+:::tip Recommendation
+We recommend specifying the order in the file/class name rather than in the annotation/yaml:
+- Makes execution order immediately visible when browsing folders
+- Easier to identify and list changes in their location
+- Reduces redundancy and potential mismatches
+- Supports flexible ordering schemes (timestamps, hierarchical numbering, etc.)
+
+Examples:
+- `_0001_CreateUserTable.java` → order: "0001" (no need for order in @Change)
+- `_2025_09_01_MigrateData.yaml` → order: "2025_09_01" (no need for order in YAML)
+- `_2025_09_01_09_00_0001_ComplexChange.java` → order: "2025_09_01_09_00_0001"
+:::
+
+
+For detailed rules about order field placement (filename vs annotation), see [Anatomy & Structure - Order](./anatomy-and-structure#order---execution-sequence).
 
 ---
 

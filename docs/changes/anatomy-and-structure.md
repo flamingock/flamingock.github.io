@@ -38,6 +38,22 @@ The `order` determines when the Change executes relative to others.
 - Minimum 4 digits recommended for future expansion
 - Determines execution order across all target systems
 - Cannot be changed once deployed
+
+:::warning Order Field Rules
+- The `order` must be specified in **at least one** of these places:
+  - In the file/class name following the pattern `_ORDER_DescriptiveName.[java|yaml]`
+  - In the annotation (@Change) or YAML structure
+- Both are optional, but **at least one is required**
+- If order is specified in **both** locations, they **must be identical**
+- For file/class names:
+  - Must start with underscore `_`
+  - Order is extracted between the first `_` and the last `_`
+  - Allows intermediate underscores (e.g., `_2025_09_01_09_00_0001_CreateUserTable.java`)
+  - Order extracted: everything between first and last underscore (e.g., `2025_09_01_09_00_0001`)
+- Orders are evaluated in alphanumeric order
+:::
+
+For recommendations on order field placement and naming patterns, see [Best Practices - Naming Patterns](./best-practices#follow-consistent-naming-patterns).
 ____
 ### `author` - Responsibility tracking
 Identifies who is responsible for this change.

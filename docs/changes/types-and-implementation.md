@@ -56,9 +56,9 @@ Code-based Changes are written in Java, Kotlin, or Groovy with annotations. They
 
 ```java
 @TargetSystem("user-database")
-@Change(id = "migrate-user-emails", order = "0001", author = "data-team")
+@Change(id = "migrate-user-emails", author = "data-team")  // order extracted from filename
 public class _0001_MigrateUserEmails {
-    
+
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {
         // Custom implementation logic with full programmatic control
@@ -67,7 +67,7 @@ public class _0001_MigrateUserEmails {
             new Document("email", new Document("$exists", true)),
             new Document("$set", new Document("emailVerified", false)));
     }
-    
+
     @Rollback
     public void rollback(MongoDatabase database, ClientSession session) {
         // Rollback logic
@@ -102,7 +102,12 @@ src/main/java/com/yourapp/changes/
 
 ### Best practices:
 - **Keep together**: Store both code and template files in the same directory
-- **Consistent naming**: Follow `_XXXX_DescriptiveName` pattern for both types
+- **Consistent naming**: Follow `_ORDER_DescriptiveName` pattern for both types
+- **Order in filename**: When using the naming pattern, order in annotation/yaml is optional
+
+:::info Order Field Rules
+When using the `_ORDER_DescriptiveName` pattern, the order field in annotations or YAML becomes optional. For complete rules about order field placement, see [Anatomy & Structure - Order](./anatomy-and-structure#order---execution-sequence).
+:::
 
 ## Template development
 

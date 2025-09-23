@@ -273,18 +273,26 @@ To ensure clarity and enforce ordering, we recommend naming changes using the fo
 ```
 _0001_CREATE_CLIENTS_TABLE.java
 _0002_ADD_INDEX_TO_EMAIL.yaml
+_2025_09_01_MIGRATE_DATA.java
+_2025_09_01_09_00_0001_COMPLEX_CHANGE.yaml
 ```
 
-- `XXXX`: The execution order of the change
+- `ORDER`: The execution order extracted between the first `_` and last `_` (supports timestamps, hierarchical numbering)
 - `CHANGE_NAME`: Descriptive name of what the change does
 
 This convention:
+- **Eliminates the need for order in annotations/YAML** - the order is extracted from the filename
+- Makes execution order immediately visible when browsing folders
 - Works across both code-based and template-based formats
-- Makes the execution order obvious at a glance
+- Supports flexible ordering schemes (simple numbers, dates, timestamps)
 - Ensures consistent naming and project hygiene
 
 :::tip
 While Java typically avoids underscores and leading digits, change units are not traditional classes. Prioritizing **readability and order** is more valuable in this context.
+:::
+
+:::info Complete Order Field Rules
+For detailed rules about order field placement and how filename order works with annotations, see [Change Anatomy - Order](../changes/anatomy-and-structure#order---execution-sequence).
 :::
 
 
