@@ -3725,20 +3725,21 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 # Core concepts
 
 ## Changes
-**Changes** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic, versioned changes applied to target systems with complete safety guarantees and audit capabilities.
+**Changes** are the fundamental building blocks of Flamingock's Change-as-Code architecture. They represent atomic and immutable versioned changes applied to target systems with complete safety guarantees and audit capabilities.
 
-Each Change includes:
+Each **Change** includes:
 - **Unique identity**: ID, order, and metadata for tracking
 - **Target system**: Where the changes is applied to
 - **Execution logic**: The actual change implementation
 - **Rollback capability**: Compensation logic for governance and undo operations
 - **Recovery strategy**: Configurable behavior for handling failures
+- **Immutability**: Once applied, a **Change** must never be modified
 
 Changes can be implemented in two forms:
 - **Code-based**: Java classes with annotations that contain the change logic
 - **Template-based**: Declarative low-code approach using YAML configurations
 
-For a deeper dive around Changes, see the [Changes](../changes/anatomy-and-structure.md) section.
+For a deeper dive around Changes, see the [Changes](../changes/anatomy-and-structure.md) and [best practices](../changes/best-practices.md) section.
 
 
 ## Templates
