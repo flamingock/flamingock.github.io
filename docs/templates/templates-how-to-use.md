@@ -50,11 +50,10 @@ In Flamingock, a **Change** represents a single unit of work that needs to be ap
 
 When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 
-Create a **YAML file** (e.g., `_0001_create_persons_table.yaml`) inside your application’s resources directory:
+Create a **YAML file** (e.g., `_20250923_01_CreatePersonsTable.yaml`) inside your application’s resources directory:
 
 ```yaml
-id: create-persons-table-from-template
-order: 1
+id: CreatePersonsTableFromTemplate
 targetSystem: "database-system"
 templateName: sql-template
 recovery:
@@ -122,7 +121,7 @@ Let's compare how an SQL change is handled using a **template-based Change** vs.
 ### Approach 1: Using a Traditional Code-Based Change
 
 ```java
-@Change(id = "create-persons-table", order = 1, author = "developer")
+@Change(id = "create-persons-table", order = "20250408_01", author = "developer")
 public class CreatePersonsTableChange {
 
     private final DataSource dataSource;
@@ -156,8 +155,8 @@ public class CreatePersonsTableChange {
 With the **SQL Template**, users define the same change in **YAML** instead of Java:
 
 ```yaml
-id: create-persons-table-from-template
-order: 1
+id: createPersonsTableFromTemplate
+order: 20250408_01
 targetSystem: "database-system"
 templateName: sql-template
 recovery:

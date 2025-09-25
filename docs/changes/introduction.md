@@ -38,8 +38,8 @@ Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or w
 
 ```java
 @TargetSystem("user-database")
-@Change(id = "add-user-status", order = "0001", author = "dev-team")
-public class _0001_AddUserStatus {
+@Change(id = "add-user-status", author = "dev-team")
+public class _20250923_01_AddUserStatus {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -58,9 +58,9 @@ public class _0001_AddUserStatus {
 Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
-# File: _0002_add_status_column.yml
+# File: _20250923_02_add_status_column.yaml
 id: add_status_column
-order: "0002"
+order: "20250923_02"
 author: "db-team"
 templateName: sql-template
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"

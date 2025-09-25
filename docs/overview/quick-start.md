@@ -117,7 +117,7 @@ Changes can be:
 ```yaml
 id: add-product-category
 author: team
-order: "001"
+order: "20250923_01"
 targetSystem: mysql-inventory
 template: sql-template
 apply: |
@@ -131,8 +131,8 @@ rollback: |
 
 ```java
 @TargetSystem("aws-s3")
-@Change(id = "create-s3-bucket", order = "002", author = "team")
-public class _002_CreateS3Bucket {
+@Change(id = "create-s3-bucket", author = "team")  // order extracted from filename
+public class _20250923_02_CreateS3Bucket {
 
   @Apply
   public void apply(S3Client s3Client) {

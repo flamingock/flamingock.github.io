@@ -127,8 +127,8 @@ For a Change to leverage MongoDB's transactional capabilities, it must use the `
 
 ```java
 @TargetSystem("user-database-id")
-@Change(id = "create-users", order = "001")
-public class CreateUsers {
+@Change(id = "create-users", author = "team")  // order extracted from filename
+public class _20250923_01_CreateUsers {
     
     @Apply
     public void apply(MongoDatabase db, ClientSession session) {

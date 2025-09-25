@@ -230,8 +230,8 @@ src/
         yourapp/
           flamingock/
             users/
-              _0001_CREATE_USERS_TABLE.java
-              _0002_ADD_INDEX.yaml
+              _20250923_01_CreateUsersTable.java
+              _20250923_02_AaddIndex.yaml
 ```
 
 
@@ -271,20 +271,22 @@ We strongly recommend placing all your changes — code-based and template-based
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
 
 ```
-_0001_CREATE_CLIENTS_TABLE.java
-_0002_ADD_INDEX_TO_EMAIL.yaml
-_2025_09_01_MIGRATE_DATA.java
-_2025_09_01_09_00_0001_COMPLEX_CHANGE.yaml
+_20250923_01_CreateClientsTable.java
+_20250923_02_AaddindexToEmail.yaml
+_20250924_01_MigrateData.java
+_20250925_01_ComplexChange.yaml
 ```
 
-- `ORDER`: The execution order extracted between the first `_` and last `_` (supports timestamps, hierarchical numbering)
+- `ORDER`: The execution order extracted between the first `_` and last `_`
+  - **Recommended format**: `YYYYMMDD_NN` where YYYY=year, MM=month, DD=day, NN=sequence (01-99)
 - `CHANGE_NAME`: Descriptive name of what the change does
 
 This convention:
 - **Eliminates the need for order in annotations/YAML** - the order is extracted from the filename
-- Makes execution order immediately visible when browsing folders
+- **Natural chronological sorting** - files automatically sort by date in folders
+- **Clear timeline visibility** - instantly see when changes were created
 - Works across both code-based and template-based formats
-- Supports flexible ordering schemes (simple numbers, dates, timestamps)
+- **Practical daily limit** - 99 changes per day is more than sufficient
 - Ensures consistent naming and project hygiene
 
 :::tip

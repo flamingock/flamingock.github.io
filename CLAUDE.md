@@ -190,7 +190,7 @@ Flamingock works with two types of target systems:
 #### Transactional Target Systems
 - **Examples**: PostgreSQL, MySQL, MongoDB (4.0+), Oracle
 - **Native Capabilities**: Built-in rollback, atomicity, consistency guarantees
-- **In Flamingock**: Changes can leverage native transactions via `@ChangeUnit(transactional = true)`
+- **In Flamingock**: Changes can leverage native transactions via `@Change(transactional = true)`
 - **Rollback Strategy**: Automatic (database handles it) or manual via `@RollbackExecution`
 
 #### Non-Transactional Target Systems

@@ -34,7 +34,7 @@ chmod +x flamingock
 
 ### Configuration
 
-Create a `flamingock.yml` configuration file in your working directory:
+Create a `flamingock.yaml` configuration file in your working directory:
 
 #### MongoDB Configuration
 ```yaml
@@ -64,7 +64,7 @@ audit:
 
 You can specify a custom configuration file using the `-c` or `--config` option:
 ```bash
-flamingock -c custom-config.yml audit list
+flamingock -c custom-config.yaml audit list
 ```
 
 ## Core Commands
@@ -144,7 +144,7 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 flamingock [global-options] <command> [command-options]
 ```
 
-- `-c, --config <file>` - Configuration file path (default: `flamingock.yml`)
+- `-c, --config <file>` - Configuration file path (default: `flamingocka`)
 - `--verbose` - Enable verbose logging
 - `--debug` - Enable debug logging
 - `--trace` - Enable trace logging (most detailed level)

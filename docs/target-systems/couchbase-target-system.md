@@ -112,8 +112,8 @@ For a Change to leverage Couchbase's transactional capabilities, it must use the
 
 ```java
 @TargetSystem("user-database-id")
-@Change(id = "create-users", order = "001")
-public class CreateUsers {
+@Change(id = "create-users", author = "team")  // order extracted from filename
+public class _20250923_01_CreateUsers {
     
     @Apply
     public void apply(Cluster cluster, Bucket bucket, TransactionAttemptContext txContext) {
@@ -135,8 +135,8 @@ You can also work with the Cluster and Bucket directly without transactions:
 
 ```java
 @TargetSystem("user-database-id")
-@Change(id = "update-configs", order = "002")
-public class UpdateConfigs {
+@Change(id = "update-configs", author = "team")  // order extracted from filename
+public class _20250923_02_UpdateConfigs {
     
     @Apply
     public void apply(Cluster cluster, Bucket bucket) {

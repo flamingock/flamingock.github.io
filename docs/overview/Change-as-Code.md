@@ -48,8 +48,8 @@ Flamingock's CaC approach solves these problems by treating every external-syste
 Imagine you need to toggle a feature flag in a downstream service (not a database). In Flamingock, you’d write:
 
 ```java
-@Change(id = "enable-autosave", order = "0005", author = "ops-team")
-public class _0005_EnableAutoSaveFeature {
+@Change(id = "enable-autosave", author = "ops-team")  // order extracted from filename
+public class _20250925_01_EnableAutoSaveFeature {
 
   @Apply
   public void enableAutoSave(FeatureFlagClient client) {
@@ -85,8 +85,8 @@ public class _0005_EnableAutoSaveFeature {
 <Tabs groupId="config">
 <TabItem value="code-base" label="Code" default>
 ```java
-@Change(id = "provision-bucket", order = "0001", author = "team-a", transactional = false)
-public class _0001_ProvisionBucketChange {
+@Change(id = "provision-bucket", author = "team-a", transactional = false)  // order extracted from filename
+public class _20250923_01_ProvisionBucketChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -103,8 +103,8 @@ public class _0001_ProvisionBucketChange {
     }
 }
 
-@Change(id = "create-kafka-topics", order = "0002", author = "devops", transactional = false)
-public class _0002_CreateKafkaTopicsChange {
+@Change(id = "create-kafka-topics", author = "devops", transactional = false)  // order extracted from filename
+public class _20250923_02_CreateKafkaTopicsChange {
 
     @Apply
     public void apply(KafkaAdminClient admin) {
@@ -119,8 +119,8 @@ public class _0002_CreateKafkaTopicsChange {
     }
 }
 
-@Change(id = "setup-iam-roles", order = "0003", author = "devops", transactional = false)
-public class _0003_SetupIamRolesChange {
+@Change(id = "setup-iam-roles", author = "devops", transactional = false)  // order extracted from filename
+public class _20250924_01_SetupIamRolesChange {
 
     @Apply
     public void apply(IamClient iam) {
@@ -138,8 +138,8 @@ public class _0003_SetupIamRolesChange {
     }
 }
 
-@Change(id = "seed-database", order = "0004", author = "devops", transactional = true)
-public class _0004_SeedTenantDataChange {
+@Change(id = "seed-database", author = "devops", transactional = true)  // order extracted from filename
+public class _20250924_02_SeedTenantDataChange {
 
     @Apply
     public void apply(DataSource ds) {
@@ -165,8 +165,8 @@ public class _0004_SeedTenantDataChange {
     }
 }
 
-@Change(id = "update-bucket-settings", order = "0005", author = "team-a", transactional = false)
-public class _0005_UpdateBucketSettingsChange {
+@Change(id = "update-bucket-settings", author = "team-a", transactional = false)  // order extracted from filename
+public class _20250925_01_UpdateBucketSettingsChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -197,8 +197,8 @@ public class _0005_UpdateBucketSettingsChange {
 
 ```yaml
 
-# File: _0001_provision-bucket.yaml
-id: "provision-bucket"
+# File: _20250923_01_ProvisionBucket.yaml
+id: "ProvisionBucket"
 order: 0001
 author: "team-a"
 transactional: false
@@ -211,8 +211,8 @@ rollback:
 
 ---
 
-# File: _0002_create-kafka-topics.yaml
-id: "create-kafka-topics"
+# File: _20250923_02_CreateKafkaTopics.yaml
+id: "CreateKafkaTopics"
 order: 0002
 author: "devops"
 transactional: false
@@ -238,8 +238,8 @@ rollback:
 
 ---
 
-# File: _0003_setup-iam-roles.yaml
-id: "setup-iam-roles"
+# File: _20250924_01_SetupIamRoles.yaml
+id: "SetupIamRoles"
 order: 0003
 author: "devops"
 transactional: false
@@ -263,8 +263,8 @@ rollback:
 
 ---
 
-# File: _0004_seed-database.yaml
-id: "seed-database"
+# File: _20250924_02_SeedDatabase.yaml
+id: "SeedDatabase"
 order: 0004
 author: "devops"
 transactional: true
@@ -277,8 +277,8 @@ rollback: |
 
 ---
 
-# File: _0005_update-bucket-settings.yaml
-id: "update-bucket-settings"
+# File: _20250925_01_UpdateBucketSettings.yaml
+id: "UpdateBucketSettings"
 order: 0005
 author: "team-a"
 transactional: false

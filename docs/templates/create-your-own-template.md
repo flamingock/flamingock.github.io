@@ -75,8 +75,8 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 - Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
 - If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
-:::note 
-See [**2. Define Apply and Rollback methods** ](./create-your-own-template#2-define-apply-and-rollback-methods) section for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
+:::note
+See [**2. Define Execution and Rollback methods** ](#2-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
 :::
 
 ## 2. Define Execution and Rollback methods

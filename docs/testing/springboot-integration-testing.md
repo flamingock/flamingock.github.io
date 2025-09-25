@@ -21,8 +21,8 @@ With this setup:
 Suppose you have a change unit that modifies a Kafka topic configuration:
 
 ```java
-@Change(id = "modify-topic-config", order = "0002", author = "dev-team")
-public class _0002_ModifyKafkaTopicConfig {
+@Change(id = "modify-topic-config", author = "dev-team")  // order extracted from filename
+public class _20250923_02_ModifyKafkaTopicConfig {
 
   @Apply
   public void apply(AdminClient adminClient) {
@@ -119,7 +119,7 @@ public class FlamingockSpringbootTest {
 
 ## Advanced configuration
 
-Flamingock can be configured using Spring Boot properties, either in your `application.yml` or dynamically via `@DynamicPropertySource`.
+Flamingock can be configured using Spring Boot properties, either in your `application.yaml` or dynamically via `@DynamicPropertySource`.
 
 This is especially useful for setting values like:
 

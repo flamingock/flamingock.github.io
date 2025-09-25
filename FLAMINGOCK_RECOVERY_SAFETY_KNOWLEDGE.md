@@ -65,7 +65,7 @@ Before diving into recovery strategies, it's essential to understand Flamingock'
 
 ```java
 @TargetSystem("user-database")  // This is the TARGET - where business changes go
-@ChangeUnit(id = "user-migration", order = "001", author = "team-data")
+@Change(id = "user-migration", order = "20250207_01", author = "team-data")
 public class UserMigration {
     
     @Execution
@@ -115,7 +115,7 @@ Flamingock works with two types of target systems based on their native transact
 **Underlying Technology**: Systems that natively support ACID transactions
 - **Examples**: PostgreSQL, MySQL, MongoDB (4.0+), Oracle
 - **Native Capabilities**: Built-in rollback, atomicity, consistency guarantees
-- **In Flamingock**: Changes can leverage native transactions via `@ChangeUnit(transactional = true)`
+- **In Flamingock**: Changes can leverage native transactions via `@Change(transactional = true)`
 - **Rollback Strategy**: Automatic (database handles it) or manual via `@RollbackExecution` when the change itself it's not transactional, despite being a transactional target system(like DDL operations in MySQL,a s we mentioned)
 
 #### Non-Transactional Target Systems  
@@ -140,7 +140,7 @@ Even when targeting a transactional system, a change can be non-transactional.
 
 ```java
 // Transactional change - relies on database rollback
-@ChangeUnit(id = "user-migration", order = "001", transactional = true, author = "team")
+@Change(id = "user-migration", order = "20250207_01", transactional = true, author = "team")
 @TargetSystem("user-db")
 public class UserMigration {
     
@@ -160,7 +160,7 @@ public class UserMigration {
 
 // Non-transactional change - requires explicit rollback
 @TargetSystem("user-db") 
-@ChangeUnit(id = "schema-changes", order = "002", transactional = false, author = "dba-team")
+@Change(id = "schema-changes", order = "20250207_02", transactional = false, author = "dba-team")
 public class SchemaChanges {
     
     @Execution  
@@ -218,7 +218,7 @@ Flamingock provides two recovery strategies that users can choose:
 **Example Configuration**:
 ```java
 @TargetSystem("user-database")
-@ChangeUnit(id = "critical-user-migration", order = "001", author = "team-data")
+@Change(id = "critical-user-migration", order = "20250207_01", author = "team-data")
 // No @Recovery annotation needed - MANUAL_INTERVENTION is default
 public class CriticalUserMigration {
     
@@ -274,7 +274,7 @@ public class CriticalUserMigration {
 **Example Configuration**:
 ```java
 @TargetSystem("redis-cache")
-@ChangeUnit(id = "cache-warming", order = "002", author = "team-platform")
+@Change(id = "cache-warming", order = "20250207_02", author = "team-platform")
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
 public class CacheWarmingChange {
     
@@ -312,7 +312,7 @@ public class CacheWarmingChange {
 ```java
 // Event publishing - idempotent with same event key
 @TargetSystem("kafka-events")
-@ChangeUnit(id = "publish-user-events", order = "003", author = "team-events")
+@Change(id = "publish-user-events", order = "20250207_03", author = "team-events")
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
 public class PublishUserEvents {
     
@@ -335,7 +335,7 @@ public class PublishUserEvents {
 }
 
 // CREATE IF NOT EXISTS - naturally idempotent
-@ChangeUnit(id = "create-indexes", order = "004", author = "team-dba", transactional = false)
+@Change(id = "create-indexes", order = "20250207_04", author = "team-dba", transactional = false)
 @TargetSystem("user-database")
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
 public class CreateIndexes {
@@ -439,7 +439,7 @@ An "issue" is detected when:
 **Best Practice**: Use ALWAYS_RETRY
 ```java
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-@ChangeUnit(id = "publish-user-events", order = "003")
+@Change(id = "publish-user-events", order = "20250207_03")
 public class PublishUserEvents {
     @Execution
     public void publish(KafkaProducer producer) {
@@ -455,7 +455,7 @@ public class PublishUserEvents {
 
 **Best Practice**: MANUAL_INTERVENTION for safety
 ```java
-@ChangeUnit(id = "multi-system-update", order = "004")
+@Change(id = "multi-system-update", order = "20250207_04")
 // Default MANUAL_INTERVENTION ensures consistency
 public class MultiSystemUpdate {
     @Execution
@@ -651,7 +651,7 @@ public class CriticalDataMigration {
 Start with MANUAL_INTERVENTION, move to ALWAYS_RETRY after validation:
 ```java
 // Phase 1: Manual intervention during initial rollout
-@ChangeUnit(id = "feature-v1", order = "001", author = "team-feature")
+@Change(id = "feature-v1", order = "20250207_01", author = "team-feature")
 public class FeatureRollout {
     @Execution
     public void rolloutFeature(FeatureService service) {
@@ -662,7 +662,7 @@ public class FeatureRollout {
 }
 
 // Phase 2: After validation, same change with retry
-@ChangeUnit(id = "feature-v1-stable", order = "002", author = "team-feature")
+@Change(id = "feature-v1-stable", order = "20250207_02", author = "team-feature")
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
 public class FeatureRolloutStable {
     @Execution
@@ -677,7 +677,7 @@ public class FeatureRolloutStable {
 ### Pattern 4: Transactional vs Non-Transactional Strategy
 ```java
 // Large bulk operation - non-transactional for performance
-@ChangeUnit(id = "bulk-user-update", order = "005", 
+@Change(id = "bulk-user-update", order = "20250207_05", 
            author = "team-data", transactional = false)
 @TargetSystem("user-database")
 @Recovery(strategy = RecoveryStrategy.MANUAL_INTERVENTION)  
@@ -714,7 +714,7 @@ public class BulkUserUpdate {
 }
 
 // Small critical operation - transactional for safety
-@ChangeUnit(id = "admin-permissions", order = "006", 
+@Change(id = "admin-permissions", order = "20250207_06", 
            author = "team-security", transactional = true)
 @TargetSystem("user-database") 
 @Recovery(strategy = RecoveryStrategy.MANUAL_INTERVENTION)

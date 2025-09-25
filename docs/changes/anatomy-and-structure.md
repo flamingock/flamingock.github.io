@@ -15,7 +15,7 @@ Every Change must define these three properties:
 The `id` must be unique across all Changes in your application.
 
 ```java
-@Change(id = "add-user-status", order = "0001", author = "dev-team")
+@Change(id = "add-user-status", author = "dev-team")  // order extracted from filename
 ```
 
 **Rules:**
@@ -28,14 +28,14 @@ ____
 The `order` determines when the Change executes relative to others.
 
 ```java
-@Change(id = "create-indexes", order = "0001", author = "dev-team")
-@Change(id = "migrate-data", order = "0002", author = "dev-team")
-@Change(id = "cleanup-temp-data", order = "0003", author = "dev-team")
+@Change(id = "create-indexes", order = "20250923_01", author = "dev-team")
+@Change(id = "migrate-data", order = "20250923_02", author = "dev-team")
+@Change(id = "cleanup-temp-data", order = "20250923_03", author = "dev-team")
 ```
 
 **Requirements:**
-- Must use zero-padded format: `0001`, `0002`, `0100`, etc.
-- Minimum 4 digits recommended for future expansion
+- Recommended format: `YYYYMMDD_NN` (e.g., `20250923_01`, `20250923_02`)
+- YYYY = year, MM = month, DD = day, NN = sequence number (01-99)
 - Determines execution order across all target systems
 - Cannot be changed once deployed
 
@@ -48,8 +48,8 @@ The `order` determines when the Change executes relative to others.
 - For file/class names:
   - Must start with underscore `_`
   - Order is extracted between the first `_` and the last `_`
-  - Allows intermediate underscores (e.g., `_2025_09_01_09_00_0001_CreateUserTable.java`)
-  - Order extracted: everything between first and last underscore (e.g., `2025_09_01_09_00_0001`)
+  - Recommended format: `YYYYMMDD_NN` (e.g., `_20250923_01_CreateUserTable.java`)
+  - Order extracted: everything between first and last underscore (e.g., `20250923_01`)
 - Orders are evaluated in alphanumeric order
 :::
 
@@ -59,8 +59,8 @@ ____
 Identifies who is responsible for this change.
 
 ```java
-@Change(id = "update-schema", order = "0001", author = "database-team")
-@Change(id = "migrate-users", order = "0002", author = "john.doe@company.com")
+@Change(id = "update-schema", order = "20250923_01", author = "database-team")
+@Change(id = "migrate-users", order = "20250923_02", author = "john.doe@company.com")
 ```
 
 **Best practices:**
@@ -76,7 +76,7 @@ Controls whether the change runs within a transaction (default: `true`).
 ```java
 @Change(
     id = "create-large-index",
-    order = "0001",
+    order = "20250923_01",
     author = "db-team",
     transactional = false  // DDL operations may require this
 )
@@ -95,14 +95,14 @@ Controls how Flamingock handles execution failures (default: `MANUAL_INTERVENTIO
 
 ```java
 // Default behavior (manual intervention)
-@Change(id = "critical-change", order = "0001", author = "team")
+@Change(id = "critical-change", order = "20250923_01", author = "team")
 public class CriticalChange {
     // Execution stops on failure, requires manual resolution
 }
 
 // Automatic retry
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-@Change(id = "idempotent-change", order = "0002", author = "team")
+@Change(id = "idempotent-change", order = "20250923_02", author = "team")
 public class IdempotentChange {
     // Automatically retries on failure until successful
 }
@@ -121,7 +121,7 @@ Briefly describes what the change does, especially useful for complex operations
 ```java
 @Change(
     id = "optimize-user-queries",
-    order = "0001",
+    order = "20250923_01",
     author = "performance-team",
     description = "Add composite index on user table to improve search performance"
 )
@@ -134,8 +134,8 @@ Declares which target system this Change affects.
 
 ```java
 @TargetSystem("user-database")
-@Change(id = "add-user-fields", order = "0001", author = "api-team")
-public class _0001_AddUserFields {
+@Change(id = "add-user-fields", author = "api-team")  // order extracted from filename
+public class _20250923_01_AddUserFields {
     // Implementation
 }
 ```
@@ -147,7 +147,7 @@ Marks the class as a Change and contains all metadata.
 ```java
 @Change(
     id = "migrate-user-data",
-    order = "0001",
+    order = "20250923_01",
     author = "migration-team",
     description = "Migrate legacy user format to new schema",
     transactional = true
@@ -216,20 +216,20 @@ For complete details on target system configuration vs change execution dependen
 
 ## File naming conventions
 
-All Change files must follow the `_XXXX_DescriptiveName` pattern:
+All Change files must follow the `_ORDER_DescriptiveName` pattern, with recommended format `_YYYYMMDD_NN_DescriptiveName`:
 
 ```
-_0001_CreateUserIndexes.java
-_0002_MigrateUserData.java  
-_0003_AddUserStatusColumn.yml
-_0100_OptimizeQueries.java
+_20250923_01_CreateUserIndexes.java
+_20250923_02_MigrateUserData.java
+_20250924_01_AddUserStatusColumn.yaml
+_20250925_01_OptimizeQueries.java
 ```
 
 **Rules:**
-- Start with underscore and zero-padded order
+- Start with underscore and order (recommended: YYYYMMDD_NN format)
 - Use PascalCase for descriptive names
-- Match the `order` property in the annotation
-- Applies to both code (.java/.kt/.groovy) and template (.yml/.json) files
+- Match the `order` property in the annotation if provided
+- Applies to both code (.java/.kt/.groovy) and template (.yaml/.json) files
 
 ## Complete example
 
@@ -239,12 +239,12 @@ Here's a complete Change showing all elements:
 @TargetSystem("user-database")
 @Change(
     id = "add-user-preferences",
-    order = "0001",
+    order = "20250923_01",
     author = "user-experience-team",
     description = "Add preferences object to user documents with default values",
     transactional = true
 )
-public class _0001_AddUserPreferences {
+public class _20250923_01_AddUserPreferences {
     
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {

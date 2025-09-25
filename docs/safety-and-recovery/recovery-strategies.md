@@ -27,7 +27,7 @@ Use the `@Recovery` annotation to specify the strategy:
 
 ```java
 // Default behavior (manual intervention)
-@Change(id = "example-change", order = "001", author = "team")
+@Change(id = "example-change", order = "20250207_01", author = "team")
 public class ExampleChange {
     @Apply
     public void apply() {
@@ -37,7 +37,7 @@ public class ExampleChange {
 
 // Explicit always retry
 @Recovery(strategy = RecoveryStrategy.ALWAYS_RETRY)
-@Change(id = "retry-change", order = "002", author = "team")
+@Change(id = "retry-change", order = "20250207_02", author = "team")
 public class RetryChange {
     @Apply
     public void apply() {

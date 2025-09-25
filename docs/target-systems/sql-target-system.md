@@ -109,8 +109,8 @@ For a Change to leverage SQL's transactional capabilities, it must use either th
 
 ```java
 @TargetSystem("inventory-database-id")
-@Change(id = "update-products", order = "001")
-public class UpdateProducts {
+@Change(id = "update-products", author = "team")  // order extracted from filename
+public class _20250923_01_UpdateProducts {
     
     @Apply
     public void apply(DataSource dataSource) throws SQLException {
@@ -134,7 +134,7 @@ You can also inject a `Connection` directly if you prefer to work with connectio
 
 ```java
 @TargetSystem("inventory-database-id")
-@Change(id = "create-indexes", order = "002")
+@Change(id = "create-indexes", author = "team")  // order extracted from filename
 public class CreateIndexes {
     
     @Apply

@@ -16,14 +16,14 @@ Spring profiles provide a way to segregate parts of your application configurati
 
 You can define profiles like `dev`, `test`, `staging`, or `prod`, and activate **one or more** of them using any of the following methods:
 
-- Inside `application.yml` or `application.properties`:
+- Inside `application.yaml` or `application.properties`:
   ```yaml
   spring:
     profiles:
       active: dev,staging
   ```
 
-- Using profile-specific configuration files like `application-dev.yml` or `application-prod.yml`
+- Using profile-specific configuration files like `application-dev.yaml` or `application-prod.yaml`
 
 - As command-line arguments:
   ```bash
@@ -45,7 +45,7 @@ Flamingock automatically retrieves the active profiles from Spring’s `Applicat
 You can then annotate any change unit with Spring’s native `@Profile` annotation to control whether it runs:
 
 ```java
-@Change(id = "add-test-data", order = "001")
+@Change(id = "add-test-data", order = "20250207_01")
 @Profile("dev")
 public class AddTestDataChange {
   // will only run if "dev" profile is active
