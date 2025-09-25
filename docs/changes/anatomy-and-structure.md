@@ -45,11 +45,15 @@ The `order` determines when the Change executes relative to others.
   - In the annotation (@Change) or YAML structure
 - Both are optional, but **at least one is required**
 - If order is specified in **both** locations, they **must be identical**
-- For file/class names:
-  - Must start with underscore `_`
-  - Order is extracted between the first `_` and the last `_`
-  - Recommended format: `YYYYMMDD_NN` (e.g., `_20250923_01_CreateUserTable.java`)
-  - Order extracted: everything between first and last underscore (e.g., `20250923_01`)
+- **For file/class names - Order Extraction Rule**:
+  - **Must start with underscore `_`** (first character)
+  - **Order is everything between the first `_` and the last `_`**
+  - **Examples of order extraction**:
+    - `_20250923_01_CreateUserTable.java` → order: `20250923_01`
+    - `_001_SimpleChange.java` → order: `001`
+    - `_2024_12_25_HolidayUpdate.yaml` → order: `2024_12_25`
+    - `_V1_0_1_DatabaseUpgrade.java` → order: `V1_0_1`
+  - **Recommended format**: `YYYYMMDD_NN` (year-month-day-sequence)
 - Orders are evaluated in alphanumeric order
 :::
 
@@ -225,11 +229,28 @@ _20250924_01_AddUserStatusColumn.yaml
 _20250925_01_OptimizeQueries.java
 ```
 
+### How Flamingock Extracts Order from Filenames
+
+Flamingock uses a simple rule to extract the order value from your filename:
+
+1. **Filename must start with underscore `_`**
+2. **Everything between the first `_` and the last `_` becomes the order**
+3. **Everything after the last `_` is treated as the descriptive name**
+
+**Step-by-step examples:**
+
+| Filename | First `_` | Last `_` | Extracted Order | Descriptive Name |
+|----------|-----------|----------|----------------|------------------|
+| `_20250923_01_CreateUsers.java` | position 0 | position 11 | `20250923_01` | `CreateUsers.java` |
+| `_001_SimpleChange.yaml` | position 0 | position 4 | `001` | `SimpleChange.yaml` |
+| `_V1_0_1_DatabaseUpgrade.java` | position 0 | position 7 | `V1_0_1` | `DatabaseUpgrade.java` |
+
 **Rules:**
 - Start with underscore and order (recommended: YYYYMMDD_NN format)
 - Use PascalCase for descriptive names
-- Match the `order` property in the annotation if provided
+- If order is also specified in annotation/YAML, both values **must be identical**
 - Applies to both code (.java/.kt/.groovy) and template (.yaml/.json) files
+- Orders are compared alphanumerically for execution sequence
 
 ## Complete example
 
