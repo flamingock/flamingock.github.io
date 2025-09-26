@@ -455,7 +455,7 @@ Written in Java, Kotlin, or Groovy with annotations. Best for complex logic or w
 ```java
 @TargetSystem("user-database")
 @Change(id = "add-user-status", author = "dev-team")
-public class _20250923_01_AddUserStatus {
+public class _0001__AddUserStatus {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -474,9 +474,8 @@ public class _20250923_01_AddUserStatus {
 Use YAML or JSON definitions with reusable templates. Perfect for repetitive operations and standardized patterns.
 
 ```yaml
-# File: _20250923_02_add_status_column.yaml
+# File: _0002__AddStatusColumn.yaml
 id: add_status_column
-order: "20250923_02"
 author: "db-team"
 templateName: sql-template
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
@@ -926,9 +925,8 @@ Template-based Changes use YAML or JSON files with reusable templates. Templates
 ### Basic YAML structure
 
 ```yaml
-# File: _20250923_01_add_user_index.yaml
+# File: _0001__AddUserIndex.yaml
 id: add_user_index
-order: "20250923_01"
 author: "database-team"
 description: "Add index on user email field for faster lookups"
 targetSystem: "user-database"
@@ -958,7 +956,7 @@ Code-based Changes are written in Java, Kotlin, or Groovy with annotations. They
 ```java
 @TargetSystem("user-database")
 @Change(id = "migrate-user-emails", author = "data-team")  // order extracted from filename
-public class _20250923_01_MigrateUserEmails {
+public class _0001__MigrateUserEmails {
 
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {
@@ -994,16 +992,16 @@ public class _20250923_01_MigrateUserEmails {
 ### Recommended project structure:
 ```
 src/main/java/com/yourapp/changes/
-├── _20250923_01_CreateUserIndexes.java
-├── _20250923_02_AddUserStatus.yaml
-├── _20250924_01_MigrateUserData.java
-├── _20250924_02_SetupNotifications.yaml
-└── _20250925_01_OptimizeQueries.java
+├── _0001__CreateUserIndexes.java
+├── _0002__AddUserStatus.yaml
+├── _0003__MigrateUserData.java
+├── _0004__SetupNotifications.yaml
+└── _0003__OptimizeQueries.java
 ```
 
 ### Best practices:
 - **Keep together**: Store both code and template files in the same directory
-- **Consistent naming**: Follow `_ORDER_DescriptiveName` pattern for both types (recommended: `YYYYMMDD_NN`)
+- **Consistent naming**: Follow `_ORDER__CHANGE_NAME` pattern for both types (recommended: `NN`)
 - **Order in filename**: When using the naming pattern, order in annotation/yaml is optional
 
 :::info Order Field Rules
@@ -1040,7 +1038,7 @@ Once a Change is deployed, never modify it. Create new Changes for corrections.
 ```java
 // Modifying an existing Change after deployment
 @Change(id = "add-user-field", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserField {
+public class _0001__AddUserField {
     @Apply
     public void apply(MongoDatabase db) {
         // Original: db.getCollection("users").updateMany(/* add field */)
@@ -1053,7 +1051,7 @@ public class _20250923_01_AddUserField {
 ```java
 // Keep the original unchanged
 @Change(id = "add-user-field", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserField {
+public class _0001__AddUserField {
     @Apply
     public void apply(MongoDatabase db) {
         // Original logic remains unchanged
@@ -1062,7 +1060,7 @@ public class _20250923_01_AddUserField {
 
 // Create a new Change for corrections
 @Change(id = "fix-user-field-values", author = "team")  // order extracted from filename
-public class _20250923_02_FixUserFieldValues {
+public class _0002__FixUserFieldValues {
     @Apply
     public void apply(MongoDatabase db) {
         // Correction logic
@@ -1106,7 +1104,7 @@ Every Change must have a `@Rollback` method, regardless of target system type.
 **Example with comprehensive rollback:**
 ```java
 @Change(id = "setup-user-indexes", author = "db-team")  // order extracted from filename
-public class _20250923_01_SetupUserIndexes {
+public class _0001__SetupUserIndexes {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -1150,7 +1148,7 @@ Each Change should address one logical change. Avoid combining unrelated operati
 **❌ Avoid mixing concerns:**
 ```java
 @Change(id = "big-refactor", author = "team")  // order extracted from filename
-public class _20250923_01_BigRefactor {
+public class _0001__BigRefactor {
     @Apply
     public void apply(MongoDatabase db, KafkaProducer producer) {
         // Adding user field
@@ -1169,13 +1167,13 @@ public class _20250923_01_BigRefactor {
 ```java
 @TargetSystem("user-database")
 @Change(id = "add-user-status", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserStatus {
+public class _0001__AddUserStatus {
     // Focus: User schema change only
 }
 
 @TargetSystem("kafka-events")
 @Change(id = "create-user-topic", author = "team")  // order extracted from filename
-public class _20250923_01_CreateUserTopic {
+public class _0001__CreateUserTopic {
     // Focus: Kafka topic creation only
 }
 ```
@@ -1189,7 +1187,7 @@ Make operations safe to re-run whenever possible.
 **Example: Idempotent field addition:**
 ```java
 @Change(id = "add-user-preferences", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserPreferences {
+public class _0001__AddUserPreferences {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -1263,35 +1261,33 @@ public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 
 **File names:**
 - Use `_ORDER_DescriptiveName` format where ORDER is extracted between first and last underscores
-- **Recommended format**: `YYYYMMDD_NN` where:
-  - YYYY = year, MM = month, DD = day
-  - NN = sequence number (01-99) for changes on the same day
+- **Recommended format for order**: `NNNN` with left-padding zeros (e.g., `0001`, `0002`, `0010`)
 - When using this naming pattern, the order in `@Change` annotation or YAML is optional
 - Use PascalCase for class names
 
 **Good examples:**
 ```
-_20250923_01_CreateUserIndexes.java
-_20250923_02_MigrateUserData.java
-_20250924_01_AddUserPreferences.java
-_20250925_01_OptimizeUserQueries.java
-_20250930_01_MigrateToNewFormat.yaml
+_0001__CreateUserIndexes.java
+_0002__MigrateUserData.java
+_0002__AddUserPreferences.java
+_0005__OptimizeUserQueries.java
+_0004__MigrateToNewFormat.yaml
 ```
 
 :::tip Recommendation
-We recommend specifying the order in the file/class name using the `YYYYMMDD_NN` format:
+We recommend specifying the order in the file/class name using the `NN` format:
 
 **Benefits:**
-- **Natural chronological sorting** - Files automatically sort by date in folders
-- **Clear timeline visibility** - Instantly see when changes were created
-- **Practical daily limit** - 99 changes per day is more than sufficient
-- **Easy identification** - Quick visual scan shows change history
+- **Simple and clear** - Easy to understand and implement
+- **Natural sorting** - Files automatically sort numerically
+- **No complexity** - Just sequential numbering
+- **Easy identification** - Quick visual scan shows execution order
 - **No annotation needed** - Order is extracted from filename
 
 Examples:
-- `_20250923_01_CreateUserTable.java` → order: "20250923_01" (no need for order in @Change)
-- `_20250923_02_MigrateData.yaml` → order: "20250923_02" (no need for order in YAML)
-- `_20250924_01_AddIndexes.java` → order: "20250924_01"
+- `_0001__CreateUserTable.java` → order: "0001" (no need for order in @Change)
+- `_0002__MigrateData.yaml` → order: "0002" (no need for order in YAML)
+- `_0004__AddIndexes.java` → order: "0004"
 :::
 
 
@@ -1321,11 +1317,11 @@ Changes should be organized chronologically by their order within stages. If you
 
 ```
 src/main/java/com/company/changes/
-├── _20250923_01_CreateUserCollection.java
-├── _20250923_02_AddUserIndexes.java
-├── _20250924_01_MigrateUserData.java
-├── _20250924_02_CreateOrdersTable.java
-└── _20250925_01_AddOrderStatusColumn.java
+├── _0001__CreateUserCollection.java
+├── _0002__AddUserIndexes.java
+├── _0003__MigrateUserData.java
+├── _0004__CreateOrdersTable.java
+└── _0005__AddOrderStatusColumn.java
 ```
 
 ## Testing and validation
@@ -1341,7 +1337,7 @@ public void testUserMigrationChange() {
     MongoDatabase testDb = getTestDatabase();
     insertTestUsers(testDb);
     
-    var change = new _20250923_01_MigrateUsers();
+    var change = new _0001__MigrateUsers();
     
     // Act - Test execution
     change.execute(testDb);
@@ -1426,7 +1422,7 @@ You create a Change that uses this domain class:
 
 ```java
 @Change(id = "add-premium-customers", order = "20250923_01", author = "team")
-public class _20250923_01_AddPremiumCustomers {
+public class _0001__AddPremiumCustomers {
 
     @Apply
     public void apply(CustomerRepository repository) {
@@ -1443,7 +1439,7 @@ public class _20250923_01_AddPremiumCustomers {
 Six months later, your team decides `middleName` is unnecessary and removes it from the `Customer` class. Now:
 
 - ✅ Your application works fine with the updated model
-- ❌ The Change `_20250923_01_AddPremiumCustomers` no longer compiles
+- ❌ The Change `_0001__AddPremiumCustomers` no longer compiles
 - ❌ You can't run Flamingock in new environments
 - ❌ CI/CD pipelines break
 
@@ -1457,7 +1453,7 @@ Here's how the same Change looks using generic structures:
 
 ```java
 @Change(id = "add-premium-customers", order = "20250923_01", author = "team")
-public class _20250923_01_AddPremiumCustomers {
+public class _0001__AddPremiumCustomers {
 
     @Apply
     public void apply(RestTemplate restTemplate) {
@@ -2233,8 +2229,8 @@ src/
         yourapp/
           flamingock/
             users/
-              _20250923_01_CreateUsersTable.java
-              _20250923_02_AaddIndex.yaml
+              _0001__CreateUsersTable.java
+              _0002__AddIndex.yaml
 ```
 
 
@@ -2274,22 +2270,22 @@ We strongly recommend placing all your changes — code-based and template-based
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
 
 ```
-_20250923_01_CreateClientsTable.java
-_20250923_02_AaddindexToEmail.yaml
-_20250924_01_MigrateData.java
-_20250925_01_ComplexChange.yaml
+_0001__CreateClientsTable.java
+_0002__AddIndexToEmail.yaml
+_0003__MigrateData.java
+_0004__ComplexChange.yaml
 ```
 
 - `ORDER`: The execution order extracted between the first `_` and last `_`
-  - **Recommended format**: `YYYYMMDD_NN` where YYYY=year, MM=month, DD=day, NN=sequence (01-99)
+  - **Recommended format**: `NNNN` with left-padding zeros (e.g., `0001`, `0002`, `0010`)
 - `CHANGE_NAME`: Descriptive name of what the change does
 
 This convention:
 - **Eliminates the need for order in annotations/YAML** - the order is extracted from the filename
-- **Natural chronological sorting** - files automatically sort by date in folders
-- **Clear timeline visibility** - instantly see when changes were created
+- **Natural sequential sorting** - files automatically sort numerically
+- **Clear execution order** - instantly see the sequence of changes
 - Works across both code-based and template-based formats
-- **Practical daily limit** - 99 changes per day is more than sufficient
+- **Sufficient capacity** - supports up to 99 changes with two-digit format
 - Ensures consistent naming and project hygiene
 
 :::tip
@@ -3614,11 +3610,11 @@ Changes can be:
 
 <Tabs groupId="change">
   <TabItem value="template_based" label="Template based" default>
-
+ 
 ```yaml
+# File `_0001__CreateS3Bucket.yaml`
 id: add-product-category
 author: team
-order: "20250923_01"
 targetSystem: mysql-inventory
 template: sql-template
 apply: |
@@ -3633,7 +3629,7 @@ rollback: |
 ```java
 @TargetSystem("aws-s3")
 @Change(id = "create-s3-bucket", author = "team")  // order extracted from filename
-public class _20250923_02_CreateS3Bucket {
+public class _0001__CreateS3Bucket {
 
   @Apply
   public void apply(S3Client s3Client) {
@@ -4059,7 +4055,7 @@ Imagine you need to toggle a feature flag in a downstream service (not a databas
 
 ```java
 @Change(id = "enable-autosave", author = "ops-team")  // order extracted from filename
-public class _20250925_01_EnableAutoSaveFeature {
+public class _0001__EnableAutoSaveFeature {
 
   @Apply
   public void enableAutoSave(FeatureFlagClient client) {
@@ -4096,7 +4092,7 @@ public class _20250925_01_EnableAutoSaveFeature {
 <TabItem value="code-base" label="Code" default>
 ```java
 @Change(id = "provision-bucket", author = "team-a", transactional = false)  // order extracted from filename
-public class _20250923_01_ProvisionBucketChange {
+public class _0001__ProvisionBucketChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -4114,7 +4110,7 @@ public class _20250923_01_ProvisionBucketChange {
 }
 
 @Change(id = "create-kafka-topics", author = "devops", transactional = false)  // order extracted from filename
-public class _20250923_02_CreateKafkaTopicsChange {
+public class _0002__CreateKafkaTopicsChange {
 
     @Apply
     public void apply(KafkaAdminClient admin) {
@@ -4130,7 +4126,7 @@ public class _20250923_02_CreateKafkaTopicsChange {
 }
 
 @Change(id = "setup-iam-roles", author = "devops", transactional = false)  // order extracted from filename
-public class _20250924_01_SetupIamRolesChange {
+public class _0003__SetupIamRolesChange {
 
     @Apply
     public void apply(IamClient iam) {
@@ -4149,7 +4145,7 @@ public class _20250924_01_SetupIamRolesChange {
 }
 
 @Change(id = "seed-database", author = "devops", transactional = true)  // order extracted from filename
-public class _20250924_02_SeedTenantDataChange {
+public class _0004__SeedTenantDataChange {
 
     @Apply
     public void apply(DataSource ds) {
@@ -4176,7 +4172,7 @@ public class _20250924_02_SeedTenantDataChange {
 }
 
 @Change(id = "update-bucket-settings", author = "team-a", transactional = false)  // order extracted from filename
-public class _20250925_01_UpdateBucketSettingsChange {
+public class _0005__UpdateBucketSettingsChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -4207,9 +4203,8 @@ public class _20250925_01_UpdateBucketSettingsChange {
 
 ```yaml
 
-# File: _20250923_01_ProvisionBucket.yaml
+# File: _0001__ProvisionBucket.yaml
 id: "ProvisionBucket"
-order: 0001
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
@@ -4221,9 +4216,8 @@ rollback:
 
 ---
 
-# File: _20250923_02_CreateKafkaTopics.yaml
+# File: _0002__CreateKafkaTopics.yaml
 id: "CreateKafkaTopics"
-order: 0002
 author: "devops"
 transactional: false
 templateName: kafka-template
@@ -4248,9 +4242,8 @@ rollback:
 
 ---
 
-# File: _20250924_01_SetupIamRoles.yaml
+# File: _0003__SetupIamRoles.yaml
 id: "SetupIamRoles"
-order: 0003
 author: "devops"
 transactional: false
 templateName: aws-iam-template
@@ -4273,9 +4266,8 @@ rollback:
 
 ---
 
-# File: _20250924_02_SeedDatabase.yaml
+# File: _0004__SeedDatabase.yaml
 id: "SeedDatabase"
-order: 0004
 author: "devops"
 transactional: true
 templateName: sql-template
@@ -4287,9 +4279,8 @@ rollback: |
 
 ---
 
-# File: _20250925_01_UpdateBucketSettings.yaml
+# File: _0005__UpdateBucketSettings.yaml
 id: "UpdateBucketSettings"
-order: 0005
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
@@ -4905,19 +4896,18 @@ public class RetryChange {
 Use the `recovery` field in your YAML configuration:
 
 ```yaml
+# File  File `_0001__ExampleChange.yaml`
 # Default behavior (manual intervention)
 id: example-change
-order: "001"
 author: team
 template: example-template
 apply: |
   # Change logic here
 
 ---
-
+# File `_0002__RetryChange.yaml`
 # Explicit always retry
 id: retry-change
-order: "002"
 author: team
 recovery: ALWAYS_RETRY
 template: example-template
@@ -5105,7 +5095,7 @@ When defining Changes, you specify which target system they belong to using the 
 ```java
 @TargetSystem("mysql-inventory-id")
 @Change(id = "add-category", author = "team")  // order extracted from filename
-public class _20250923_01_AddCategory {
+public class _0001__AddCategory {
     //...
 }
 ```
@@ -5389,7 +5379,7 @@ For a Change to leverage SQL's transactional capabilities, it must use either th
 ```java
 @TargetSystem("inventory-database-id")
 @Change(id = "update-products", author = "team")  // order extracted from filename
-public class _20250923_01_UpdateProducts {
+public class _0001__UpdateProducts {
     
     @Apply
     public void apply(DataSource dataSource) throws SQLException {
@@ -5577,7 +5567,7 @@ For a Change to leverage MongoDB's transactional capabilities, it must use the `
 ```java
 @TargetSystem("user-database-id")
 @Change(id = "create-users", author = "team")  // order extracted from filename
-public class _20250923_01_CreateUsers {
+public class _0001__CreateUsers {
     
     @Apply
     public void apply(MongoDatabase db, ClientSession session) {
@@ -5736,7 +5726,7 @@ Spring Data MongoDB target system integrates with Spring's transaction managemen
 ```java
 @TargetSystem("user-database-id")
 @Change(id = "create-users", author = "team")  // order extracted from filename
-public class _20250923_01_CreateUsers {
+public class _0001__CreateUsers {
     
     @Apply
     public void apply(MongoTemplate mongoTemplate) {
@@ -5885,7 +5875,7 @@ For a Change to leverage DynamoDB's transactional capabilities, it must use the 
 ```java
 @TargetSystem("inventory-database-id")
 @Change(id = "update-inventory", author = "team")  // order extracted from filename
-public class _20250923_01_UpdateInventory {
+public class _0001__UpdateInventory {
     
     @Apply
     public void apply(DynamoDbClient client,
@@ -6042,7 +6032,7 @@ For a Change to leverage Couchbase's transactional capabilities, it must use the
 ```java
 @TargetSystem("user-database-id")
 @Change(id = "create-users", author = "team")  // order extracted from filename
-public class _20250923_01_CreateUsers {
+public class _0001__CreateUsers {
     
     @Apply
     public void apply(Cluster cluster, Bucket bucket, TransactionAttemptContext txContext) {
@@ -6065,7 +6055,7 @@ You can also work with the Cluster and Bucket directly without transactions:
 ```java
 @TargetSystem("user-database-id")
 @Change(id = "update-configs", author = "team")  // order extracted from filename
-public class _20250923_02_UpdateConfigs {
+public class _0002__UpdateConfigs {
     
     @Apply
     public void apply(Cluster cluster, Bucket bucket) {
@@ -6229,7 +6219,7 @@ In Flamingock, a **Change** represents a single unit of work that needs to be ap
 
 When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
 
-Create a **YAML file** (e.g., `_20250923_01_CreatePersonsTable.yaml`) inside your application’s resources directory:
+Create a **YAML file** (e.g., `_0001__CreatePersonsTable.yaml`) inside your application’s resources directory:
 
 ```yaml
 id: CreatePersonsTableFromTemplate
@@ -6335,8 +6325,7 @@ With the **SQL Template**, users define the same change in **YAML** instead of J
 
 ```yaml
 id: createPersonsTableFromTemplate
-order: 20250408_01
-targetSystem: "database-system"
+stargetSystem: "database-system"
 templateName: sql-template
 recovery:
   strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
@@ -6681,7 +6670,7 @@ Suppose you have a change unit that creates an Amazon S3 bucket:
 
 ```java
 @Change(id = "create-bucket", author = "dev-team")  // order extracted from filename
-public class _20250923_01_CreateS3BucketChange {
+public class _0001__CreateS3BucketChange {
 
   @Apply
   public void apply(S3Client s3Client) {
@@ -6706,7 +6695,7 @@ To unit test this class, we use JUnit and a mocking library (e.g., Mockito).
 We'll mock the `S3Client` and verify the correct calls were made.
 
 ```java
-class _20250923_01_CreateS3BucketChangeTest {
+class _0001__CreateS3BucketChangeTest {
 
   private final S3Client s3Client = mock(S3Client.class);
   private final CreateS3BucketChange change = new CreateS3BucketChange();
@@ -6714,7 +6703,7 @@ class _20250923_01_CreateS3BucketChangeTest {
   @Test
   void shouldCallCreateBucketOnExecution() {
     var s3Client = mock(S3Client.class);
-    new _20250923_01_CreateS3BucketChange().apply(s3Client);
+    new _0001__CreateS3BucketChange().apply(s3Client);
 
     verify(s3Client).createBucket(argThat(req ->
         req.bucket().equals("flamingock-test-bucket")));
@@ -6723,7 +6712,7 @@ class _20250923_01_CreateS3BucketChangeTest {
   @Test
   void shouldCallDeleteBucketOnRollback() {
     var s3Client = mock(S3Client.class);
-    new _20250923_01_CreateS3BucketChange().rollback(s3Client);
+    new _0001__CreateS3BucketChange().rollback(s3Client);
     
     verify(s3Client).deleteBucket(argThat(req ->
         req.bucket().equals("flamingock-test-bucket")));
@@ -6763,7 +6752,7 @@ Suppose you have a change unit that creates an Amazon S3 bucket:
 
 ```java
 @Change(id = "create-bucket", author = "dev-team")  // order extracted from filename
-public class _20250923_01_CreateS3BucketChange {
+public class _0001__CreateS3BucketChange {
 
   @Apply
   public void apply(S3Client s3Client) {
@@ -6872,7 +6861,7 @@ Suppose you have a change unit that modifies a Kafka topic configuration:
 
 ```java
 @Change(id = "modify-topic-config", author = "dev-team")  // order extracted from filename
-public class _20250923_02_ModifyKafkaTopicConfig {
+public class _0001__ModifyKafkaTopicConfig {
 
   @Apply
   public void apply(AdminClient adminClient) {
