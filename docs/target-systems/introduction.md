@@ -150,7 +150,7 @@ When defining Changes, you specify which target system they belong to using the 
 ```java
 @TargetSystem("mysql-inventory-id")
 @Change(id = "add-category", author = "team")  // order extracted from filename
-public class _20250923_01_AddCategory {
+public class _0001__AddCategory {
     //...
 }
 ```

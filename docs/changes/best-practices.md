@@ -17,7 +17,7 @@ Once a Change is deployed, never modify it. Create new Changes for corrections.
 ```java
 // Modifying an existing Change after deployment
 @Change(id = "add-user-field", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserField {
+public class _0001__AddUserField {
     @Apply
     public void apply(MongoDatabase db) {
         // Original: db.getCollection("users").updateMany(/* add field */)
@@ -30,7 +30,7 @@ public class _20250923_01_AddUserField {
 ```java
 // Keep the original unchanged
 @Change(id = "add-user-field", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserField {
+public class _0001__AddUserField {
     @Apply
     public void apply(MongoDatabase db) {
         // Original logic remains unchanged
@@ -39,7 +39,7 @@ public class _20250923_01_AddUserField {
 
 // Create a new Change for corrections
 @Change(id = "fix-user-field-values", author = "team")  // order extracted from filename
-public class _20250923_02_FixUserFieldValues {
+public class _0002__FixUserFieldValues {
     @Apply
     public void apply(MongoDatabase db) {
         // Correction logic
@@ -83,7 +83,7 @@ Every Change must have a `@Rollback` method, regardless of target system type.
 **Example with comprehensive rollback:**
 ```java
 @Change(id = "setup-user-indexes", author = "db-team")  // order extracted from filename
-public class _20250923_01_SetupUserIndexes {
+public class _0001__SetupUserIndexes {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -127,7 +127,7 @@ Each Change should address one logical change. Avoid combining unrelated operati
 **❌ Avoid mixing concerns:**
 ```java
 @Change(id = "big-refactor", author = "team")  // order extracted from filename
-public class _20250923_01_BigRefactor {
+public class _0001__BigRefactor {
     @Apply
     public void apply(MongoDatabase db, KafkaProducer producer) {
         // Adding user field
@@ -146,13 +146,13 @@ public class _20250923_01_BigRefactor {
 ```java
 @TargetSystem("user-database")
 @Change(id = "add-user-status", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserStatus {
+public class _0001__AddUserStatus {
     // Focus: User schema change only
 }
 
 @TargetSystem("kafka-events")
 @Change(id = "create-user-topic", author = "team")  // order extracted from filename
-public class _20250923_01_CreateUserTopic {
+public class _0001__CreateUserTopic {
     // Focus: Kafka topic creation only
 }
 ```
@@ -166,7 +166,7 @@ Make operations safe to re-run whenever possible.
 **Example: Idempotent field addition:**
 ```java
 @Change(id = "add-user-preferences", author = "team")  // order extracted from filename
-public class _20250923_01_AddUserPreferences {
+public class _0001__AddUserPreferences {
     
     @Apply
     public void apply(MongoDatabase database) {
@@ -240,35 +240,33 @@ public void removeEmailIndexAndRevertSchema(MongoDatabase db) { }
 
 **File names:**
 - Use `_ORDER_DescriptiveName` format where ORDER is extracted between first and last underscores
-- **Recommended format**: `YYYYMMDD_NN` where:
-  - YYYY = year, MM = month, DD = day
-  - NN = sequence number (01-99) for changes on the same day
+- **Recommended format for order**: `NNNN` with left-padding zeros (e.g., `0001`, `0002`, `0010`)
 - When using this naming pattern, the order in `@Change` annotation or YAML is optional
 - Use PascalCase for class names
 
 **Good examples:**
 ```
-_20250923_01_CreateUserIndexes.java
-_20250923_02_MigrateUserData.java
-_20250924_01_AddUserPreferences.java
-_20250925_01_OptimizeUserQueries.java
-_20250930_01_MigrateToNewFormat.yaml
+_0001__CreateUserIndexes.java
+_0002__MigrateUserData.java
+_0002__AddUserPreferences.java
+_0005__OptimizeUserQueries.java
+_0004__MigrateToNewFormat.yaml
 ```
 
 :::tip Recommendation
-We recommend specifying the order in the file/class name using the `YYYYMMDD_NN` format:
+We recommend specifying the order in the file/class name using the `NN` format:
 
 **Benefits:**
-- **Natural chronological sorting** - Files automatically sort by date in folders
-- **Clear timeline visibility** - Instantly see when changes were created
-- **Practical daily limit** - 99 changes per day is more than sufficient
-- **Easy identification** - Quick visual scan shows change history
+- **Simple and clear** - Easy to understand and implement
+- **Natural sorting** - Files automatically sort numerically
+- **No complexity** - Just sequential numbering
+- **Easy identification** - Quick visual scan shows execution order
 - **No annotation needed** - Order is extracted from filename
 
 Examples:
-- `_20250923_01_CreateUserTable.java` → order: "20250923_01" (no need for order in @Change)
-- `_20250923_02_MigrateData.yaml` → order: "20250923_02" (no need for order in YAML)
-- `_20250924_01_AddIndexes.java` → order: "20250924_01"
+- `_0001__CreateUserTable.java` → order: "0001" (no need for order in @Change)
+- `_0002__MigrateData.yaml` → order: "0002" (no need for order in YAML)
+- `_0004__AddIndexes.java` → order: "0004"
 :::
 
 
@@ -298,11 +296,11 @@ Changes should be organized chronologically by their order within stages. If you
 
 ```
 src/main/java/com/company/changes/
-├── _20250923_01_CreateUserCollection.java
-├── _20250923_02_AddUserIndexes.java
-├── _20250924_01_MigrateUserData.java
-├── _20250924_02_CreateOrdersTable.java
-└── _20250925_01_AddOrderStatusColumn.java
+├── _0001__CreateUserCollection.java
+├── _0002__AddUserIndexes.java
+├── _0003__MigrateUserData.java
+├── _0004__CreateOrdersTable.java
+└── _0005__AddOrderStatusColumn.java
 ```
 
 ## Testing and validation
@@ -318,7 +316,7 @@ public void testUserMigrationChange() {
     MongoDatabase testDb = getTestDatabase();
     insertTestUsers(testDb);
     
-    var change = new _20250923_01_MigrateUsers();
+    var change = new _0001__MigrateUsers();
     
     // Act - Test execution
     change.execute(testDb);

@@ -230,8 +230,8 @@ src/
         yourapp/
           flamingock/
             users/
-              _20250923_01_CreateUsersTable.java
-              _20250923_02_AaddIndex.yaml
+              _0001__CreateUsersTable.java
+              _0002__AddIndex.yaml
 ```
 
 
@@ -271,22 +271,22 @@ We strongly recommend placing all your changes — code-based and template-based
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
 
 ```
-_20250923_01_CreateClientsTable.java
-_20250923_02_AaddindexToEmail.yaml
-_20250924_01_MigrateData.java
-_20250925_01_ComplexChange.yaml
+_0001__CreateClientsTable.java
+_0002__AddIndexToEmail.yaml
+_0003__MigrateData.java
+_0004__ComplexChange.yaml
 ```
 
 - `ORDER`: The execution order extracted between the first `_` and last `_`
-  - **Recommended format**: `YYYYMMDD_NN` where YYYY=year, MM=month, DD=day, NN=sequence (01-99)
+  - **Recommended format**: `NNNN` with left-padding zeros (e.g., `0001`, `0002`, `0010`)
 - `CHANGE_NAME`: Descriptive name of what the change does
 
 This convention:
 - **Eliminates the need for order in annotations/YAML** - the order is extracted from the filename
-- **Natural chronological sorting** - files automatically sort by date in folders
-- **Clear timeline visibility** - instantly see when changes were created
+- **Natural sequential sorting** - files automatically sort numerically
+- **Clear execution order** - instantly see the sequence of changes
 - Works across both code-based and template-based formats
-- **Practical daily limit** - 99 changes per day is more than sufficient
+- **Sufficient capacity** - supports up to 99 changes with two-digit format
 - Ensures consistent naming and project hygiene
 
 :::tip

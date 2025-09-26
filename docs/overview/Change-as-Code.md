@@ -49,7 +49,7 @@ Imagine you need to toggle a feature flag in a downstream service (not a databas
 
 ```java
 @Change(id = "enable-autosave", author = "ops-team")  // order extracted from filename
-public class _20250925_01_EnableAutoSaveFeature {
+public class _0001__EnableAutoSaveFeature {
 
   @Apply
   public void enableAutoSave(FeatureFlagClient client) {
@@ -86,7 +86,7 @@ public class _20250925_01_EnableAutoSaveFeature {
 <TabItem value="code-base" label="Code" default>
 ```java
 @Change(id = "provision-bucket", author = "team-a", transactional = false)  // order extracted from filename
-public class _20250923_01_ProvisionBucketChange {
+public class _0001__ProvisionBucketChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -104,7 +104,7 @@ public class _20250923_01_ProvisionBucketChange {
 }
 
 @Change(id = "create-kafka-topics", author = "devops", transactional = false)  // order extracted from filename
-public class _20250923_02_CreateKafkaTopicsChange {
+public class _0002__CreateKafkaTopicsChange {
 
     @Apply
     public void apply(KafkaAdminClient admin) {
@@ -120,7 +120,7 @@ public class _20250923_02_CreateKafkaTopicsChange {
 }
 
 @Change(id = "setup-iam-roles", author = "devops", transactional = false)  // order extracted from filename
-public class _20250924_01_SetupIamRolesChange {
+public class _0003__SetupIamRolesChange {
 
     @Apply
     public void apply(IamClient iam) {
@@ -139,7 +139,7 @@ public class _20250924_01_SetupIamRolesChange {
 }
 
 @Change(id = "seed-database", author = "devops", transactional = true)  // order extracted from filename
-public class _20250924_02_SeedTenantDataChange {
+public class _0004__SeedTenantDataChange {
 
     @Apply
     public void apply(DataSource ds) {
@@ -166,7 +166,7 @@ public class _20250924_02_SeedTenantDataChange {
 }
 
 @Change(id = "update-bucket-settings", author = "team-a", transactional = false)  // order extracted from filename
-public class _20250925_01_UpdateBucketSettingsChange {
+public class _0005__UpdateBucketSettingsChange {
 
     @Apply
     public void apply(S3Client s3) {
@@ -197,9 +197,8 @@ public class _20250925_01_UpdateBucketSettingsChange {
 
 ```yaml
 
-# File: _20250923_01_ProvisionBucket.yaml
+# File: _0001__ProvisionBucket.yaml
 id: "ProvisionBucket"
-order: 0001
 author: "team-a"
 transactional: false
 templateName: aws-s3-template
@@ -211,9 +210,8 @@ rollback:
 
 ---
 
-# File: _20250923_02_CreateKafkaTopics.yaml
+# File: _0002__CreateKafkaTopics.yaml
 id: "CreateKafkaTopics"
-order: 0002
 author: "devops"
 transactional: false
 templateName: kafka-template
@@ -238,9 +236,8 @@ rollback:
 
 ---
 
-# File: _20250924_01_SetupIamRoles.yaml
+# File: _0003__SetupIamRoles.yaml
 id: "SetupIamRoles"
-order: 0003
 author: "devops"
 transactional: false
 templateName: aws-iam-template
@@ -263,9 +260,8 @@ rollback:
 
 ---
 
-# File: _20250924_02_SeedDatabase.yaml
+# File: _0004__SeedDatabase.yaml
 id: "SeedDatabase"
-order: 0004
 author: "devops"
 transactional: true
 templateName: sql-template
@@ -277,9 +273,8 @@ rollback: |
 
 ---
 
-# File: _20250925_01_UpdateBucketSettings.yaml
+# File: _0005__UpdateBucketSettings.yaml
 id: "UpdateBucketSettings"
-order: 0005
 author: "team-a"
 transactional: false
 templateName: aws-s3-template

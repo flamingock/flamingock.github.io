@@ -110,7 +110,7 @@ For a Change to leverage DynamoDB's transactional capabilities, it must use the 
 ```java
 @TargetSystem("inventory-database-id")
 @Change(id = "update-inventory", author = "team")  // order extracted from filename
-public class _20250923_01_UpdateInventory {
+public class _0001__UpdateInventory {
     
     @Apply
     public void apply(DynamoDbClient client,

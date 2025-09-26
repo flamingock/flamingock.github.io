@@ -110,7 +110,7 @@ For a Change to leverage SQL's transactional capabilities, it must use either th
 ```java
 @TargetSystem("inventory-database-id")
 @Change(id = "update-products", author = "team")  // order extracted from filename
-public class _20250923_01_UpdateProducts {
+public class _0001__UpdateProducts {
     
     @Apply
     public void apply(DataSource dataSource) throws SQLException {

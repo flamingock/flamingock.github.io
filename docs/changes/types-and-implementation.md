@@ -25,9 +25,8 @@ Template-based Changes use YAML or JSON files with reusable templates. Templates
 ### Basic YAML structure
 
 ```yaml
-# File: _20250923_01_add_user_index.yaml
+# File: _0001__AddUserIndex.yaml
 id: add_user_index
-order: "20250923_01"
 author: "database-team"
 description: "Add index on user email field for faster lookups"
 targetSystem: "user-database"
@@ -57,7 +56,7 @@ Code-based Changes are written in Java, Kotlin, or Groovy with annotations. They
 ```java
 @TargetSystem("user-database")
 @Change(id = "migrate-user-emails", author = "data-team")  // order extracted from filename
-public class _20250923_01_MigrateUserEmails {
+public class _0001__MigrateUserEmails {
 
     @Apply
     public void apply(MongoDatabase database, ClientSession session) {
@@ -93,16 +92,16 @@ public class _20250923_01_MigrateUserEmails {
 ### Recommended project structure:
 ```
 src/main/java/com/yourapp/changes/
-├── _20250923_01_CreateUserIndexes.java
-├── _20250923_02_AddUserStatus.yaml
-├── _20250924_01_MigrateUserData.java
-├── _20250924_02_SetupNotifications.yaml
-└── _20250925_01_OptimizeQueries.java
+├── _0001__CreateUserIndexes.java
+├── _0002__AddUserStatus.yaml
+├── _0003__MigrateUserData.java
+├── _0004__SetupNotifications.yaml
+└── _0003__OptimizeQueries.java
 ```
 
 ### Best practices:
 - **Keep together**: Store both code and template files in the same directory
-- **Consistent naming**: Follow `_ORDER_DescriptiveName` pattern for both types (recommended: `YYYYMMDD_NN`)
+- **Consistent naming**: Follow `_ORDER__CHANGE_NAME` pattern for both types (recommended: `NN`)
 - **Order in filename**: When using the naming pattern, order in annotation/yaml is optional
 
 :::info Order Field Rules

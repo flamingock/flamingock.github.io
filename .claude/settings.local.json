@@ -17,7 +17,19 @@
       "Bash(yarn build)",
       "Read(//Users/dieppa/workspace/flamingock/**)",
       "Bash(./gradlew:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(docs/overview/Change-as-Code.md)",
+      "Bash({} ;)",
+      "Bash(docs/flamingock-library-config/setup-and-stages.md)",
+      "Bash(docs/changes/domain-coupling.md)",
+      "Bash(docs/changes/introduction.md)",
+      "Bash(docs/target-systems/sql-target-system.md)",
+      "Bash(docs/changes/types-and-implementation.md)",
+      "Bash(docs/target-systems/mongodb-springdata-target-system.md)",
+      "Bash(docs/changes/best-practices.md)",
+      "Bash(docs/target-systems/dynamodb-target-system.md)",
+      "Bash(docs/target-systems/couchbase-target-system.md)",
+      "Bash(docs/target-systems/mongodb-target-system.md)"
     ],
     "deny": []
   }

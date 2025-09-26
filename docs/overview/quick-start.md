@@ -113,11 +113,11 @@ Changes can be:
 
 <Tabs groupId="change">
   <TabItem value="template_based" label="Template based" default>
-
+ 
 ```yaml
+# File `_0001__CreateS3Bucket.yaml`
 id: add-product-category
 author: team
-order: "20250923_01"
 targetSystem: mysql-inventory
 template: sql-template
 apply: |
@@ -132,7 +132,7 @@ rollback: |
 ```java
 @TargetSystem("aws-s3")
 @Change(id = "create-s3-bucket", author = "team")  // order extracted from filename
-public class _20250923_02_CreateS3Bucket {
+public class _0001__CreateS3Bucket {
 
   @Apply
   public void apply(S3Client s3Client) {

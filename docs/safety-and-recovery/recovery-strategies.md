@@ -51,19 +51,18 @@ public class RetryChange {
 Use the `recovery` field in your YAML configuration:
 
 ```yaml
+# File  File `_0001__ExampleChange.yaml`
 # Default behavior (manual intervention)
 id: example-change
-order: "001"
 author: team
 template: example-template
 apply: |
   # Change logic here
 
 ---
-
+# File `_0002__RetryChange.yaml`
 # Explicit always retry
 id: retry-change
-order: "002"
 author: team
 recovery: ALWAYS_RETRY
 template: example-template

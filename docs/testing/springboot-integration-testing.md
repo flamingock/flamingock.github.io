@@ -22,7 +22,7 @@ Suppose you have a change unit that modifies a Kafka topic configuration:
 
 ```java
 @Change(id = "modify-topic-config", author = "dev-team")  // order extracted from filename
-public class _20250923_02_ModifyKafkaTopicConfig {
+public class _0001__ModifyKafkaTopicConfig {
 
   @Apply
   public void apply(AdminClient adminClient) {

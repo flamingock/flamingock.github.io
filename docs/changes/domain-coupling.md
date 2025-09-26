@@ -38,7 +38,7 @@ You create a Change that uses this domain class:
 
 ```java
 @Change(id = "add-premium-customers", order = "20250923_01", author = "team")
-public class _20250923_01_AddPremiumCustomers {
+public class _0001__AddPremiumCustomers {
 
     @Apply
     public void apply(CustomerRepository repository) {
@@ -55,7 +55,7 @@ public class _20250923_01_AddPremiumCustomers {
 Six months later, your team decides `middleName` is unnecessary and removes it from the `Customer` class. Now:
 
 - ✅ Your application works fine with the updated model
-- ❌ The Change `_20250923_01_AddPremiumCustomers` no longer compiles
+- ❌ The Change `_0001__AddPremiumCustomers` no longer compiles
 - ❌ You can't run Flamingock in new environments
 - ❌ CI/CD pipelines break
 
@@ -69,7 +69,7 @@ Here's how the same Change looks using generic structures:
 
 ```java
 @Change(id = "add-premium-customers", order = "20250923_01", author = "team")
-public class _20250923_01_AddPremiumCustomers {
+public class _0001__AddPremiumCustomers {
 
     @Apply
     public void apply(RestTemplate restTemplate) {

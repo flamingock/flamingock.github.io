@@ -22,7 +22,7 @@ Suppose you have a change unit that creates an Amazon S3 bucket:
 
 ```java
 @Change(id = "create-bucket", author = "dev-team")  // order extracted from filename
-public class _20250923_01_CreateS3BucketChange {
+public class _0001__CreateS3BucketChange {
 
   @Apply
   public void apply(S3Client s3Client) {

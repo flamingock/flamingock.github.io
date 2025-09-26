@@ -21,7 +21,7 @@ Suppose you have a change unit that creates an Amazon S3 bucket:
 
 ```java
 @Change(id = "create-bucket", author = "dev-team")  // order extracted from filename
-public class _20250923_01_CreateS3BucketChange {
+public class _0001__CreateS3BucketChange {
 
   @Apply
   public void apply(S3Client s3Client) {
@@ -46,7 +46,7 @@ To unit test this class, we use JUnit and a mocking library (e.g., Mockito).
 We'll mock the `S3Client` and verify the correct calls were made.
 
 ```java
-class _20250923_01_CreateS3BucketChangeTest {
+class _0001__CreateS3BucketChangeTest {
 
   private final S3Client s3Client = mock(S3Client.class);
   private final CreateS3BucketChange change = new CreateS3BucketChange();
@@ -54,7 +54,7 @@ class _20250923_01_CreateS3BucketChangeTest {
   @Test
   void shouldCallCreateBucketOnExecution() {
     var s3Client = mock(S3Client.class);
-    new _20250923_01_CreateS3BucketChange().apply(s3Client);
+    new _0001__CreateS3BucketChange().apply(s3Client);
 
     verify(s3Client).createBucket(argThat(req ->
         req.bucket().equals("flamingock-test-bucket")));
@@ -63,7 +63,7 @@ class _20250923_01_CreateS3BucketChangeTest {
   @Test
   void shouldCallDeleteBucketOnRollback() {
     var s3Client = mock(S3Client.class);
-    new _20250923_01_CreateS3BucketChange().rollback(s3Client);
+    new _0001__CreateS3BucketChange().rollback(s3Client);
     
     verify(s3Client).deleteBucket(argThat(req ->
         req.bucket().equals("flamingock-test-bucket")));
