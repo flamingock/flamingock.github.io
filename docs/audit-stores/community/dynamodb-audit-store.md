@@ -100,7 +100,7 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `Read Capacity Units` | `.withReadCapacityUnits(units)` | `5` | Read capacity units (PROVISIONED mode only) |
 | `Write Capacity Units` | `.withWriteCapacityUnits(units)` | `5` | Write capacity units (PROVISIONED mode only) |
 | `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Table name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Table name for distributed locks |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Table name for distributed locks |
 
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
