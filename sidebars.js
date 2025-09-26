@@ -17,7 +17,7 @@
 const sidebars = {
   // Hybrid approach: grouped auto-generated sections with visual dividers
   tutorialSidebar: [
-
+    'overview',  // Add explicit reference to overview.md at docs root
     {
       type: 'html',
       value: '<hr class="sidebar-divider" />',

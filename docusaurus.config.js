@@ -49,6 +49,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          routeBasePath: '/',  // Docs at the root of the site
           sidebarPath: './sidebars.js',
           sidebarCollapsible: false,
           // Please change this to your repo.
@@ -86,7 +87,7 @@ const config = {
   ],
 
   customFields: {
-    homepageRedirect: '/docs/overview/Introduction',
+    homepageRedirect: '/overview',
   },
 
   themeConfig:

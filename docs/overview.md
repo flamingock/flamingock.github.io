@@ -12,7 +12,7 @@ It applies **versioned, auditable changes** to the external systems your applica
 Unlike infrastructure-as-code tools, Flamingock runs **inside your application** (or via the **CLI**).  
 It ensures these systems evolve **safely, consistently, and in sync with your code at runtime**.  
 
-👉 For a deeper explanation, see the [Introduction](./get-started/introduction.md)
+👉 For a deeper explanation, see the [Introduction](./overview/Introduction)
 
 ---
 
@@ -45,9 +45,9 @@ public class _0001__AddUserStatus {
 }
 ```
 
-👉 **Continue to [Quick Start Guide](./quick-start)**
-👉 **Learn the [Core Concepts](./core-concepts)**
-👉 **Read the full [Introduction](./Introduction)**
+👉 **Continue to [Quick Start Guide](./overview/quick-start)**
+👉 **Learn the [Core Concepts](./overview/core-concepts)**
+👉 **Read the full [Introduction](./overview/Introduction)**
 
 ---
 
@@ -65,21 +65,21 @@ public class _0001__AddUserStatus {
 
 ## 📚 Documentation Structure
 
-**Get started** – [Introduction](./Introduction), [Quick Start](./quick-start), [Core Concepts](./core-concepts), [Change-as-Code](./Change-as-Code)
+**Get started** – [Introduction](./overview/Introduction), [Quick Start](./overview/quick-start), [Core Concepts](./overview/core-concepts), [Change-as-Code](./overview/Change-as-Code)
 
-**Changes** – [Anatomy](../changes/anatomy-and-structure), [Apply and rollback methods](../changes/apply-and-rollback-methods), [Types & implementation](../changes/types-and-implementation), [Best practices](../changes/best-practices)
+**Changes** – [Anatomy](./changes/anatomy-and-structure), [Apply and rollback methods](./changes/apply-and-rollback-methods), [Types & implementation](./changes/types-and-implementation), [Best practices](./changes/best-practices)
 
-**Target Systems** – Supported integrations ([SQL](../target-systems/sql-target-system), [MongoDB](../target-systems/mongodb-target-system), [DynamoDB](../target-systems/dynamodb-target-system), [Introduction](../target-systems/introduction), …)
+**Target Systems** – Supported integrations ([SQL](./target-systems/sql-target-system), [MongoDB](./target-systems/mongodb-target-system), [DynamoDB](./target-systems/dynamodb-target-system), [Introduction](./target-systems/introduction), …)
 
-**Community Audit Stores** – [MongoDB](../community-audit-stores/mongodb-audit-store), [DynamoDB](../community-audit-stores/dynamodb-audit-store), [SQL](../community-audit-stores/sql-audit-store)
+**Audit Stores** – [MongoDB](./audit-stores/mongodb-audit-store), [DynamoDB](./audit-stores/dynamodb-audit-store), [SQL](./audit-stores/sql-audit-store)
 
-**Safety & Recovery** – [Recovery strategies](../safety-and-recovery/introduction), [Safety mechanisms](../safety-and-recovery/introduction)
+**Safety & Recovery** – [Recovery strategies](./safety-and-recovery/introduction), [Safety mechanisms](./safety-and-recovery/introduction)
 
-**Templates** – [How to use](../templates/templates-how-to-use), [Introduction](../templates/templates-introduction)
+**Templates** – [How to use](./templates/templates-how-to-use), [Introduction](./templates/templates-introduction)
 
-**Supported Frameworks** – [Spring Boot](../frameworks/springboot-integration/introduction), [Standalone runner](../flamingock-library-config/setup-and-stages)
+**Supported Frameworks** – [Spring Boot](./frameworks/springboot-integration/introduction), [Standalone runner](./flamingock-library-config/setup-and-stages)
 
-**Testing** – [Unit testing](../testing/unit-testing), [Integration testing](../testing/integration-testing), [Spring Boot testing](../testing/springboot-integration-testing)
+**Testing** – [Unit testing](./testing/unit-testing), [Integration testing](./testing/integration-testing), [Spring Boot testing](./testing/springboot-integration-testing)
 
 **CLI** – Command-line usage and operations
 
@@ -95,7 +95,7 @@ public class _0001__AddUserStatus {
 
 **Self-Hosted Edition** – Cloud features, deployable in your infra
 
-👉 **Learn more about [Cloud Edition](../cloud-edition/cloud-edition)**
+👉 **Learn more about [Cloud Edition](./cloud-edition/cloud-edition)**
 
 ---
 
