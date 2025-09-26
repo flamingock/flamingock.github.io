@@ -16,7 +16,7 @@ A Change always declares which target system it belongs to. This ensures Flaming
 - Guarantee safe execution across heterogeneous environments
 - Provide clear visibility into which changes affect which systems
 
-> **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store](../overview/audit-store-vs-target-system.md).
+> **Conceptual Overview**: For architectural understanding of target systems vs audit store, see [Target Systems vs Audit Store](../get-started/audit-store-vs-target-system.md).
 
 
 ## Why target systems matter

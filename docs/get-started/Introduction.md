@@ -7,7 +7,7 @@ title: " "
 # Introduction
 
 **Flamingock** brings *Change-as-Code (CaC)* to your entire stack.  
-It applies **versioned, auditable changes** to the external systems your application depends on — such as databases, schemas, message brokers, APIs, and cloud services.  
+It applies **versioned, auditable changes** to the external systems your application depends on — such as  schemas, message brokers, databases, APIs, cloud services...  
 
 Unlike infrastructure-as-code tools, Flamingock runs **inside your application** (or via the **CLI**).  
 It ensures these systems evolve **safely, consistently, and in sync with your code at runtime**.  

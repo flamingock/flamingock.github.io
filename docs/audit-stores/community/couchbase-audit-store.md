@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 The Couchbase audit store (`CouchbaseSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
 
-> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../overview/audit-store-vs-target-system.md).
+> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
 ## Version Compatibility
 

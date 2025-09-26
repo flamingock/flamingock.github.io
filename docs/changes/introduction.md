@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 # Changes
 
-A **Change** is the atomic, versioned, self-contained unit of change in Flamingock. It encapsulates logic to evolve [**target systems**](../overview/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
+A **Change** is the atomic, versioned, self-contained unit of change in Flamingock. It encapsulates logic to evolve [**target systems**](../get-started/audit-store-vs-target-system.md) safely, deterministically, and with complete auditability.
 
 ## Key characteristics
 

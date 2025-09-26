@@ -19,7 +19,7 @@ The audit store tracks:
 
 Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your Changes.
 
-> **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../overview/audit-store-vs-target-system.md)
+> **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../get-started/audit-store-vs-target-system.md)
 
 
 ## Cloud audit store
