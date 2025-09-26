@@ -104,7 +104,7 @@ public class FlamingockSpringbootTest {
   void shouldExecuteChangeAndWriteAuditToDynamoDB() {
     DynamoDbClient client = dynamoDbClient();
     ScanResponse scan = client.scan(ScanRequest.builder()
-        .tableName("flamingockAuditLogs")
+        .tableName("flamingockAuditLog")
         .build());
 
     boolean changeExecuted = scan.items().stream()
@@ -130,7 +130,7 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
   registry.add("flamingock.dynamodb.readCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.autoCreate", () -> true);
-  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLogs");
+  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLog");
   registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
 }
 ```
