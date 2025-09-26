@@ -16,7 +16,8 @@
       "Bash(npm run build:*)",
       "Bash(yarn build)",
       "Read(//Users/dieppa/workspace/flamingock/**)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(sort:*)"
     ],
     "deny": []
   }

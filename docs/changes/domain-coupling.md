@@ -1,6 +1,6 @@
 ---
 title: Domain Coupling
-sidebar_position: 5
+sidebar_position: 7
 ---
 
 # Domain Coupling and Historical Immutability

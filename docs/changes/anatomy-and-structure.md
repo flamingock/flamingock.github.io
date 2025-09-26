@@ -132,20 +132,16 @@ public class _0001__AddUserFields {
 
 ## Apply and rollback methods
 
-Both methods implement your change logic and use dependency injection to access the systems they need to modify.
+Both methods implement your change logic and automatically receive the dependencies they need through parameters.
 
 ### `@Apply` - Change logic
 Contains the actual change implementation.
 
 ```java
 @Apply
-public void apply(MongoDatabase database, ClientSession session) {
+public void apply(S3Client s3) {
     // Your change logic here
-    database.getCollection("users")
-            .updateMany(
-                new Document("status", new Document("$exists", false)),
-                new Document("$set", new Document("status", "active"))
-            );
+    s3.putBucketPolicy(/* configure bucket */);
 }
 ```
 
@@ -154,59 +150,18 @@ Provides logic to reverse the change, essential for safety and CLI undo operatio
 
 ```java
 @Rollback
-public void rollback(MongoDatabase database, ClientSession session) {
+public void rollback(S3Client s3) {
     // Undo the change
-    database.getCollection("users")
-            .updateMany(
-                new Document(),
-                new Document("$unset", new Document("status", ""))
-            );
+    s3.deleteBucketPolicy(/* remove configuration */);
 }
 ```
 
-### Method implementation guide
-
-**Method characteristics:**
-- Must be public
-- Can have any name (`execute`, `run`, `apply`, etc.)
-- Should contain idempotent operations when possible
-
-**Parameters you can expect:**
-- **Target system dependencies**: `MongoDatabase`, `DataSource`, `S3Client`, `KafkaTemplate`, etc.
-- **Transaction context**: `ClientSession` (MongoDB), `Connection` (SQL), transaction builders (DynamoDB)
-- **Custom dependencies**: Any beans or objects you've configured in your target system
-
-**Method parameters are automatically injected** by Flamingock based on your target system configuration and global dependencies.
-
 **Why rollback is required:**
-- **Non-transactional systems**: Used automatically if execution fails
-- **All systems**: Required for CLI/UI undo operations
-- **Safety**: Ensures every change can be reversed
-- **Governance**: Demonstrates you've thought through the change impact
+- Executed automatically on failure for non-transactional systems
+- Required for CLI/UI undo operations
+- Ensures every change can be reversed
 
-For detailed information about dependency injection and parameter configuration, see [Method Parameters and Dependency Injection](./dependency-injection.md).
-
-## Method parameters and dependency injection
-
-Changes receive dependencies through method parameters, automatically injected by Flamingock using a **flexible, multi-source approach** with fallback hierarchy.
-
-### Change Execution Dependency Resolution
-
-Change execution uses a flexible dependency resolution flow(in this priority order):
-
-1. **Target system context** - dependencies from **constructor** + `.withXXX()` methods 
-2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
-3. **Global context** (fallback) - shared dependencies available to all target systems
-
-
-### Key Benefits of This Architecture
-
-- **Target system isolation**: Each target system has its own dependency context
-- **Flexible fallback**: Changes can access both system-specific and shared dependencies
-- **Clear precedence**: Target system dependencies always override global ones
-- **Type safety**: Strongly typed dependency injection with compile-time checking
-
-For complete details on target system configuration vs change execution dependencies, see [Target Systems Introduction](../target-systems/introduction.md#dependency-injection).
+For detailed information about method parameters, dependency injection, and advanced parameter features, see [Apply and rollback methods](./apply-and-rollback-methods.md).
 
 
 
