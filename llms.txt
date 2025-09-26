@@ -639,20 +639,16 @@ public class _0001__AddUserFields {
 
 ## Apply and rollback methods
 
-Both methods implement your change logic and use dependency injection to access the systems they need to modify.
+Both methods implement your change logic and automatically receive the dependencies they need through parameters.
 
 ### `@Apply` - Change logic
 Contains the actual change implementation.
 
 ```java
 @Apply
-public void apply(MongoDatabase database, ClientSession session) {
+public void apply(S3Client s3) {
     // Your change logic here
-    database.getCollection("users")
-            .updateMany(
-                new Document("status", new Document("$exists", false)),
-                new Document("$set", new Document("status", "active"))
-            );
+    s3.putBucketPolicy(/* configure bucket */);
 }
 ```
 
@@ -661,59 +657,18 @@ Provides logic to reverse the change, essential for safety and CLI undo operatio
 
 ```java
 @Rollback
-public void rollback(MongoDatabase database, ClientSession session) {
+public void rollback(S3Client s3) {
     // Undo the change
-    database.getCollection("users")
-            .updateMany(
-                new Document(),
-                new Document("$unset", new Document("status", ""))
-            );
+    s3.deleteBucketPolicy(/* remove configuration */);
 }
 ```
 
-### Method implementation guide
-
-**Method characteristics:**
-- Must be public
-- Can have any name (`execute`, `run`, `apply`, etc.)
-- Should contain idempotent operations when possible
-
-**Parameters you can expect:**
-- **Target system dependencies**: `MongoDatabase`, `DataSource`, `S3Client`, `KafkaTemplate`, etc.
-- **Transaction context**: `ClientSession` (MongoDB), `Connection` (SQL), transaction builders (DynamoDB)
-- **Custom dependencies**: Any beans or objects you've configured in your target system
-
-**Method parameters are automatically injected** by Flamingock based on your target system configuration and global dependencies.
-
 **Why rollback is required:**
-- **Non-transactional systems**: Used automatically if execution fails
-- **All systems**: Required for CLI/UI undo operations
-- **Safety**: Ensures every change can be reversed
-- **Governance**: Demonstrates you've thought through the change impact
+- Executed automatically on failure for non-transactional systems
+- Required for CLI/UI undo operations
+- Ensures every change can be reversed
 
-For detailed information about dependency injection and parameter configuration, see [Method Parameters and Dependency Injection](./dependency-injection.md).
-
-## Method parameters and dependency injection
-
-Changes receive dependencies through method parameters, automatically injected by Flamingock using a **flexible, multi-source approach** with fallback hierarchy.
-
-### Change Execution Dependency Resolution
-
-Change execution uses a flexible dependency resolution flow(in this priority order):
-
-1. **Target system context** - dependencies from **constructor** + `.withXXX()` methods 
-2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
-3. **Global context** (fallback) - shared dependencies available to all target systems
-
-
-### Key Benefits of This Architecture
-
-- **Target system isolation**: Each target system has its own dependency context
-- **Flexible fallback**: Changes can access both system-specific and shared dependencies
-- **Clear precedence**: Target system dependencies always override global ones
-- **Type safety**: Strongly typed dependency injection with compile-time checking
-
-For complete details on target system configuration vs change execution dependencies, see [Target Systems Introduction](../target-systems/introduction.md#dependency-injection).
+For detailed information about method parameters, dependency injection, and advanced parameter features, see [Apply and rollback methods](./apply-and-rollback-methods.md).
 
 
 
@@ -763,6 +718,129 @@ For detailed information on recovery strategies, see [Safety and Recovery](../sa
 - **[Change types & implementation](./types-and-implementation)** - Deep dive into code-based vs template-based approaches
 - **[Change best practices](./best-practices)** - Learn proven patterns for reliable Changes
 - **[Target systems](../target-systems/introduction)** - Configure where your changes will be applied
+
+---
+
+// File: changes/apply-and-rollback-methods
+
+# Apply and rollback methods
+
+## Quick start
+
+Your Change methods receive the dependencies they need as parameters - Flamingock automatically provides them.
+
+### Basic examples
+
+```java
+@Apply
+public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+
+}
+
+@Rollback
+public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+
+}
+```
+
+**Why rollback is required:**
+- Executed automatically on failure for non-transactional systems
+- Required for  undo operations
+- Ensures every change can be reversed
+
+## Where parameters come from
+
+Flamingock resolves method parameters from three sources (in priority order):
+
+1. **Target system context** - System-specific dependencies
+2. **Global context** - Shared application dependencies
+3. **Framework context** - e.g., Spring beans
+
+The exact dependencies available depend on your target system and configuration.
+
+See [Context and Dependencies](../flamingock-library-config/context-and-dependencies.md) for complete details on configuring and understanding available dependencies.
+
+## Method rules
+
+- **Must be public** - Flamingock needs to invoke them
+- **Any name works** - `apply`, `execute`, `migrate`, your choice
+- **Return type ignored** - Can be void or return a value
+- **All parameters injected** - No manual parameters
+
+---
+
+## Advanced topics
+
+### Type-based injection
+
+Parameters are injected based on their type:
+
+```java
+@Apply
+public void apply(KafkaTemplate kafka, ConfigService config) {
+    // Flamingock looks for matching types in the context
+}
+```
+
+### Named parameters
+
+Use `@Named` when multiple beans of the same type exist:
+
+```java
+@Apply
+public void apply(
+    @Named("orders") KafkaTemplate ordersKafka,
+    @Named("notifications") KafkaTemplate notificationsKafka
+) {
+    // Specific instances by name
+}
+```
+
+### Optional parameters
+
+By default, all parameters are required. Missing dependencies throw exceptions.
+
+Use `@Nullable` for optional dependencies:
+
+```java
+@Apply
+public void apply(
+    S3Client s3,                      // Required
+    @Nullable CacheService cache      // Optional - null if not available
+) {
+    if (cache != null) {
+        cache.invalidate();
+    }
+    // proceed with S3 operation
+}
+```
+
+### Lock-guarded dependencies
+
+Flamingock uses a background daemon to automatically refresh the distributed lock, ensuring your Changes maintain exclusive access during execution. As an additional safety layer, Flamingock wraps injected dependencies with proxies that verify the lock is still valid before each method call.
+
+This proxy mechanism provides extra robustness - ensuring that operations don't even start if the lock is lost for any reason (though this is very unlikely given the background refresh daemon).
+
+For non-critical or local components, use `@NonLockGuarded` to skip the proxy:
+
+```java
+@Apply
+public void apply(
+    ElasticsearchClient elastic,               // Lock-guarded (default)
+    @NonLockGuarded List<String> localData     // Not guarded - no proxy overhead
+) {
+    // elastic calls are protected by lock validation
+    // localData is used directly without checks
+}
+```
+
+See [Lock documentation](../flamingock-library-config/lock.md) for more details on lock protection.
+
+### Dependency resolution details
+
+When Flamingock looks for a dependency to inject, it follows a specific hierarchy. This ensures system-specific dependencies take precedence over general ones.
+
+For complete understanding of dependency resolution, see [Dependency Resolution Hierarchy](../flamingock-library-config/context-and-dependencies.md#dependency-resolution-hierarchy).
 
 ---
 
