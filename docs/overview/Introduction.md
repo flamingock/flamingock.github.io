@@ -6,56 +6,81 @@ title: " "
 
 # Introduction
 
-Flamingock is a change management framework that ensures your distributed systems evolve safely and consistently. It applies versioned, auditable changes to any target system (message brokers, APIs, cloud services, databases, and any other external service) with guaranteed safety and recovery mechanisms.
+**Flamingock** brings *Change-as-Code (CaC)* to your entire stack.  
+It applies **versioned, auditable changes** to the external systems your application depends on — such as databases, schemas, message brokers, APIs, and cloud services.  
+
+Unlike infrastructure-as-code tools, Flamingock runs **inside your application** (or via the **CLI**).  
+It ensures these systems evolve **safely, consistently, and in sync with your code at runtime**.  
+
+---
+
+### What Flamingock manages
+Flamingock focuses on **application-level changes** that your code requires to run safely:
+
+- Database schemas and reference data  
+- Message queues and schemas  
+- APIs and configuration values  
+- Cloud service resources directly tied to your application  
+- Configuration changes (feature flags, secrets, runtime values)  
+
+### What Flamingock does *not* manage
+Flamingock is **not an infrastructure-as-code tool**. It does not provision servers, clusters, or networks — those belong in Terraform, Pulumi, or similar. Instead, Flamingock **complements them by handling the runtime changes your application depends on**.
+
+---
 
 ## Core principles
 
-### Safety by default
+### 🔒 Safety by default
 When Flamingock cannot guarantee a safe outcome, it stops and requires manual intervention. This prevents silent data corruption and ensures predictable deployments.
 
-### Complete auditability
+### 📝 Complete auditability
 Every change execution is tracked in an audit store, providing a complete history of what was applied, when, by whom, and with what result.
 
-### Recovery strategies
-Configurable recovery mechanisms determine how Flamingock handles failures:
-- **Manual intervention** (default): Stops on failure and requires human review
-- **Always retry**: Automatically retries idempotent operations  
+### 🔄 Recovery strategies
+Configurable mechanisms determine how Flamingock handles failures:
+- **Manual intervention** (default): stops on failure and requires human review  
+- **Always retry**: automatically retries idempotent operations  
 
+---
 
 ## Target systems
 
 Flamingock can apply changes to any external service your application interacts with. Examples include:
-- **Message brokers**: Kafka, RabbitMQ, AWS SQS
-- **Cloud services**: S3, Lambda, API Gateway
-- **APIs**: REST endpoints, GraphQL schemas
-- **Configuration systems**: Feature flags, vault secrets
-- **Databases**: SQL (PostgreSQL, MySQL) and NoSQL (MongoDB, DynamoDB)
-- **And any other external system** your application needs to evolve
+
+- **Databases**: SQL (PostgreSQL, MySQL) and NoSQL (MongoDB, DynamoDB)  
+- **Message brokers**: Kafka, RabbitMQ, AWS SQS  
+- **Cloud services**: S3, Lambda, API Gateway  
+- **APIs**: REST endpoints, GraphQL schemas  
+- **Configuration systems**: feature flags, vault secrets  
+- **And any other external system** your application needs to evolve  
+
+---
 
 ## Architecture overview
 
 ### Changes
-The fundamental unit of change. Each Change:
-- Has a unique identifier and execution order
-- Targets a specific system
-- Contains execution and rollback logic
-- Is executed exactly once
+The fundamental unit of change. Each **Change**:
+- Has a unique identifier and execution order  
+- Targets a specific system  
+- Contains execution logic (and optionally rollback logic)  
+- Is executed exactly once  
 
 ### Audit store vs target system
-- **Audit store**: Where Flamingock tracks execution history (managed by Flamingock)
-- **Target system**: Where your business changes are applied (any external service your application interacts with)
+- **Audit store** → where Flamingock tracks execution history (managed by Flamingock).  
+- **Target system** → where your business changes are applied (any external service your application interacts with).  
 
 ### Execution flow
-1. Application startup triggers Flamingock
-2. Flamingock discovers all Changes
-3. Checks audit store for pending changes
-4. Acquires distributed lock
-5. Executes changes in order
-6. Records results in audit store
-7. Handles failures according to recovery strategy  
+1. Application startup (or CLI invocation) triggers Flamingock  
+2. Flamingock discovers all Changes  
+3. Checks audit store for pending changes  
+4. Acquires a distributed lock  
+5. Executes changes in order  
+6. Records results in the audit store  
+7. Handles failures according to the configured recovery strategy  
 
+---
 
 ## Next steps
-- [Quick start](quick-start.md) - Minimum setup to run Flamingock
-- [Core concepts](core-concepts.md) - Detailed explanation of key concepts
-- [Audit store vs target system](audit-store-vs-target-system.md) - Understanding the dual-system architecture  
+- [Quick start](quick-start.md) – minimum setup to run Flamingock  
+- [Core concepts](core-concepts.md) – detailed explanation of key concepts  
+- [Changes](../changes/introduction.md) – anatomy and execution of Changes  
