@@ -88,7 +88,7 @@ class IntegrationTest {
 
         // ✅ Verify the change was audited in MongoDB
         MongoDatabase db = mongoClient.getDatabase("test-db");
-        MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLogs");
+        MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLog");
 
         var document = new Document("changeId", "create-bucket")
                 .append("state","EXECUTED");

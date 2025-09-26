@@ -101,7 +101,7 @@ These configurations can be customized via `.withXXX()` methods with **no global
 |---------------|--------|---------|-------------|
 | `Auto Create` | `.withAutoCreate(enabled)` | `true` | Auto-create collections and indexes |
 | `Scope Name` | `.withScopeName(name)` | `_default` | Scope where audit collections will be created |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
 | `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.

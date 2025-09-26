@@ -77,7 +77,7 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
 | `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
 
 **Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
