@@ -131,7 +131,7 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
   registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.autoCreate", () -> true);
   registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLogs");
-  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLocks");
+  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
 }
 ```
 
