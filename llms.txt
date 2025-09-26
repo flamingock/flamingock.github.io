@@ -152,8 +152,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
 | `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
 | `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
 
 **Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
 
@@ -290,8 +290,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 |---------------|--------|---------|-------------|
 | `Read Capacity Units` | `.withReadCapacityUnits(units)` | `5` | Read capacity units (PROVISIONED mode only) |
 | `Write Capacity Units` | `.withWriteCapacityUnits(units)` | `5` | Write capacity units (PROVISIONED mode only) |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Table name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Table name for distributed locks |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Table name for distributed locks |
 
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
@@ -404,8 +404,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 |---------------|--------|---------|-------------|
 | `Auto Create` | `.withAutoCreate(enabled)` | `true` | Auto-create collections and indexes |
 | `Scope Name` | `.withScopeName(name)` | `_default` | Scope where audit collections will be created |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLogs` | Collection name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLocks` | Collection name for distributed locks |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
+| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
@@ -6796,7 +6796,7 @@ class IntegrationTest {
 
         // ✅ Verify the change was audited in MongoDB
         MongoDatabase db = mongoClient.getDatabase("test-db");
-        MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLogs");
+        MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLog");
 
         var document = new Document("changeId", "create-bucket")
                 .append("state","EXECUTED");
@@ -6921,7 +6921,7 @@ public class FlamingockSpringbootTest {
   void shouldExecuteChangeAndWriteAuditToDynamoDB() {
     DynamoDbClient client = dynamoDbClient();
     ScanResponse scan = client.scan(ScanRequest.builder()
-        .tableName("flamingockAuditLogs")
+        .tableName("flamingockAuditLog")
         .build());
 
     boolean changeExecuted = scan.items().stream()
@@ -6947,8 +6947,8 @@ static void overrideProperties(DynamicPropertyRegistry registry) {
   registry.add("flamingock.dynamodb.readCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
   registry.add("flamingock.dynamodb.autoCreate", () -> true);
-  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLogs");
-  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLocks");
+  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLog");
+  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
 }
 ```
 
