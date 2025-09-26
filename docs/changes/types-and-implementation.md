@@ -106,7 +106,7 @@ src/main/java/com/yourapp/changes/
 - **Order in filename**: When using the naming pattern, order in annotation/yaml is optional
 
 :::info Order Field Rules
-When using the `_ORDER_DescriptiveName` pattern, the order field in annotations or YAML becomes optional. For complete rules about order field placement, see [Anatomy & Structure - Order](./anatomy-and-structure#order---execution-sequence).
+Using the `_ORDER__CHANGE-NAME` pattern, the order is extracted from the filename. For complete rules about order and file naming, see [Anatomy & Structure - File name and order](./anatomy-and-structure#file-name-and-order).
 :::
 
 ## Template development

@@ -294,7 +294,7 @@ While Java typically avoids underscores and leading digits, change units are not
 :::
 
 :::info Complete Order Field Rules
-For detailed rules about order field placement and how filename order works with annotations, see [Change Anatomy - Order](../changes/anatomy-and-structure#order---execution-sequence).
+For detailed rules about order and file naming, see [Change Anatomy - File name and order](../changes/anatomy-and-structure#file-name-and-order).
 :::
 
 

@@ -272,7 +272,7 @@ Examples:
 :::
 
 
-For detailed rules about order field placement (filename vs annotation), see [Anatomy & Structure - Order](./anatomy-and-structure#order---execution-sequence).
+For detailed rules about order and file naming, see [Anatomy & Structure - File name and order](./anatomy-and-structure#file-name-and-order).
 
 ---
 
