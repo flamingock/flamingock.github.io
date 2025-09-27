@@ -49,7 +49,7 @@ public class _0001__CreateUsersCollection {
 |---------|-------------|
 | 🟢 **Community Edition (CE)** | Open-source, library only |
 | ☁️ **Cloud Edition** | SaaS with dashboard, observability, and premium features **(coming soon)** |
-| 🏢 **Self-Hosted Edition** | Same as Cloud, deployable in your infra **(coming soon)** |
+| 🏢 **Self-Hosted Edition** | Same as Cloud, deployable in your infrastructure **(coming soon)** |
 
 
 ---

@@ -7,10 +7,11 @@ title: " "
 # Introduction
 
 **Flamingock** brings *Change-as-Code (CaC)* to your entire stack.  
-It applies **versioned, auditable changes** to the external systems your application depends on — such as  schemas, message brokers, databases, APIs, cloud services...  
+It applies **versioned, auditable changes** to the external systems your application depends on — such as schemas, message brokers, databases, APIs, cloud services, and any other external system your application needs.  
 
 Unlike infrastructure-as-code tools, Flamingock runs **inside your application** (or via the **CLI**).  
 It ensures these systems evolve **safely, consistently, and in sync with your code at runtime**.  
+
 
 ---
 
@@ -47,11 +48,11 @@ Configurable mechanisms determine how Flamingock handles failures:
 
 Flamingock can apply changes to any external service your application interacts with. Examples include:
 
-- **Databases**: SQL (PostgreSQL, MySQL) and NoSQL (MongoDB, DynamoDB)  
-- **Message brokers**: Kafka, RabbitMQ, AWS SQS  
-- **Cloud services**: S3, Lambda, API Gateway  
-- **APIs**: REST endpoints, GraphQL schemas  
-- **Configuration systems**: feature flags, vault secrets  
+- **Message brokers**: e.g. Kafka, RabbitMQ, AWS SQS  
+- **Cloud services**: e.g. S3, Lambda, API Gateway  
+- **Databases**: SQL (e.g. PostgreSQL, MySQL) and NoSQL (e.g. MongoDB, DynamoDB)  
+- **APIs**: e.g. REST endpoints, GraphQL schemas  
+- **Configuration systems**: e.g. feature flags, vault secrets  
 - **And any other external system** your application needs to evolve  
 
 ---
