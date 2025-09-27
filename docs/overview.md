@@ -51,7 +51,6 @@ public class _0001__CreateUsersCollection {
 | ☁️ **Cloud Edition** | SaaS with dashboard, observability, and premium features **(coming soon)** |
 | 🏢 **Self-Hosted Edition** | Same as Cloud, deployable in your infra **(coming soon)** |
 
-👉 **Learn more about [Cloud Edition](./cloud-edition/cloud-edition)**
 
 ---
 
