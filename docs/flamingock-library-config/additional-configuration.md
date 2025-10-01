@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Additional configuration
 
-This section includes additional settings for customizing defaults and adding contextual information to your Flamingock setup. 
+This section includes additional settings for customizing defaults and adding contextual information to your Flamingock setup.
 
 | Setting         | Purpose                                      | Default            |
 |-----------------|-----------------------------------------------|--------------------|
@@ -25,7 +25,7 @@ Flamingock provides a Metadata object - which is a flexible `Map<String, Object>
 
 The metadata is stored as part of the **audit log**, and can be used for labeling, traceability, and future reporting.
 
-### Use Cases
+### Use cases
 You can use metadata to:
 - Tag executions by **team**, **service**, or **region**
 - Include a **deployment ID**, **build number**, or **triggering user**
@@ -64,7 +64,7 @@ This global toggle allows you to enable or disable Flamingock.
 - A log message will appear in the **application logs**, indicating that Flamingock is disabled
 - No changes will be applied and no audit entries will be created
 
-:::note 
+:::note
 Useful in test environments, local runs, or cases where you want to conditionally skip changes.
 :::
 

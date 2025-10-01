@@ -19,10 +19,10 @@ Flamingock's architecture separates business changes from execution tracking thr
 - **Modified by**: Your business logic through Changes
 - **Configuration**: See [Target Systems](../target-systems/introduction.md) for technical setup
 
-### Audit store: where execution is tracked  
+### Audit store: where execution is tracked
 **Audit store** is Flamingock's dedicated system for tracking what happened:
 
-- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database. 
+- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database.
 - **Purpose**: Record execution history, compliance data, issue tracking
 - **Modified by**: Flamingock framework automatically (never your code)
 - **Configuration**: See [Audit Stores](../audit-stores/introduction.md) for technical setup
@@ -59,8 +59,8 @@ Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
 ### Cloud Edition audit store
 Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
 
-### Community Audit Stores audit store  
-User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Audit stores](../audit-stores/introduction.md) for setup.
+### Community audit stores
+User-provided audit store (MongoDB, DynamoDB, Couchbase, SQL) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Audit stores](../audit-stores/introduction.md) for setup.
 
 
 
@@ -82,7 +82,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │
                                 │ Executes sequentially
                                 │
-                 Change #1  │───────────────────────────┐
+                 Change #1      │───────────────────────────┐
             (UpdateKafkaSchema) │                           │
                                 │                           │
                                 │             ┌─────────────┴────────────┐
@@ -96,7 +96,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │     └─────────────────────┘      └──────────────┘
                                 │
                                 │
-                  Change #2 │───────────────────────────┐
+                  Change #2     │───────────────────────────┐
               (SeedKafkaEvents) │                           │
                                 │                           │
                                 │             ┌─────────────┴────────────┐
@@ -110,7 +110,7 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                 │     └─────────────────────┘      └──────────────┘
                                 │
                                 │
-                  Change #3 └───────────────────────────┐
+                  Change #3     └───────────────────────────┐
                 (AddUserStatus)                             │
                                                             │
                                               ┌─────────────┴────────────┐
@@ -122,12 +122,12 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
                                       │ └─────────────────┘ │      │ #3 applied   │
                                       │  (applies change)   │      │              │
                                       └─────────────────────┘      └──────────────┘
-                                
+
 ```
 
 **The Flow:**
 1. **You create Changes** - Define what changes need to happen
-2. **Flamingock orchestrates** - Safely applies changes across all your systems  
+2. **Flamingock orchestrates** - Safely applies changes across all your systems
 3. **Target systems evolve** - Your business systems get updated
 4. **Audit store tracks everything** - Complete history for compliance and recovery
 
@@ -139,14 +139,14 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase) that ensures complete e
 - **Audit store**: Automatically managed by Flamingock for tracking and compliance
 - **Implementation**: See [Target Systems](../target-systems/introduction.md) and [Audit Stores](../audit-stores/introduction.md)
 
-### For architects  
+### For architects
 - **Clean separation**: Business logic separated from execution tracking
 - **Enterprise scalability**: Architecture supports compliance, governance, multi-environment
 - **Flexibility**: Works with any target system type (transactional, non-transactional, hybrid)
 
 ### For operations
 - **Issue resolution**: Tools operate on audit store, you fix target systems
-- **Compliance**: Complete audit trail independent of business system availability  
+- **Compliance**: Complete audit trail independent of business system availability
 - **Recovery**: Always know the state, even during complex failure scenarios
 
 **Bottom Line**: This dual-system architecture is what enables Flamingock to provide enterprise-grade safety and governance capabilities that traditional tools cannot match.

@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
 
-## Version Compatibility
+## Version compatibility
 
 | Component | Version Requirement |
 |-----------|-------------------|
@@ -52,11 +52,11 @@ The constructor requires the target system name, MongoDB client, and database na
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
 :::
 
-## Target System Configuration
+## Target System configuration
 
 The MongoDB target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at target system creation time with **no global context fallback**:
 
@@ -65,22 +65,11 @@ These dependencies must be provided at target system creation time with **no glo
 | `MongoClient` | `mongoClient` | MongoDB connection client - **required** for both target system configuration and change execution |
 | `String` | `databaseName` | Target database name - **required** to identify which database changes will affect |
 
-### Optional Configuration (.withXXX() methods)
-
-These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
-
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
-| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
-| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-
-
-## Dependencies Available to Changes
+## Dependencies available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
-1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, `ClientSession`, plus any added via `.addDependency()`
+1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, `ClientSession`
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
 3. **Global context** (fallback) - shared dependencies available to all target systems
 
@@ -91,8 +80,6 @@ Here's a comprehensive example showing the new architecture:
 ```java
 // Target system configuration (mandatory via constructor)
 var mongoTarget = new MongoDBSyncTargetSystem("user-database", productionMongoClient, "userDb")
-    .withWriteConcern(WriteConcern.W1)         // Optional configuration
-    .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(auditService);              // Additional dependency for changes
 
 // Global context with shared dependencies
@@ -106,8 +93,6 @@ Flamingock.builder()
 **Target system configuration resolution:**
 - **MongoClient**: Must be provided via constructor (`productionMongoClient`)
 - **Database name**: Must be provided via constructor (`"userDb"`)
-- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
-- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
 
 **Change dependency resolution for Changes in "user-database":**
 - **MongoClient**: From target system context (`productionMongoClient`)
@@ -129,7 +114,7 @@ For a Change to leverage MongoDB's transactional capabilities, it must use the `
 @TargetSystem("user-database-id")
 @Change(id = "create-users", author = "team")  // order extracted from filename
 public class _0001__CreateUsers {
-    
+
     @Apply
     public void apply(MongoDatabase db, ClientSession session) {
         // The ClientSession is required for transactional execution
@@ -158,4 +143,4 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 
 - Learn about [Target systems](introduction.md)
 - Explore [Changes](../changes/introduction.md)
-- See [MongoDB examples](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)
+- See [Flamingock examples](https://github.com/flamingock/flamingock-java-examples)

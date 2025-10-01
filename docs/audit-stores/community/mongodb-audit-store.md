@@ -12,11 +12,11 @@ The MongoDB audit store (`MongoDBSyncAuditStore`) enables Flamingock to record e
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
-## Version Compatibility
+## Version compatibility
 
-| Component | Version Requirement |
-|-----------|-------------------|
-| MongoDB Java Driver | 4.0.0+ |
+| Component           | Version Requirement |
+|---------------------|---------------------|
+| MongoDB Java Driver | 4.0.0+              |
 
 MongoDB 4.0+ is recommended for optimal performance and feature support.
 
@@ -55,30 +55,31 @@ The constructor requires the MongoDB client and database. Optional configuration
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store Configuration
+## Audit Store configuration
 
 The MongoDB audit store uses explicit configuration with no global context fallback.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at audit store creation time with **no global context fallback**:
 
-| Dependency | Constructor Parameter | Description |
-|------------|----------------------|-------------|
-| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for audit store configuration |
-| `MongoDatabase` | `mongoDatabase` | Target database instance - **required** for storing audit data |
+| Dependency      | Constructor Parameter | Description                                                            |
+|-----------------|-----------------------|------------------------------------------------------------------------|
+| `MongoClient`   | `mongoClient`         | MongoDB connection client - **required** for audit store configuration |
+| `MongoDatabase` | `mongoDatabase`       | Target database instance - **required** for storing audit data         |
 
-### Optional Configuration (.withXXX() methods)
+### Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `WriteConcern` | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
-| `ReadConcern` | `.withReadConcern(concern)` | `MAJORITY` | Read isolation level |
-| `ReadPreference` | `.withReadPreference(pref)` | `PRIMARY` | Server selection for reads |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
+| Configuration           | Method                           | Default                 | Description                           |
+|-------------------------|----------------------------------|-------------------------|---------------------------------------|
+| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`                  | Auto-create collections and indexes   |
+| `WriteConcern`          | `.withWriteConcern(concern)`     | `MAJORITY` with journal | Write acknowledgment level            |
+| `ReadConcern`           | `.withReadConcern(concern)`      | `MAJORITY`              | Read isolation level                  |
+| `ReadPreference`        | `.withReadPreference(pref)`      | `PRIMARY`               | Server selection for reads            |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog`    | Collection name for audit entries     |
+| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`        | Collection name for distributed locks |
 
 **Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
 
@@ -112,5 +113,5 @@ This architecture ensures explicit audit store configuration with no fallback de
 
 ## Next steps
 
-- Learn about [Target systems](../../target-systems/introduction.md)  
-- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/mongodb)  
+- Learn about [Target systems](../../target-systems/introduction.md)
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-java-examples)

@@ -12,11 +12,11 @@ The Couchbase audit store (`CouchbaseSyncAuditStore`) enables Flamingock to reco
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
-## Version Compatibility
+## Version compatibility
 
-| Component | Version Requirement |
-|-----------|-------------------|
-| Couchbase Java Client | 3.6.0+ |
+| Component             | Version Requirement |
+|-----------------------|---------------------|
+| Couchbase Java Client | 3.6.0+              |
 
 Couchbase Java Client 3.6.0+ is required and must be included in your project dependencies.
 
@@ -55,18 +55,18 @@ The constructor requires the Couchbase cluster and bucket. Optional configuratio
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store Configuration
+## Audit Store configuration
 
 The Couchbase audit store uses explicit configuration with no global context fallback.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at audit store creation time with **no global context fallback**:
 
-| Dependency | Constructor Parameter | Description |
-|------------|----------------------|-------------|
-| `Cluster` | `cluster` | Couchbase cluster connection - **required** for audit store configuration |
-| `Bucket` | `bucket` | Target bucket instance - **required** for storing audit data |
+| Dependency | Constructor Parameter | Description                                                               |
+|------------|-----------------------|---------------------------------------------------------------------------|
+| `Cluster`  | `cluster`             | Couchbase cluster connection - **required** for audit store configuration |
+| `Bucket`   | `bucket`              | Target bucket instance - **required** for storing audit data              |
 
 ## Configuration example
 
@@ -93,21 +93,21 @@ Flamingock.builder()
 This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-### Optional Configuration (.withXXX() methods)
+### Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `Auto Create` | `.withAutoCreate(enabled)` | `true` | Auto-create collections and indexes |
-| `Scope Name` | `.withScopeName(name)` | `_default` | Scope where audit collections will be created |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Collection name for distributed locks |
+| Configuration           | Method                           | Default              | Description                                   |
+|-------------------------|----------------------------------|----------------------|-----------------------------------------------|
+| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`               | Auto-create collections and indexes           |
+| `Scope Name`            | `.withScopeName(name)`           | `_default`           | Scope where audit collections will be created |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries             |
+| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Collection name for distributed locks         |
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
 
 ## Next steps
 
-- Learn about [Target systems](../../target-systems/introduction.md)  
-- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)
+- Learn about [Target systems](../../target-systems/introduction.md)
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-java-examples)

@@ -18,14 +18,14 @@ NonTransactionalTargetSystem is the fallback choice when there's no specialized 
 - Your system doesn't have unique characteristics that warrant specialized handling
 - You need a simple, flexible solution without technology-specific optimizations
 
-**Future extensibility:** The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified. 
+**Future extensibility:** The Flamingock ecosystem may expand with more specialized target systems as specific needs are identified.
 
 
 **Common systems using NonTransactionalTargetSystem:** Kafka Schema Registry, message queues, object storage (S3), REST APIs, file systems, cache systems, feature flags, search engines
 
 ## Installation
 
-No specific dependencies are required for DefaultTargetSystem. You can add any dependencies needed for your specific use case.
+No specific dependencies are required for NonTransactionalTargetSystem. You can add any dependencies needed for your specific use case.
 
 ## Basic setup
 
@@ -41,11 +41,11 @@ Unlike specialized target systems, NonTransactionalTargetSystem requires no mand
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
 :::
 
-## Target System Configuration
+## Target System configuration
 
 The Non-transactional target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Constructor Dependencies (None)
+### Constructor dependencies (none)
 
 Unlike specialized target systems, NonTransactionalTargetSystem requires **no mandatory constructor dependencies**:
 
@@ -55,7 +55,7 @@ var targetSystem = new NonTransactionalTargetSystem("system-name-id");
 ```
 
 
-## Dependencies Available to Changes
+## Dependencies available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
@@ -117,5 +117,5 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 ## Next steps
 
 - Learn about [Target systems](introduction.md)
-- Explore [Changes](../changes/introduction.md)  
-- See [NonTransactionalTargetSystem examples](https://github.com/flamingock/flamingock-examples/tree/master/default)
+- Explore [Changes](../changes/introduction.md)
+- See [Flamingock examples](https://github.com/flamingock/flamingock-java-examples)

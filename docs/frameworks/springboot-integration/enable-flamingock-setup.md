@@ -31,9 +31,9 @@ implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersi
   </TabItem>
 </Tabs>
 
-### Version Compatibility
+### Version compatibility
 
-The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. See [Version Compatibility](introduction.md#version-compatibility) for details.
+The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. See [Version compatibility](introduction.md#version-compatibility) for details.
 
 ## Configure setup and activate integration
 

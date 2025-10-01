@@ -6,7 +6,7 @@ sidebar_position: 50
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-**Automate changes. Version changes. Control changes.**  
+**Automate changes. Version changes. Control changes.**
 Change-as-Code (CaC) means every system change—whether it’s an S3 bucket toggle, a new database schema, or a Kafka topic configuration—is authored, versioned, and audited just like application code.
 
 At Flamingock, we champion CaC as the foundation for truly reliable, auditable, and repeatable deployments. No more one-off shell scripts or manual "clicks" in a console—every change is written in code, tracked in your VCS, and executed in a controlled pipeline.
@@ -15,21 +15,21 @@ At Flamingock, we champion CaC as the foundation for truly reliable, auditable, 
 
 Modern applications increasingly span dozens of external systems—ranging from relational and NoSQL databases to SaaS feature flags, message buses, and infrastructure APIs. Managing these changes manually or with ad-hoc scripts leads to:
 
-- **Drift and “snowflake” environments**  
+- **Drift and “snowflake” environments**
   When teams manually tweak production configurations, environments diverge, making rollbacks or audits nearly impossible.
 
-- **Lack of auditability**  
+- **Lack of auditability**
   Regulatory and security teams require a full record of “what changed, when, and who made it.” Spreadsheets and one-off commands don’t cut it.
 
-- **Inefficient collaboration**  
+- **Inefficient collaboration**
   Developers, operations, and security need a single source of truth: change definitions in code, reviewed and versioned via pull requests.
 
-- **Increased risk of human error**  
+- **Increased risk of human error**
   Pasting commands into a console or clicking UI checkboxes invites typos, misconfigurations, and stress during deployment windows.
 
 Flamingock's CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
 
-## Four Pillars of Change-as-Code
+## Four pillars of Change-as-Code
 
 1. **One-Hundred-Percent Versioned**
    All Changes live in your Git repository (or other VCS). This means you can review, diff, and roll back changes just like application code.
@@ -40,7 +40,7 @@ Flamingock's CaC approach solves these problems by treating every external-syste
 3. **Auditable & Traceable**
    Every Change outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query "who ran what change, and when," ensuring full compliance.
 
-4. **Cross-Component Support**  
+4. **Cross-Component Support**
    Whether it's SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
 
 ## "Hello, CaC" Code Snippet
@@ -75,13 +75,13 @@ public class _0001__EnableAutoSaveFeature {
 - **Infrastructure as Code (IaC)**: Use Terraform, CloudFormation, Pulumi, etc., to provision VMs, networks, and databases (the “foundation”).
 - **Change as Code (CaC)**: Use Flamingock to version and apply everything that lives on that foundation—database schemas, feature flags, SaaS configurations, message topics, and more.
 
-## Real-World Use Cases
+## Real-world use cases
 
-### Multi-tenant SaaS Onboarding
+### Multi-tenant SaaS onboarding
 
 **Problem**: Over the lifetime of your application, you might need to create and then later modify external resources—such as an S3 bucket, Kafka topics, IAM roles, and initial database state—as part of each new release. Doing this manually or with ad-hoc scripts risks drift, missing audits, and inconsistent environments..
 
-**CaC Solution**: Define a sequence of Changes that run in order on mutiple deployments, inserting audit entries and ensuring reproducible, versioned updates::
+**CaC Solution**: Define a sequence of Changes that run in order on mutiple deployments, inserting audit entries and ensuring reproducible, versioned updates:
 <Tabs groupId="config">
 <TabItem value="code-base" label="Code" default>
 ```java
@@ -302,7 +302,7 @@ rollback:
 
 Flamingock ensures these four steps run in sequence—never twice—and logs them in your audit store for future reference.
 
-## Change-as-Code Checklist
+## Change-as-Code checklist
 
 - ✅ **Change lives in VCS**: Every Change class (or YAML template) is versioned.
 - ✅ **Automated pipeline**: Flamingock applies changes automatically at startup or via CLI.
@@ -311,8 +311,8 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 - ✅ **Consistent ordering**: All Changes follow a strict, declared ordering (via the `order` attribute).
 - ✅ **Cross-component**: You can target databases, SaaS APIs, feature flags, message systems—anything with a client API.
 
-## Next Steps
+## Next steps
 
-- [Quick start](quick-start.md) → Learn how to create your first Change and run Flamingock. 
+- [Quick start](quick-start.md) → Learn how to create your first Change and run Flamingock.
 - [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
 - [Real use case examples](../resources/examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.

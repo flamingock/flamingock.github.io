@@ -6,7 +6,7 @@ sidebar_position: 3
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Flamingock supports manual integration with Spring Boot using the same builder API shared with standalone setups. 
+Flamingock supports manual integration with Spring Boot using the same builder API shared with standalone setups.
 
 This unified approach makes it easy to switch between environments without changing your integration logic, while giving you full control over how Flamingock is initialized and executed within your application.
 
@@ -34,9 +34,9 @@ implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersi
   </TabItem>
 </Tabs>
 
-### Version Compatibility
+### Version compatibility
 
-Check [Version Compatibility](introduction.md#version-compatibility)
+Check [Version compatibility](introduction.md#version-compatibility)
 
 ## Configure setup and build Flamingock manually
 
@@ -74,7 +74,7 @@ FlamingockBuilder builder = Flamingock
 ```
 
 :::info
-Platform components are registered using the same `.addDependency(...)` method used for change unit dependencies.  
+Platform components are registered using the same `.addDependency(...)` method used for change unit dependencies.
 For details, see the [Context and dependencies](../../flamingock-library-config/context-and-dependencies.md) page.
 :::
 ## Overriding Spring-provided dependencies
@@ -108,7 +108,7 @@ You can run Flamingock manually:
 builder.build().run();
 ```
 
-### Option 2: Expose as a Spring Bean
+### Option 2: Expose as a Spring bean
 
 Alternatively, you can integrate Flamingock into the Spring Boot lifecycle by exposing it as an `ApplicationRunner` or `InitializingBean`:
 

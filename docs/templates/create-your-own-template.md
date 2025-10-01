@@ -7,10 +7,10 @@ title: Create your template
 
 
 :::caution Beta feature
-Templates are available in **beta**.  
-- You can already create **custom templates** for your own use cases.  
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
-- Expect API and behavior changes before GA.  
+Templates are available in **beta**.
+- You can already create **custom templates** for your own use cases.
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
+- Expect API and behavior changes before GA.
 
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
@@ -37,7 +37,7 @@ Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three gener
 
 - **SHARED_CONFIG**: Shared configuration that applies to both apply and rollback (e.g., database connection, common settings). Use `Void` if no shared config is needed.
 - **APPLY**: The type representing the apply logic/data
-- **ROLLBACK**: The type representing the rollback logic/data  
+- **ROLLBACK**: The type representing the rollback logic/data
 
 **Example:**
 
@@ -86,7 +86,7 @@ These methods define the core logic that will be executed when Flamingock runs t
 Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
 
 - `this.applyPayload` — the apply logic/data to apply during apply phase
-- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo  
+- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
 
 An example of a template for Kafka topic management:
@@ -111,7 +111,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
             this.applyPayload.getReplicationFactor()
         );
         newTopic.configs(this.applyPayload.getConfigs());
-        
+
         adminClient.createTopics(List.of(newTopic)).all().get();
     }
 
@@ -123,7 +123,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
 }
 ```
 
-### Example with Shared Configuration
+### Example with shared configuration
 
 When you need to share configuration between apply and rollback (such as connection details, common settings, etc.), you can use a non-Void shared configuration type:
 
@@ -145,7 +145,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .withRegion(this.configuration.getRegion())
             .withCredentials(this.configuration.getCredentialsProvider())
             .build();
-        
+
         // Create bucket using apply configuration
         var request = new CreateBucketRequest(this.applyPayload.getBucketName())
             .withCannedAcl(this.applyPayload.getAcl());
@@ -154,7 +154,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             // Apply encryption settings
             request.withObjectLockEnabledForBucket(this.applyPayload.getEncryption().isEnabled());
         }
-        
+
         s3Client.createBucket(request);
     }
 
@@ -165,7 +165,7 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .withRegion(this.configuration.getRegion())
             .withCredentials(this.configuration.getCredentialsProvider())
             .build();
-        
+
         // Delete bucket using rollback bucket name
         s3Client.deleteBucket(this.rollbackPayload);
     }
@@ -218,7 +218,7 @@ io.flamingock.template.kafka.UpdateTopicConfigTemplate
 io.flamingock.template.kafka.DeleteTopicTemplate
 ```
 
-:::tip 
+:::tip
 Group templates by domain or technology for better maintainability.
 :::
 
@@ -226,16 +226,16 @@ Group templates by domain or technology for better maintainability.
 
 Depending on your target:
 
-### Internal Templates (Private)
+### Internal Templates (private)
 - No special packaging needed.
 - Keep your template class inside your application.
 
-### Public Templates (Contributing to the Community)
+### Public Templates (contributing to the Community)
 - Package your template as a JAR.
 - Notify the Flamingock team via [development@flamingock.io](mailto:development@flamingock.io) or GitHub.
 - Submit your template for validation.
 
-#### Validation Requirements:
+#### Validation requirements:
 - Clear and justified use case
 - Name must align and not conflict with existing templates
 - Technically correct and production-grade implementation

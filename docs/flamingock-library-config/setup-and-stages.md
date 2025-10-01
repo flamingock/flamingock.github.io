@@ -56,10 +56,10 @@ pipeline:
 
 
 
-## Multiple Stages (Advanced)
+## Multiple stages (Advanced)
 
-Most applications will naturally fit into a single stage, which keeps things simple and ensures a clear, deterministic execution order. 
-However, if you prefer to organize changes into multiple stages—for example, to separate concerns or enforce isolated execution 
+Most applications will naturally fit into a single stage, which keeps things simple and ensures a clear, deterministic execution order.
+However, if you prefer to organize changes into multiple stages—for example, to separate concerns or enforce isolated execution
 flows—Flamingock fully supports that as well. We’ll explain how it works and what to consider when taking that approach.
 
 :::tip Default approach:
@@ -67,11 +67,11 @@ Most applications use a single stage: `@Stage(location = "com.yourcompany.change
 :::
 
 
-### When to Use Multiple Stages
+### When to use multiple stages
 
 Multiple stages are beneficial in specific scenarios:
 
-#### Multi-module Applications
+#### Multi-module applications
 In monolithic applications with well-defined module boundaries, you can give each module its own stage for full autonomy:
 
 ```java
@@ -89,7 +89,7 @@ This approach allows:
 - Different release cycles for different modules
 - Clear separation of concerns and responsibilities
 
-#### Functional Separation
+#### Functional separation
 You might want to separate changes by function or lifecycle:
 
 ```java
@@ -102,16 +102,16 @@ You might want to separate changes by function or lifecycle:
 )
 ```
 
-### Restrictions and Important Considerations
+### Restrictions and important considerations
 
-#### No Execution Order Guarantees
+#### No execution order guarantees
 **Critical limitation**: Flamingock does not guarantee execution order between stages. This means:
 
 - Stage A might execute before, after, or concurrently with Stage B
 - You cannot rely on changes in one stage being applied before another stage starts
 - Each stage should be completely independent from others
 
-#### Why This Matters
+#### Why this matters?
 Consider this problematic scenario:
 ```java
 // ❌ PROBLEMATIC: Relies on execution order
@@ -125,7 +125,7 @@ Consider this problematic scenario:
 
 The `seed-data` stage might execute before `create-tables`, causing failures.
 
-#### Correct Approach
+#### Correct approach
 Instead, group dependent changes in the same stage:
 ```java
 // ✅ CORRECT: All related changes in one stage
@@ -137,7 +137,7 @@ Instead, group dependent changes in the same stage:
 ```
 
 
-### When NOT to Use Multiple Stages
+### When NOT to use multiple stages
 
 Avoid multiple stages when:
 - **You need execution order across different change types** - Use a single stage instead
@@ -170,13 +170,13 @@ Each stage must define:
 
 ## Where Changes are located
 
-- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.  
+- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.
   - Template-based and code-based changes can co-exist if location is a source package.
   - If location references a resource directory, it only accepts template-based changes.
-  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`. 
+  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`.
   - Source root can be customized via the `sources` compiler option.
   - Resource root can be customized via the `resources` compiler option.
-  
+
 - Customizing Source and Resource Root Paths
 <Tabs groupId="gradle_maven">
     <TabItem value="gradle" label="Gradle" default>
@@ -210,7 +210,7 @@ tasks.withType<JavaCompile> {
 
 
 
-## Example Pipeline
+## Example pipeline
 
 ```yaml
 pipeline:
@@ -235,9 +235,9 @@ src/
 ```
 
 
-## Best Practices
+## ✅ Best Practices
 
-### Single Stage Execution (default and recommended)
+### Single stage execution (default and recommended)
 
 In most applications, **changes that require a specific, deterministic execution order** should be grouped into a **single stage**. This ensures they are applied sequentially and in the exact order they are defined.
 
@@ -267,7 +267,7 @@ We strongly recommend placing all your changes — code-based and template-based
   - Keeps everything in one logical location
 
 
-### Naming Convention for Changes
+### Naming convention for Changes
 To ensure clarity and enforce ordering, we recommend naming changes using the following format:
 
 ```
@@ -308,5 +308,5 @@ For detailed rules about order and file naming, see [Change Anatomy - File name 
 
 ### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
-- For code-based changes, ensure the class is annotated with `@Change` or `@Change`
+- For code-based changes, ensure the class is annotated with `@Change`
 - For template-based changes, check file names and YAML formatting

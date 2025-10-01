@@ -70,7 +70,7 @@ In the Flamingock builder, you must configure the events you intend to use and i
   ```
   </TabItem>
 </Tabs>
-  
+
 ### Listener
 
 <Tabs groupId="languages">
