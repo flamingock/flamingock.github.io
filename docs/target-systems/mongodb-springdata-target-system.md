@@ -61,9 +61,19 @@ The MongoDB Spring Data target system uses Flamingock's [split dependency resolu
 
 These dependencies must be provided at target system creation time with **no global context fallback**:
 
-| Dependency | Constructor Parameter | Description |
-|------------|----------------------|-------------|
-| `MongoTemplate` | `mongoTemplate` | Spring Data MongoDB template - **required** for both target system configuration and change execution |
+| Dependency      | Constructor Parameter | Description                                                                                           |
+|-----------------|-----------------------|-------------------------------------------------------------------------------------------------------|
+| `MongoTemplate` | `mongoTemplate`       | Spring Data MongoDB template - **required** for both target system configuration and change execution |
+
+### Optional configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration    | Method                       | Default                 | Description                |
+|------------------|------------------------------|-------------------------|----------------------------|
+| `WriteConcern`   | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern`    | `.withReadConcern(concern)`  | `MAJORITY`              | Read isolation level       |
+| `ReadPreference` | `.withReadPreference(pref)`  | `PRIMARY`               | Server selection for reads |
 
 ## Dependencies available to Changes
 
@@ -80,6 +90,8 @@ Here's a comprehensive example showing the new architecture:
 ```java
 // Target system configuration (mandatory via constructor)
 var mongoTarget = new MongoDBSpringDataTargetSystem("user-database", userMongoTemplate)
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(userAuditService);          // Additional dependency for changes
 
 // Global context with shared dependencies
@@ -92,6 +104,8 @@ Flamingock.builder()
 
 **Target system configuration resolution:**
 - **MongoTemplate**: Must be provided via constructor (`userMongoTemplate`)
+- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
+- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
 
 **Change dependency resolution for Changes in "user-database":**
 - **MongoTemplate**: From target system context (`userMongoTemplate`)

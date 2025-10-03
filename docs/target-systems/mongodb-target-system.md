@@ -60,10 +60,20 @@ The MongoDB target system uses Flamingock's [split dependency resolution archite
 
 These dependencies must be provided at target system creation time with **no global context fallback**:
 
-| Dependency | Constructor Parameter | Description |
-|------------|----------------------|-------------|
-| `MongoClient` | `mongoClient` | MongoDB connection client - **required** for both target system configuration and change execution |
-| `String` | `databaseName` | Target database name - **required** to identify which database changes will affect |
+| Dependency    | Constructor Parameter | Description                                                                                        |
+|---------------|-----------------------|----------------------------------------------------------------------------------------------------|
+| `MongoClient` | `mongoClient`         | MongoDB connection client - **required** for both target system configuration and change execution |
+| `String`      | `databaseName`        | Target database name - **required** to identify which database changes will affect                 |
+
+### Optional Configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration    | Method                       | Default                 | Description                |
+|------------------|------------------------------|-------------------------|----------------------------|
+| `WriteConcern`   | `.withWriteConcern(concern)` | `MAJORITY` with journal | Write acknowledgment level |
+| `ReadConcern`    | `.withReadConcern(concern)`  | `MAJORITY`              | Read isolation level       |
+| `ReadPreference` | `.withReadPreference(pref)`  | `PRIMARY`               | Server selection for reads |
 
 ## Dependencies available to Changes
 
@@ -80,6 +90,8 @@ Here's a comprehensive example showing the new architecture:
 ```java
 // Target system configuration (mandatory via constructor)
 var mongoTarget = new MongoDBSyncTargetSystem("user-database", productionMongoClient, "userDb")
+    .withWriteConcern(WriteConcern.W1)         // Optional configuration
+    .withReadPreference(ReadPreference.secondary())  // Optional configuration
     .addDependency(auditService);              // Additional dependency for changes
 
 // Global context with shared dependencies
@@ -93,10 +105,12 @@ Flamingock.builder()
 **Target system configuration resolution:**
 - **MongoClient**: Must be provided via constructor (`productionMongoClient`)
 - **Database name**: Must be provided via constructor (`"userDb"`)
+- **WriteConcern**: Uses explicit configuration (`W1`) instead of default
+- **ReadPreference**: Uses explicit configuration (`secondary()`) instead of default
 
 **Change dependency resolution for Changes in "user-database":**
 - **MongoClient**: From target system context (`productionMongoClient`)
-- **MongoDatabase**: From target system context (derived from `productionMongoClient` + `"userDb"`)
+- **MongoDatabase**: From target system context (derived from `productionMongoClient` + `"userDb"` + configured concerns/preferences)
 - **ClientSession**: From target system context (created by Flamingock)
 - **AuditService**: From target system additional dependencies
 - **EmailService**: From global context (fallback)
