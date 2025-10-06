@@ -75,18 +75,17 @@ class FlamingockIntegrationTest {
                 .region(Region.US_EAST_1)
                 .build();
 
-        // Configure MongoDB client (audit store)
+        // Configure MongoDB client
         MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
-        MongoDatabase auditDatabase = mongoClient.getDatabase("flamingock-audit");
+        String databaseName = "flamingockAuditLog";
 
         // Configure target systems
-        var s3TargetSystem = new NonTransactionalTargetSystem("aws-s3");
+        var s3TargetSystem = new NonTransactionalTargetSystem("aws-s3").addDependency(s3Client);
 
         // Configure Flamingock with target system and audit store
         Runner runner = Flamingock.builder()
-                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, auditDatabase))
-                .addTargetSystems(s3TargetSystem)
-                .addDependency(s3Client)  // Inject S3 client for aws-s3 target system
+                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, databaseName))
+                .addTargetSystem(s3TargetSystem)
                 .build();
 
         // Execute Flamingock
