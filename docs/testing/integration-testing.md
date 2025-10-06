@@ -5,24 +5,27 @@ sidebar_position: 3
 
 ## Introduction
 
-Integration tests ensure that Flamingock operates correctly in a real environment by executing changes against live systems — such as databases, cloud APIs, or internal services. 
+Integration tests ensure that Flamingock operates correctly in a real environment by executing Changes against live systems. Flamingock uses a **dual-system** that separates:
 
-These tests involve spinning up the actual backend system and running Flamingock end-to-end:
+- **Target systems**: Where business changes are applied (databases, APIs, cloud services)
+- **Audit stores**: Where execution tracking and metadata are persisted (separate from target systems)
 
-- Change unit execution
-- Audit log persistence
+Integration tests should validate the complete pipeline:
+
+- Change execution against target systems
+- Audit log persistence in audit stores
 - Distributed lock acquisition
-
-Integration tests should be used to validate that the full pipeline behaves as expected — from execution to rollback.
+- Recovery and rollback capabilities
 
 
 ## Example: Creating an S3 bucket
 
-Suppose you have a change unit that creates an Amazon S3 bucket:
+Suppose you have a Change that creates an Amazon S3 bucket (target system) while using MongoDB as the audit store:
 
 ```java
-@Change(id = "create-bucket", author = "dev-team")  // order extracted from filename
-public class _0001__CreateS3BucketChange {
+@TargetSystem(id = "aws-s3")
+@Change(id = "create-bucket", author = "dev-team")
+public class _0001__CreateS3Bucket {
 
   @Apply
   public void apply(S3Client s3Client) {
@@ -45,65 +48,78 @@ public class _0001__CreateS3BucketChange {
 
 To test this change end-to-end, we will:
 
-1. Spin up a **MongoDB container** to be used as Flamingock’s audit backend
-2. Inject a real **S3 client** (mocked, localstack, or real AWS)
-3. Configure Flamingock and execute it
+1. Spin up a MongoDB container to be used as Flamingock’s audit backend
+2. Using **S3 as the target system** (where business changes are applied)
+3. Using **MongoDB as the audit store** (where execution metadata is tracked)
+4. Configure Flamingock and execute it
+5. Validating both systems independently
 
 ```java
-class IntegrationTest {
+@Testcontainers
+class FlamingockIntegrationTest {
 
+    @Container
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 
-    @BeforeAll
-    static void initMongo() {
-        mongoContainer.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        mongoContainer.stop();
-    }
+    @Container
+    static final LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
+            .withServices(LocalStackContainer.Service.S3);
 
     @Test
-    void shouldExecuteChangeAgainstS3AndAuditToMongo() {
-        var s3Client = S3Client.builder()
-                .region(Region.EU_WEST_1)
+    void shouldExecuteChangeAgainstTargetSystemAndAuditToStore() {
+        // Configure S3 client (target system)
+        S3Client s3Client = S3Client.builder()
+                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())))
+                .region(Region.US_EAST_1)
                 .build();
 
-        var mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+        // Configure MongoDB client
+        MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
 
+        // Configure target systems
+        var s3TargetSystem = new NonTransactionalTargetSystem("aws-s3")
+                .addDependency(s3Client);
+
+        // Configure Flamingock with target system and audit store
         Runner runner = Flamingock.builder()
-                .addDependency(s3Client)
-                .addDependency(mongoClient)
-                .setProperty("mongodb.databaseName", "test-db")
+                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, 'flamingock-test-db'))
+                .addTargetSystem(s3TargetSystem)
                 .build();
 
+        // Execute Flamingock
         runner.execute();
 
-        // ✅ Verify the S3 bucket was created
+        // ✅ Verify the target system (S3) received the change
         ListBucketsResponse buckets = s3Client.listBuckets();
         boolean bucketExists = buckets.buckets().stream()
                 .anyMatch(b -> b.name().equals("flamingock-test-bucket"));
-        assertTrue(bucketExists, "Expected S3 bucket was not found");
+        assertTrue(bucketExists, "Expected S3 bucket was not created in target system");
 
-        // ✅ Verify the change was audited in MongoDB
-        MongoDatabase db = mongoClient.getDatabase("test-db");
-        MongoCollection<Document> auditCollection = db.getCollection("flamingockAuditLog");
+        // ✅ Verify the audit store (MongoDB) tracked the execution
+        MongoCollection<Document> auditCollection = auditDatabase.getCollection("flamingockAuditLog");
 
-        var document = new Document("changeId", "create-bucket")
-                .append("state","EXECUTED");
-        Document auditEntry = auditCollection.find(document).first();
-        assertNotNull(auditEntry, "Flamingock audit log entry was not found in MongoDB");
+        Document auditEntry = auditCollection.find(
+            new Document("changeId", "create-bucket")
+                .append("state", "EXECUTED")
+        ).first();
+        
+        assertNotNull(auditEntry, "Change execution was not tracked in audit store");
+        assertEquals("create-bucket", auditEntry.getString("changeId"));
+        assertEquals("EXECUTED", auditEntry.getString("state"));
     }
-
 }
 ```
 
 
 ## ✅ Best practices
 
-- Use Testcontainers to spin up a real audit backend (e.g., MongoDB) — this avoids the need for manual test setup
-- Run Flamingock fully using `.build().execute()` — don’t call internal methods manually
-- Clean up the backend between tests or isolate data with unique test identifiers
-- Validate changes by checking the actual target system or using custom assertions
-- Use integration tests sparingly — unit tests are faster and should cover most logic
+- **Use @TargetSystem annotation**: Always annotate Changes with their target system identifier
+- **Separate concerns**: Test target system changes and audit store persistence independently
+- **Use real containers**: Testcontainers provides realistic test environments for both target systems and audit stores
+- **Test failure scenarios**: Verify that audit integrity is maintained even when target systems fail
+- **Validate dual-architecture**: Ensure changes reach target systems and tracking reaches audit stores
+- **Clean up properly**: Reset both target systems and audit stores between tests
+- **Use appropriate audit stores**: Choose audit stores based on your operational requirements, not target system constraints
+- **Test recovery**: Verify that Flamingock can recover and continue from audit store state when target systems are restored
