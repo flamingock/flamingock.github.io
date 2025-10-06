@@ -68,18 +68,9 @@ Target systems are configured using a **strict, no-fallback approach** with expl
 - No fallback to global context
 - Example: `MongoClient` and `databaseName` for MongoDB target systems
 
-**Optional configuration**: Provided through `.withXXX()` methods only
-- No fallback to global context
-- Uses sensible defaults if not provided
-- Example: `WriteConcern`, connection pool settings
-
 ```java
 // Mandatory configuration via constructor
 var mongoTarget = new MongoDBSyncTargetSystem("targetsystem-id", mongoClient, "userDatabase");
-
-// Optional configuration via .withXXX() methods
-mongoTarget.withWriteConcern(WriteConcern.MAJORITY)
-           .withConnectionTimeout(5000);
 ```
 
 **No global context fallback** - target system configuration must be explicit and complete.
@@ -128,8 +119,7 @@ public SqlTargetSystem sqlTargetSystem(DataSource dataSource) {
 
 @Bean
 public MongoDBSyncTargetSystem mongoTargetSystem(MongoClient mongoClient) {
-    return new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb")
-        .withWriteConcern(WriteConcern.MAJORITY);
+    return new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb");
 }
 
 ```
@@ -167,13 +157,9 @@ Dependency injection is the mechanism used for **change execution**, providing t
 
 Flamingock uses a **flexible, multi-source approach** with fallback hierarchy for change execution:
 
-1. **Target system context** (highest priority) - includes configuration parameters from constructor + `.withXXX()` methods
+1. **Target system context** (highest priority) - includes configuration parameters from constructor
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
 3. **Global context** (fallback) - shared dependencies available to all target systems
-
-:::info 
-Target system configuration parameters (from **constructor** and `.withXXX()` methods) are automatically available as change dependencies with highest priority.
-:::
 
 For comprehensive details on change dependency resolution, see [Change Anatomy & Structure](../changes/anatomy-and-structure.md).
 

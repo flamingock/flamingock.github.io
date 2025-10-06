@@ -161,7 +161,7 @@ native-image \
 
 #### Expected native image output
 
-When creating the native image, you should see log output from Flamingock's GraalVM `RegistrationFeature`, confirming that Flamingock successfully scanned and registered internal classes, templates, system modules, and user-defined change units. 
+When creating the native image, you should see log output from Flamingock's GraalVM `RegistrationFeature`, confirming that Flamingock successfully scanned and registered internal classes, templates, system modules, and user-defined change units.
 
 The actual output may differ slightly depending on the modules you’ve included, but it should look similar to the following:
 <details>
@@ -170,40 +170,40 @@ The actual output may differ slightly depending on the modules you’ve included
  - io.flamingock.graalvm.RegistrationFeature
 [Flamingock] Starting GraalVM classes registration
 [Flamingock] Starting registration of internal classes
-    Registering class: io.flamingock.core.task.TaskDescriptor 
-    Registering class: io.flamingock.core.task.AbstractTaskDescriptor 
-    Registering class: io.flamingock.core.preview.PreviewPipeline 
-    Registering class: io.flamingock.core.preview.PreviewStage 
-    Registering class: io.flamingock.core.preview.CodePreviewChange 
-    Registering class: io.flamingock.core.preview.CodePreviewLegacyChange 
-    Registering class: io.flamingock.core.preview.PreviewMethod 
-    Registering class: io.flamingock.core.api.template.ChangeTemplateConfig 
-    Registering class: io.flamingock.core.preview.TemplatePreviewChange 
-    Registering class: io.flamingock.core.pipeline.Pipeline 
-    Registering class: io.flamingock.core.pipeline.LoadedStage 
-    Registering class: io.flamingock.core.task.loaded.AbstractLoadedTask 
-    Registering class: io.flamingock.core.task.loaded.AbstractReflectionLoadedTask 
-    Registering class: io.flamingock.core.task.loaded.AbstractLoadedChange 
-    Registering class: io.flamingock.core.task.loaded.CodeLoadedChange 
-    Registering class: io.flamingock.core.task.loaded.TemplateLoadedChange 
-    Registering class: java.nio.charset.CoderResult 
+    Registering class: io.flamingock.core.task.TaskDescriptor
+    Registering class: io.flamingock.core.task.AbstractTaskDescriptor
+    Registering class: io.flamingock.core.preview.PreviewPipeline
+    Registering class: io.flamingock.core.preview.PreviewStage
+    Registering class: io.flamingock.core.preview.CodePreviewChange
+    Registering class: io.flamingock.core.preview.CodePreviewLegacyChange
+    Registering class: io.flamingock.core.preview.PreviewMethod
+    Registering class: io.flamingock.core.api.template.ChangeTemplateConfig
+    Registering class: io.flamingock.core.preview.TemplatePreviewChange
+    Registering class: io.flamingock.core.pipeline.Pipeline
+    Registering class: io.flamingock.core.pipeline.LoadedStage
+    Registering class: io.flamingock.core.task.loaded.AbstractLoadedTask
+    Registering class: io.flamingock.core.task.loaded.AbstractReflectionLoadedTask
+    Registering class: io.flamingock.core.task.loaded.AbstractLoadedChange
+    Registering class: io.flamingock.core.task.loaded.CodeLoadedChange
+    Registering class: io.flamingock.core.task.loaded.TemplateLoadedChange
+    Registering class: java.nio.charset.CoderResult
 [Flamingock] Completed internal classes
 [Flamingock] Starting registration of templates
-    Registering class: io.flamingock.core.api.template.TemplateFactory 
-    Registering class: io.flamingock.core.api.template.ChangeTemplate 
-    Registering class: io.flamingock.core.api.template.AbstractChangeTemplate 
-    Registering class: io.flamingock.template.mongodb.MongoChangeTemplate 
-    Registering class: io.flamingock.template.mongodb.model.MongoOperation 
-    Registering class: io.flamingock.template.mongodb.MongoChangeTemplateConfig 
+    Registering class: io.flamingock.core.api.template.TemplateFactory
+    Registering class: io.flamingock.core.api.template.ChangeTemplate
+    Registering class: io.flamingock.core.api.template.AbstractChangeTemplate
+    Registering class: io.flamingock.template.mongodb.MongoChangeTemplate
+    Registering class: io.flamingock.template.mongodb.model.MongoOperation
+    Registering class: io.flamingock.template.mongodb.MongoChangeTemplateConfig
 [Flamingock] Completed templates
 [Flamingock] Starting registration of system modules
-    Registering class: io.flamingock.core.engine.audit.importer.changeunit.MongockImporterChange 
-    Registering class: io.flamingock.core.engine.audit.importer.ImporterModule 
+    Registering class: io.flamingock.core.engine.audit.importer.changeunit.MongockImporterChange
+    Registering class: io.flamingock.core.engine.audit.importer.ImporterModule
 [Flamingock] Completed system modules
 [Flamingock] Starting registration of user classes
-    Registering class: io.flamingock.changes._1_create_clients_collection_change 
-    Registering class: io.flamingock.changes._2_insertClientFederico_change 
-    Registering class: io.flamingock.changes._3_insert_client_jorge 
+    Registering class: io.flamingock.changes._1_create_clients_collection_change
+    Registering class: io.flamingock.changes._2_insertClientFederico_change
+    Registering class: io.flamingock.changes._3_insert_client_jorge
 [Flamingock] Completed user classes
 [Flamingock] Completed GraalVM classes registration
 ```
@@ -219,15 +219,3 @@ For more information on image creation and options, refer to the [GraalVM build 
 ```bash
 ./your-app
 ```
-
-
-## Example project
-
-We have built a [complete example project for GraalVM](https://github.com/flamingock/flamingock-examples/tree/master/graalvm) that demonstrates:
-- A working Flamingock configuration with GraalVM
-- Sample change units
-- Proper resource configuration
-- Native image generation process
-
-You can use this example as a reference implementation while following the steps in this guide.
-

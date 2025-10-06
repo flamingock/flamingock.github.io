@@ -8,9 +8,9 @@ sidebar_position: 2
 Issue resolution is an iterative process of identifying failures, investigating their cause in target systems, and marking the appropriate resolution. Flamingock provides CLI tools to systematically work through issues until all are resolved.
 
 
-## Understanding Issues
+## Understanding issues
 
-### What Creates an Issue?
+### What creates an issue?
 An "issue" is detected when:
 1. **Change execution fails** during the `@Apply` method
 2. **Change starts but never completes** (process crash, timeout)
@@ -18,9 +18,9 @@ An "issue" is detected when:
 4. **Change needs to run again** but is in uncertain state
 
 
-## CLI-Driven Resolution Workflow
+## CLI-driven resolution workflow
 
-### 1. Issue Discovery
+### 1. Issue discovery
 ```bash
 flamingock issue list
 ```
@@ -40,7 +40,7 @@ Use 'flamingock issue get' to process issues automatically, or
 'flamingock issue get -c <change-id>' for specific issue details.
 ```
 
-### 2. Automated Issue Triage
+### 2. Automated issue triage
 ```bash
 flamingock issue get
 ```
@@ -73,7 +73,7 @@ RESOLUTION GUIDANCE:
    - Check MongoDB logs for connection errors around 14:32:15 UTC
 
 2. Determine actual state:
-   - If no changes were applied → mark as APPLIED (safe to continue)
+   - If no changes were applied → mark as ROLLED_BACK (safe to retry)
    - If changes were partially applied → complete manually, then mark APPLIED
    - If changes were fully applied → mark as APPLIED
    - If changes caused corruption → rollback manually, then mark ROLLED_BACK
@@ -85,7 +85,7 @@ RESOLUTION GUIDANCE:
 Next: flamingock issue get (to process next issue)
 ```
 
-### 3. Verify Target System State
+### 3. Verify target system state
 
 Based on the guidance, investigate the **target system** (not the audit store) to determine the actual state of the change. You will find one of three possible states:
 
@@ -97,7 +97,7 @@ For partially applied changes, you must decide whether to:
 - Manually complete the remaining changes, then mark as **APPLIED**
 - Manually revert the partial changes, then mark as **ROLLED_BACK**
 
-### 4. Mark Audit Resolution
+### 4. Mark audit resolution
 
 Based on your target system verification, mark the audit with the appropriate resolution.
 
@@ -113,9 +113,9 @@ flamingock audit fix -c change-id -r APPLIED
 flamingock audit fix -c change-id -r ROLLED_BACK
 ```
 
-## Resolution Commands
+## Resolution commands
 
-### APPLIED Resolution
+### APPLIED resolution
 Mark the change as successfully applied when the target system contains the expected changes:
 
 ```bash
@@ -127,7 +127,7 @@ flamingock audit fix -c change-id -r APPLIED
 - Partial changes were completed manually
 - Target system is in the desired end state
 
-### ROLLED_BACK Resolution
+### ROLLED_BACK resolution
 Mark the change as not applied when the target system was not modified or was reverted:
 
 ```bash

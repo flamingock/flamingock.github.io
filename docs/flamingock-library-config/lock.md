@@ -33,9 +33,9 @@ In distributed systems, multiple app instances may start simultaneously — but 
 If no pending changes exist, the lock is not acquired and startup proceeds normally.
 :::
 
-## Refresh Daemon (safety net)
+## Refresh daemon (safety net)
 
-The **refresh daemon** is a background thread that extends the lock before it expires.  
+The **refresh daemon** is a background thread that extends the lock before it expires.
 It’s critical for **long-running changes** that might exceed the lock duration.
 
 Without the daemon:
@@ -50,7 +50,7 @@ By default, Flamingock uses proxy-based injection guards. Before executing any i
 If you're injecting **non-critical components** (e.g., a local list or stateless helper), you can annotate them with `@NonLockGuarded` to avoid the proxy overhead.
 
 
-## Configuration Examples
+## Configuration examples
 
 ### Builder
 ```java

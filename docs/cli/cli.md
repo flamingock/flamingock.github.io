@@ -7,7 +7,7 @@ sidebar_position: 999
 
 Command-line tool for audit management and maintenance operations.
 
-> **Beta Release**  
+> **Beta Release**
 > This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full migration execution capabilities is in development.
 
 ## Overview
@@ -22,10 +22,11 @@ The Flamingock CLI provides operational commands for audit management and mainte
 # Download the latest CLI distribution
 curl -L https://github.com/flamingock/flamingock-java/releases/latest/download/flamingock-cli.tar.gz -o flamingock-cli.tar.gz
 
-# Extract the archive
+# Extract the archive and get into the directory
 tar -xzf flamingock-cli.tar.gz
+cd flamingock-cli/bin
 
-# Make it executable
+# Make script executable
 chmod +x flamingock
 
 # Run the CLI
@@ -36,7 +37,7 @@ chmod +x flamingock
 
 Create a `flamingock.yaml` configuration file in your working directory:
 
-#### MongoDB Configuration
+#### MongoDB configuration
 ```yaml
 serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
 audit:
@@ -50,7 +51,7 @@ audit:
     # password: secret
 ```
 
-#### DynamoDB Configuration
+#### DynamoDB configuration
 ```yaml
 serviceIdentifier: my-service
 audit:
@@ -67,9 +68,9 @@ You can specify a custom configuration file using the `-c` or `--config` option:
 flamingock -c custom-config.yaml audit list
 ```
 
-## Core Commands
+## Core commands
 
-### View Audit Entries
+### View audit entries
 
 List the current state of all changes (snapshot view):
 ```bash
@@ -91,7 +92,7 @@ Show extended information including execution details:
 flamingock audit list --extended
 ```
 
-### Find Issues
+### Find issues
 
 List all change units with inconsistent audit states:
 ```bash
@@ -103,7 +104,7 @@ Output in JSON format for automation:
 flamingock issue list --json
 ```
 
-### Investigate Issues
+### Investigate issues
 
 Get detailed information about a specific issue:
 ```bash
@@ -120,7 +121,7 @@ Get the next priority issue (when no change ID specified):
 flamingock issue get --guidance
 ```
 
-### Resolve Issues
+### Resolve issues
 
 After manually verifying or fixing the state, mark the change as resolved:
 
@@ -138,7 +139,7 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 
 ## Command Reference
 
-### Global Options
+### Global options
 
 ```bash
 flamingock [global-options] <command> [command-options]
@@ -233,9 +234,9 @@ flamingock issue get -c user-migration-v3 --guidance
 flamingock issue get -c user-migration-v3 --json
 ```
 
-## Example Output
+## Example output
 
-### Audit List Output
+### Audit list output
 ```
 Audit Entries Snapshot (Latest per Change Unit):
 ==================================================
@@ -253,7 +254,7 @@ Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
 Total entries: 3
 ```
 
-### Issue Details Output
+### Issue details output
 ```
 Issue Details: seed-initial-data
 ==================================================
@@ -297,7 +298,7 @@ Issue Details: seed-initial-data
          • Manually revert the change, then fix it with resolution(-r) ROLLED_BACK
 ```
 
-## Logging Levels
+## Logging levels
 
 Control the verbosity of output using logging options:
 
@@ -317,7 +318,7 @@ flamingock --quiet audit list
 
 ## Troubleshooting
 
-### Connection Issues
+### Connection issues
 
 If you see "Cannot connect to audit store":
 1. Verify your configuration file exists and is valid YAML
@@ -325,14 +326,14 @@ If you see "Cannot connect to audit store":
 3. Ensure the database is accessible from your location
 4. Test with verbose logging: `flamingock --verbose audit list`
 
-### No Issues Found
+### No issues found
 
 If `issue list` shows no issues but you expect some:
 1. Verify you're connecting to the correct audit store
 2. Check if issues were already resolved
 3. Use `audit list --history` to see all historical entries
 
-### Permission Errors
+### Permission errors
 
 If you get permission errors when running `audit fix`:
 1. Ensure your database credentials have write access

@@ -12,11 +12,11 @@ The DynamoDB audit store (`DynamoSyncAuditStore`) enables Flamingock to record e
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
-## Version Compatibility
+## Version compatibility
 
-| Component | Version Requirement |
-|-----------|-------------------|
-| AWS SDK DynamoDB Enhanced | 2.25.0+ |
+| Component                 | Version Requirement |
+|---------------------------|---------------------|
+| AWS SDK DynamoDB Enhanced | 2.25.0+             |
 
 AWS SDK DynamoDB Enhanced 2.25.0+ is required and must be included in your project dependencies.
 
@@ -55,17 +55,17 @@ The constructor requires the DynamoDB client. Optional configurations can be add
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store Configuration
+## Audit Store configuration
 
 The DynamoDB audit store uses explicit configuration with no global context fallback.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at audit store creation time with **no global context fallback**:
 
-| Dependency | Constructor Parameter | Description |
-|------------|----------------------|-------------|
-| `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for audit store configuration and data access |
+| Dependency       | Constructor Parameter | Description                                                                      |
+|------------------|-----------------------|----------------------------------------------------------------------------------|
+| `DynamoDbClient` | `dynamoDbClient`      | AWS DynamoDB client - **required** for audit store configuration and data access |
 
 ## Configuration example
 
@@ -91,16 +91,17 @@ Flamingock.builder()
 This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 
-### Optional Configuration (.withXXX() methods)
+### Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration | Method | Default | Description |
-|---------------|--------|---------|-------------|
-| `Read Capacity Units` | `.withReadCapacityUnits(units)` | `5` | Read capacity units (PROVISIONED mode only) |
-| `Write Capacity Units` | `.withWriteCapacityUnits(units)` | `5` | Write capacity units (PROVISIONED mode only) |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries |
-| `Lock Repository Name` | `.withLockRepositoryName(name)` | `flamingockLock` | Table name for distributed locks |
+| Configuration           | Method                           | Default              | Description                                  |
+|-------------------------|----------------------------------|----------------------|----------------------------------------------|
+| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`               | Auto-create table                            |
+| `Read Capacity Units`   | `.withReadCapacityUnits(units)`  | `5`                  | Read capacity units (PROVISIONED mode only)  |
+| `Write Capacity Units`  | `.withWriteCapacityUnits(units)` | `5`                  | Write capacity units (PROVISIONED mode only) |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries                 |
+| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Table name for distributed locks             |
 
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
@@ -108,5 +109,5 @@ Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
 ## Next steps
 
-- Learn about [Target systems](../../target-systems/introduction.md)  
-- 👉 See a [full example project](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)
+- Learn about [Target systems](../../target-systems/introduction.md)
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-java-examples)

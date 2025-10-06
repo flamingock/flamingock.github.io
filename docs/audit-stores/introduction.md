@@ -14,7 +14,7 @@ The audit store is Flamingock's dedicated system for tracking execution history,
 
 The audit store tracks:
 - **Execution history**: Which Changes ran, when, and with what outcome
-- **Distributed locking**: Prevents concurrent executions across multiple instances  
+- **Distributed locking**: Prevents concurrent executions across multiple instances
 - **Issue tracking**: Failed or uncertain executions requiring resolution
 
 Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your Changes.
@@ -46,7 +46,7 @@ public class App {
   public static void main(String[] args) {
     // Create your audit store connection
     var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
-    
+
     // Register with Flamingock
     Flamingock.builder()
       .setAuditStore(auditStore)  // Set the audit store
@@ -59,7 +59,7 @@ public class App {
   </TabItem>
   <TabItem value="springboot" label="Spring Boot">
 
-For Spring Boot applications, register target systems as beans:
+For Spring Boot applications, register audit stores as beans:
 
 ```java
 @Bean
@@ -70,7 +70,7 @@ public AuditStore auditStore(MongoClient mongoClient) {
 // Flamingock Spring Boot auto-configuration will pick this up automatically
 ```
 
-Spring Boot's auto-configuration will automatically register these target systems with Flamingock.
+Spring Boot's auto-configuration will automatically register these audit stores with Flamingock.
 
 For more details, see [Spring Boot Integration](../frameworks/springboot-integration/introduction.md).
 

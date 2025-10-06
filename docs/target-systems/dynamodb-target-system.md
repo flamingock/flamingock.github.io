@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The DynamoDB target system (`DynamoDBTargetSystem`) enables Flamingock to apply changes to Amazon DynamoDB using the AWS SDK for Java. As a transactional target system, it supports automatic rollback through DynamoDB's transaction capabilities with `TransactWriteItems`.
 
-## Version Compatibility
+## Version compatibility
 
 | Component | Version Requirement |
 |-----------|-------------------|
@@ -52,11 +52,11 @@ The constructor requires the target system name and DynamoDB client. Optional co
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
 :::
 
-## Target System Configuration
+## Target System configuration
 
 The DynamoDB target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at target system creation time with **no global context fallback**:
 
@@ -64,11 +64,11 @@ These dependencies must be provided at target system creation time with **no glo
 |------------|----------------------|-------------|
 | `DynamoDbClient` | `dynamoDbClient` | AWS DynamoDB client - **required** for both target system configuration and change execution |
 
-## Dependencies Available to Changes
+## Dependencies available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
-1. **Target system context** (highest priority) - `DynamoDbClient`, `TransactWriteItemsEnhancedRequest.Builder`, plus any added via `.addDependency()`
+1. **Target system context** (highest priority) - `DynamoDbClient`, `TransactWriteItemsEnhancedRequest.Builder`
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
 3. **Global context** (fallback) - shared dependencies available to all target systems
 
@@ -111,21 +111,21 @@ For a Change to leverage DynamoDB's transactional capabilities, it must use the 
 @TargetSystem("inventory-database-id")
 @Change(id = "update-inventory", author = "team")  // order extracted from filename
 public class _0001__UpdateInventory {
-    
+
     @Apply
     public void apply(DynamoDbClient client,
                          TransactWriteItemsEnhancedRequest.Builder txBuilder) {
         // The transaction builder is required for transactional execution
         // Flamingock uses the target system's DynamoDbClient to handle transaction operations
         // and manages transaction creation, execution, and rollback automatically
-        
+
         DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
             .dynamoDbClient(client)
             .build();
-        
-        DynamoDbTable<Product> table = enhancedClient.table("products", 
+
+        DynamoDbTable<Product> table = enhancedClient.table("products",
             TableSchema.fromBean(Product.class));
-        
+
         // Add operations to the transaction
         txBuilder.addPutItem(table, new Product("123", "Updated Product"));
         txBuilder.addDeleteItem(table, Key.builder().partitionValue("456").build());
@@ -150,4 +150,4 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 
 - Learn about [Target systems](introduction.md)
 - Explore [Changes](../changes/introduction.md)
-- See [DynamoDB examples](https://github.com/flamingock/flamingock-examples/tree/master/dynamodb)
+- See [Flamingock examples](https://github.com/flamingock/flamingock-java-examples)

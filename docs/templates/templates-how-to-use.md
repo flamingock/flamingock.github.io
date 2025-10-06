@@ -9,10 +9,10 @@ import TabItem from '@theme/TabItem';
 # How to use Flamingock Templates
 
 :::caution Beta feature
-Templates are available in **beta**.  
-- You can already create **custom templates** for your own use cases.  
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.  
-- Expect API and behavior changes before GA.  
+Templates are available in **beta**.
+- You can already create **custom templates** for your own use cases.
+- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
+- Expect API and behavior changes before GA.
 
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
@@ -69,10 +69,6 @@ apply: |
 rollback: "DROP TABLE IF EXISTS Persons;"
 ```
 
-:::info
-Note that your application must provide a `java.sql.Connection` instance as a dependency to Flamingock.
-:::
-
 #### 🔍 Understanding the configuration attributes
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
@@ -118,7 +114,7 @@ At application startup, Flamingock will automatically detect the YAML file and p
 
 Let's compare how an SQL change is handled using a **template-based Change** vs. a **traditional code-based Change**.
 
-### Approach 1: Using a Traditional Code-Based Change
+### Approach 1: Using a traditional code-based Change
 
 ```java
 @Change(id = "create-persons-table", order = "20250408_01", author = "developer")
@@ -171,7 +167,7 @@ apply: |
 rollback: "DROP TABLE Persons;"
 ```
 
-### Key Benefits of Using a Template Instead of Code-Based Changes:
+### Key benefits of using a Template instead of code-based Changes:
 - **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL apply manually.
 - **Faster onboarding**: YAML is easier for non-Java developers.
 - **Standardised changes**: Ensures best practices and avoids custom implementation errors.

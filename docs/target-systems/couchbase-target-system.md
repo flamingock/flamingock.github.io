@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The Couchbase target system (`CouchbaseTargetSystem`) enables Flamingock to apply changes to Couchbase databases using the official Couchbase Java SDK. As a transactional target system, it supports automatic rollback through Couchbase's transaction capabilities.
 
-## Version Compatibility
+## Version compatibility
 
 | Component | Version Requirement |
 |-----------|-------------------|
@@ -52,11 +52,11 @@ The constructor requires the target system name, Couchbase cluster, and bucket. 
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
 :::
 
-## Target System Configuration
+## Target System configuration
 
 The Couchbase target system uses Flamingock's [split dependency resolution architecture](introduction.md#dependency-injection) with separate flows for target system configuration and change execution dependencies.
 
-### Constructor Dependencies (Mandatory)
+### Constructor dependencies (mandatory)
 
 These dependencies must be provided at target system creation time with **no global context fallback**:
 
@@ -65,11 +65,11 @@ These dependencies must be provided at target system creation time with **no glo
 | `Cluster` | `cluster` | Couchbase cluster connection - **required** for both target system configuration and change execution |
 | `Bucket` | `bucket` | Target bucket instance - **required** for both target system configuration and change execution |
 
-## Dependencies Available to Changes
+## Dependencies available to Changes
 
 Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
 
-1. **Target system context** (highest priority) - `Cluster`, `Bucket`, `TransactionAttemptContext`, plus any added via `.addDependency()`
+1. **Target system context** (highest priority) - `Cluster`, `Bucket`, `TransactionAttemptContext`
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
 3. **Global context** (fallback) - shared dependencies available to all target systems
 
@@ -114,18 +114,18 @@ For a Change to leverage Couchbase's transactional capabilities, it must use the
 @TargetSystem("user-database-id")
 @Change(id = "create-users", author = "team")  // order extracted from filename
 public class _0001__CreateUsers {
-    
+
     @Apply
     public void apply(Cluster cluster, Bucket bucket, TransactionAttemptContext txContext) {
         // TransactionAttemptContext is required for transactional execution
         // Flamingock uses the target system's Cluster and Bucket to handle transaction operations
         // and manages transaction start, commit, and rollback automatically
         Collection collection = bucket.defaultCollection();
-        
+
         JsonObject user = JsonObject.create()
             .put("name", "John Doe")
             .put("email", "john@example.com");
-            
+
         txContext.insert(collection, "user::001", user);
     }
 }
@@ -137,16 +137,16 @@ You can also work with the Cluster and Bucket directly without transactions:
 @TargetSystem("user-database-id")
 @Change(id = "update-configs", author = "team")  // order extracted from filename
 public class _0002__UpdateConfigs {
-    
+
     @Apply
     public void apply(Cluster cluster, Bucket bucket) {
         // Operations without TransactionAttemptContext won't participate in transactions
         Collection collection = bucket.defaultCollection();
-        
+
         JsonObject config = JsonObject.create()
             .put("version", "2.0")
             .put("updated", Instant.now().toString());
-            
+
         collection.upsert("config::app", config);
     }
 }
@@ -169,4 +169,4 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 
 - Learn about [Target systems](introduction.md)
 - Explore [Changes](../changes/introduction.md)
-- See [Couchbase examples](https://github.com/flamingock/flamingock-examples/tree/master/couchbase)
+- See [Flamingock examples](https://github.com/flamingock/flamingock-java-examples)

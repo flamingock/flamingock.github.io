@@ -2,7 +2,7 @@
   "label": "Spring Boot",
   "position": 10,
   "link": {
-    "type": "generated-index",
-    "description": "Integrate Flamingock with Spring Boot applications for seamless change management."
+    "type": "doc",
+    "id": "frameworks/springboot-integration/introduction"
   }
 }
