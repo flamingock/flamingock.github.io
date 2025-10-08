@@ -24,17 +24,13 @@ Flamingock offers event handling capabilities for both Pipelines and Stages.
 
 Flamingock emits three types of events:
 
-- **Start Event**: Triggered just before the migration process begins, following successful validation.
-- **Success Event**: Emitted upon successful completion of the migration. This indicates that no unhandled exceptions occurred, or that any errors were either properly handled or associated changeLogs were marked with 'Fail' as false.
-- **Failure Event**: Emitted when a change log fails and the failure is not handled, as described above.
+- **Start Event**: Emitted just before the execution of Changes begins, either at the Stage or Pipeline level, after successful validation of configuration and preconditions.
+- **Success Event**: Emitted when the execution of all Changes in a Stage or Pipeline completes successfully, with no unhandled errors, indicating that all operations finished as expected.
+- **Failure Event**: Emitted when an unhandled error occurs during the execution of a Change and the process cannot continue normally.
 
 :::warning
-The Success and Failure events are mutually exclusive, only one of them will be raised for a given migration execution.
+The Success and Failure events are mutually exclusive, only one of them will be raised for a given execution.
 :::
-
-## Getting started with events
-
-Each runner's documentation page provides the necessary information for using events in accordance with that runner's specific implementation.
 
 ## Standalone basic example
 
@@ -48,9 +44,11 @@ In the Flamingock builder, you must configure the events you intend to use and i
       Flamingock.builder()
           .setPipelineStartedListener(new PipelineStartedListener())
           .setPipelineCompletedListener(new PipelineCompletedListener())
+          .setPipelineFailedListener(new PipelineIgnoredListener())
           .setPipelineFailedListener(new PipelineFailedListener())
           .setStageStartedListener(new StageStartedListener())
           .setStageCompletedListener(new StageCompletedListener())
+          .setStageFailedListener(new StageIgnoredListener())
           .setStageFailedListener(new StageFailedListener())
           .build()
           .run();
@@ -61,9 +59,11 @@ In the Flamingock builder, you must configure the events you intend to use and i
       Flamingock.builder()
           .setPipelineStartedListener(PipelineStartedListener())
           .setPipelineCompletedListener(PipelineCompletedListener())
+          .setPipelineFailedListener(PipelineIgnoredListener())
           .setPipelineFailedListener(PipelineFailedListener())
           .setStageStartedListener(StageStartedListener())
           .setStageCompletedListener(StageCompletedListener())
+          .setStageFailedListener(StageIgnoredListener())
           .setStageFailedListener(StageFailedListener())
           .build()
           .run()
@@ -76,25 +76,25 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-    public class StageCompletedListener implements Consumer<IStageCompletedEvent> {
+public class StageCompletedListener implements ApplicationListener<SpringStageCompletedEvent> {
 
     public static int executed = 0;
     @Override
-    public void accept(IStageCompletedEvent iStageCompletedEvent) {
+    public void accept(SpringStageCompletedEvent springStageCompletedEvent) {
         executed++;
     }
-    }
+}
   ```
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-class StageCompletedListener : (IStageCompletedEvent) -> Unit {
+class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
 
     companion object {
         var executed = 0
     }
 
-    override fun invoke(iStageCompletedEvent: IStageCompletedEvent) {
+    override fun invoke(springStageCompletedEvent: SpringStageCompletedEvent) {
         executed++
     }
 }
