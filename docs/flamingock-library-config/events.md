@@ -24,17 +24,13 @@ Flamingock offers event handling capabilities for both Pipelines and Stages.
 
 Flamingock emits three types of events:
 
-- **Start Event**: Triggered just before the migration process begins, following successful validation.
-- **Success Event**: Emitted upon successful completion of the migration. This indicates that no unhandled exceptions occurred, or that any errors were either properly handled or associated changeLogs were marked with 'Fail' as false.
-- **Failure Event**: Emitted when a change log fails and the failure is not handled, as described above.
+- **Start Event**: Emitted just before the execution of Changes begins, either at the Stage or Pipeline level, after successful validation of configuration and preconditions.
+- **Success Event**: Emitted when the execution of all Changes in a Stage or Pipeline completes successfully, with no unhandled errors, indicating that all operations finished as expected.
+- **Failure Event**: Emitted when an unhandled error occurs during the execution of a Change and the process cannot continue normally.
 
 :::warning
-The Success and Failure events are mutually exclusive, only one of them will be raised for a given migration execution.
+The Success and Failure events are mutually exclusive, only one of them will be raised for a given execution.
 :::
-
-## Getting started with events
-
-Each runner's documentation page provides the necessary information for using events in accordance with that runner's specific implementation.
 
 ## Standalone basic example
 
@@ -76,25 +72,25 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-    public class StageCompletedListener implements Consumer<IStageCompletedEvent> {
+public class StageCompletedListener implements ApplicationListener<StageCompletedEvent> {
 
     public static int executed = 0;
     @Override
-    public void accept(IStageCompletedEvent iStageCompletedEvent) {
+    public void accept(StageCompletedEvent stageCompletedEvent) {
         executed++;
     }
-    }
+}
   ```
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-class StageCompletedListener : (IStageCompletedEvent) -> Unit {
+class StageCompletedListener : (StageCompletedEvent) -> Unit {
 
     companion object {
         var executed = 0
     }
 
-    override fun invoke(iStageCompletedEvent: IStageCompletedEvent) {
+    override fun invoke(stageCompletedEvent: StageCompletedEvent) {
         executed++
     }
 }
@@ -104,55 +100,61 @@ class StageCompletedListener : (IStageCompletedEvent) -> Unit {
 
 ## Spring-based basic example
 
-### Listeners
+### Beans
 
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
     ```java
       @Bean
-      public PipelineStartedListener startFlamingockListener() {
+          public PipelineStartedListener pipelineStartedListener() {
           return new PipelineStartedListener();
       }
 
       @Bean
-      public PipelineCompletedListener successFlamingockListener() {
+      public PipelineCompletedListener pipelineCompletedListener() {
           return new PipelineCompletedListener();
       }
 
       @Bean
-      public PipelineFailedListener sailedFlamingockListener() {
+      public PipelineFailedListener pipelineFailedListener() {
           return new PipelineFailedListener();
       }
 
       @Bean
-      public StageStartedListener stageStartedListener() {return new StageStartedListener();}
+      public StageStartedListener stageStartedListener() {
+          return new StageStartedListener();
+      }
 
       @Bean
-      public StageCompletedListener stageCompletedListener() {return new StageCompletedListener();}
+      public StageCompletedListener stageCompletedListener() {
+          return new StageCompletedListener();
+      }
 
       @Bean
-      public StageFailedListener stageFailedListener() {return new StageFailedListener();}
+      public StageFailedListener stageFailedListener() {
+          return new StageFailedListener();
+      }
     ```
   </TabItem>
   <TabItem value="kotlin" label="Kotlin" default>
     ```kotlin
         @Bean
-        fun startFlamingockListener(): PipelineStartedListener {
+        fun pipelineStartedListener(): PipelineStartedListener {
             return PipelineStartedListener()
         }
 
         @Bean
-        fun successFlamingockListener(): PipelineCompletedListener {
+        fun pipelineCompletedListener(): PipelineCompletedListener {
             return PipelineCompletedListener()
         }
 
         @Bean
-        fun sailedFlamingockListener(): PipelineFailedListener {
+        fun pipelineFailedListener(): PipelineFailedListener {
             return PipelineFailedListener()
         }
 
         @Bean
-        fun stageStartedListener(): StageStartedListener {
+        fun StageStartedListener(): StageStartedListener {
             return StageStartedListener()
         }
 
@@ -166,6 +168,37 @@ class StageCompletedListener : (IStageCompletedEvent) -> Unit {
             return StageFailedListener()
         }
     ```
+  </TabItem>
+</Tabs>
+
+### Listener
+
+<Tabs groupId="languages">
+  <TabItem value="java" label="Java" default>
+  ```java
+public class StageCompletedListener implements ApplicationListener<SpringStageCompletedEvent> {
+
+    public static int executed = 0;
+    @Override
+    public void accept(SpringStageCompletedEvent springStageCompletedEvent) {
+        executed++;
+    }
+}
+  ```
+  </TabItem>
+  <TabItem value="kotlin" label="Kotlin">
+  ```kotlin
+class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
+
+    companion object {
+        var executed = 0
+    }
+
+    override fun invoke(springStageCompletedEvent: SpringStageCompletedEvent) {
+        executed++
+    }
+}
+  ```
   </TabItem>
 </Tabs>
 
