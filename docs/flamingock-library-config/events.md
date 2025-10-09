@@ -106,17 +106,17 @@ class StageCompletedListener : (StageCompletedEvent) -> Unit {
   <TabItem value="java" label="Java" default>
     ```java
       @Bean
-      public PipelineStartedListener startFlamingockListener() {
+          public PipelineStartedListener pipelineStartedListener() {
           return new PipelineStartedListener();
       }
 
       @Bean
-      public PipelineCompletedListener successFlamingockListener() {
+      public PipelineCompletedListener pipelineCompletedListener() {
           return new PipelineCompletedListener();
       }
 
       @Bean
-      public PipelineFailedListener failedFlamingockListener() {
+      public PipelineFailedListener pipelineFailedListener() {
           return new PipelineFailedListener();
       }
 
@@ -139,22 +139,22 @@ class StageCompletedListener : (StageCompletedEvent) -> Unit {
   <TabItem value="kotlin" label="Kotlin" default>
     ```kotlin
         @Bean
-        fun startFlamingockListener(): PipelineStartedListener {
+        fun pipelineStartedListener(): PipelineStartedListener {
             return PipelineStartedListener()
         }
 
         @Bean
-        fun successFlamingockListener(): PipelineCompletedListener {
+        fun pipelineCompletedListener(): PipelineCompletedListener {
             return PipelineCompletedListener()
         }
 
         @Bean
-        fun sailedFlamingockListener(): PipelineFailedListener {
+        fun pipelineFailedListener(): PipelineFailedListener {
             return PipelineFailedListener()
         }
 
         @Bean
-        fun stageStartedListener(): StageStartedListener {
+        fun StageStartedListener(): StageStartedListener {
             return StageStartedListener()
         }
 
