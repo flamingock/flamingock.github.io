@@ -72,11 +72,11 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-public class StageCompletedListener implements ApplicationListener<SpringStageCompletedEvent> {
+public class StageCompletedListener implements ApplicationListener<StageCompletedEvent> {
 
     public static int executed = 0;
     @Override
-    public void accept(SpringStageCompletedEvent springStageCompletedEvent) {
+    public void accept(StageCompletedEvent stageCompletedEvent) {
         executed++;
     }
 }
@@ -84,13 +84,13 @@ public class StageCompletedListener implements ApplicationListener<SpringStageCo
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
+class StageCompletedListener : (StageCompletedEvent) -> Unit {
 
     companion object {
         var executed = 0
     }
 
-    override fun invoke(springStageCompletedEvent: SpringStageCompletedEvent) {
+    override fun invoke(stageCompletedEvent: StageCompletedEvent) {
         executed++
     }
 }
@@ -100,7 +100,7 @@ class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
 
 ## Spring-based basic example
 
-### Listeners
+### Beans
 
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
@@ -116,18 +116,24 @@ class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
       }
 
       @Bean
-      public PipelineFailedListener sailedFlamingockListener() {
+      public PipelineFailedListener failedFlamingockListener() {
           return new PipelineFailedListener();
       }
 
       @Bean
-      public StageStartedListener stageStartedListener() {return new StageStartedListener();}
+      public StageStartedListener stageStartedListener() {
+          return new StageStartedListener();
+      }
 
       @Bean
-      public StageCompletedListener stageCompletedListener() {return new StageCompletedListener();}
+      public StageCompletedListener stageCompletedListener() {
+          return new StageCompletedListener();
+      }
 
       @Bean
-      public StageFailedListener stageFailedListener() {return new StageFailedListener();}
+      public StageFailedListener stageFailedListener() {
+          return new StageFailedListener();
+      }
     ```
   </TabItem>
   <TabItem value="kotlin" label="Kotlin" default>
@@ -162,6 +168,37 @@ class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
             return StageFailedListener()
         }
     ```
+  </TabItem>
+</Tabs>
+
+### Listener
+
+<Tabs groupId="languages">
+  <TabItem value="java" label="Java" default>
+  ```java
+public class StageCompletedListener implements ApplicationListener<SpringStageCompletedEvent> {
+
+    public static int executed = 0;
+    @Override
+    public void accept(SpringStageCompletedEvent springStageCompletedEvent) {
+        executed++;
+    }
+}
+  ```
+  </TabItem>
+  <TabItem value="kotlin" label="Kotlin">
+  ```kotlin
+class StageCompletedListener : (SpringStageCompletedEvent) -> Unit {
+
+    companion object {
+        var executed = 0
+    }
+
+    override fun invoke(springStageCompletedEvent: SpringStageCompletedEvent) {
+        executed++
+    }
+}
+  ```
   </TabItem>
 </Tabs>
 

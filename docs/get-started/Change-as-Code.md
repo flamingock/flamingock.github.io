@@ -315,4 +315,4 @@ Flamingock ensures these four steps run in sequence—never twice—and logs the
 
 - [Quick start](quick-start.md) → Learn how to create your first Change and run Flamingock.
 - [Core concepts](./core-concepts.md)   → Dive deeper into auditing, drivers, transactions, and distributed locking.
-- [Real use case examples](../resources/examples.md) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.
+- [Real use case examples](https://github.com/flamingock/flamingock-java-examples) → Explore real-world code samples: MongoDB, DynamoDB, Couchbase, Kafka, and more.
