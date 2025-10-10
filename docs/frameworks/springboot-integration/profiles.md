@@ -79,7 +79,7 @@ This will run the change unit in **all environments except `prod`**.
 
 ## ✅ Best practices
 
-- Use profiles to isolate test data, preview features, or tenant-specific migrations
-- Avoid mixing profile-specific logic inside a single change unit — split them into separate classes
+- Use profiles to isolate test data, preview features, or tenant-specific changes
+- Avoid mixing profile-specific logic inside a single change — split them into separate classes
 - Keep profile names consistent across your team and environments (e.g., use `dev` everywhere, not `development`, `dev-env`, etc.)
 - Consider grouping related change units under a shared profile for easier activation
