@@ -25,7 +25,7 @@ Flamingock Templates are experimental modules designed to streamline the integra
 
 ## How it works
 
-Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on code-based Changes to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each migration, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
+Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on code-based Changes to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each change, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
 
 ### Who provides Templates?
 

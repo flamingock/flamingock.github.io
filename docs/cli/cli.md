@@ -8,7 +8,7 @@ sidebar_position: 999
 Command-line tool for audit management and maintenance operations.
 
 > **Beta Release**
-> This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full migration execution capabilities is in development.
+> This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full change execution capabilities is in development.
 
 ## Overview
 
@@ -108,12 +108,12 @@ flamingock issue list --json
 
 Get detailed information about a specific issue:
 ```bash
-flamingock issue get -c user-migration-v2
+flamingock issue get -c user-change-v2
 ```
 
 Include resolution guidance:
 ```bash
-flamingock issue get -c user-migration-v2 --guidance
+flamingock issue get -c user-change-v2 --guidance
 ```
 
 Get the next priority issue (when no change ID specified):
@@ -127,12 +127,12 @@ After manually verifying or fixing the state, mark the change as resolved:
 
 If the change was successfully applied:
 ```bash
-flamingock audit fix -c user-migration-v2 -r APPLIED
+flamingock audit fix -c user-change-v2 -r APPLIED
 ```
 
 If the change was not applied or rolled back:
 ```bash
-flamingock audit fix -c user-migration-v2 -r ROLLED_BACK
+flamingock audit fix -c user-change-v2 -r ROLLED_BACK
 ```
 
 For detailed workflows on issue resolution, see [Issue resolution](../safety-and-recovery/issue-resolution.md).
@@ -145,7 +145,7 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 flamingock [global-options] <command> [command-options]
 ```
 
-- `-c, --config <file>` - Configuration file path (default: `flamingocka`)
+- `-c, --config <file>` - Configuration file path (default: `flamingock`)
 - `--verbose` - Enable verbose logging
 - `--debug` - Enable debug logging
 - `--trace` - Enable trace logging (most detailed level)
@@ -225,13 +225,13 @@ Show detailed information about an issue.
 flamingock issue get --guidance
 
 # Get specific issue details
-flamingock issue get -c user-migration-v3
+flamingock issue get -c user-change-v3
 
 # Get with resolution guidance
-flamingock issue get -c user-migration-v3 --guidance
+flamingock issue get -c user-change-v3 --guidance
 
 # Output as JSON
-flamingock issue get -c user-migration-v3 --json
+flamingock issue get -c user-change-v3 --json
 ```
 
 ## Example output
