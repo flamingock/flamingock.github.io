@@ -19,26 +19,26 @@ This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ec
 
 Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
 
-:::note
+:::danger
 This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
 :::
 
 ### Step 1: Add the Template dependency
 
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
+Ensure your **Flamingock Template** dependency is included in your project. Example of using `SqlTemplate`:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
-implementation("io.flamingock:flamingock-community-sql-template")
+implementation("io.flamingock:flamingock-sql-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-community-sql-template</artifactId>
+    <artifactId>flamingock-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>
@@ -55,7 +55,7 @@ Create a **YAML file** (e.g., `_0001__CreatePersonsTable.yaml`) inside your appl
 ```yaml
 id: CreatePersonsTableFromTemplate
 targetSystem: "database-system"
-templateName: sql-template
+template: SqlTemplate
 recovery:
   strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
 apply: |
@@ -74,7 +74,7 @@ rollback: "DROP TABLE IF EXISTS Persons;"
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
 - **`order`**: Execution order relative to other changes (also shared with code-based).
 - **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based Changes.
-- **`templateName`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
+- **`template`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
 - **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
 - **`recovery`**: Optional failure handling configuration. Contains:
@@ -96,7 +96,7 @@ To configure Flamingock to use the YAML template file, you need to define a stag
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(location = "src/main/resources/templates")
+        @Stage(location = "resources/templates")
     }
 )
 public class MainApplication {
@@ -152,8 +152,8 @@ With the **SQL Template**, users define the same change in **YAML** instead of J
 
 ```yaml
 id: createPersonsTableFromTemplate
-stargetSystem: "database-system"
-templateName: sql-template
+targetSystem: "database-system"
+template: SqlTemplate
 recovery:
   strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
 apply: |
