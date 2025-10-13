@@ -54,8 +54,7 @@ const config = {
           sidebarCollapsible: false,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/flamingock/flamingock-java',
+          //editUrl: 'https://github.com/flamingock/flamingock-java',
           lastVersion: 'current',
           versions: {
             current: {
