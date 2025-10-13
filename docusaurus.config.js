@@ -131,27 +131,27 @@ const config = {
             items: [
               {
                 label: 'Overview',
-                to: '/docs/overview/Introduction',
+                to: '/overview',
               },
               {
                 label: 'Library configuration',
-                to: '/docs/flamingock-library-config/introduction',
+                to: '/flamingock-library-config/introduction',
               },
               {
                 label: 'Target Systems',
-                to: '/docs/target-systems/introduction',
+                to: '/target-systems/introduction',
               },
               {
                 label: 'Audit Stores',
-                to: '/docs/audit-stores/introduction',
+                to: '/audit-stores/introduction',
               },
               {
                 label: 'Recovery and Safety',
-                to: '/docs/safety-and-recovery/recovery-strategies',
+                to: '/safety-and-recovery/recovery-strategies',
               },
               {
                 label: 'Resources',
-                to: '/docs/resources/faq',
+                to: '/resources/faq',
               },
             ],
           },
