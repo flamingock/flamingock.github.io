@@ -30,7 +30,7 @@ id: add_user_index
 author: "database-team"
 description: "Add index on user email field for faster lookups"
 targetSystem: "user-database"
-templateName: mongodb-index
+template: mongodb-index
 apply:
   type: createIndex
   collection: users

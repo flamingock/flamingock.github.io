@@ -119,7 +119,7 @@ Changes can be:
 id: add-product-category
 author: team
 targetSystem: mysql-inventory
-template: sql-template
+template: SqlTemplate
 apply: |
   ALTER TABLE products ADD COLUMN category VARCHAR(255)
 rollback: |

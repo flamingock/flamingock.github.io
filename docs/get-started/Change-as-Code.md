@@ -201,7 +201,8 @@ public class _0005__UpdateBucketSettingsChange {
 id: "ProvisionBucket"
 author: "team-a"
 transactional: false
-templateName: aws-s3-template
+template: aws-s3-template
+targetSystem: "s3"
 apply:
   bucketName: "flamingock-app-bucket"
   region: "us-east-1"
@@ -214,7 +215,8 @@ rollback:
 id: "CreateKafkaTopics"
 author: "devops"
 transactional: false
-templateName: kafka-template
+template: kafka-template
+targetSystem: "kafka"
 apply:
   topics:
     - "app-events"
@@ -264,7 +266,8 @@ rollback:
 id: "SeedDatabase"
 author: "devops"
 transactional: true
-templateName: sql-template
+template: SqlTemplate
+targetSystem: "sql-target-system"
 apply: |
   INSERT INTO tenants (id, name, created_at)
   VALUES (1, 'TenantA', NOW()), (2, 'TenantB', NOW());
@@ -277,7 +280,8 @@ rollback: |
 id: "UpdateBucketSettings"
 author: "team-a"
 transactional: false
-templateName: aws-s3-template
+template: aws-s3-template
+targetSystem: "s3"
 apply:
   # Enable versioning on an existing bucket
   bucketName: "flamingock-app-bucket"
