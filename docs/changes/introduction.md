@@ -61,7 +61,8 @@ Use YAML or JSON definitions with reusable templates. Perfect for repetitive ope
 # File: _0002__AddStatusColumn.yaml
 id: add_status_column
 author: "db-team"
-templateName: sql-template
+template: SqlTemplate
+targetSystem: "sql-target-system"
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
 rollback: "ALTER TABLE orders DROP COLUMN status;"
 ```
