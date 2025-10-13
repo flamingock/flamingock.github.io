@@ -22,6 +22,7 @@ It ensures these systems evolve **safely, consistently, and in sync with your co
 A simple change in Flamingock:
 
 ```java
+@TargetSystem("my-target-system")
 @Change(id = "create-users-collection", author = "dev-team")
 public class _0001__CreateUsersCollection {
     @Apply

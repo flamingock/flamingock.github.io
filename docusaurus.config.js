@@ -176,7 +176,7 @@ const config = {
               },*/
               {
                 label: 'GitHub',
-                href: 'https://github.com/flamingock/flamingock-java',
+                href: 'https://github.com/flamingock',
               },
             ],
           },
