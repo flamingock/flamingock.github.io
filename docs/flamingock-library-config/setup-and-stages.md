@@ -17,8 +17,7 @@ Changes within a stage are executed sequentially with order guaranteed. However,
 
 Flamingock is configured using the `@EnableFlamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
-The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
-
+The annotation is **only** used to define the setup (stages and their sources); it does not include or support runtime configuration.
 
 ## Defining the setup
 
