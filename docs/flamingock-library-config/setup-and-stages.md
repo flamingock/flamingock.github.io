@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
+Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed.
 
 
 ## Setup configuration
