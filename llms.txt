@@ -90,7 +90,7 @@ Alternatively, you can configure your own audit store using one of the supported
 - [MongoDB audit store](./community/mongodb-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
 - [Couchbase audit store](./community/couchbase-audit-store.md)
-- SQL audit store(**coming next**)
+- [SQL audit store](./community/sql-audit-store.md)
 
 
 ### Registering the community audit store
@@ -247,6 +247,185 @@ This architecture ensures explicit audit store configuration with no fallback de
 
 
 
+
+## Next steps
+
+- Learn about [Target systems](../../target-systems/introduction.md)
+- 👉 See a [full example project](https://github.com/flamingock/flamingock-java-examples)
+
+---
+
+// File: audit-stores/community/sql-audit-store
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# SQL Audit Store
+
+The SQL audit store (`SqlAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using any supported SQL database as the storage backend.
+
+> For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
+
+## Supported databases
+
+:::info Automatic Dialect Detection
+Flamingock automatically detects the database vendor from the DataSource connection metadata and applies the appropriate SQL dialect. No manual configuration required.
+:::
+
+The following databases are supported:
+
+| Database     | Auto-detection | Notes                                    |
+|--------------|----------------|------------------------------------------|
+| MySQL        | ✅             | 5.7+ recommended                         |
+| MariaDB      | ✅             | 10.3+ recommended                        |
+| PostgreSQL   | ✅             | 12+ recommended                          |
+| SQLite       | ✅             | Suitable for testing and local development |
+| H2           | ✅             | Ideal for testing environments           |
+| HSQLDB       | ✅             | Testing and embedded scenarios           |
+| SQL Server   | ✅             | 2017+ recommended                        |
+| Oracle       | ✅             | 19c+ recommended                         |
+| Sybase       | ✅             | ASE 16+ recommended                      |
+| Firebird     | ✅             | 3.0+ recommended                         |
+| Informix     | ✅             | 12.10+ recommended                       |
+| DB2          | ✅             | 11.5+ recommended                        |
+
+## Installation
+
+Add your preferred JDBC driver dependency to your project:
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+// PostgreSQL example
+implementation("org.postgresql:postgresql:42.7.0")
+
+// MySQL example  
+implementation("mysql:mysql-connector-java:8.0.33")
+
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<!-- PostgreSQL example -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.0</version>
+</dependency>
+
+<!-- MySQL example -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+## Basic setup
+
+Configure the audit store:
+
+```java
+var auditStore = new SqlAuditStore(dataSource);
+```
+
+The constructor requires a `DataSource`. Optional configurations can be added via `.withXXX()` methods.
+
+:::info Register Audit Store
+Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
+:::
+
+## Audit Store configuration
+
+The SQL audit store uses explicit configuration with no global context fallback.
+
+### Constructor dependencies (mandatory)
+
+These dependencies must be provided at audit store creation time with **no global context fallback**:
+
+| Dependency             | Constructor Parameter | Description                                                              |
+|------------------------|-----------------------|--------------------------------------------------------------------------|
+| `javax.sql.DataSource` | `dataSource`          | SQL database connection pool - **required** for audit store configuration |
+
+### Optional configuration (.withXXX() methods)
+
+These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
+
+| Configuration           | Method                           | Default              | Description                           |
+|-------------------------|----------------------------------|----------------------|---------------------------------------|
+| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`               | Auto-create tables and indexes        |
+| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries          |
+| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Table name for distributed locks      |
+
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
+
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Audit store configuration (mandatory via constructor)
+var auditStore = new SqlAuditStore(dataSource)
+    .withAutoCreate(true)                          // Optional configuration
+    .withAuditRepositoryName("custom_audit_log")   // Optional configuration
+    .withLockRepositoryName("custom_lock_table");  // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **DataSource**: Must be provided via constructor
+- **Database dialect**: Automatically detected from DataSource vendor
+- **Table configurations**: Uses explicit configuration instead of defaults
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
+
+## Database-specific examples
+
+### PostgreSQL
+```java
+// PostgreSQL DataSource configuration
+HikariConfig config = new HikariConfig();
+config.setJdbcUrl("jdbc:postgresql://localhost:5432/mydb");
+config.setUsername("user");
+config.setPassword("password");
+config.setDriverClassName("org.postgresql.Driver");
+
+DataSource dataSource = new HikariDataSource(config);
+var auditStore = new SqlAuditStore(dataSource);
+```
+
+### MySQL
+```java
+// MySQL DataSource configuration
+HikariConfig config = new HikariConfig();
+config.setJdbcUrl("jdbc:mysql://localhost:3306/mydb");
+config.setUsername("user");
+config.setPassword("password");
+config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+DataSource dataSource = new HikariDataSource(config);
+var auditStore = new SqlAuditStore(dataSource);
+```
+
+## Schema management
+
+When `autoCreate` is enabled (default), Flamingock automatically creates the required tables:
+
+- **Audit table** (default: `flamingockAuditLog`): Stores execution history
+- **Lock table** (default: `flamingockLock`): Manages distributed locking
+
+The SQL schemas are automatically optimized for each supported database dialect.
+
+:::tip Database Permissions
+Ensure your database user has `CREATE TABLE` and `CREATE INDEX` permissions when using `autoCreate=true`.
+:::
 
 ## Next steps
 
@@ -2075,15 +2254,14 @@ import TabItem from '@theme/TabItem';
 
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
+Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed.
 
 
 ## Setup configuration
 
 Flamingock is configured using the `@EnableFlamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
-The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
-
+The annotation is **only** used to define the setup (stages and their sources); it does not include or support runtime configuration.
 
 ## Defining the setup
 
@@ -2119,6 +2297,15 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
+
+## Where changes are located
+
+- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.
+  - Template-based and code-based changes can co-exist if location is a source package.
+  - If location references a resource directory, it only accepts template-based changes.
+  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`.
+  - Source root can be customized via the `sources` compiler option.
+  - Resource root can be customized via the `resources` compiler option.
 
 
 ## Multiple stages (Advanced)
@@ -2233,47 +2420,6 @@ Each stage must define:
 | `description`    | :x:                 | Optional text explaining the stage's purpose                                |
 
 
-## Where Changes are located
-
-- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.
-  - Template-based and code-based changes can co-exist if location is a source package.
-  - If location references a resource directory, it only accepts template-based changes.
-  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`.
-  - Source root can be customized via the `sources` compiler option.
-  - Resource root can be customized via the `resources` compiler option.
-
-- Customizing Source and Resource Root Paths
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-```kotlin
-tasks.withType<JavaCompile> {
-    options.compilerArgs.addAll(listOf(
-        "-Asources=custom/src",
-        "-Aresources=custom/resources"
-    ))
-}
-```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-```xml
-<build>
-  <plugins>
-    <plugin>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <configuration>
-        <compilerArgs>
-          <arg>-Asources=custom/src</arg>
-          <arg>-Aresources=custom/resources</arg>
-        </compilerArgs>
-      </configuration>
-    </plugin>
-  </plugins>
-</build>
-```
-    </TabItem>
-</Tabs>
-
-
 
 ## Example pipeline
 
@@ -2370,6 +2516,45 @@ For detailed rules about order and file naming, see [Change Anatomy - File name 
 - Make sure the stage has a `location` field defined
 - Check the file path is correct and uses `/` as a separator, not `.` in YAML
 - If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
+- If your project uses non-standard paths (for example, source code or resources are not under `src/main/java` or `src/main/resources`), Flamingock may not detect your change files automatically.  
+You can customize the compiler arguments to tell Flamingock where to look:
+<Tabs groupId="gradle_maven">
+    <TabItem value="gradle" label="Gradle" default>
+```kotlin
+tasks.withType<JavaCompile> {
+    options.compilerArgs.addAll(listOf(
+        "-Asources=custom/src",
+        "-Aresources=custom/resources"
+    ))
+}
+```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <compilerArgs>
+          <arg>-Asources=custom/src</arg>
+          <arg>-Aresources=custom/resources</arg>
+        </compilerArgs>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+    </TabItem>
+</Tabs>
+
+By default, Flamingock automatically scans the following source and resource roots:
+- src/main/java
+- src/main/kotlin
+- src/main/scala
+- src/main/groovy
+- src/main/resources
+
 
 ### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
@@ -2964,7 +3149,7 @@ Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/
 Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
-Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
+Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
@@ -2979,7 +3164,7 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 [INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
-[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
 [INFO]   [Flamingock] Final processing round detected - skipping execution.
@@ -3025,7 +3210,6 @@ The actual output may differ slightly depending on the modules you’ve included
     Registering class: io.flamingock.core.preview.PreviewPipeline
     Registering class: io.flamingock.core.preview.PreviewStage
     Registering class: io.flamingock.core.preview.CodePreviewChange
-    Registering class: io.flamingock.core.preview.CodePreviewLegacyChange
     Registering class: io.flamingock.core.preview.PreviewMethod
     Registering class: io.flamingock.core.api.template.ChangeTemplateConfig
     Registering class: io.flamingock.core.preview.TemplatePreviewChange
