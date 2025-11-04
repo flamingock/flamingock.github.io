@@ -10,15 +10,14 @@ import TabItem from '@theme/TabItem';
 
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
-Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed - Flamingock handles system and legacy stages appropriately to ensure correctness.
+Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed.
 
 
 ## Setup configuration
 
 Flamingock is configured using the `@EnableFlamingock` annotation on any class in your application. This annotation is required for all environments — whether you're using the standalone runner or Spring Boot integration.
 
-The annotation is **only** used for defining the setup (stages and their sources). No runtime configuration should be placed here.
-
+The annotation is **only** used to define the setup (stages and their sources); it does not include or support runtime configuration.
 
 ## Defining the setup
 
@@ -54,6 +53,15 @@ pipeline:
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
+
+## Where changes are located
+
+- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.
+  - Template-based and code-based changes can co-exist if location is a source package.
+  - If location references a resource directory, it only accepts template-based changes.
+  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`.
+  - Source root can be customized via the `sources` compiler option.
+  - Resource root can be customized via the `resources` compiler option.
 
 
 ## Multiple stages (Advanced)
@@ -168,47 +176,6 @@ Each stage must define:
 | `description`    | :x:                 | Optional text explaining the stage's purpose                                |
 
 
-## Where Changes are located
-
-- **`location`** refers to a source package (e.g., `com.company.changes`), a relative(e.g., `my/path/changes`) or absolute(e.g., `/my/path/changes`) resources directory.
-  - Template-based and code-based changes can co-exist if location is a source package.
-  - If location references a resource directory, it only accepts template-based changes.
-  - Default source roots: `src/main/java`, `src/main/kotlin`, `src/main/scala`, `src/main/groovy`.
-  - Source root can be customized via the `sources` compiler option.
-  - Resource root can be customized via the `resources` compiler option.
-
-- Customizing Source and Resource Root Paths
-<Tabs groupId="gradle_maven">
-    <TabItem value="gradle" label="Gradle" default>
-```kotlin
-tasks.withType<JavaCompile> {
-    options.compilerArgs.addAll(listOf(
-        "-Asources=custom/src",
-        "-Aresources=custom/resources"
-    ))
-}
-```
-    </TabItem>
-    <TabItem value="maven" label="Maven">
-```xml
-<build>
-  <plugins>
-    <plugin>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <configuration>
-        <compilerArgs>
-          <arg>-Asources=custom/src</arg>
-          <arg>-Aresources=custom/resources</arg>
-        </compilerArgs>
-      </configuration>
-    </plugin>
-  </plugins>
-</build>
-```
-    </TabItem>
-</Tabs>
-
-
 
 ## Example pipeline
 
@@ -305,8 +272,49 @@ For detailed rules about order and file naming, see [Change Anatomy - File name 
 - Make sure the stage has a `location` field defined
 - Check the file path is correct and uses `/` as a separator, not `.` in YAML
 - If using resource directory paths, make sure the file is placed under `src/main/resources/your-dir`
+- If your project uses non-standard paths (for example, source code or resources are not under `src/main/java` or `src/main/resources`), Flamingock may not detect your change files automatically.  
+You can customize the compiler arguments to tell Flamingock where to look:
+<Tabs groupId="gradle_maven">
+    <TabItem value="gradle" label="Gradle" default>
+```kotlin
+tasks.withType<JavaCompile> {
+    options.compilerArgs.addAll(listOf(
+        "-Asources=custom/src",
+        "-Aresources=custom/resources"
+    ))
+}
+```
+    </TabItem>
+    <TabItem value="maven" label="Maven">
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <compilerArgs>
+          <arg>-Asources=custom/src</arg>
+          <arg>-Aresources=custom/resources</arg>
+        </compilerArgs>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+    </TabItem>
+</Tabs>
+
+By default, Flamingock automatically scans the following source and resource roots:
+- src/main/java
+- src/main/kotlin
+- src/main/scala
+- src/main/groovy
+- src/main/resources
+
 
 ### No changes found in stage
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change`
 - For template-based changes, check file names and YAML formatting
+
+

@@ -31,7 +31,7 @@ Alternatively, you can configure your own audit store using one of the supported
 - [MongoDB audit store](./community/mongodb-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
 - [Couchbase audit store](./community/couchbase-audit-store.md)
-- SQL audit store(**coming next**)
+- [SQL audit store](./community/sql-audit-store.md)
 
 
 ### Registering the community audit store

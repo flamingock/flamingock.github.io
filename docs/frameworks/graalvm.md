@@ -114,7 +114,7 @@ Note:    [Flamingock] 'resources' parameter NOT passed. Using default 'src/main/
 Note:    [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Initialization completed. Processed templated-based changes.
-Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
+Note:    [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 Note:    [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 Note:    [Flamingock] Finished processing annotated classes and generating metadata.
 Note:    [Flamingock] Final processing round detected - skipping execution.
@@ -129,7 +129,7 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 [INFO]   [Flamingock] 'sources' parameter NOT passed. Searching in: '[src/main/java, src/main/kotlin, src/main/scala, src/main/groovy]'
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Initialization completed. Processed templated-based changes.
-[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change or legacy @Change annotations)
+[INFO]   [Flamingock] Searching for code-based changes (Java classes annotated with @Change annotations)
 [INFO]   [Flamingock] Reading flamingock pipeline from file: 'src/main/resources/flamingock/pipeline.yaml'
 [INFO]   [Flamingock] Finished processing annotated classes and generating metadata.
 [INFO]   [Flamingock] Final processing round detected - skipping execution.
@@ -175,7 +175,6 @@ The actual output may differ slightly depending on the modules you’ve included
     Registering class: io.flamingock.core.preview.PreviewPipeline
     Registering class: io.flamingock.core.preview.PreviewStage
     Registering class: io.flamingock.core.preview.CodePreviewChange
-    Registering class: io.flamingock.core.preview.CodePreviewLegacyChange
     Registering class: io.flamingock.core.preview.PreviewMethod
     Registering class: io.flamingock.core.api.template.ChangeTemplateConfig
     Registering class: io.flamingock.core.preview.TemplatePreviewChange
