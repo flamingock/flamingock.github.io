@@ -91,9 +91,9 @@ The SQL audit store uses explicit configuration with no global context fallback.
 
 These dependencies must be provided at audit store creation time with **no global context fallback**:
 
-| Dependency   | Constructor Parameter | Description                                                              |
-|--------------|-----------------------|--------------------------------------------------------------------------|
-| `DataSource` | `dataSource`          | SQL database connection pool - **required** for audit store configuration |
+| Dependency             | Constructor Parameter | Description                                                              |
+|------------------------|-----------------------|--------------------------------------------------------------------------|
+| `javax.sql.DataSource` | `dataSource`          | SQL database connection pool - **required** for audit store configuration |
 
 ### Optional configuration (.withXXX() methods)
 
