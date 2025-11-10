@@ -63,6 +63,17 @@ audit:
     # secretKey: local
 ```
 
+#### Couchbase configuration
+```yaml
+serviceIdentifier: my-service
+audit:
+  couchbase:
+    endpoint: "http://localhost:8000"
+    username: "your-username"
+    password: "your-password"
+    bucket-name: "my-app"
+```
+
 You can specify a custom configuration file using the `-c` or `--config` option:
 ```bash
 flamingock -c custom-config.yaml audit list
