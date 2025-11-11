@@ -75,7 +75,7 @@ audit:
 serviceIdentifier: my-service
 audit:
   couchbase:
-    endpoint: "http://localhost:8000"
+    endpoint: "couchbase://localhost:12110"
     username: "your-username"
     password: "your-password"
     bucket-name: "my-app"
