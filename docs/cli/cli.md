@@ -38,7 +38,7 @@ chmod +x flamingock
 
 ### Configuration
 
-Create a `flamingock.yaml` configuration file in your working directory:
+Create a `flamingock.yml` configuration file in flamingock-cli/bin directory (or modify sample provided):
 
 <Tabs groupId="cli_config">
   <TabItem value="mongodb" label="MongoDB" default>
