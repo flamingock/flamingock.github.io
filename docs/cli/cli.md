@@ -3,6 +3,9 @@ title: Flamingock CLI
 sidebar_position: 999
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Flamingock CLI
 
 Command-line tool for audit management and maintenance operations.
@@ -37,6 +40,8 @@ chmod +x flamingock
 
 Create a `flamingock.yaml` configuration file in your working directory:
 
+<Tabs groupId="cli_config">
+  <TabItem value="mongodb" label="MongoDB" default>
 #### MongoDB configuration
 ```yaml
 serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
@@ -50,7 +55,8 @@ audit:
     # username: admin
     # password: secret
 ```
-
+  </TabItem>
+  <TabItem value="dynamodb" label="Amazon DynamoDB">
 #### DynamoDB configuration
 ```yaml
 serviceIdentifier: my-service
@@ -62,7 +68,8 @@ audit:
     # accessKey: local
     # secretKey: local
 ```
-
+  </TabItem>
+  <TabItem value="couchbase" label="Couchabse">
 #### Couchbase configuration
 ```yaml
 serviceIdentifier: my-service
@@ -73,6 +80,8 @@ audit:
     password: "your-password"
     bucket-name: "my-app"
 ```
+  </TabItem>
+</Tabs>
 
 You can specify a custom configuration file using the `-c` or `--config` option:
 ```bash
