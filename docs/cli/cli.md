@@ -38,7 +38,7 @@ chmod +x flamingock
 
 ### Configuration
 
-Create a `flamingock.yml` configuration file in flamingock-cli/bin directory (or modify sample provided):
+Modify the `flamingock-cli.yml` configuration file in flamingock-cli/bin directory according to your audit store setup:
 
 <Tabs groupId="cli_config">
   <TabItem value="mongodb" label="MongoDB" default>
@@ -59,7 +59,7 @@ audit:
   <TabItem value="dynamodb" label="Amazon DynamoDB">
 #### DynamoDB configuration
 ```yaml
-serviceIdentifier: my-service
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
 audit:
   dynamodb:
     region: us-east-1
@@ -72,7 +72,7 @@ audit:
   <TabItem value="couchbase" label="Couchabse">
 #### Couchbase configuration
 ```yaml
-serviceIdentifier: my-service
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
 audit:
   couchbase:
     endpoint: "couchbase://localhost:12110"
@@ -165,7 +165,7 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 flamingock [global-options] <command> [command-options]
 ```
 
-- `-c, --config <file>` - Configuration file path (default: `flamingock`)
+- `-c, --config <file>` - Configuration file path (default: `flamingock-cli.yml`)
 - `--verbose` - Enable verbose logging
 - `--debug` - Enable debug logging
 - `--trace` - Enable trace logging (most detailed level)
