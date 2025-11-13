@@ -165,7 +165,7 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 flamingock [global-options] <command> [command-options]
 ```
 
-- `-c, --config <file>` - Configuration file path (default: `flamingock-cli.yml`)
+- `-c, --config <file>` - Configuration file path (default: `bin/flamingock-cli.yml`)
 - `--verbose` - Enable verbose logging
 - `--debug` - Enable debug logging
 - `--trace` - Enable trace logging (most detailed level)
