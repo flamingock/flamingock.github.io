@@ -27,7 +27,6 @@ The following databases are supported:
 | PostgreSQL   | ✅             | 12+ recommended                          |
 | SQLite       | ✅             | Suitable for testing and local development |
 | H2           | ✅             | Ideal for testing environments           |
-| HSQLDB       | ✅             | Testing and embedded scenarios           |
 | SQL Server   | ✅             | 2017+ recommended                        |
 | Oracle       | ✅             | 19c+ recommended                         |
 | Sybase       | ✅             | ASE 16+ recommended                      |
