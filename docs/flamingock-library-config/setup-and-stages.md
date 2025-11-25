@@ -162,7 +162,7 @@ Conditional stage execution based on dependencies or conditions is planned for f
 
 ## Required fields
 
-Each `@EnableFlamingock` annotation must define:
+`@EnableFlamingock` annotation must define:
 - `stages`: Array of stage configurations
 - `strictStageMapping` (optional): Validation mode for unmapped changes (default: `true`)
 
@@ -342,13 +342,17 @@ public class FlamingockConfig {
 
 When `strictStageMapping` is enabled (default):
 - **Compilation fails** if any `@Change` class is found outside the configured stage locations
-- A `RuntimeException` is thrown at compilation time for unmapped changes
 - Ensures all changes are properly organized and will be executed
 
 When `strictStageMapping` is disabled:
 - **Only warnings are emitted** for unmapped changes during compilation
-- Compilation continues successfully
 - Unmapped changes will be ignored at runtime
+
+### Compilation fails with "unmapped changes" error
+- Check that all `@Change` classes are located within the configured stage locations
+- If you have changes in multiple locations, consider adding an additional stages to cover them. Visit our [multiple-stages](#multiple-stages-advanced) sections for more information
+- Temporarily set `strictStageMapping = false` to see warnings instead of errors during migration
+- Move unmapped changes to the correct stage location or remove unused changes
 
 ### Example scenarios
 
@@ -362,7 +366,7 @@ When `strictStageMapping` is disabled:
 
 If you have a change at `com.yourcompany.yourpackage.OldChange` (outside the configured location):
 - ❌ **Compilation fails** with detailed error message
-- Must move the change to the correct location or add a new stage
+- Must move the change to `com.yourcompany.changes` or add a new stage with location `com.yourcompany.yourpackage.OldChange`
 
 **Scenario 2: Relaxed validation**
 ```java
@@ -380,10 +384,5 @@ If you have a change at `com.yourcompany.yourpackage.OldChange`:
 Keep `strictStageMapping = true` (default) to ensure all changes are properly mapped and executed. Only disable it temporarily during large refactoring or migration scenarios.
 :::
 
-### Compilation fails with "unmapped changes" error
-- Check that all `@Change` classes are located within the configured stage locations
-- If you have changes in multiple locations, add additional stages to cover them
-- Temporarily set `strictStageMapping = false` to see warnings instead of errors during migration
-- Move unmapped changes to the correct stage location or remove unused changes
 
 
