@@ -81,6 +81,18 @@ audit:
     bucket-name: "my-app"
 ```
   </TabItem>
+  <TabItem value="sql" label="SQL">
+#### SQL configuration
+```yaml
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
+audit:
+    sql:
+      endpoint: "jdbc:sqlserver://localhost:1433/test-db"
+      username: "your-username"
+      password: "your-password"
+      sql-dialect: "SqlServer" # Optional, if not set will be auto-detected based on endpoint
+```
+  </TabItem>
 </Tabs>
 
 You can specify a custom configuration file using the `-c` or `--config` option:
