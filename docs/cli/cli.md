@@ -54,6 +54,7 @@ audit:
     # port: 27017
     # username: admin
     # password: secret
+    collection: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
   </TabItem>
   <TabItem value="dynamodb" label="Amazon DynamoDB">
@@ -67,6 +68,7 @@ audit:
     # endpoint: http://localhost:8000
     # accessKey: local
     # secretKey: local
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
   </TabItem>
   <TabItem value="couchbase" label="Couchabse">
@@ -79,7 +81,22 @@ audit:
     username: "your-username"
     password: "your-password"
     bucket-name: "my-app"
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
+  </TabItem>
+  <TabItem value="sql" label="SQL">
+#### SQL configuration
+```yaml
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
+audit:
+  sql:
+    endpoint: "jdbc:sqlserver://localhost:1433/test-db"
+    username: "your-username"
+    password: "your-password"
+    sql-dialect: "SqlServer" # Optional, if not set will be auto-detected based on endpoint
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
+```
+To see actual supported databases, check [SQL Audit Store](../audit-stores/community/sql-audit-store#supported-databases).
   </TabItem>
 </Tabs>
 
