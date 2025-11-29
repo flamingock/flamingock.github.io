@@ -36,7 +36,7 @@ Learn more about the basics of GraalVM native image compilation in the [GraalVM 
 <TabItem value="gradle" label="Gradle" default>
 
 ```kotlin
-implementation("io.flamingock:flamingock-graalvm:$flamingockVersion")
+implementation("io.flamingock:flamingock-graalvm:$version")
 ```
 
 </TabItem>
