@@ -92,7 +92,44 @@ See the [GraalVM resource configuration documentation](https://www.graalvm.org/l
 :::
 
 
-### 4. Build the application
+### 4. Build the application (Uber JAR / fat JAR)
+
+GraalVM native-image works best when you provide a **self-contained executable JAR** (often called **Uber JAR** or **fat JAR**) that already includes:
+
+- Your application classes
+- All dependency classes
+- A proper `Main-Class` entry in the JAR manifest
+
+In Gradle, this can be achieved by customizing the `jar` task to produce an Uber JAR:
+
+```kotlin
+tasks.named<Jar>("jar") {
+    manifest {
+        // Replace with your own main application class
+        attributes["Main-Class"] = "com.example.app.MyFlamingockApp"
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.get().output)
+
+    from({
+        configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+    })
+}
+```
+
+:::warning Why this matters for GraalVM
+GraalVM’s `native-image` command expects a **single, runnable JAR** with a correct `Main-Class` in the manifest.  
+If your JAR:
+
+- does **not** contain all dependencies, or  
+- does **not** declare a `Main-Class`  
+
+then `native-image` may fail or produce a binary that cannot start correctly.
+:::
+
+Now build the application:
 
 ```bash
 ./gradlew clean build
