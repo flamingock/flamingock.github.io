@@ -162,6 +162,10 @@ Conditional stage execution based on dependencies or conditions is planned for f
 
 ## Required fields
 
+`@EnableFlamingock` annotation must define:
+- `stages`: Array of stage configurations
+- `strictStageMapping` (optional): Validation mode for unmapped changes (default: `true`)
+
 Each stage must define:
 - `name` (optional): A unique identifier - if not provided, it will be auto-derived from the location
 - `location`: The package or directory where changes are located
@@ -316,5 +320,69 @@ By default, Flamingock automatically scans the following source and resource roo
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change`
 - For template-based changes, check file names and YAML formatting
+
+
+## Setup validation
+
+Flamingock validates that all code-based changes (classes annotated with `@Change`) are properly mapped to a stage during compilation.
+
+### Strict stage mapping
+
+By default, Flamingock enforces strict stage mapping validation:
+
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = true  // Default behavior
+)
+public class FlamingockConfig {
+    // Configuration class
+}
+```
+
+When `strictStageMapping` is enabled (default):
+- **Compilation fails** if any `@Change` class is found outside the configured stage locations
+- Ensures all changes are properly organized and will be executed
+
+When `strictStageMapping` is disabled:
+- **Only warnings are emitted** for unmapped changes during compilation
+- Unmapped changes will be ignored at runtime
+
+### Compilation fails with "unmapped changes" error
+- Check that all `@Change` classes are located within the configured stage locations
+- If you have changes in multiple locations, consider adding an additional stages to cover them. Visit our [multiple-stages](#multiple-stages-advanced) sections for more information
+- Temporarily set `strictStageMapping = false` to see warnings instead of errors during migration
+- Move unmapped changes to the correct stage location or remove unused changes
+
+### Example scenarios
+
+**Scenario 1: Change outside configured location (strict mode)**
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = true  // Default
+)
+```
+
+If you have a change at `com.yourcompany.yourpackage.OldChange` (outside the configured location):
+- ❌ **Compilation fails** with detailed error message
+- Must move the change to `com.yourcompany.changes` or add a new stage with location `com.yourcompany.yourpackage.OldChange`
+
+**Scenario 2: Relaxed validation**
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = false  // Relaxed mode
+)
+```
+
+If you have a change at `com.yourcompany.yourpackage.OldChange`:
+- ⚠️ **Warning emitted** during compilation
+- Compilation succeeds but change is ignored at runtime
+
+:::tip Best Practice
+Keep `strictStageMapping = true` (default) to ensure all changes are properly mapped and executed. Only disable it temporarily during large refactoring or migration scenarios.
+:::
+
 
 
