@@ -3,66 +3,91 @@ title: Target systems vs audit store
 sidebar_position: 40
 ---
 
+
 # Target systems vs audit store
 *Understanding Flamingock's dual-system design for enterprise safety*
 
-Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
+Flamingock operates with two complementary concepts:
+the **Target System** (where real changes are applied) and the **Audit Store** (where the execution history of those changes is recorded).
+
+Although they serve different purposes, they are closely related.
+In fact, the **Audit Store is a specialized form of a Target System**, designed specifically for audit tracking.
+
+This page explains both concepts and how they work together.
 
 
 ## The dual-system architecture
 
 ### Target systems: where changes are applied
-**Target systems** are your business systems where actual changes happen:
+**Target systems** are the systems your application depends on — the places where Flamingock applies the actual Changes.
 
-- **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
-- **Purpose**: Store and process your business data and configurations
-- **Modified by**: Your business logic through Changes
-- **Configuration**: See [Target Systems](../target-systems/introduction.md) for technical setup
+- **Examples**: User database, product catalog, order management system, Kafka topics, S3 buckets, REST APIs  
+- **Purpose**: Store and process your business data or business-related artifacts  
+- **Modified by**: Your business logic inside Flamingock ChangeUnits  
+- **Configuration**: See [Target Systems](../target-systems/introduction.md) for setup details
+
 
 ### Audit store: where execution is tracked
-**Audit store** is Flamingock's dedicated system for tracking what happened:
+The **Audit Store** records what Flamingock executed:
 
-- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database.
-- **Purpose**: Record execution history, compliance data, issue tracking
-- **Modified by**: Flamingock framework automatically (never your code)
-- **Configuration**: See [Audit Stores](../audit-stores/introduction.md) for technical setup
-
-
-## Why this separation matters
-
-### Enterprise safety benefits
-1. **Complete Audit Trail**: Every change attempt is recorded regardless of business system failures
-2. **Governance Separation**: Business data and compliance data have different access patterns
-3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
-4. **Compliance Independence**: Audit integrity is maintained even during business system issues
+- **Examples**: Flamingock Cloud backend, or an audit table/collection inside your existing database  
+- **Purpose**: Track execution history, ensure idempotency, provide auditability and recovery metadata  
+- **Modified by**: Flamingock automatically — never by your business code  
+- **Configuration**: See [Audit Stores](../audit-stores/introduction.md)
 
 
-## Target system types
 
-### Transactional target systems
-Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
+# The Audit Store is a Specialized Target System
 
-**Safety and coordination:**
-- **Community Audit Stores**: Reliable execution tracking and recovery capabilities
-- **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
+Although conceptually separate, the Audit Store is **not a separate infrastructure layer** and does **not** require its own drivers or connections.
 
-### Non-transactional target systems
-Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
+Instead:
 
-**Safety and coordination:**
-- **Community Audit Stores**: Reliable execution tracking and rollback-based recovery
-- **Cloud Edition**: Enhanced recoverability with custom validation options
+**✔ It is created from an existing Target System**  
+**✔ It reuses the same underlying connection**  
+**✔ It adds only the minimal configuration needed for auditing**  
+
+This design keeps everything simple and consistent.
+
+### How the Audit Store is created
+You always build an Audit Store **from** a Target System, not independently.
+
+What this means:
+
+- The Audit Store **inherits the driver/client** from the Target System  
+- It **inherits the database/bucket/schema/namespace**  
+- It **does not inherit** user-specific driver options such as read preference, timeouts or consistency policies  
+- It only adds what it needs:
+  - the audit collection/table  
+  - audit-store–specific metadata or naming  
+  - internal configuration required by Flamingock  
+
+**You do not create new connections.  You do not duplicate configuration.**
+
+The Audit Store is simply the Target System “in audit mode,” optimized for safe tracking.
 
 
-## Audit store types
+## Why this conceptual separation matters
 
-### Cloud Edition audit store
-Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
+Even though the Audit Store is built from a Target System, separating the **concepts** brings clarity and safety:
 
-### Community audit stores
-User-provided audit store (MongoDB, DynamoDB, Couchbase, SQL) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Audit stores](../audit-stores/introduction.md) for setup.
+### 1. Clear responsibility boundaries
+- **Target System** → holds *business data*  
+- **Audit Store** → holds *execution metadata*
 
+### 2. Better governance
+Audit data often requires different retention, access rules, or compliance constraints than business data.
 
+### 3. Reliable recovery
+If something fails, Flamingock uses the Audit Store (not your business system) to know exactly what was executed and what remains pending.
+
+### 4. Adoption flexibility
+Teams can place the Audit Store in:
+- Flamingock Cloud  
+- or a separate collection/table in the same Target System  
+- or a different Target System entirely  
+
+The conceptual split makes this flexible.
 
 ## How it works
 
