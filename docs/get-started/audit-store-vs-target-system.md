@@ -29,7 +29,7 @@ This separation — yet tight relationship — is key to Flamingock’s safety m
 
 ## Target Systems: where your changes happen
 
-A **Target System** is any external system your application depends on and where Flamingock applies your ChangeUnits.
+A **Target System** is any external system your application depends on and where Flamingock applies your changes.
 
 Typical examples:
 
@@ -52,7 +52,7 @@ For setup details, see:
 
 ## Audit Store: where execution is tracked
 
-The **Audit Store** is where Flamingock records the state of every ChangeUnit:
+The **Audit Store** is where Flamingock records the state of every changes:
 
 - when it ran  
 - in what order  
@@ -200,7 +200,7 @@ The model works consistently in all cases.
 
 **Summary of the flow:**
 
-1. **You define ChangeUnits**  
+1. **You define changes**  
 2. **Flamingock executes them safely**  
 3. **Target Systems evolve**  
 4. **Audit Store captures the complete execution history**  
