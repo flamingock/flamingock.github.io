@@ -30,7 +30,7 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation(platform("io.flamingock:flamingock-community-bom:$version"))
 implementation("io.flamingock:flamingock-sql-template")
 ```
   </TabItem>

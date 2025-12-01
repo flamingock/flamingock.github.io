@@ -89,7 +89,7 @@ To use the Spring Boot integration, add the following dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
+implementation("io.flamingock:flamingock-springboot-integration:$version")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
