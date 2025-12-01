@@ -79,22 +79,18 @@ Although conceptually separate, the Audit Store is **not a new database**, nor a
 
 Instead:
 
-### ✔ It is **built from** an existing Target System  
-### ✔ It **reuses the same driver, client and connection**  
+### ✔ It is built from an existing Target System  
+
+### ✔ It reuses the same driver and connection settings, but creates its own internal access handle 
+
 ### ✔ It adds only the minimal configuration needed for auditing  
-
-This design has three major benefits:
-
-1. **Zero duplication** — no new connection, no new credentials, no extra infra.  
-2. **Perfect consistency** — both systems rely on the exact same backend.  
-3. **Natural workflow** — in most real-world scenarios, you want to track changes in the same system you are modifying.
 
 In practice, the Audit Store is simply:
 
 > **the same Target System (when it supports audit tracking) running in audit mode.**
 
-It has the same underlying connection and namespace, but is used for a different purpose:  
-storing execution metadata instead of business data.
+It uses the same underlying configuration (driver, client, database/namespace),
+but through **its own internal object**, ensuring isolation from the Target System’s business operations.
 
 ---
 
@@ -230,7 +226,7 @@ This is the foundation of Flamingock’s safety guarantees.
 
 ## Bottom line
 
-> **Flamingock’s dual-system model — where the Audit Store is a specialization of the Target System — is what enables safe, predictable and auditable evolution of distributed systems.**
+> **Flamingock’s dual-system model (where the Audit Store is a specialization of the Target System) is what enables safe, predictable and auditable evolution of distributed systems.**
 
 It ensures that changes are applied once, tracked forever, and recoverable at any time — regardless of failures, concurrency, or distributed complexity.
 
