@@ -49,7 +49,16 @@ Configure the audit store using a MongoDB Target System to get the connection co
 var auditStore = MongoDBSyncAuditStore.from(mongoDbTargetSystem);
 ```
 
-Creating an Audit Store requires a valid MongoDBSyncTargetSystem to get MongoClient and DatabaseName. For more info about MongoDB Target Systems, see [MongoDB Target Systems](../../target-systems/mongodb-target-system.md).
+Creating a MongoDB Audit Store requires a valid `MongoDBSyncTargetSystem`.
+
+This is because the Audit Store **reuses the MongoClient and DatabaseName** defined in the Target System to establish its connection. By building from the Target System, Flamingock avoids duplicate configuration and ensures the Audit Store resides in the same physical environment as your data.
+
+However, while they share the connection resources, their roles remain distinct:
+- The **Target System** is used to apply your business changes.
+- The **Audit Store** uses the connection exclusively to read and write execution history.
+
+For a deeper explanation of this relationship, see [Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md).
+For specific configuration details, see [MongoDB Target Systems](../../target-systems/mongodb-target-system.md).
 
 Optional configurations can be added via `.withXXX()` methods.
 

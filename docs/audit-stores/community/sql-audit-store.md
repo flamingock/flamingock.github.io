@@ -76,7 +76,16 @@ Configure the audit store using a SQL Target System to get the connection config
 var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
-Creating an Audit Store requires a valid SqlTargetSystem to get the DataSource. For more info about SQL Target Systems, see [SQL Target Systems](../../target-systems/sql-target-system.md).
+Creating a SQL Audit Store requires a valid `SqlTargetSystem`.
+
+This is because the Audit Store **reuses the SQL DataSource** defined in the Target System to establish its connection. By building from the Target System, Flamingock avoids duplicate configuration and ensures the Audit Store resides in the same physical environment as your data.
+
+However, while they share the connection resources, their roles remain distinct:
+- The **Target System** is used to apply your business changes.
+- The **Audit Store** uses the connection exclusively to read and write execution history.
+
+For a deeper explanation of this relationship, see [Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md).
+For specific configuration details, see [SQL Target Systems](../../target-systems/sql-target-system.md).
 
 Optional configurations can be added via `.withXXX()` methods.
 

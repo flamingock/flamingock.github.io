@@ -49,7 +49,16 @@ Configure the audit store using a DynamoDB Target System to get the connection c
 var auditStore = DynamoDBAuditStore.from(dynamoDBTargetSystem);
 ```
 
-Creating an Audit Store requires a valid DynamoDBTargetSystem to get DynamodClient. For more info about DynamodDB Target Systems, see [DynamodDB Target Systems](../../target-systems/dynamodb-target-system.md).
+Creating a DynamoDB Audit Store requires a valid `DynamoDBTargetSystem`.
+
+This is because the Audit Store **reuses the DynamoClient** defined in the Target System to establish its connection. By building from the Target System, Flamingock avoids duplicate configuration and ensures the Audit Store resides in the same physical environment as your data.
+
+However, while they share the connection resources, their roles remain distinct:
+- The **Target System** is used to apply your business changes.
+- The **Audit Store** uses the connection exclusively to read and write execution history.
+
+For a deeper explanation of this relationship, see [Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md).
+For specific configuration details, see [DynamoDB Target Systems](../../target-systems/dynamodb-target-system.md).
 
 Optional configurations can be added via `.withXXX()` methods.
 
