@@ -26,10 +26,10 @@ Add Flamingock to your build:
   <TabItem value="gradle" label="Gradle" default>
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation(platform("io.flamingock:flamingock-community-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 
-annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
+annotationProcessor("io.flamingock:flamingock-processor:$version")
 ```
 
   </TabItem>
