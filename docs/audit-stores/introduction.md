@@ -63,8 +63,8 @@ For Spring Boot applications, register audit stores as beans:
 
 ```java
 @Bean
-public AuditStore auditStore(MongoClient mongoClient) {
-    return new MongoDBSyncAuditStore(mongoClient, "flamingock-audit");
+public AuditStore auditStore(MongoDBSyncTargetSystem mongoDBSyncTargetSystem) {
+    return MongoDBSyncAuditStore.from(mongoDBSyncTargetSystem);
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically

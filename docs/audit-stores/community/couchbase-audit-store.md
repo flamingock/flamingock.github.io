@@ -43,57 +43,21 @@ implementation("com.couchbase.client:java-client:3.7.0")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a Couchbase Target System to get the connection configuration:
 
 ```java
-var auditStore = new CouchbaseSyncAuditStore(cluster, bucket);
+var auditStore = CouchbaseAuditStore.from(couchbaseTargetSystem);
 ```
 
-The constructor requires the Couchbase cluster and bucket. Optional configurations can be added via `.withXXX()` methods.
+Creating an Audit Store requires a valid CouchbaseTargetSystem to get Couchbase cluster and bucket. For more info about Couchbase Target Systems, see [Couchbase Target Systems](../../target-systems/couchbase-target-system.md).
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The Couchbase audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency | Constructor Parameter | Description                                                               |
-|------------|-----------------------|---------------------------------------------------------------------------|
-| `Cluster`  | `cluster`             | Couchbase cluster connection - **required** for audit store configuration |
-| `Bucket`   | `bucket`              | Target bucket instance - **required** for storing audit data              |
-
-## Configuration example
-
-Here's a comprehensive example showing the configuration:
-
-```java
-// Audit store configuration (mandatory via constructor)
-var auditStore = new CouchbaseSyncAuditStore(cluster, bucket)
-    .withScopeName("custom-scope")     // Optional configuration
-    .withAutoCreate(true);             // Optional configuration
-
-// Register with Flamingock
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(targetSystems...)
-    .build();
-```
-
-**Audit store configuration resolution:**
-- **Cluster**: Must be provided via constructor
-- **Bucket**: Must be provided via constructor
-- **Scope settings**: Uses explicit configuration via properties
-
-This architecture ensures explicit audit store configuration with no fallback dependencies.
-
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -106,6 +70,30 @@ These configurations can be customized via `.withXXX()` methods with **no global
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Create a Couchbase Target System
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, bucket);
+// Audit store configuration (mandatory via constructor)
+var auditStore = CouchbaseSyncAuditStore.from(couchbaseTargetSystem)
+    .withScopeName("custom-scope")     // Optional configuration
+    .withAutoCreate(true);             // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **CouchbaseTargetSystem**: Must be provided via `from()` method. Gets `Cluster` and `BucketName` from the target system.
+- **Scope settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 ## Next steps
 

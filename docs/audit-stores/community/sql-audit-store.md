@@ -44,7 +44,7 @@ Add your preferred JDBC driver dependency to your project:
 // PostgreSQL example
 implementation("org.postgresql:postgresql:42.7.0")
 
-// MySQL example  
+// MySQL example
 implementation("mysql:mysql-connector-java:8.0.33")
 
 ```
@@ -70,31 +70,21 @@ implementation("mysql:mysql-connector-java:8.0.33")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a SQL Target System to get the connection configuration:
 
 ```java
-var auditStore = new SqlAuditStore(dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
-The constructor requires a `DataSource`. Optional configurations can be added via `.withXXX()` methods.
+Creating an Audit Store requires a valid SqlTargetSystem to get the DataSource. For more info about SQL Target Systems, see [SQL Target Systems](../../target-systems/sql-target-system.md).
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The SQL audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency             | Constructor Parameter | Description                                                              |
-|------------------------|-----------------------|--------------------------------------------------------------------------|
-| `javax.sql.DataSource` | `dataSource`          | SQL database connection pool - **required** for audit store configuration |
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -111,8 +101,10 @@ These configurations can be customized via `.withXXX()` methods with **no global
 Here's a comprehensive example showing the configuration:
 
 ```java
+// Create a SQL Target System
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
 // Audit store configuration (mandatory via constructor)
-var auditStore = new SqlAuditStore(dataSource)
+var auditStore = SqlAuditStore.from(couchbaseTargetSystem)
     .withAutoCreate(true)                          // Optional configuration
     .withAuditRepositoryName("custom_audit_log")   // Optional configuration
     .withLockRepositoryName("custom_lock_table");  // Optional configuration
@@ -125,7 +117,7 @@ Flamingock.builder()
 ```
 
 **Audit store configuration resolution:**
-- **DataSource**: Must be provided via constructor
+- **SqlTargetSystem**: Must be provided via `from()` method. Gets `Datasource` from the target system.
 - **Database dialect**: Automatically detected from DataSource vendor
 - **Table configurations**: Uses explicit configuration instead of defaults
 
@@ -143,7 +135,8 @@ config.setPassword("password");
 config.setDriverClassName("org.postgresql.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
-var auditStore = new SqlAuditStore(dataSource);
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
 ### MySQL
@@ -156,7 +149,8 @@ config.setPassword("password");
 config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
-var auditStore = new SqlAuditStore(dataSource);
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
 ## Schema management
