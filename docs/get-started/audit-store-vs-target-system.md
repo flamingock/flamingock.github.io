@@ -14,6 +14,8 @@ Flamingock works with two closely related concepts:
 Although they are conceptually distinct, the Audit Store is not an entirely separate system.  
 Instead, it is **a specialized form of a Target System**, created from a Target System that supports this role and used exclusively for audit tracking.
 
+This relationship is not about sharing configuration: the Audit Store is built from a Target System because **both must point to the same external system**. A Target System represents an external system that Flamingock can modify, while the Audit Store represents *that same external system* in audit mode, used only to store execution history. Internally, the Audit Store derives its connection settings from the Target System but uses its own access handle, keeping audit operations isolated while ensuring both components operate on the same underlying environment.
+
 This separation — yet tight relationship — is key to Flamingock’s safety model.
 
 ---
