@@ -18,6 +18,11 @@ This relationship is not about sharing configuration: the Audit Store is built f
 
 This separation — yet tight relationship — is key to Flamingock’s safety model.
 
+:::tip Clarification
+Flamingock can register multiple Target Systems, but only one of them is used as the base for the Audit Store
+:::
+
+
 ---
 
 ## Quick definitions (TL;DR)
