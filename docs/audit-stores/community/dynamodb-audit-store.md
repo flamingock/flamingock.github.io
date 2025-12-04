@@ -43,55 +43,31 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a DynamoDB Target System to get the connection configuration:
 
 ```java
-var auditStore = new DynamoSyncAuditStore(dynamoDbClient);
+var auditStore = DynamoDBAuditStore.from(dynamoDBTargetSystem);
 ```
 
-The constructor requires the DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+A `DynamoDBAuditStore` must be created from an existing `DynamoDBTargetSystem`.
+
+This ensures that both components point to the **same external DynamoDB instance**:
+
+- The **Target System** applies your business changes.
+- The **Audit Store** stores the execution history associated with those changes.
+
+Internally, the Audit Store takes the Target System’s connection settings (DynamoClient) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+
+> For a full conceptual explanation of this relationship, see
+> **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The DynamoDB audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency       | Constructor Parameter | Description                                                                      |
-|------------------|-----------------------|----------------------------------------------------------------------------------|
-| `DynamoDbClient` | `dynamoDbClient`      | AWS DynamoDB client - **required** for audit store configuration and data access |
-
-## Configuration example
-
-Here's a comprehensive example showing the configuration:
-
-```java
-// Audit store configuration (mandatory via constructor)
-var auditStore = new DynamoSyncAuditStore(dynamoDbClient)
-    .withReadCapacityUnits(10)     // Optional configuration
-    .withWriteCapacityUnits(10);   // Optional configuration
-
-// Register with Flamingock
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(targetSystems...)
-    .build();
-```
-
-**Audit store configuration resolution:**
-- **DynamoDbClient**: Must be provided via constructor
-- **Capacity settings**: Uses explicit configuration via properties
-
-This architecture ensures explicit audit store configuration with no fallback dependencies.
-
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -106,6 +82,30 @@ These configurations can be customized via `.withXXX()` methods with **no global
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Create a DynamodDB Target System
+DynamodDBTargetSystem dynamoDBTargetSystem = new DynamodDBTargetSystem("dynamodb", dynamoDbClient);
+// Audit store configuration (mandatory via constructor)
+var auditStore = DynamoSyncAuditStore.from(dynamoDBTargetSystem)
+    .withReadCapacityUnits(10)     // Optional configuration
+    .withWriteCapacityUnits(10);   // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **DynamoDBTargetSystem**: Must be provided via `from()` method. Gets `DynamoClient` from the target system.
+- **Capacity settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 ## Next steps
 

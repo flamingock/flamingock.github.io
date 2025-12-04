@@ -17,6 +17,11 @@ The audit store tracks:
 - **Distributed locking**: Prevents concurrent executions across multiple instances
 - **Issue tracking**: Failed or uncertain executions requiring resolution
 
+### Relationship with Target Systems
+Although they serve different purposes, the Audit Store is **built directly from a Target System**.
+
+This means it **reuses the same underlying connection and driver** (e.g., the same MongoDB client or Couchbase cluster) to store its metadata. However, it uses a separate internal handle to ensure that audit data remains logically isolated from your business data.
+
 Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your Changes.
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../get-started/audit-store-vs-target-system.md)
@@ -63,8 +68,8 @@ For Spring Boot applications, register audit stores as beans:
 
 ```java
 @Bean
-public AuditStore auditStore(MongoClient mongoClient) {
-    return new MongoDBSyncAuditStore(mongoClient, "flamingock-audit");
+public AuditStore auditStore(MongoDBSyncTargetSystem mongoDBSyncTargetSystem) {
+    return MongoDBSyncAuditStore.from(mongoDBSyncTargetSystem);
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically
