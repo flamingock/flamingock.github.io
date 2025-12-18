@@ -86,7 +86,7 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Create a Couchbase Target System
-CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, bucket);
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, "bucketName");
 // Audit store configuration (mandatory via constructor)
 var auditStore = CouchbaseSyncAuditStore.from(couchbaseTargetSystem)
     .withScopeName("custom-scope")     // Optional configuration

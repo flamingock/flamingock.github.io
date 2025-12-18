@@ -18,7 +18,6 @@ The lock mechanism is **mandatory** and is stored in your configured audit store
 | `lockQuitTryingAfterMillis`          | `180000` (3 min) | How long to retry acquiring the lock if another instance holds it.                  |
 | `lockTryFrequencyMillis`             | `1000` (1 sec)   | Interval between attempts while waiting for the lock.                               |
 | `throwExceptionIfCannotObtainLock`   | `true`           | Whether Flamingock should fail if the lock can't be acquired.                       |
-| `enableRefreshDaemon`                | `true`           | Whether to run a background thread that periodically extends the lock.              |
 
 
 ## Why locking matters
@@ -59,7 +58,6 @@ Flamingock.builder()
   .setLockQuitTryingAfterMillis(300000)
   .setLockTryFrequencyMillis(2000)
   .setThrowExceptionIfCannotObtainLock(true)
-  .setEnableRefreshDaemon(true)
   ...
 ```
 

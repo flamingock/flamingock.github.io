@@ -90,7 +90,7 @@ For our example:
 - A Kafka cluster (`kafka`)
 
 ```java
-var sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+var sql = new SqlTargetSystem("mysql-inventory", mysqlDataSource);
 var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 var kafka = new NonTransactionalTargetSystem("kafka-id");
 ```
