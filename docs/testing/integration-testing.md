@@ -2,6 +2,8 @@
 title: Integration testing
 sidebar_position: 3
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 ## Introduction
 
@@ -11,7 +13,15 @@ The recommended approach is to use your **production Flamingock builder** with c
 
 ## Setup
 
-Add the test support dependency:
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+
+```kotlin
+testImplementation("io.flamingock:flamingock-test-support:$version")
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 
 ```xml
 <dependency>
@@ -21,6 +31,9 @@ Add the test support dependency:
     <scope>test</scope>
 </dependency>
 ```
+
+  </TabItem>
+</Tabs>
 
 ## FlamingockTestSupport
 

@@ -2,6 +2,8 @@
 title: Spring Boot testing
 sidebar_position: 4
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 ## Introduction
 
@@ -11,14 +13,27 @@ For Spring Boot applications, Flamingock provides dedicated test support that in
 
 Add the Spring Boot test support dependency:
 
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+
+```kotlin
+testImplementation("io.flamingock:flamingock-test-support:$version")
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-test-support</artifactId>
+    <artifactId>flamingock-test-support</artifactId>
     <version>${flamingock.version}</version>
     <scope>test</scope>
 </dependency>
 ```
+
+  </TabItem>
+</Tabs>
 
 ## @FlamingockSpringBootTest
 
