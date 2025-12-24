@@ -76,6 +76,11 @@ The audit store tracks:
 - **Distributed locking**: Prevents concurrent executions across multiple instances
 - **Issue tracking**: Failed or uncertain executions requiring resolution
 
+### Relationship with Target Systems
+Although they serve different purposes, the Audit Store is **built directly from a Target System**.
+
+This means it **reuses the same underlying connection and driver** (e.g., the same MongoDB client or Couchbase cluster) to store its metadata. However, it uses a separate internal handle to ensure that audit data remains logically isolated from your business data.
+
 Unlike target systems (which your code modifies), the audit store is managed automatically by Flamingock and never modified by your Changes.
 
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../get-started/audit-store-vs-target-system.md)
@@ -122,8 +127,8 @@ For Spring Boot applications, register audit stores as beans:
 
 ```java
 @Bean
-public AuditStore auditStore(MongoClient mongoClient) {
-    return new MongoDBSyncAuditStore(mongoClient, "flamingock-audit");
+public AuditStore auditStore(MongoDBSyncTargetSystem mongoDBSyncTargetSystem) {
+    return MongoDBSyncAuditStore.from(mongoDBSyncTargetSystem);
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically
@@ -180,32 +185,31 @@ implementation("org.mongodb:mongodb-driver-sync:5.2.0")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a MongoDB Target System to get the connection configuration:
 
 ```java
-var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
+var auditStore = MongoDBSyncAuditStore.from(mongoDbTargetSystem);
 ```
 
-The constructor requires the MongoDB client and database. Optional configurations can be added via `.withXXX()` methods.
+A `MongoDBSyncAuditStore` must be created from an existing `MongoDBSyncTargetSystem`.
+
+This ensures that both components point to the **same external MongoDB database**:
+
+- The **Target System** applies your business changes.
+- The **Audit Store** stores the execution history associated with those changes.
+
+Internally, the Audit Store takes the Target System’s connection settings (MongoClient + database name) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+
+> For a full conceptual explanation of this relationship, see
+> **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The MongoDB audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency      | Constructor Parameter | Description                                                            |
-|-----------------|-----------------------|------------------------------------------------------------------------|
-| `MongoClient`   | `mongoClient`         | MongoDB connection client - **required** for audit store configuration |
-| `MongoDatabase` | `mongoDatabase`       | Target database instance - **required** for storing audit data         |
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -225,8 +229,10 @@ These configurations can be customized via `.withXXX()` methods with **no global
 Here's a comprehensive example showing the configuration:
 
 ```java
+// Create a MongoDB Target System
+MongoDBSyncTargetSystem mongoDbSyncTargetSystem = new MongoDBSyncTargetSystem("mongodb", mongoClient, auditDatabase);
 // Audit store configuration (mandatory via constructor)
-var auditStore = new MongoDBSyncAuditStore(mongoClient, auditDatabase)
+var auditStore = MongoDBSyncAuditStore.from(mongoDbSyncTargetSystem)
     .withWriteConcern(WriteConcern.W1)         // Optional configuration
     .withReadPreference(ReadPreference.secondary());  // Optional configuration
 
@@ -238,15 +244,11 @@ Flamingock.builder()
 ```
 
 **Audit store configuration resolution:**
-- **MongoClient**: Must be provided via constructor
-- **MongoDatabase**: Must be provided via constructor
+- **MongoDBSyncTargetSystem**: Must be provided via `from()` method. Gets `MongoClient` and `DatabaseName` from the target system.
 - **WriteConcern**: Uses explicit configuration instead of default
 - **ReadPreference**: Uses explicit configuration instead of default
 
 This architecture ensures explicit audit store configuration with no fallback dependencies.
-
-
-
 
 ## Next steps
 
@@ -298,7 +300,7 @@ Add your preferred JDBC driver dependency to your project:
 // PostgreSQL example
 implementation("org.postgresql:postgresql:42.7.0")
 
-// MySQL example  
+// MySQL example
 implementation("mysql:mysql-connector-java:8.0.33")
 
 ```
@@ -324,31 +326,31 @@ implementation("mysql:mysql-connector-java:8.0.33")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a SQL Target System to get the connection configuration:
 
 ```java
-var auditStore = new SqlAuditStore(dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
-The constructor requires a `DataSource`. Optional configurations can be added via `.withXXX()` methods.
+A `SqlAuditStore` must be created from an existing `SqlTargetSystem`.
+
+This ensures that both components point to the **same external SQL instance**:
+
+- The **Target System** applies your business changes.
+- The **Audit Store** stores the execution history associated with those changes.
+
+Internally, the Audit Store takes the Target System’s connection settings (SQL Datasource) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+
+> For a full conceptual explanation of this relationship, see
+> **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The SQL audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency             | Constructor Parameter | Description                                                              |
-|------------------------|-----------------------|--------------------------------------------------------------------------|
-| `javax.sql.DataSource` | `dataSource`          | SQL database connection pool - **required** for audit store configuration |
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -365,8 +367,10 @@ These configurations can be customized via `.withXXX()` methods with **no global
 Here's a comprehensive example showing the configuration:
 
 ```java
+// Create a SQL Target System
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
 // Audit store configuration (mandatory via constructor)
-var auditStore = new SqlAuditStore(dataSource)
+var auditStore = SqlAuditStore.from(couchbaseTargetSystem)
     .withAutoCreate(true)                          // Optional configuration
     .withAuditRepositoryName("custom_audit_log")   // Optional configuration
     .withLockRepositoryName("custom_lock_table");  // Optional configuration
@@ -379,7 +383,7 @@ Flamingock.builder()
 ```
 
 **Audit store configuration resolution:**
-- **DataSource**: Must be provided via constructor
+- **SqlTargetSystem**: Must be provided via `from()` method. Gets `Datasource` from the target system.
 - **Database dialect**: Automatically detected from DataSource vendor
 - **Table configurations**: Uses explicit configuration instead of defaults
 
@@ -397,7 +401,8 @@ config.setPassword("password");
 config.setDriverClassName("org.postgresql.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
-var auditStore = new SqlAuditStore(dataSource);
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
 ### MySQL
@@ -410,7 +415,8 @@ config.setPassword("password");
 config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
-var auditStore = new SqlAuditStore(dataSource);
+SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
+var auditStore = SqlAuditStore.from(sqlTargetSystem);
 ```
 
 ## Schema management
@@ -475,55 +481,31 @@ implementation("software.amazon.awssdk:dynamodb-enhanced:2.28.0")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a DynamoDB Target System to get the connection configuration:
 
 ```java
-var auditStore = new DynamoSyncAuditStore(dynamoDbClient);
+var auditStore = DynamoDBAuditStore.from(dynamoDBTargetSystem);
 ```
 
-The constructor requires the DynamoDB client. Optional configurations can be added via `.withXXX()` methods.
+A `DynamoDBAuditStore` must be created from an existing `DynamoDBTargetSystem`.
+
+This ensures that both components point to the **same external DynamoDB instance**:
+
+- The **Target System** applies your business changes.
+- The **Audit Store** stores the execution history associated with those changes.
+
+Internally, the Audit Store takes the Target System’s connection settings (DynamoClient) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+
+> For a full conceptual explanation of this relationship, see
+> **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The DynamoDB audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency       | Constructor Parameter | Description                                                                      |
-|------------------|-----------------------|----------------------------------------------------------------------------------|
-| `DynamoDbClient` | `dynamoDbClient`      | AWS DynamoDB client - **required** for audit store configuration and data access |
-
-## Configuration example
-
-Here's a comprehensive example showing the configuration:
-
-```java
-// Audit store configuration (mandatory via constructor)
-var auditStore = new DynamoSyncAuditStore(dynamoDbClient)
-    .withReadCapacityUnits(10)     // Optional configuration
-    .withWriteCapacityUnits(10);   // Optional configuration
-
-// Register with Flamingock
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(targetSystems...)
-    .build();
-```
-
-**Audit store configuration resolution:**
-- **DynamoDbClient**: Must be provided via constructor
-- **Capacity settings**: Uses explicit configuration via properties
-
-This architecture ensures explicit audit store configuration with no fallback dependencies.
-
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -538,6 +520,30 @@ These configurations can be customized via `.withXXX()` methods with **no global
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Create a DynamodDB Target System
+DynamodDBTargetSystem dynamoDBTargetSystem = new DynamodDBTargetSystem("dynamodb", dynamoDbClient);
+// Audit store configuration (mandatory via constructor)
+var auditStore = DynamoSyncAuditStore.from(dynamoDBTargetSystem)
+    .withReadCapacityUnits(10)     // Optional configuration
+    .withWriteCapacityUnits(10);   // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **DynamoDBTargetSystem**: Must be provided via `from()` method. Gets `DynamoClient` from the target system.
+- **Capacity settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 ## Next steps
 
@@ -588,57 +594,31 @@ implementation("com.couchbase.client:java-client:3.7.0")
 
 ## Basic setup
 
-Configure the audit store:
+Configure the audit store using a Couchbase Target System to get the connection configuration:
 
 ```java
-var auditStore = new CouchbaseSyncAuditStore(cluster, bucket);
+var auditStore = CouchbaseAuditStore.from(couchbaseTargetSystem);
 ```
 
-The constructor requires the Couchbase cluster and bucket. Optional configurations can be added via `.withXXX()` methods.
+A `CouchbaseAuditStore` must be created from an existing `CouchbaseTargetSystem`.
+
+This ensures that both components point to the **same external Couchbase bucket**:
+
+- The **Target System** applies your business changes.
+- The **Audit Store** stores the execution history associated with those changes.
+
+Internally, the Audit Store takes the Target System’s connection settings (cluster + bucket name) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+
+> For a full conceptual explanation of this relationship, see
+> **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Audit Store
 Once created, you need to register this audit store with Flamingock. See [Registering the community audit store](../introduction.md#registering-the-community-audit-store) for details.
 :::
 
-## Audit Store configuration
-
-The Couchbase audit store uses explicit configuration with no global context fallback.
-
-### Constructor dependencies (mandatory)
-
-These dependencies must be provided at audit store creation time with **no global context fallback**:
-
-| Dependency | Constructor Parameter | Description                                                               |
-|------------|-----------------------|---------------------------------------------------------------------------|
-| `Cluster`  | `cluster`             | Couchbase cluster connection - **required** for audit store configuration |
-| `Bucket`   | `bucket`              | Target bucket instance - **required** for storing audit data              |
-
-## Configuration example
-
-Here's a comprehensive example showing the configuration:
-
-```java
-// Audit store configuration (mandatory via constructor)
-var auditStore = new CouchbaseSyncAuditStore(cluster, bucket)
-    .withScopeName("custom-scope")     // Optional configuration
-    .withAutoCreate(true);             // Optional configuration
-
-// Register with Flamingock
-Flamingock.builder()
-    .setAuditStore(auditStore)
-    .addTargetSystems(targetSystems...)
-    .build();
-```
-
-**Audit store configuration resolution:**
-- **Cluster**: Must be provided via constructor
-- **Bucket**: Must be provided via constructor
-- **Scope settings**: Uses explicit configuration via properties
-
-This architecture ensures explicit audit store configuration with no fallback dependencies.
-
-
-### Optional configuration (.withXXX() methods)
+## Optional configuration (.withXXX() methods)
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
@@ -651,6 +631,30 @@ These configurations can be customized via `.withXXX()` methods with **no global
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
+## Configuration example
+
+Here's a comprehensive example showing the configuration:
+
+```java
+// Create a Couchbase Target System
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, bucket);
+// Audit store configuration (mandatory via constructor)
+var auditStore = CouchbaseSyncAuditStore.from(couchbaseTargetSystem)
+    .withScopeName("custom-scope")     // Optional configuration
+    .withAutoCreate(true);             // Optional configuration
+
+// Register with Flamingock
+Flamingock.builder()
+    .setAuditStore(auditStore)
+    .addTargetSystems(targetSystems...)
+    .build();
+```
+
+**Audit store configuration resolution:**
+- **CouchbaseTargetSystem**: Must be provided via `from()` method. Gets `Cluster` and `BucketName` from the target system.
+- **Scope settings**: Uses explicit configuration via properties
+
+This architecture ensures explicit audit store configuration with no fallback dependencies.
 
 ## Next steps
 
@@ -1844,6 +1848,7 @@ audit:
     # port: 27017
     # username: admin
     # password: secret
+    collection: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
   </TabItem>
   <TabItem value="dynamodb" label="Amazon DynamoDB">
@@ -1857,6 +1862,7 @@ audit:
     # endpoint: http://localhost:8000
     # accessKey: local
     # secretKey: local
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
   </TabItem>
   <TabItem value="couchbase" label="Couchabse">
@@ -1869,7 +1875,22 @@ audit:
     username: "your-username"
     password: "your-password"
     bucket-name: "my-app"
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
 ```
+  </TabItem>
+  <TabItem value="sql" label="SQL">
+#### SQL configuration
+```yaml
+serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
+audit:
+  sql:
+    endpoint: "jdbc:sqlserver://localhost:1433/test-db"
+    username: "your-username"
+    password: "your-password"
+    sql-dialect: "SqlServer" # Optional, if not set will be auto-detected based on endpoint
+    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
+```
+To see actual supported databases, check [SQL Audit Store](../audit-stores/community/sql-audit-store#supported-databases).
   </TabItem>
 </Tabs>
 
@@ -2425,6 +2446,10 @@ Conditional stage execution based on dependencies or conditions is planned for f
 
 ## Required fields
 
+`@EnableFlamingock` annotation must define:
+- `stages`: Array of stage configurations
+- `strictStageMapping` (optional): Validation mode for unmapped changes (default: `true`)
+
 Each stage must define:
 - `name` (optional): A unique identifier - if not provided, it will be auto-derived from the location
 - `location`: The package or directory where changes are located
@@ -2579,6 +2604,69 @@ By default, Flamingock automatically scans the following source and resource roo
 - Verify that the class or YAML file is located in the expected package/directory
 - For code-based changes, ensure the class is annotated with `@Change`
 - For template-based changes, check file names and YAML formatting
+
+
+## Setup validation
+
+Flamingock validates that all code-based changes (classes annotated with `@Change`) are properly mapped to a stage during compilation.
+
+### Strict stage mapping
+
+By default, Flamingock enforces strict stage mapping validation:
+
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = true  // Default behavior
+)
+public class FlamingockConfig {
+    // Configuration class
+}
+```
+
+When `strictStageMapping` is enabled (default):
+- **Compilation fails** if any `@Change` class is found outside the configured stage locations
+- Ensures all changes are properly organized and will be executed
+
+When `strictStageMapping` is disabled:
+- **Only warnings are emitted** for unmapped changes during compilation
+- Unmapped changes will be ignored at runtime
+
+### Compilation fails with "unmapped changes" error
+- Check that all `@Change` classes are located within the configured stage locations
+- If you have changes in multiple locations, consider adding an additional stages to cover them. Visit our [multiple-stages](#multiple-stages-advanced) sections for more information
+- Temporarily set `strictStageMapping = false` to see warnings instead of errors during migration
+- Move unmapped changes to the correct stage location or remove unused changes
+
+### Example scenarios
+
+**Scenario 1: Change outside configured location (strict mode)**
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = true  // Default
+)
+```
+
+If you have a change at `com.yourcompany.yourpackage.OldChange` (outside the configured location):
+- ❌ **Compilation fails** with detailed error message
+- Must move the change to `com.yourcompany.changes` or add a new stage with location `com.yourcompany.yourpackage.OldChange`
+
+**Scenario 2: Relaxed validation**
+```java
+@EnableFlamingock(
+    stages = { @Stage(location = "com.yourcompany.changes") },
+    strictStageMapping = false  // Relaxed mode
+)
+```
+
+If you have a change at `com.yourcompany.yourpackage.OldChange`:
+- ⚠️ **Warning emitted** during compilation
+- Compilation succeeds but change is ignored at runtime
+
+:::tip Best Practice
+Keep `strictStageMapping = true` (default) to ensure all changes are properly mapped and executed. Only disable it temporarily during large refactoring or migration scenarios.
+:::
 
 ---
 
@@ -3090,7 +3178,7 @@ Learn more about the basics of GraalVM native image compilation in the [GraalVM 
 <TabItem value="gradle" label="Gradle" default>
 
 ```kotlin
-implementation("io.flamingock:flamingock-graalvm:$flamingockVersion")
+implementation("io.flamingock:flamingock-graalvm:$version")
 ```
 
 </TabItem>
@@ -3146,7 +3234,44 @@ See the [GraalVM resource configuration documentation](https://www.graalvm.org/l
 :::
 
 
-### 4. Build the application
+### 4. Build the application (Uber JAR / fat JAR)
+
+GraalVM native-image works best when you provide a **self-contained executable JAR** (often called **Uber JAR** or **fat JAR**) that already includes:
+
+- Your application classes
+- All dependency classes
+- A proper `Main-Class` entry in the JAR manifest
+
+In Gradle, this can be achieved by customizing the `jar` task to produce an Uber JAR:
+
+```kotlin
+tasks.named<Jar>("jar") {
+    manifest {
+        // Replace with your own main application class
+        attributes["Main-Class"] = "com.example.app.MyFlamingockApp"
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.get().output)
+
+    from({
+        configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+    })
+}
+```
+
+:::warning Why this matters for GraalVM
+GraalVM’s `native-image` command expects a **single, runnable JAR** with a correct `Main-Class` in the manifest.  
+If your JAR:
+
+- does **not** contain all dependencies, or  
+- does **not** declare a `Main-Class`  
+
+then `native-image` may fail or produce a binary that cannot start correctly.
+:::
+
+Now build the application:
 
 ```bash
 ./gradlew clean build
@@ -3363,7 +3488,7 @@ To use the Spring Boot integration, add the following dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
+implementation("io.flamingock:flamingock-springboot-integration:$version")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
@@ -3424,7 +3549,7 @@ Add the Flamingock Spring Boot integration dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
+implementation("io.flamingock:flamingock-springboot-integration:$version")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
@@ -3525,7 +3650,7 @@ Add the Flamingock Spring Boot integration dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$flamingockVersion")
+implementation("io.flamingock:flamingock-springboot-integration:$version")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
@@ -3840,10 +3965,10 @@ Add Flamingock to your build:
   <TabItem value="gradle" label="Gradle" default>
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation(platform("io.flamingock:flamingock-community-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 
-annotationProcessor("io.flamingock:flamingock-processor:$flamingockVersion")
+annotationProcessor("io.flamingock:flamingock-processor:$version")
 ```
 
   </TabItem>
@@ -4175,67 +4300,142 @@ For detailed information about stages and advanced configurations, see the [Setu
 // File: get-started/audit-store-vs-target-system
 
 # Target systems vs audit store
-*Understanding Flamingock's dual-system design for enterprise safety*
+*Understanding Flamingock’s dual-system model for safe, controlled evolution*
 
-Flamingock's architecture separates business changes from execution tracking through two distinct system types. This separation is fundamental to Flamingock's safety guarantees and competitive advantages.
+Flamingock works with two closely related concepts:
 
+- The **Target System** — where your application applies real, versioned changes.
+- The **Audit Store** — where Flamingock records the execution history of those changes.
 
-## The dual-system architecture
+Although they are conceptually distinct, the Audit Store is not an entirely separate system.  
+Instead, it is **a specialized form of a Target System**, created from a Target System that supports this role and used exclusively for audit tracking.
 
-### Target systems: where changes are applied
-**Target systems** are your business systems where actual changes happen:
+This relationship is not about sharing configuration: the Audit Store is built from a Target System because **both must point to the same external system**. A Target System represents an external system that Flamingock can modify, while the Audit Store represents *that same external system* in audit mode, used only to store execution history. Internally, the Audit Store derives its connection settings from the Target System but uses its own access handle, keeping audit operations isolated while ensuring both components operate on the same underlying environment.
 
-- **Examples**: User database, Product catalog, Order management system, Kafka topics, S3 buckets, REST APIs
-- **Purpose**: Store and process your business data and configurations
-- **Modified by**: Your business logic through Changes
-- **Configuration**: See [Target Systems](../target-systems/introduction.md) for technical setup
+This separation — yet tight relationship — is key to Flamingock’s safety model.
 
-### Audit store: where execution is tracked
-**Audit store** is Flamingock's dedicated system for tracking what happened:
-
-- **Examples**: Flamingock Cloud backend or dedicated audit table/collection in the user's database.
-- **Purpose**: Record execution history, compliance data, issue tracking
-- **Modified by**: Flamingock framework automatically (never your code)
-- **Configuration**: See [Audit Stores](../audit-stores/introduction.md) for technical setup
+:::tip Clarification
+Flamingock can register multiple Target Systems, but only one of them is used as the base for the Audit Store
+:::
 
 
-## Why this separation matters
+---
 
-### Enterprise safety benefits
-1. **Complete Audit Trail**: Every change attempt is recorded regardless of business system failures
-2. **Governance Separation**: Business data and compliance data have different access patterns
-3. **Recovery Capabilities**: Operations team can resolve issues by reading audit state, not business data
-4. **Compliance Independence**: Audit integrity is maintained even during business system issues
+## Quick definitions (TL;DR)
 
+**Target System →**  The external system where Flamingock applies your changes (e.g., a database, a schema registry, object storage, or an API).
 
-## Target system types
+**Audit Store →**  A Target System that supports audit tracking and is used to record what Flamingock executed.  
+*(Only some Target Systems support this role.)*
 
-### Transactional target systems
-Systems with native ACID transaction support (PostgreSQL, MySQL, MongoDB 4.0+):
+---
 
-**Safety and coordination:**
-- **Community Audit Stores**: Reliable execution tracking and recovery capabilities
-- **Cloud Edition**: Advanced coordination protocols ensure complete recoverability
+## Target Systems: where your changes happen
 
-### Non-transactional target systems
-Systems without native transaction support (Kafka, S3, REST APIs, File Systems):
+A **Target System** is any external system your application depends on and where Flamingock applies your changes.
 
-**Safety and coordination:**
-- **Community Audit Stores**: Reliable execution tracking and rollback-based recovery
-- **Cloud Edition**: Enhanced recoverability with custom validation options
+Typical examples:
 
+- Databases (MongoDB, SQL, DynamoDB, Couchbase)
+- Kafka Schema Registry
+- Kafka topics
+- S3/object storage
+- External configuration stores
+- REST APIs or service endpoints
 
-## Audit store types
+The Target System represents your *business system*:  
+it stores the data, schemas, state or configuration that your application relies on.
 
-### Cloud Edition audit store
-Flamingock Cloud provides a fully managed audit store with superior synchronization and recovery through advanced coordination protocols, real-time dashboards, advanced analytics, and multi-environment governance.
+Flamingock applies real changes here — safely, sequentially, and in a controlled manner.
 
-### Community audit stores
-User-provided audit store (MongoDB, DynamoDB, Couchbase, SQL) that ensures complete execution tracking, prevents duplicate executions, and provides basic recovery capabilities. See [Audit stores](../audit-stores/introduction.md) for setup.
+For setup details, see:  
+**[Target Systems › Introduction](../target-systems/introduction.md)**
 
+---
 
+## Audit Store: where execution is tracked
 
-## How it works
+The **Audit Store** is where Flamingock records the state of every changes:
+
+- when it ran  
+- in what order  
+- in which environment  
+- its execution status  
+- and all relevant metadata
+
+Its purpose:
+
+- Ensure idempotency  
+- Prevent duplicate execution  
+- Provide a reliable audit trail  
+- Enable safe recovery after failures  
+- Give full visibility into system evolution  
+
+For setup details, see:  
+**[Audit Stores › Introduction](../audit-stores/introduction.md)**
+
+---
+
+# The Audit Store is a specialized Target System
+
+Although conceptually separate, the Audit Store is **not a new database**, nor a new cluster, nor a separate connection.
+
+Instead:
+
+### ✔ It is built from an existing Target System  
+
+### ✔ It reuses the same driver and connection settings, but creates its own internal access handle 
+
+### ✔ It adds only the minimal configuration needed for auditing  
+
+In practice, the Audit Store is simply:
+
+> **the same Target System (when it supports audit tracking) running in audit mode.**
+
+It uses the same underlying configuration (driver, client, database/namespace),
+but through **its own internal object**, ensuring isolation from the Target System’s business operations.
+
+---
+
+## Why separate the concepts?
+
+Even though the Audit Store is technically built from a Target System, separating the **concepts** gives you clear guarantees:
+
+### 1. Different responsibilities
+- **Target System →** business data  
+- **Audit Store →** execution history  
+
+This prevents mixing operational data with audit metadata.
+
+### 2. Predictable recovery
+If something fails halfway:
+
+- Flamingock consults the **Audit Store**, not the business system.
+- Flamingock knows exactly what ran and what hasn’t.
+- Flamingock can safely resume or stop.
+
+### 3. Governance and compliance
+Audit data often has:
+
+- different retention rules  
+- different permissions  
+- stricter access controls  
+- different visibility requirements  
+
+The conceptual separation supports this.
+
+### 4. Deployment flexibility
+You can store the audit history in:
+
+- **Flamingock Cloud**, or  
+- a local collection/table in the same Target System, or  
+- a separate Target System altogether  
+
+The model works consistently in all cases.
+
+---
+
+## How it works (visual overview)
 
 ```
      Your Changes:
@@ -4296,31 +4496,42 @@ User-provided audit store (MongoDB, DynamoDB, Couchbase, SQL) that ensures compl
 
 ```
 
-**The Flow:**
-1. **You create Changes** - Define what changes need to happen
-2. **Flamingock orchestrates** - Safely applies changes across all your systems
-3. **Target systems evolve** - Your business systems get updated
-4. **Audit store tracks everything** - Complete history for compliance and recovery
 
+**Summary of the flow:**
+
+1. **You define changes**  
+2. **Flamingock executes them safely**  
+3. **Target Systems evolve**  
+4. **Audit Store captures the complete execution history**  
+
+This is the foundation of Flamingock’s safety guarantees.
+
+---
 
 ## Key takeaways
 
 ### For developers
-- **Target systems**: Where your business logic runs and makes changes
-- **Audit store**: Automatically managed by Flamingock for tracking and compliance
-- **Implementation**: See [Target Systems](../target-systems/introduction.md) and [Audit Stores](../audit-stores/introduction.md)
+- Target Systems → where changes actually happen  
+- Audit Store → automatically maintained by Flamingock  
+- You never write to the Audit Store yourself
 
 ### For architects
-- **Clean separation**: Business logic separated from execution tracking
-- **Enterprise scalability**: Architecture supports compliance, governance, multi-environment
-- **Flexibility**: Works with any target system type (transactional, non-transactional, hybrid)
+- Clean separation of business vs control responsibilities  
+- Consistent behaviour across environments  
+- Predictable recovery even in distributed systems
 
 ### For operations
-- **Issue resolution**: Tools operate on audit store, you fix target systems
-- **Compliance**: Complete audit trail independent of business system availability
-- **Recovery**: Always know the state, even during complex failure scenarios
+- Diagnose issues using audit data  
+- Always know the exact execution state  
+- Avoid duplicates and inconsistent partial updates  
 
-**Bottom Line**: This dual-system architecture is what enables Flamingock to provide enterprise-grade safety and governance capabilities that traditional tools cannot match.
+---
+
+## Bottom line
+
+> **Flamingock’s dual-system model (where the Audit Store is a specialization of the Target System) is what enables safe, predictable and auditable evolution of distributed systems.**
+
+It ensures that changes are applied once, tracked forever, and recoverable at any time — regardless of failures, concurrency, or distributed complexity.
 
 ---
 
@@ -4895,17 +5106,246 @@ If your question is not listed here, please check the corresponding edition’s 
 
 // File: resources/coming-from-mongock
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Coming from Mongock
 
-:::info 🚀 Transition Support Coming Soon
+Flamingock provides first-class support for teams migrating from **Mongock**.  
+If your application was previously using Mongock, Flamingock allows you to transition **quickly, safely, and with minimal effort** — without rewriting any legacy migration code.
 
-We're actively working on a smooth transition path from Mongock to Flamingock.
+In most cases, the migration consists of only adding **one dependency and one annotation**, and Flamingock takes care of everything else.
 
-Our team is developing the mechanisms and best practices to make your transition as easy as possible, following Flamingock's architectural principles. Both the transition features and the complete guide will be available soon.
+This feature is designed to:
 
-Stay tuned for updates!
+- **Import your existing Mongock audit log**  
+- **Recognize which Mongock change units were already applied**  
+- **Execute only the ones that were still pending**  
+- **Let you continue using Flamingock natively for all new changes**  
 
+:::info
+Flamingock does **not** support creating new Mongock ChangeUnits going forward.  
+This integration exists purely to make the migration **fast, simple and safe**.
 :::
+
+## Quick start for Mongock users
+
+Migrating from Mongock is intentionally simple, it only requires two additional steps on top of the [standard Flamingock setup](../get-started/quick-start).
+
+### 1. Add Mongock Support dependency
+
+
+
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+```kotlin
+annotationProcessor("io.flamingock:mongock-support:$version")
+implementation("io.flamingock:mongock-support:$version")
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+```xml
+
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>mongock-support</artifactId>
+    <version>${flamingock.version}</version>
+</dependency>
+
+<!-- Annotation processor -->
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
+            <configuration>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>io.flamingock</groupId>
+                        <artifactId>mongock-support</artifactId>
+                        <version>${flamingock.version}</version>
+                    </path>
+                </annotationProcessorPaths>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
+```
+
+  </TabItem>
+</Tabs>
+
+
+### 2. Add `@MongockSupport`
+
+Place the annotation in any configuration class (typically your application class):
+
+```java
+@MongockSupport(targetSystem = "mongodb-target-system")
+public class Application { }
+```
+:::info
+The **`targetSystem` field** refers to the **ID of a target system that you register in Flamingock** as part of your normal application setup.  
+If you are not familiar with how target systems are registered, see [Configuring Target Systems](../target-systems/introduction).
+:::
+The target system you register must point to the same database that Mongock previously used.
+
+Flamingock will use this target system to:
+
+- import Mongock’s audit log,  
+- execute any Mongock change units that were not yet applied, and  
+- continue applying any new Flamingock changes that target this system.
+
+A full explanation of why this is required (and how Mongock’s model differs from Flamingock’s) is provided in the section [Understanding the target system for Mongock migrations](#understanding-the-target-system-for-mongock-migrations) below.
+
+
+
+**That’s all you need to activate Mongock support.** From there, Flamingock handles the detection of legacy changes, audit import, and stage ordering automatically.
+
+## Understanding the target system for Mongock migrations
+
+Mongock and Flamingock follow different models when interacting with external systems, so it is important to understand how the `targetSystem` defined in `@MongockSupport` fits into a Flamingock application.
+
+### 1. How Mongock handled databases
+
+Mongock used a **single database for everything**. There was no distinction between *audit store* and *target system*.  
+A single MongoDB/DynamoDB/DocumentDB instance played both roles, storing its **audit log**, and  applying its **change units**.
+
+### 2. How Flamingock handles external systems
+
+Flamingock separates responsibilities:
+
+- the **audit store** records the execution history.  
+- one or more **target systems** are where change units are applied.
+
+These are independent concepts in Flamingock, even though in many practical setups the audit store is instantiated from one of the target systems.  
+(See: [Audit Store vs Target System](../get-started/audit-store-vs-target-system))
+
+### 3. Why Mongock migrations reuse a target system
+
+When migrating from Mongock, Flamingock needs to interact with the same system that Mongock previously used for:
+
+1. retrieving its audit log, and  
+2. applying its changes.
+
+Since Mongock used one database for both responsibilities, Flamingock reuses **one of your registered target systems** (the one that corresponds to Mongock’s previous database) to cover both roles during the migration.
+
+This allows Flamingock to:
+
+- **import Mongock’s audit log** from that system, and  
+- **execute any pending Mongock change units** against the correct system.
+
+### 4. What you need to configure
+
+In your Flamingock application:
+
+- you will register one or more target systems depending on your needs,  
+- and the `targetSystem` field in `@MongockSupport` must reference the **ID of the target system that represents the database Mongock used**.
+
+Flamingock will then:
+
+- read the legacy Mongock audit log from that system,  
+- skip Mongock change units that were already applied,  
+- execute any Mongock change units that were pending, and  
+- continue applying any new Flamingock change units **that target this specific system**.
+
+### 5. Summary
+
+Using one of your target systems to support Mongock migrations ensures:
+
+- compatibility with Mongock’s original single-database model,  
+- correct import of the legacy audit log,  
+- correct execution of pending legacy changes,  
+- and a smooth transition into using Flamingock’s multi–target-system architecture.
+
+For more details about configuring target systems in Flamingock, see [Target Systems](../target-systems/introduction) and [Audit Store vs Target System](../get-started/audit-store-vs-target-system).
+
+
+## Treat legacy Mongock change units as immutable
+
+Mongock `@ChangeUnit` classes represent historical operations that may already have been executed in production.  
+To ensure a safe and predictable migration, Flamingock **treats these legacy change units as immutable artifacts**, following the same best practices we apply to Flamingock changes.
+
+**Immutability implies:**
+
+- not modifying internal logic  
+- not renaming classes or packages  
+- not changing `id`, `order` or author  
+- not relocating, splitting or merging them  
+- not altering annotations or structure  
+
+Although Flamingock may technically detect modified classes, the migration logic **assumes** they remain unchanged.  
+If they diverge from what Mongock originally executed, Flamingock cannot guarantee correct audit mapping or behaviour.
+
+Preserving immutability ensures:
+
+- consistent audit import  
+- correct skip/execute decisions  
+- chronological integrity  
+- reproducible migrations across environments  
+
+Treat legacy Mongock changes as **immutable historical records**.
+
+
+## How it works internally (Advanced)
+
+Mongock support activates **when the `@MongockSupport` annotation is present**.
+
+At compilation time, Flamingock’s annotation processor scans the entire classpath and discovers all legacy Mongock changeUnits(clases annotated with `@ChangeUnit`)
+
+:::info 
+if the annotation processor is present in your build but `@MongockSupport` is missing, Flamingock will fail fast to avoid misconfiguration.
+:::
+
+### Automatic stage structure
+
+Flamingock creates two additional stages that always run before your Flamingock stages:
+
+#### 1. Mongock Audit Import Stage (system stage)
+Imports the Mongock audit log and converts it to Flamingock’s audit format.  
+This always runs first so Flamingock can safely determine which legacy changes were already applied.
+
+#### 2. Mongock Legacy Stage (auto-generated user stage)
+Contains all Mongock `@ChangeUnit` classes that were detected during compilation.
+
+At runtime:
+
+- Change units **already applied** → *skipped*  
+- Change units **pending** → *Flamingock executes them*  
+
+After this stage finishes, Flamingock continues with your normal user-defined stages.
+
+
+## Compatibility notes
+
+- Works with MongoDB, DynamoDB, DocumentDB, CouchBase and other systems supported by Mongock  
+- Flamingock restrictions on change IDs, order, etc. do not apply to Mongock change units because they are historical artifacts that must remain unchanged.
+- Compatible with Standalone and Spring Boot runners  
+- Does not interfere with your normal Flamingock stages  
+- Requires no ordering rules or manual wiring — Flamingock builds the stage structure automatically  
+
+## Summary
+
+Migrating from Mongock is intentionally simple:
+
+1. Add the `mongock-support` dependency  
+2. Add the `@MongockSupport` annotation  
+
+Flamingock then:
+
+- imports the Mongock audit log  
+- discovers all Mongock change units  
+- skips the executed ones  
+- executes the pending ones  
+- and continues with your Flamingock stages  
+
+A fast, safe and frictionless transition.
 
 ---
 
@@ -6398,7 +6838,7 @@ Ensure your **Flamingock Template** dependency is included in your project. Exam
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$flamingockVersion"))
+implementation(platform("io.flamingock:flamingock-community-bom:$version"))
 implementation("io.flamingock:flamingock-sql-template")
 ```
   </TabItem>
@@ -6808,40 +7248,226 @@ Whether you are running Flamingock in a local development environment, as part o
 Flamingock is not limited to database systems — it supports a wide range of targets (e.g., message brokers, file systems, APIs). Your testing strategy should reflect the behavior of the underlying systems you integrate with.
 
 
+## Test support framework
+
+Flamingock provides a **BDD-style test support framework** that simplifies integration testing with a fluent Given-When-Then API. The framework is available in two modules:
+
+| Module | Use case |
+|--------|----------|
+| `flamingock-test-support` | Standalone/programmatic tests without Spring |
+| `flamingock-springboot-test-support` | Spring Boot integration tests |
+
+Both modules share the same BDD API for defining expectations and validating results. See [BDD test API](./flamingock-bdd-api.md) for the complete API reference.
+
+
 ## What to test
 
 There are **three primary levels** at which Flamingock-related functionality can be tested:
 
 ### 1. Unit test: Change logic
-Isolate and test the logic inside your `@Apply` and `@Rollback` methods without involving Flamingock’s runtime or audit mechanism.
+Isolate and test the logic inside your `@Apply` and `@Rollback` methods without involving Flamingock's runtime or audit mechanism.
 
 - Use mocks for dependencies (e.g., `MongoTemplate`, `DynamoDbClient`, `S3Client`)
 - Focus on business correctness and expected side effects
 - No audit logs or locking are involved
 
-👉 See [Unit testing your change units](./unit-testing.md)
+See [Unit testing your change units](./unit-testing.md)
 
 
 ### 2. Integration test: Flamingock execution
-Run Flamingock end-to-end in a controlled environment to verify:
+Run Flamingock end-to-end using the test support framework to verify:
 
-- Execution of the `@Apply` method
-- Audit log persistence
+- Execution of changes and audit log persistence
 - Rollback behavior on failure
+- Correct handling of previously applied changes
+- Use `FlamingockTestSupport`
+- Validate changes using the Flamingock BDD API
 
-This usually requires a real or containerized backend system (e.g., using **Testcontainers**).
-
-👉 See [Integration testing Flamingock](./integration-testing.md)
+See [Integration testing Flamingock](./integration-testing.md)
 
 
 ### 3. Spring Boot integration
 For applications using **Spring Boot**, test how Flamingock integrates with your app lifecycle:
 
-- Use `@SpringBootTest` to validate full configuration
-- Confirm that changes run on startup
-- Optionally inject mocks to verify execution paths
+- Use `@FlamingockSpringBootTest` to configure test context with deferred execution
+- Use autowired `FlamingockSpringBootTestSupport` to control when Flamingock runs
+- Validate changes using the Flamingock BDD API
 
-👉 See [Testing with Spring Boot](./springboot-integration-testing.md)
+See [Testing with Spring Boot](./springboot-integration-testing.md)
+
+---
+
+// File: testing/flamingock-bdd-api
+
+## Introduction
+
+Flamingock's test support framework provides a fluent BDD-style API for writing integration tests. This API is shared between standalone and Spring Boot tests — once you understand these concepts, you can apply them in either context.
+
+The API follows a **Given-When-Then** pattern:
+
+```java
+FlamingockTestSupport
+    .givenBuilder(builder)                           // Given: configure the builder
+    .andExistingAudit(APPLIED(PreviousChange.class)) // Given: set up existing audit state
+    .whenRun()                                       // When: trigger execution
+    .thenExpectAuditFinalStateSequence(...)          // Then: define expectations
+    .verify();                                       // Execute and validate
+```
+
+:::info Lazy execution
+All methods are **intermediate operations** — nothing executes until `verify()` is called. This allows you to build complex test scenarios before running them.
+:::
+
+
+## AuditEntryDefinition
+
+Factory methods to define expected audit entries. Import statically for cleaner tests:
+
+```java
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
+```
+
+### String-based (manual)
+
+Specify the change ID directly:
+
+```java
+APPLIED("change-id")
+FAILED("change-id")
+ROLLED_BACK("change-id")
+ROLLBACK_FAILED("change-id")
+```
+
+### Class-based (recommended)
+
+Pass the change class to auto-extract metadata from annotations:
+
+```java
+APPLIED(MyChange.class)
+FAILED(MyChange.class)
+ROLLED_BACK(MyChange.class)
+ROLLBACK_FAILED(MyChange.class)
+```
+
+This approach automatically extracts:
+- `changeId` from `@Change` annotation
+- `author` from `@Change` annotation
+- `className` and `methodName`
+- `targetSystemId` from `@TargetSystem` annotation
+- `order` and `transactional`
+
+### Fluent builder
+
+Add or override specific fields:
+
+```java
+APPLIED(MyChange.class)
+    .withAuthor("custom-author")
+    .withTargetSystemId("mongodb-main")
+    .withErrorTrace("Expected error message")
+    .withTransactional(true)
+    .withOrder("001")
+```
+
+### Selective field validation
+
+The validator only checks fields that are **set** in the definition:
+
+| Definition | Fields validated |
+|------------|------------------|
+| `APPLIED("my-change")` | `changeId`, `state` |
+| `APPLIED(MyChange.class)` | `changeId`, `state`, `author`, `className`, `methodName`, `order`, `transactional`, `targetSystemId`, `recoveryStrategy` |
+| `APPLIED("id").withAuthor("x")` | `changeId`, `state`, `author` |
+
+
+## WhenStage
+
+The `whenRun()` method marks the transition from setup to expectations:
+
+```java
+.givenBuilder(builder)
+.andExistingAudit(APPLIED(PreviousChange.class))
+.whenRun()  // Transition point
+.thenExpect...
+```
+
+
+## Validators
+
+### ExpectAuditFinalStateSequence
+
+Validates the final audit state after execution:
+
+```java
+.whenRun()
+.thenExpectAuditFinalStateSequence(
+    APPLIED(Change1.class),
+    APPLIED(Change2.class)
+)
+.verify();
+```
+
+**Behavior:**
+- Validates only **final states**: `APPLIED`, `FAILED`, `ROLLED_BACK`, `ROLLBACK_FAILED`
+- Filters out intermediate states like `STARTED`
+- Requires **exact count match** — if 3 changes executed, provide exactly 3 definitions
+- Preserves **order** — expected[0] must match actual[0], etc.
+
+### ExpectException
+
+Expects an exception to be thrown during execution:
+
+```java
+.whenRun()
+.thenExpectException(PipelineExecutionException.class, ex -> {
+    assertTrue(ex.getMessage().contains("Expected error"));
+})
+.verify();
+```
+
+If you don't need to validate the exception details, use the single-parameter overload:
+
+```java
+.thenExpectException(PipelineExecutionException.class)
+```
+
+## Final states
+
+The audit log may contain multiple entries per change (e.g., `STARTED` then `APPLIED`). Validators filter out intermediate states and only consider final outcomes:
+
+| State | Meaning |
+|-------|---------|
+| `APPLIED` | Change successfully applied |
+| `FAILED` | Change execution failed |
+| `ROLLED_BACK` | Change was rolled back after failure |
+| `ROLLBACK_FAILED` | Rollback itself failed |
+
+
+## Complete example
+
+```java
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
+
+@Test
+void shouldHandlePartialFailureWithRollback() {
+    FlamingockTestSupport
+        .givenBuilder(builder)
+        .andExistingAudit(
+            APPLIED(InitialSetupChange.class)  // Already applied in previous run
+        )
+        .whenRun()
+        .thenExpectException(PipelineExecutionException.class, ex -> {
+            assertThat(ex.getMessage()).contains("Intentional failure");
+        })
+        .andExpectAuditFinalStateSequence(
+            APPLIED(InitialSetupChange.class),  // Unchanged from precondition
+            APPLIED(SuccessfulChange.class),    // New change succeeded
+            FAILED(FailingChange.class),        // This change failed
+            ROLLED_BACK(FailingChange.class)    // And was rolled back
+        )
+        .verify();
+}
+```
 
 ---
 
@@ -6928,270 +7554,409 @@ class _0001__CreateS3BucketChangeTest {
 
 // File: testing/integration-testing
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 ## Introduction
 
-Integration tests ensure that Flamingock operates correctly in a real environment by executing Changes against live systems. Flamingock uses a **dual-system** that separates:
+Integration tests verify that Flamingock executes changes correctly against real systems. The `flamingock-test-support` module provides a BDD-style API for writing expressive, maintainable integration tests.
 
-- **Target systems**: Where business changes are applied (databases, APIs, cloud services)
-- **Audit stores**: Where execution tracking and metadata are persisted (separate from target systems)
+The recommended approach is to use your **production Flamingock builder** with containerized backends (via Testcontainers), ensuring your tests match real-world behavior.
 
-Integration tests should validate the complete pipeline:
+## Setup
 
-- Change execution against target systems
-- Audit log persistence in audit stores
-- Distributed lock acquisition
-- Recovery and rollback capabilities
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 
+```kotlin
+testImplementation("io.flamingock:flamingock-test-support:$version")
+```
 
-## Example: Creating an S3 bucket
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 
-Suppose you have a Change that creates an Amazon S3 bucket (target system) while using MongoDB as the audit store:
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-test-support</artifactId>
+    <version>${flamingock.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+  </TabItem>
+</Tabs>
+
+## FlamingockTestSupport
+
+The entry point for standalone integration tests. Use `givenBuilder()` to pass your configured Flamingock builder:
 
 ```java
-@TargetSystem(id = "aws-s3")
-@Change(id = "create-bucket", author = "dev-team")
-public class _0001__CreateS3Bucket {
+FlamingockTestSupport
+    .givenBuilder(builder)      // Your production builder
+    .andExistingAudit(...)      // Optional: set up existing audit state
+    .whenRun()                  // Trigger execution
+    .thenExpectAuditFinalStateSequence(...)  // Define expectations
+    .verify();                  // Execute and validate
+```
 
-  @Apply
-  public void apply(S3Client s3Client) {
-    s3Client.createBucket(CreateBucketRequest.builder()
-        .bucket("flamingock-test-bucket")
-        .build());
-  }
+See [BDD test API](./flamingock-bdd-api.md) for details on `andExistingAudit()`, validators, and `AuditEntryDefinition`.
 
-  @Rollback
-  public void rollback(S3Client s3Client) {
-    s3Client.deleteBucket(DeleteBucketRequest.builder()
-        .bucket("flamingock-test-bucket")
-        .build());
-  }
+
+## Alternative: in-memory testing
+
+For faster tests where audit store persistence doesn't matter, you can use the in-memory components:
+
+### InMemoryTestBuilder
+
+Creates a pre-configured builder with an in-memory audit store:
+
+```java
+import io.flamingock.support.InMemoryTestBuilder;
+
+@Test
+void fastTestWithInMemoryAudit() {
+    var builder = InMemoryTestBuilder.create()
+            .addTargetSystem(new NonTransactionalTargetSystem("kafka").addDependency(kafkaClient))
+            .addStage(new Stage("kafka-changes").addCodePackage("com.myapp.changes.kafka"));
+
+    FlamingockTestSupport
+            .givenBuilder(builder)
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                    APPLIED(CreateTopicChange.class)
+            )
+            .verify();
 }
 ```
 
+### InMemoryTestAuditStore
 
-## Integration test with Testcontainers
-
-To test this change end-to-end, we will:
-
-1. Spin up a MongoDB container to be used as Flamingock’s audit backend
-2. Using **S3 as the target system** (where business changes are applied)
-3. Using **MongoDB as the audit store** (where execution metadata is tracked)
-4. Configure Flamingock and execute it
-5. Validating both systems independently
+You can also use your production builder configured with all target systems, stages, and dependencies, and just override the audit store. This lets you test with your exact production configuration without needing a real audit store backend:
 
 ```java
+import io.flamingock.support.InMemoryTestAuditStore;
+
+@Test
+void reuseProductionBuilderWithInMemoryAudit() {
+    // Retrieve your production builder (already configured with target systems, stages, etc.)
+    var builder = MyAppFlamingockConfig.createBuilder();
+
+    // Override only the audit store for testing
+    builder.setAuditStore(new InMemoryTestAuditStore());
+
+    FlamingockTestSupport
+            .givenBuilder(builder)
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                    APPLIED(MyChange.class)
+            )
+            .verify();
+}
+```
+
+:::tip When to use in-memory
+Use in-memory components when:
+- You want faster test execution
+- The audit store behavior is not relevant to the test
+- You're testing target system interactions only
+
+Use Testcontainers when:
+- You need to verify audit persistence behavior
+- You want tests that match production exactly
+- You're testing recovery or idempotency scenarios
+:::
+
+## Complete example with Testcontainers
+
+This example tests a change that creates an S3 bucket, using MongoDB as the audit store:
+
+```java
+//other imports
+import io.flamingock.core.Flamingock;
+import io.flamingock.support.FlamingockTestSupport;
+import io.flamingock.targetsystem.nontransactional.NonTransactionalTargetSystem;
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
+
 @Testcontainers
-class FlamingockIntegrationTest {
+class S3IntegrationTest {
 
     @Container
     static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
 
     @Container
-    static final LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
+    static final LocalStackContainer localstack = new LocalStackContainer(
+            DockerImageName.parse("localstack/localstack:latest"))
             .withServices(LocalStackContainer.Service.S3);
 
-    @Test
-    void shouldExecuteChangeAgainstTargetSystemAndAuditToStore() {
+    private S3Client s3Client;
+    private MongoClient mongoClient;
+
+    @BeforeAll
+    void setup() {
         // Configure S3 client (target system)
-        S3Client s3Client = S3Client.builder()
+        s3Client = S3Client.builder()
                 .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
                 .credentialsProvider(StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())))
+                        AwsBasicCredentials.create(
+                                localstack.getAccessKey(),
+                                localstack.getSecretKey())))
                 .region(Region.US_EAST_1)
                 .build();
 
-        // Configure MongoDB client
-        MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+        // Configure MongoDB client (audit store)
+        mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+    }
 
-        // Configure target systems
-        var s3TargetSystem = new NonTransactionalTargetSystem("aws-s3")
+    @Test
+    void shouldExecuteS3BucketCreation() {
+        // Configure target system with S3 client as dependency
+        NonTransactionalTargetSystem s3TargetSystem = new NonTransactionalTargetSystem("aws-s3")
                 .addDependency(s3Client);
 
-        // Configure Flamingock with target system and audit store
-        Runner runner = Flamingock.builder()
-                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, 'flamingock-test-db'))
+        // Build Flamingock with production configuration
+        var builder = Flamingock.builder()
+                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, "flamingock-test-db"))
                 .addTargetSystem(s3TargetSystem)
-                .build();
+                .addStage(new Stage("s3-changes").addCodePackage("com.myapp.changes.s3"));
 
-        // Execute Flamingock
-        runner.execute();
+        // Test using BDD API
+        FlamingockTestSupport
+                .givenBuilder(builder)
+                .whenRun()
+                .thenExpectAuditFinalStateSequence(
+                        APPLIED(CreateS3BucketChange.class)
+                )
+                .verify();
 
-        // ✅ Verify the target system (S3) received the change
-        ListBucketsResponse buckets = s3Client.listBuckets();
-        boolean bucketExists = buckets.buckets().stream()
+        // Optionally verify the actual target system state
+        boolean bucketExists = s3Client.listBuckets().buckets().stream()
                 .anyMatch(b -> b.name().equals("flamingock-test-bucket"));
-        assertTrue(bucketExists, "Expected S3 bucket was not created in target system");
+        assertTrue(bucketExists, "S3 bucket was not created");
+    }
 
-        // ✅ Verify the audit store (MongoDB) tracked the execution
-        MongoCollection<Document> auditCollection = auditDatabase.getCollection("flamingockAuditLog");
+    @Test
+    void shouldSkipAlreadyAppliedChanges() {
+        var builder = Flamingock.builder()
+                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, "flamingock-test-db"))
+                .addTargetSystem(new NonTransactionalTargetSystem("aws-s3").addDependency(s3Client))
+                .addStage(new Stage("s3-changes").addCodePackage("com.myapp.changes.s3"));
 
-        Document auditEntry = auditCollection.find(
-            new Document("changeId", "create-bucket")
-                .append("state", "EXECUTED")
-        ).first();
-        
-        assertNotNull(auditEntry, "Change execution was not tracked in audit store");
-        assertEquals("create-bucket", auditEntry.getString("changeId"));
-        assertEquals("EXECUTED", auditEntry.getString("state"));
+        FlamingockTestSupport
+                .givenBuilder(builder)
+                .andExistingAudit(
+                        APPLIED(CreateS3BucketChange.class)  // Simulate already applied
+                )
+                .whenRun()
+                .thenExpectAuditFinalStateSequence(
+                        APPLIED(CreateS3BucketChange.class)  // Should remain unchanged
+                )
+                .verify();
+    }
+
+    @Test
+    void shouldHandleFailureWithRollback() {
+        var builder = Flamingock.builder()
+                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, "flamingock-test-db"))
+                .addTargetSystem(new NonTransactionalTargetSystem("aws-s3").addDependency(s3Client))
+                .addStage(new Stage("failing-changes").addCodePackage("com.myapp.changes.failing"));
+
+        FlamingockTestSupport
+                .givenBuilder(builder)
+                .whenRun()
+                .thenExpectException(PipelineExecutionException.class, ex -> {
+                    assertTrue(ex.getMessage().contains("Intentional failure"));
+                })
+                .andExpectAuditFinalStateSequence(
+                        FAILED(FailingChange.class),
+                        ROLLED_BACK(FailingChange.class)
+                )
+                .verify();
     }
 }
 ```
 
 
-## ✅ Best practices
+## Best practices
 
-- **Use @TargetSystem annotation**: Always annotate Changes with their target system identifier
-- **Separate concerns**: Test target system changes and audit store persistence independently
-- **Use real containers**: Testcontainers provides realistic test environments for both target systems and audit stores
-- **Test failure scenarios**: Verify that audit integrity is maintained even when target systems fail
-- **Validate dual-architecture**: Ensure changes reach target systems and tracking reaches audit stores
-- **Clean up properly**: Reset both target systems and audit stores between tests
-- **Use appropriate audit stores**: Choose audit stores based on your operational requirements, not target system constraints
-- **Test recovery**: Verify that Flamingock can recover and continue from audit store state when target systems are restored
+- **Use your production builder** — configure Flamingock the same way you do in production, but point to containerized backends
+- **Use Testcontainers** — provides realistic, isolated test environments for both target systems and audit stores
+- **Test failure scenarios** — verify that rollback behavior works correctly
+- **Test idempotency** — use `andExistingAudit()` to simulate re-runs and verify changes are skipped appropriately
+- **Verify target system state** — optionally check that the actual target system received the expected changes
 
 ---
 
 // File: testing/springboot-integration-testing
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 ## Introduction
 
-This guide explains how to write integration tests for Flamingock when using **Spring Boot** with the `@EnableFlamingock` annotation.
+For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module uses the same BDD API as the standalone module, but with Spring-specific components for easier integration.
 
-With this setup:
+## Setup
 
-- Flamingock is auto-configured using Spring Boot properties
-- Dependencies like `Kafka AdminClient` or `DynamoDbClient`  must be declared as Spring beans
-- The change units are executed end-to-end using real systems (e.g., DynamoDB Local, Kafka, S3)
+Add the Spring Boot test support dependency:
 
-> This test style is ideal for verifying that Flamingock interacts correctly with both its audit backend and any external systems.
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
 
+```kotlin
+testImplementation("io.flamingock:flamingock-test-support:$version")
+```
 
-## Example: Modifying a Kafka topic and auditing to DynamoDB
+  </TabItem>
+  <TabItem value="maven" label="Maven">
 
-Suppose you have a change unit that modifies a Kafka topic configuration:
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-test-support</artifactId>
+    <version>${flamingock.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+  </TabItem>
+</Tabs>
+
+## @FlamingockSpringBootTest
+
+This annotation is a composed annotation that includes `@SpringBootTest` with the property `flamingock.management-mode=DEFERRED` pre-configured:
 
 ```java
-@Change(id = "modify-topic-config", author = "dev-team")  // order extracted from filename
-public class _0001__ModifyKafkaTopicConfig {
-
-  @Apply
-  public void apply(AdminClient adminClient) {
-    Map<ConfigResource, Config> configs = Map.of(
-      new ConfigResource(ConfigResource.Type.TOPIC, "orders"),
-      new Config(List.of(new ConfigEntry("retention.ms", "86400000")))
-    );
-
-    adminClient.alterConfigs(configs).all().join();
-  }
-
-  @Rollback
-  public void rollback(AdminClient adminClient) {
-    Map<ConfigResource, Config> configs = Map.of(
-      new ConfigResource(ConfigResource.Type.TOPIC, "orders"),
-      new Config(List.of(new ConfigEntry("retention.ms", "604800000")))
-    );
-
-    adminClient.alterConfigs(configs).all().join();
-  }
+@FlamingockSpringBootTest
+class MyFlamingockTest {
+    // ...
 }
 ```
 
+This is equivalent to:
 
-## Writing the test
-
-In this test, we’ll:
-
-- Spin up **Kafka** and **DynamoDB Local** using Testcontainers
-- Provide the required beans (`AdminClient`, `DynamoDbClient`) to Spring Boot
-- Assert that the Flamingock change unit executed and was **audited to DynamoDB**
-
-:::info 
-Flamingock requires `DynamoDbClient` and other injected services (like `AdminClient`) to be present in the Spring ApplicationContext. Spring Boot will auto-detect them if they are declared as `@Bean`s.
-:::
 ```java
-@SpringBootTest
-@Testcontainers
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourapp.changes")
-    }
+@SpringBootTest(properties = "flamingock.management-mode=DEFERRED")
+class MyFlamingockTest {
+    // ...
+}
+```
+
+The `DEFERRED` management mode means:
+- Flamingock does **not** auto-run on application startup
+- Tests control when execution happens via `verify()`
+- The builder bean is available for injection, but the runner bean is **not** created
+
+The annotation also exposes common `@SpringBootTest` attributes like `classes` and `webEnvironment`:
+
+```java
+@FlamingockSpringBootTest(
+    classes = {MyApplication.class, TestConfig.class},
+    webEnvironment = SpringBootTest.WebEnvironment.NONE
 )
-public class FlamingockSpringbootTest {
-
-  static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1"));
-  
-  static final GenericContainer<?> dynamoDb = new GenericContainer<>("amazon/dynamodb-local")
-      .withExposedPorts(8000);
-
-  @BeforeAll
-  static void startContainers() {
-    kafka.start();
-    dynamoDb.start();
-  }
-
-  @AfterAll
-  static void stopContainers() {
-    kafka.stop();
-    dynamoDb.stop();
-  }
-
-  @Bean
-  public DynamoDbClient dynamoDbClient() {
-    return DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .endpointOverride(URI.create("http://" + dynamoDb.getHost() + ":" + dynamoDb.getFirstMappedPort()))
-        .build();
-  }
-
-  @Bean
-  public AdminClient kafkaAdminClient() {
-    var config = new Properties();
-    config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
-    return AdminClient.create(config);
-  }
-
-  @Test
-  void shouldExecuteChangeAndWriteAuditToDynamoDB() {
-    DynamoDbClient client = dynamoDbClient();
-    ScanResponse scan = client.scan(ScanRequest.builder()
-        .tableName("flamingockAuditLog")
-        .build());
-
-    boolean changeExecuted = scan.items().stream()
-        .anyMatch(item -> "modify-topic-config".equals(item.get("changeId").s())
-                       && "EXECUTED".equals(item.get("state").s()));
-
-    assertTrue(changeExecuted, "Audit log entry for executed change not found in DynamoDB");
-  }
+class MyFlamingockTest {
+    // ...
 }
 ```
 
+## FlamingockSpringBootTestSupport
 
-## Advanced configuration
-
-Flamingock can be configured using Spring Boot properties, either in your `application.yaml` or dynamically via `@DynamicPropertySource`.
-
-This is especially useful for setting values like:
+An autowirable bean that provides access to the BDD test flow:
 
 ```java
-@DynamicPropertySource
-static void overrideProperties(DynamicPropertyRegistry registry) {
-  String endpoint = "http://" + dynamoDb.getHost() + ":" + dynamoDb.getFirstMappedPort();
-  registry.add("flamingock.dynamodb.readCapacityUnits", () -> 5L);
-  registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
-  registry.add("flamingock.dynamodb.autoCreate", () -> true);
-  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLog");
-  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
+@Autowired
+private FlamingockSpringBootTestSupport testSupport;
+```
+
+### givenBuilderFromContext()
+
+This method retrieves the Flamingock builder that was auto-configured by Spring Boot based on your application properties:
+
+```java
+testSupport
+    .givenBuilderFromContext()  // Gets the Spring-configured builder
+    .andExistingAudit(...)      // Optional: set up existing audit state
+    .whenRun()                  // Trigger execution
+    .thenExpectAuditFinalStateSequence(...)  // Define expectations
+    .verify();                  // Execute and validate
+```
+
+See [BDD test API](./flamingock-bdd-api.md) for details on `andExistingAudit()`, validators, and `AuditEntryDefinition`.
+
+:::info Prototype scope
+`FlamingockSpringBootTestSupport` has **prototype scope** — a new instance is created for each injection. This is necessary because the underlying stages accumulate state and cannot be reused between tests.
+:::
+
+
+## Complete example
+
+```java
+//other imports
+import io.flamingock.springboot.testsupport.FlamingockSpringBootTest;
+import io.flamingock.springboot.testsupport.FlamingockSpringBootTestSupport;
+
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
+
+@ExtendWith(SpringExtension.class)  // Required for Spring Boot 2.0.x. For Spring Boot > 2.1.x, can be omitted
+@FlamingockSpringBootTest
+class SpringBootFlamingockTest {
+
+    @Autowired
+    private FlamingockSpringBootTestSupport testSupport;
+
+    @Test
+    void shouldExecuteChanges() {
+        testSupport
+            .givenBuilderFromContext()
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                APPLIED(CreateUsersTableChange.class),
+                APPLIED(SeedInitialDataChange.class)
+            )
+            .verify();
+    }
+
+    @Test
+    void shouldSkipAlreadyAppliedChanges() {
+        testSupport
+            .givenBuilderFromContext()
+            .andExistingAudit(
+                APPLIED(CreateUsersTableChange.class)  // Simulate already applied
+            )
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                APPLIED(CreateUsersTableChange.class)  // Should remain unchanged
+            )
+            .verify();
+    }
+
+    @Test
+    void shouldHandleFailureWithRollback() {
+        testSupport
+            .givenBuilderFromContext()
+            .whenRun()
+            .thenExpectException(PipelineExecutionException.class, ex -> {
+                assertTrue(ex.getMessage().contains("Expected error"));
+            })
+            .andExpectAuditFinalStateSequence(
+                FAILED(FailingChange.class),
+                ROLLED_BACK(FailingChange.class)
+            )
+            .verify();
+    }
 }
 ```
 
-These properties allow Flamingock to connect to the appropriate DynamoDB instance and create its internal metadata tables automatically.
+:::tip Spring Boot 2.1+
+For Spring Boot 2.1.0 and later, `@ExtendWith(SpringExtension.class)` is not required — it's automatically included.
+:::
 
 
 ## Best practices
 
-- Declare all required dependencies (like `DynamoDbClient`, `AdminClient`, etc.) as Spring beans
-- Use `@DynamicPropertySource` to inject dynamic config for local/test environments
-- Validate both the **external effect** (Kafka, S3, etc.) and the **audit record** in the backend
-- Use `Testcontainers` for isolation and reproducibility across environments
-- Keep tests focused: use Spring Boot only when testing real integration scenarios (not just logic)
+- **Use `@FlamingockSpringBootTest`** instead of `@SpringBootTest` to get automatic DEFERRED mode configuration
+- **Use class-based `AuditEntryDefinition`** when possible — it validates more fields and catches annotation misconfigurations
+- **Keep test classes focused** — each test class should test a specific aspect of your change execution
+- **Use `andExistingAudit()`** to test idempotency and re-run scenarios
+- **Test failure scenarios** — verify that rollback behavior works correctly in your Spring context
+- **Leverage Spring's test slicing** — use `@FlamingockSpringBootTest` with specific configuration classes to load only what you need
