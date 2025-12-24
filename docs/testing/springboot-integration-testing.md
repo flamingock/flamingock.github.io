@@ -5,7 +5,7 @@ sidebar_position: 4
 
 ## Introduction
 
-For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module offers a seamless testing experience with automatic context configuration and the same BDD-style API.
+For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module uses the same BDD API as the standalone module, but with Spring-specific components for easier integration.
 
 ## Setup
 
@@ -20,90 +20,83 @@ Add the Spring Boot test support dependency:
 </dependency>
 ```
 
-## Core components
+## @FlamingockSpringBootTest
 
-### @FlamingockSpringBootTest
-
-This annotation configures the Spring test context for Flamingock testing:
+This annotation is a composed annotation that includes `@SpringBootTest` with the property `flamingock.management-mode=DEFERRED` pre-configured:
 
 ```java
-@FlamingockSpringBootTest(classes = {MyApplication.class, TestConfiguration.class})
+@FlamingockSpringBootTest
 class MyFlamingockTest {
     // ...
 }
 ```
 
-The annotation automatically sets `flamingock.management-mode=DEFERRED`, which means:
+This is equivalent to:
+
+```java
+@SpringBootTest(properties = "flamingock.management-mode=DEFERRED")
+class MyFlamingockTest {
+    // ...
+}
+```
+
+The `DEFERRED` management mode means:
 - Flamingock does **not** auto-run on application startup
 - Tests control when execution happens via `verify()`
 - The builder bean is available for injection, but the runner bean is **not** created
 
-### FlamingockSpringBootTestSupport
+The annotation also exposes common `@SpringBootTest` attributes like `classes` and `webEnvironment`:
+
+```java
+@FlamingockSpringBootTest(
+    classes = {MyApplication.class, TestConfig.class},
+    webEnvironment = SpringBootTest.WebEnvironment.NONE
+)
+class MyFlamingockTest {
+    // ...
+}
+```
+
+## FlamingockSpringBootTestSupport
 
 An autowirable bean that provides access to the BDD test flow:
 
 ```java
 @Autowired
 private FlamingockSpringBootTestSupport testSupport;
-
-@Test
-void shouldExecuteChanges() {
-    testSupport
-        .givenBuilderFromContext()  // Uses the builder auto-configured by Spring Boot
-        .whenRun()
-        .thenExpectAuditFinalStateSequence(APPLIED(MyChange.class))
-        .verify();
-}
 ```
 
-:::info Prototype scope
-`FlamingockSpringBootTestSupport` has **prototype scope** — a new instance is created for each injection. This is necessary because the underlying stages accumulate state and cannot be reused between tests.
-:::
-
-
-## BDD test flow
-
-The Spring Boot test support uses the same BDD pattern as the standalone module:
-
-1. **Given** (`givenBuilderFromContext()`): Get the builder configured by Spring Boot
-2. **When** (`whenRun()`): Trigger execution
-3. **Then** (`thenExpectAuditFinalStateSequence()`): Define expectations
-4. **Verify** (`verify()`): Execute and validate
-
-### Using givenBuilderFromContext()
+### givenBuilderFromContext()
 
 This method retrieves the Flamingock builder that was auto-configured by Spring Boot based on your application properties:
 
 ```java
 testSupport
     .givenBuilderFromContext()  // Gets the Spring-configured builder
-    .andExistingAudit(
-        APPLIED(PreviousChange.class)
-    )
-    .whenRun()
-    .thenExpectAuditFinalStateSequence(
-        APPLIED(PreviousChange.class)  // Unchanged
-    )
-    .verify();
+    .andExistingAudit(...)      // Optional: set up existing audit state
+    .whenRun()                  // Trigger execution
+    .thenExpectAuditFinalStateSequence(...)  // Define expectations
+    .verify();                  // Execute and validate
 ```
 
+See [BDD test API](./flamingock-bdd-api.md) for details on `andExistingAudit()`, validators, and `AuditEntryDefinition`.
 
-## Complete examples
+:::info Prototype scope
+`FlamingockSpringBootTestSupport` has **prototype scope** — a new instance is created for each injection. This is necessary because the underlying stages accumulate state and cannot be reused between tests.
+:::
 
-### Basic test
+
+## Complete example
 
 ```java
+//other imports
 import io.flamingock.springboot.testsupport.FlamingockSpringBootTest;
 import io.flamingock.springboot.testsupport.FlamingockSpringBootTestSupport;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static io.flamingock.support.domain.AuditEntryDefinition.APPLIED;
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
 
-@ExtendWith(SpringExtension.class)  // Required for Spring Boot 2.0.x
-@FlamingockSpringBootTest(classes = {MyApplication.class, TestConfiguration.class})
+@ExtendWith(SpringExtension.class)  // Required for Spring Boot 2.0.x. For Spring Boot > 2.1.x, can be omitted
+@FlamingockSpringBootTest
 class SpringBootFlamingockTest {
 
     @Autowired
@@ -120,98 +113,41 @@ class SpringBootFlamingockTest {
             )
             .verify();
     }
+
+    @Test
+    void shouldSkipAlreadyAppliedChanges() {
+        testSupport
+            .givenBuilderFromContext()
+            .andExistingAudit(
+                APPLIED(CreateUsersTableChange.class)  // Simulate already applied
+            )
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                APPLIED(CreateUsersTableChange.class)  // Should remain unchanged
+            )
+            .verify();
+    }
+
+    @Test
+    void shouldHandleFailureWithRollback() {
+        testSupport
+            .givenBuilderFromContext()
+            .whenRun()
+            .thenExpectException(PipelineExecutionException.class, ex -> {
+                assertTrue(ex.getMessage().contains("Expected error"));
+            })
+            .andExpectAuditFinalStateSequence(
+                FAILED(FailingChange.class),
+                ROLLED_BACK(FailingChange.class)
+            )
+            .verify();
+    }
 }
 ```
 
 :::tip Spring Boot 2.1+
 For Spring Boot 2.1.0 and later, `@ExtendWith(SpringExtension.class)` is not required — it's automatically included.
 :::
-
-### Testing with existing audit state
-
-```java
-@Test
-void shouldSkipAlreadyAppliedChanges() {
-    testSupport
-        .givenBuilderFromContext()
-        .andExistingAudit(
-            APPLIED(CreateUsersTableChange.class)  // Simulate already applied
-        )
-        .whenRun()
-        .thenExpectAuditFinalStateSequence(
-            APPLIED(CreateUsersTableChange.class)  // Should be unchanged
-        )
-        .verify();
-}
-```
-
-### Testing exception handling
-
-```java
-@Test
-void shouldHandleFailureAndRollback() {
-    testSupport
-        .givenBuilderFromContext()
-        .whenRun()
-        .thenExpectException(PipelineExecutionException.class, ex -> {
-            assertTrue(ex.getMessage().contains("Expected error"));
-        })
-        .andExpectAuditFinalStateSequence(
-            FAILED(FailingChange.class),
-            ROLLED_BACK(FailingChange.class)
-        )
-        .verify();
-}
-```
-
-
-## Key concepts
-
-### Deferred management mode
-
-When using `@FlamingockSpringBootTest`, Flamingock is configured with `management-mode=DEFERRED`. This prevents automatic execution on startup and gives your tests full control over when changes are applied.
-
-### Lazy execution
-
-Like the standalone module, all BDD methods are intermediate operations. Nothing executes until `verify()` is called:
-
-```java
-// This does NOT execute anything yet:
-testSupport.givenBuilderFromContext()
-    .andExistingAudit(APPLIED(PreviousChange.class))
-    .whenRun()
-    .thenExpectAuditFinalStateSequence(APPLIED(NewChange.class))
-
-// Execution happens HERE:
-    .verify();
-```
-
-### AuditEntryDefinition
-
-The same `AuditEntryDefinition` factory methods are available:
-
-**String-based:**
-```java
-APPLIED("change-id")
-FAILED("change-id")
-ROLLED_BACK("change-id")
-ROLLBACK_FAILED("change-id")
-```
-
-**Class-based** (recommended — auto-extracts metadata):
-```java
-APPLIED(MyChange.class)
-FAILED(MyChange.class)
-ROLLED_BACK(MyChange.class)
-ROLLBACK_FAILED(MyChange.class)
-```
-
-**With additional fields:**
-```java
-APPLIED(MyChange.class)
-    .withAuthor("custom-author")
-    .withTargetSystemId("mongodb-main")
-```
 
 
 ## Best practices

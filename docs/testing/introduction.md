@@ -21,27 +21,7 @@ Flamingock provides a **BDD-style test support framework** that simplifies integ
 | `flamingock-test-support` | Standalone/programmatic tests without Spring |
 | `flamingock-springboot-test-support` | Spring Boot integration tests |
 
-### Given-When-Then flow
-
-The test framework follows a familiar BDD pattern:
-
-1. **Given**: Define initial conditions (existing audit state, builder configuration)
-2. **When**: Trigger Flamingock execution
-3. **Then**: Define expectations (audit state, exceptions)
-4. **Verify**: Execute and validate all expectations
-
-```java
-FlamingockTestSupport
-    .givenBuilder(builder)
-    .andExistingAudit(APPLIED(PreviousChange.class))
-    .whenRun()
-    .thenExpectAuditFinalStateSequence(APPLIED(NewChange.class))
-    .verify();
-```
-
-### Lazy execution
-
-All methods in the test API are **intermediate operations** — they build up the test scenario without executing anything. Actual execution only happens when `verify()` is called. This allows you to define complex scenarios before running them.
+Both modules share the same BDD API for defining expectations and validating results. See [BDD test API](./flamingock-bdd-api.md) for the complete API reference.
 
 
 ## What to test
@@ -64,8 +44,8 @@ Run Flamingock end-to-end using the test support framework to verify:
 - Execution of changes and audit log persistence
 - Rollback behavior on failure
 - Correct handling of previously applied changes
-
-Uses `FlamingockTestSupport` with `InMemoryTestKit` for fast, isolated tests.
+- Use `FlamingockTestSupport`
+- Validate changes using the Flamingock BDD API
 
 See [Integration testing Flamingock](./integration-testing.md)
 
@@ -74,7 +54,7 @@ See [Integration testing Flamingock](./integration-testing.md)
 For applications using **Spring Boot**, test how Flamingock integrates with your app lifecycle:
 
 - Use `@FlamingockSpringBootTest` to configure test context with deferred execution
-- Inject `FlamingockSpringBootTestSupport` to control when Flamingock runs
-- Validate changes using the BDD test API
+- Use autowired `FlamingockSpringBootTestSupport` to control when Flamingock runs
+- Validate changes using the Flamingock BDD API
 
 See [Testing with Spring Boot](./springboot-integration-testing.md)
