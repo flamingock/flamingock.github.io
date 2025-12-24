@@ -1,147 +1,224 @@
 ---
-title: Spring Boot  Testing
+title: Spring Boot testing
 sidebar_position: 4
 ---
 
 ## Introduction
 
-This guide explains how to write integration tests for Flamingock when using **Spring Boot** with the `@EnableFlamingock` annotation.
+For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module offers a seamless testing experience with automatic context configuration and the same BDD-style API.
 
-With this setup:
+## Setup
 
-- Flamingock is auto-configured using Spring Boot properties
-- Dependencies like `Kafka AdminClient` or `DynamoDbClient`  must be declared as Spring beans
-- The change units are executed end-to-end using real systems (e.g., DynamoDB Local, Kafka, S3)
+Add the Spring Boot test support dependency:
 
-> This test style is ideal for verifying that Flamingock interacts correctly with both its audit backend and any external systems.
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-springboot-test-support</artifactId>
+    <version>${flamingock.version}</version>
+    <scope>test</scope>
+</dependency>
+```
 
+## Core components
 
-## Example: Modifying a Kafka topic and auditing to DynamoDB
+### @FlamingockSpringBootTest
 
-Suppose you have a change unit that modifies a Kafka topic configuration:
+This annotation configures the Spring test context for Flamingock testing:
 
 ```java
-@Change(id = "modify-topic-config", author = "dev-team")  // order extracted from filename
-public class _0001__ModifyKafkaTopicConfig {
-
-  @Apply
-  public void apply(AdminClient adminClient) {
-    Map<ConfigResource, Config> configs = Map.of(
-      new ConfigResource(ConfigResource.Type.TOPIC, "orders"),
-      new Config(List.of(new ConfigEntry("retention.ms", "86400000")))
-    );
-
-    adminClient.alterConfigs(configs).all().join();
-  }
-
-  @Rollback
-  public void rollback(AdminClient adminClient) {
-    Map<ConfigResource, Config> configs = Map.of(
-      new ConfigResource(ConfigResource.Type.TOPIC, "orders"),
-      new Config(List.of(new ConfigEntry("retention.ms", "604800000")))
-    );
-
-    adminClient.alterConfigs(configs).all().join();
-  }
+@FlamingockSpringBootTest(classes = {MyApplication.class, TestConfiguration.class})
+class MyFlamingockTest {
+    // ...
 }
 ```
 
+The annotation automatically sets `flamingock.management-mode=DEFERRED`, which means:
+- Flamingock does **not** auto-run on application startup
+- Tests control when execution happens via `verify()`
+- The builder bean is available for injection, but the runner bean is **not** created
 
-## Writing the test
+### FlamingockSpringBootTestSupport
 
-In this test, we’ll:
+An autowirable bean that provides access to the BDD test flow:
 
-- Spin up **Kafka** and **DynamoDB Local** using Testcontainers
-- Provide the required beans (`AdminClient`, `DynamoDbClient`) to Spring Boot
-- Assert that the Flamingock change unit executed and was **audited to DynamoDB**
+```java
+@Autowired
+private FlamingockSpringBootTestSupport testSupport;
 
-:::info 
-Flamingock requires `DynamoDbClient` and other injected services (like `AdminClient`) to be present in the Spring ApplicationContext. Spring Boot will auto-detect them if they are declared as `@Bean`s.
+@Test
+void shouldExecuteChanges() {
+    testSupport
+        .givenBuilderFromContext()  // Uses the builder auto-configured by Spring Boot
+        .whenRun()
+        .thenExpectAuditFinalStateSequence(APPLIED(MyChange.class))
+        .verify();
+}
+```
+
+:::info Prototype scope
+`FlamingockSpringBootTestSupport` has **prototype scope** — a new instance is created for each injection. This is necessary because the underlying stages accumulate state and cannot be reused between tests.
 :::
+
+
+## BDD test flow
+
+The Spring Boot test support uses the same BDD pattern as the standalone module:
+
+1. **Given** (`givenBuilderFromContext()`): Get the builder configured by Spring Boot
+2. **When** (`whenRun()`): Trigger execution
+3. **Then** (`thenExpectAuditFinalStateSequence()`): Define expectations
+4. **Verify** (`verify()`): Execute and validate
+
+### Using givenBuilderFromContext()
+
+This method retrieves the Flamingock builder that was auto-configured by Spring Boot based on your application properties:
+
 ```java
-@SpringBootTest
-@Testcontainers
-@EnableFlamingock(
-    stages = {
-        @Stage(location = "com.yourapp.changes")
+testSupport
+    .givenBuilderFromContext()  // Gets the Spring-configured builder
+    .andExistingAudit(
+        APPLIED(PreviousChange.class)
+    )
+    .whenRun()
+    .thenExpectAuditFinalStateSequence(
+        APPLIED(PreviousChange.class)  // Unchanged
+    )
+    .verify();
+```
+
+
+## Complete examples
+
+### Basic test
+
+```java
+import io.flamingock.springboot.testsupport.FlamingockSpringBootTest;
+import io.flamingock.springboot.testsupport.FlamingockSpringBootTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static io.flamingock.support.domain.AuditEntryDefinition.APPLIED;
+
+@ExtendWith(SpringExtension.class)  // Required for Spring Boot 2.0.x
+@FlamingockSpringBootTest(classes = {MyApplication.class, TestConfiguration.class})
+class SpringBootFlamingockTest {
+
+    @Autowired
+    private FlamingockSpringBootTestSupport testSupport;
+
+    @Test
+    void shouldExecuteChanges() {
+        testSupport
+            .givenBuilderFromContext()
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                APPLIED(CreateUsersTableChange.class),
+                APPLIED(SeedInitialDataChange.class)
+            )
+            .verify();
     }
-)
-public class FlamingockSpringbootTest {
-
-  static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1"));
-  
-  static final GenericContainer<?> dynamoDb = new GenericContainer<>("amazon/dynamodb-local")
-      .withExposedPorts(8000);
-
-  @BeforeAll
-  static void startContainers() {
-    kafka.start();
-    dynamoDb.start();
-  }
-
-  @AfterAll
-  static void stopContainers() {
-    kafka.stop();
-    dynamoDb.stop();
-  }
-
-  @Bean
-  public DynamoDbClient dynamoDbClient() {
-    return DynamoDbClient.builder()
-        .region(Region.US_EAST_1)
-        .endpointOverride(URI.create("http://" + dynamoDb.getHost() + ":" + dynamoDb.getFirstMappedPort()))
-        .build();
-  }
-
-  @Bean
-  public AdminClient kafkaAdminClient() {
-    var config = new Properties();
-    config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
-    return AdminClient.create(config);
-  }
-
-  @Test
-  void shouldExecuteChangeAndWriteAuditToDynamoDB() {
-    DynamoDbClient client = dynamoDbClient();
-    ScanResponse scan = client.scan(ScanRequest.builder()
-        .tableName("flamingockAuditLog")
-        .build());
-
-    boolean changeExecuted = scan.items().stream()
-        .anyMatch(item -> "modify-topic-config".equals(item.get("changeId").s())
-                       && "EXECUTED".equals(item.get("state").s()));
-
-    assertTrue(changeExecuted, "Audit log entry for executed change not found in DynamoDB");
-  }
 }
 ```
 
+:::tip Spring Boot 2.1+
+For Spring Boot 2.1.0 and later, `@ExtendWith(SpringExtension.class)` is not required — it's automatically included.
+:::
 
-## Advanced configuration
-
-Flamingock can be configured using Spring Boot properties, either in your `application.yaml` or dynamically via `@DynamicPropertySource`.
-
-This is especially useful for setting values like:
+### Testing with existing audit state
 
 ```java
-@DynamicPropertySource
-static void overrideProperties(DynamicPropertyRegistry registry) {
-  String endpoint = "http://" + dynamoDb.getHost() + ":" + dynamoDb.getFirstMappedPort();
-  registry.add("flamingock.dynamodb.readCapacityUnits", () -> 5L);
-  registry.add("flamingock.dynamodb.writeCapacityUnits", () -> 5L);
-  registry.add("flamingock.dynamodb.autoCreate", () -> true);
-  registry.add("flamingock.dynamodb.auditRepositoryName", () -> "flamingockAuditLog");
-  registry.add("flamingock.dynamodb.lockRepositoryName", () -> "flamingockLock");
+@Test
+void shouldSkipAlreadyAppliedChanges() {
+    testSupport
+        .givenBuilderFromContext()
+        .andExistingAudit(
+            APPLIED(CreateUsersTableChange.class)  // Simulate already applied
+        )
+        .whenRun()
+        .thenExpectAuditFinalStateSequence(
+            APPLIED(CreateUsersTableChange.class)  // Should be unchanged
+        )
+        .verify();
 }
 ```
 
-These properties allow Flamingock to connect to the appropriate DynamoDB instance and create its internal metadata tables automatically.
+### Testing exception handling
+
+```java
+@Test
+void shouldHandleFailureAndRollback() {
+    testSupport
+        .givenBuilderFromContext()
+        .whenRun()
+        .thenExpectException(PipelineExecutionException.class, ex -> {
+            assertTrue(ex.getMessage().contains("Expected error"));
+        })
+        .andExpectAuditFinalStateSequence(
+            FAILED(FailingChange.class),
+            ROLLED_BACK(FailingChange.class)
+        )
+        .verify();
+}
+```
+
+
+## Key concepts
+
+### Deferred management mode
+
+When using `@FlamingockSpringBootTest`, Flamingock is configured with `management-mode=DEFERRED`. This prevents automatic execution on startup and gives your tests full control over when changes are applied.
+
+### Lazy execution
+
+Like the standalone module, all BDD methods are intermediate operations. Nothing executes until `verify()` is called:
+
+```java
+// This does NOT execute anything yet:
+testSupport.givenBuilderFromContext()
+    .andExistingAudit(APPLIED(PreviousChange.class))
+    .whenRun()
+    .thenExpectAuditFinalStateSequence(APPLIED(NewChange.class))
+
+// Execution happens HERE:
+    .verify();
+```
+
+### AuditEntryDefinition
+
+The same `AuditEntryDefinition` factory methods are available:
+
+**String-based:**
+```java
+APPLIED("change-id")
+FAILED("change-id")
+ROLLED_BACK("change-id")
+ROLLBACK_FAILED("change-id")
+```
+
+**Class-based** (recommended — auto-extracts metadata):
+```java
+APPLIED(MyChange.class)
+FAILED(MyChange.class)
+ROLLED_BACK(MyChange.class)
+ROLLBACK_FAILED(MyChange.class)
+```
+
+**With additional fields:**
+```java
+APPLIED(MyChange.class)
+    .withAuthor("custom-author")
+    .withTargetSystemId("mongodb-main")
+```
 
 
 ## Best practices
 
-- Declare all required dependencies (like `DynamoDbClient`, `AdminClient`, etc.) as Spring beans
-- Use `@DynamicPropertySource` to inject dynamic config for local/test environments
-- Validate both the **external effect** (Kafka, S3, etc.) and the **audit record** in the backend
-- Use `Testcontainers` for isolation and reproducibility across environments
-- Keep tests focused: use Spring Boot only when testing real integration scenarios (not just logic)
+- **Use `@FlamingockSpringBootTest`** instead of `@SpringBootTest` to get automatic DEFERRED mode configuration
+- **Use class-based `AuditEntryDefinition`** when possible — it validates more fields and catches annotation misconfigurations
+- **Keep test classes focused** — each test class should test a specific aspect of your change execution
+- **Use `andExistingAudit()`** to test idempotency and re-run scenarios
+- **Test failure scenarios** — verify that rollback behavior works correctly in your Spring context
+- **Leverage Spring's test slicing** — use `@FlamingockSpringBootTest` with specific configuration classes to load only what you need

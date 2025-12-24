@@ -1,125 +1,277 @@
 ---
-title: Integration Testing
+title: Integration testing
 sidebar_position: 3
 ---
 
 ## Introduction
 
-Integration tests ensure that Flamingock operates correctly in a real environment by executing Changes against live systems. Flamingock uses a **dual-system** that separates:
+Integration tests verify that Flamingock executes changes correctly and maintains proper audit state. The `flamingock-test-support` module provides a BDD-style API for writing expressive, maintainable integration tests.
 
-- **Target systems**: Where business changes are applied (databases, APIs, cloud services)
-- **Audit stores**: Where execution tracking and metadata are persisted (separate from target systems)
+## Setup
 
-Integration tests should validate the complete pipeline:
+Add the test support dependency:
 
-- Change execution against target systems
-- Audit log persistence in audit stores
-- Distributed lock acquisition
-- Recovery and rollback capabilities
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-test-support</artifactId>
+    <version>${flamingock.version}</version>
+    <scope>test</scope>
+</dependency>
+```
 
+## Core components
 
-## Example: Creating an S3 bucket
+### FlamingockTestSupport
 
-Suppose you have a Change that creates an Amazon S3 bucket (target system) while using MongoDB as the audit store:
+The entry point for all integration tests. Provides a fluent API following the Given-When-Then pattern:
 
 ```java
-@TargetSystem(id = "aws-s3")
-@Change(id = "create-bucket", author = "dev-team")
-public class _0001__CreateS3Bucket {
+FlamingockTestSupport
+    .givenBuilder(builder)      // Given: configure the builder
+    .andExistingAudit(...)      // Given: set up existing audit state
+    .whenRun()                  // When: trigger execution
+    .thenExpectAuditFinalStateSequence(...)  // Then: define expectations
+    .verify();                  // Execute and validate
+```
 
-  @Apply
-  public void apply(S3Client s3Client) {
-    s3Client.createBucket(CreateBucketRequest.builder()
-        .bucket("flamingock-test-bucket")
-        .build());
-  }
+### InMemoryTestKit
 
-  @Rollback
-  public void rollback(S3Client s3Client) {
-    s3Client.deleteBucket(DeleteBucketRequest.builder()
-        .bucket("flamingock-test-bucket")
-        .build());
-  }
+Provides an in-memory audit store for fast, isolated tests without external dependencies:
+
+```java
+InMemoryTestKit testKit = InMemoryTestKit.create();
+
+try {
+    FlamingockTestSupport
+        .givenBuilder(testKit.createBuilder().addTargetSystem(targetSystem))
+        .whenRun()
+        .thenExpectAuditFinalStateSequence(APPLIED(MyChange.class))
+        .verify();
+} finally {
+    testKit.cleanUp();
 }
 ```
 
+### AuditEntryDefinition
 
-## Integration test with Testcontainers
+Factory methods to define expected audit entries. Two approaches are available:
 
-To test this change end-to-end, we will:
+**String-based** (manual):
+```java
+AuditEntryDefinition.APPLIED("change-id")
+AuditEntryDefinition.FAILED("change-id")
+AuditEntryDefinition.ROLLED_BACK("change-id")
+AuditEntryDefinition.ROLLBACK_FAILED("change-id")
+```
 
-1. Spin up a MongoDB container to be used as Flamingock’s audit backend
-2. Using **S3 as the target system** (where business changes are applied)
-3. Using **MongoDB as the audit store** (where execution metadata is tracked)
-4. Configure Flamingock and execute it
-5. Validating both systems independently
+**Class-based** (auto-extracts metadata from annotations):
+```java
+AuditEntryDefinition.APPLIED(MyChange.class)
+AuditEntryDefinition.FAILED(MyChange.class)
+AuditEntryDefinition.ROLLED_BACK(MyChange.class)
+AuditEntryDefinition.ROLLBACK_FAILED(MyChange.class)
+```
+
+The class-based approach automatically extracts `changeId`, `author`, `className`, `methodName`, `targetSystemId`, `order`, and `transactional` from your change annotations.
+
+**Fluent builder** for additional fields:
+```java
+APPLIED(MyChange.class)
+    .withAuthor("custom-author")
+    .withTargetSystemId("mongodb-main")
+    .withErrorTrace("Expected error message")
+    .withTransactional(true)
+    .withOrder("001")
+```
+
+
+## BDD stages
+
+### GivenStage
+
+Set up preconditions before execution:
 
 ```java
-@Testcontainers
-class FlamingockIntegrationTest {
+FlamingockTestSupport
+    .givenBuilder(testKit.createBuilder().addTargetSystem(targetSystem))
+    .andExistingAudit(
+        APPLIED(PreviousChange1.class),
+        APPLIED(PreviousChange2.class)
+    )
+    .whenRun()
+    // ...
+```
 
-    @Container
-    static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:6.0");
+Use `andExistingAudit()` to simulate changes that were already applied in previous runs.
 
-    @Container
-    static final LocalStackContainer localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
-            .withServices(LocalStackContainer.Service.S3);
+### WhenStage
+
+Trigger execution and define initial expectations:
+
+```java
+.whenRun()
+.thenExpectAuditFinalStateSequence(
+    APPLIED(Change1.class),
+    APPLIED(Change2.class)
+)
+```
+
+Or expect an exception:
+```java
+.whenRun()
+.thenExpectException(PipelineExecutionException.class, ex -> {
+    assertTrue(ex.getMessage().contains("Expected error"));
+})
+```
+
+### ThenStage
+
+Chain additional expectations:
+
+```java
+.thenExpectException(PipelineExecutionException.class, null)
+.andExpectAuditFinalStateSequence(
+    FAILED(FailingChange.class),
+    ROLLED_BACK(FailingChange.class)
+)
+.verify()
+```
+
+
+## Key concepts
+
+### Lazy execution
+
+All BDD methods are **intermediate operations**. Nothing executes until `verify()` is called:
+
+```java
+// This does NOT execute anything yet:
+testSupport.givenBuilder(builder)
+    .andExistingAudit(APPLIED(PreviousChange.class))
+    .whenRun()
+    .thenExpectAuditFinalStateSequence(APPLIED(NewChange.class))
+
+// Execution happens HERE:
+    .verify();
+```
+
+### Selective field validation
+
+The validator only checks fields that are **set** in the definition:
+- `APPLIED("my-change")` validates only `changeId` and `state`
+- `APPLIED(MyChange.class)` validates `changeId`, `state`, `author`, `className`, `methodName`, `targetSystemId`, `order`, `transactional`
+- `.withXxx()` methods add additional fields to validate
+
+### Final states only
+
+The audit log may contain multiple entries per change (e.g., `STARTED` then `APPLIED`). The validator filters out intermediate states and only validates final outcomes:
+
+| State | Meaning |
+|-------|---------|
+| `APPLIED` | Change successfully applied |
+| `FAILED` | Change execution failed |
+| `ROLLED_BACK` | Change was rolled back after failure |
+| `ROLLBACK_FAILED` | Rollback itself failed |
+
+### Exact count matching
+
+`thenExpectAuditFinalStateSequence()` requires an **exact count match** — if 3 changes executed, you must provide exactly 3 definitions. Order is preserved: expected[0] must match actual[0], etc.
+
+
+## Complete examples
+
+### Basic success scenario
+
+```java
+import io.flamingock.core.kit.inmemory.InMemoryTestKit;
+import io.flamingock.support.FlamingockTestSupport;
+import io.flamingock.targetsystem.nontransactional.NonTransactionalTargetSystem;
+import org.junit.jupiter.api.Test;
+
+import static io.flamingock.support.domain.AuditEntryDefinition.*;
+
+class BasicIntegrationTest {
 
     @Test
-    void shouldExecuteChangeAgainstTargetSystemAndAuditToStore() {
-        // Configure S3 client (target system)
-        S3Client s3Client = S3Client.builder()
-                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())))
-                .region(Region.US_EAST_1)
-                .build();
+    void shouldExecuteChangesSuccessfully() {
+        InMemoryTestKit testKit = InMemoryTestKit.create();
 
-        // Configure MongoDB client
-        MongoClient mongoClient = MongoClients.create(mongoContainer.getReplicaSetUrl());
+        try {
+            NonTransactionalTargetSystem targetSystem = new NonTransactionalTargetSystem("kafka");
 
-        // Configure target systems
-        var s3TargetSystem = new NonTransactionalTargetSystem("aws-s3")
-                .addDependency(s3Client);
+            FlamingockTestSupport
+                .givenBuilder(testKit.createBuilder().addTargetSystem(targetSystem))
+                .whenRun()
+                .thenExpectAuditFinalStateSequence(
+                    APPLIED(CreateTopicsChange.class),
+                    APPLIED(SetupConsumerGroupsChange.class)
+                )
+                .verify();
+        } finally {
+            testKit.cleanUp();
+        }
+    }
+}
+```
 
-        // Configure Flamingock with target system and audit store
-        Runner runner = Flamingock.builder()
-                .setAuditStore(new MongoDBSyncAuditStore(mongoClient, 'flamingock-test-db'))
-                .addTargetSystem(s3TargetSystem)
-                .build();
+### Testing with existing audit state
 
-        // Execute Flamingock
-        runner.execute();
+```java
+@Test
+void shouldSkipAlreadyAppliedChanges() {
+    InMemoryTestKit testKit = InMemoryTestKit.create();
 
-        // ✅ Verify the target system (S3) received the change
-        ListBucketsResponse buckets = s3Client.listBuckets();
-        boolean bucketExists = buckets.buckets().stream()
-                .anyMatch(b -> b.name().equals("flamingock-test-bucket"));
-        assertTrue(bucketExists, "Expected S3 bucket was not created in target system");
+    try {
+        FlamingockTestSupport
+            .givenBuilder(testKit.createBuilder()
+                .addTargetSystem(new NonTransactionalTargetSystem("mongodb")))
+            .andExistingAudit(
+                APPLIED(CreateTopicsChange.class)  // Simulate already applied
+            )
+            .whenRun()
+            .thenExpectAuditFinalStateSequence(
+                APPLIED(CreateTopicsChange.class)  // Should be unchanged
+            )
+            .verify();
+    } finally {
+        testKit.cleanUp();
+    }
+}
+```
 
-        // ✅ Verify the audit store (MongoDB) tracked the execution
-        MongoCollection<Document> auditCollection = auditDatabase.getCollection("flamingockAuditLog");
+### Testing failure and rollback
 
-        Document auditEntry = auditCollection.find(
-            new Document("changeId", "create-bucket")
-                .append("state", "EXECUTED")
-        ).first();
-        
-        assertNotNull(auditEntry, "Change execution was not tracked in audit store");
-        assertEquals("create-bucket", auditEntry.getString("changeId"));
-        assertEquals("EXECUTED", auditEntry.getString("state"));
+```java
+@Test
+void shouldHandleFailureAndRollback() {
+    InMemoryTestKit testKit = InMemoryTestKit.create();
+
+    try {
+        FlamingockTestSupport
+            .givenBuilder(testKit.createBuilder()
+                .addTargetSystem(new NonTransactionalTargetSystem("elasticsearch")))
+            .whenRun()
+            .thenExpectException(PipelineExecutionException.class, ex -> {
+                assertTrue(ex.getMessage().contains("Intentional failure"));
+            })
+            .andExpectAuditFinalStateSequence(
+                FAILED(FailingChange.class),
+                ROLLED_BACK(FailingChange.class)
+            )
+            .verify();
+    } finally {
+        testKit.cleanUp();
     }
 }
 ```
 
 
-## ✅ Best practices
+## Best practices
 
-- **Use @TargetSystem annotation**: Always annotate Changes with their target system identifier
-- **Separate concerns**: Test target system changes and audit store persistence independently
-- **Use real containers**: Testcontainers provides realistic test environments for both target systems and audit stores
-- **Test failure scenarios**: Verify that audit integrity is maintained even when target systems fail
-- **Validate dual-architecture**: Ensure changes reach target systems and tracking reaches audit stores
-- **Clean up properly**: Reset both target systems and audit stores between tests
-- **Use appropriate audit stores**: Choose audit stores based on your operational requirements, not target system constraints
-- **Test recovery**: Verify that Flamingock can recover and continue from audit store state when target systems are restored
+- **Use `InMemoryTestKit`** for fast, isolated tests without external dependencies
+- **Use class-based `AuditEntryDefinition`** when possible — it validates more fields and catches annotation misconfigurations
+- **Always call `testKit.cleanUp()`** in a finally block to reset state between tests
+- **Test failure scenarios** — verify that rollback behavior works correctly
+- **Test idempotency** — use `andExistingAudit()` to simulate re-runs and verify changes are skipped appropriately
+- **Keep assertions focused** — validate what's important for each test case using selective field validation
