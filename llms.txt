@@ -108,13 +108,17 @@ Register the audit store with the Flamingock builder:
 // Generic example - audit store configuration
 public class App {
   public static void main(String[] args) {
+
+    // TargetSystem
+    var targetSystem = new MongoDBSyncTargetSystem("mongodb-ts", mongoClient, "dbName");
+
     // Create your audit store connection
-    var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
+    var auditStore = MongoDBSyncAuditStore.from(targetSystem);
 
     // Register with Flamingock
     Flamingock.builder()
       .setAuditStore(auditStore)  // Set the audit store
-      .addTargetSystems(myTargetSystem)
+      .addTargetSystems(targetSystem)
       .build()
       .run();
   }
@@ -637,7 +641,7 @@ Here's a comprehensive example showing the configuration:
 
 ```java
 // Create a Couchbase Target System
-CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, bucket);
+CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, "bucketName");
 // Audit store configuration (mandatory via constructor)
 var auditStore = CouchbaseSyncAuditStore.from(couchbaseTargetSystem)
     .withScopeName("custom-scope")     // Optional configuration
@@ -979,12 +983,12 @@ Your Change methods receive the dependencies they need as parameters - Flamingoc
 
 ```java
 @Apply
-public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+public void apply(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
 
 }
 
 @Rollback
-public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+public void rollback(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
 
 }
 ```
@@ -2717,9 +2721,10 @@ Every target system provides two ways to add dependencies:
 
 **Specific methods** - Each concrete implementation offers `.withXXX()` methods for common dependencies:
 ```java
-var mongoTarget = new MongoDBSyncTargetSystem("user-db")
-    .withDatabase(database)      // MongoDB-specific method
-    .withMongoClient(client);    // MongoDB-specific method
+var mongoTarget = new MongoDBSyncTargetSystem("user-db", mongoClient, databaseName)
+                .withReadConcern(ReadConcern.MAJORITY)              // MongoDB specific method
+                .withReadPreference(ReadPreference.primary())       // MongoDB specific method
+                .withWriteConcern(WriteConcern.MAJORITY);           // MongoDB specific method
 ```
 
 **Generic methods** - All target systems (including NonTransactionalTargetSystem) support generic dependency injection:
@@ -2789,7 +2794,6 @@ The lock mechanism is **mandatory** and is stored in your configured audit store
 | `lockQuitTryingAfterMillis`          | `180000` (3 min) | How long to retry acquiring the lock if another instance holds it.                  |
 | `lockTryFrequencyMillis`             | `1000` (1 sec)   | Interval between attempts while waiting for the lock.                               |
 | `throwExceptionIfCannotObtainLock`   | `true`           | Whether Flamingock should fail if the lock can't be acquired.                       |
-| `enableRefreshDaemon`                | `true`           | Whether to run a background thread that periodically extends the lock.              |
 
 
 ## Why locking matters
@@ -2830,7 +2834,6 @@ Flamingock.builder()
   .setLockQuitTryingAfterMillis(300000)
   .setLockTryFrequencyMillis(2000)
   .setThrowExceptionIfCannotObtainLock(true)
-  .setEnableRefreshDaemon(true)
   ...
 ```
 
@@ -4029,7 +4032,7 @@ For our example:
 - A Kafka cluster (`kafka`)
 
 ```java
-var sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+var sql = new SqlTargetSystem("mysql-inventory", mysqlDataSource);
 var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 var kafka = new NonTransactionalTargetSystem("kafka-id");
 ```
@@ -6601,10 +6604,10 @@ implementation("com.couchbase.client:java-client:3.6.0")
 Configure the target system:
 
 ```java
-var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, bucket);
+var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, "userBucket");
 ```
 
-The constructor requires the target system name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
+The constructor requires the target system name, Couchbase cluster, and bucket name. Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Target System
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
@@ -6621,7 +6624,7 @@ These dependencies must be provided at target system creation time with **no glo
 | Dependency | Constructor Parameter | Description |
 |------------|----------------------|-------------|
 | `Cluster` | `cluster` | Couchbase cluster connection - **required** for both target system configuration and change execution |
-| `Bucket` | `bucket` | Target bucket instance - **required** for both target system configuration and change execution |
+| `String` | `bucketName` | Target bucket name - **required** for both target system configuration and change execution |
 
 ## Dependencies available to Changes
 
@@ -6637,7 +6640,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
+var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, "userBucket")
     .addDependency(auditService);          // Additional dependency for changes
 
 // Global context with shared dependencies
@@ -6650,11 +6653,11 @@ Flamingock.builder()
 
 **Target system configuration resolution:**
 - **Cluster**: Must be provided via constructor (`productionCluster`)
-- **Bucket**: Must be provided via constructor (`userBucket`)
+- **Bucket name**: Must be provided via constructor (`"userBucket"`)
 
 **Change dependency resolution for Changes in "user-database":**
 - **Cluster**: From target system context (`productionCluster`)
-- **Bucket**: From target system context (`userBucket`)
+- **Bucket**: From target system context (derived from `productionCluster` + `"userBucket"`)
 - **TransactionAttemptContext**: From target system context (created by Flamingock)
 - **AuditService**: From target system additional dependencies
 - **EmailService**: From global context (fallback)
