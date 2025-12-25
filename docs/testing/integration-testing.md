@@ -90,15 +90,11 @@ void reuseProductionBuilderWithInMemoryAudit() {
     // Retrieve your production builder (already configured with target systems, stages, etc.)
     var builder = MyAppFlamingockConfig.createBuilder();
 
-    // Override only the audit store for testing
-    builder.setAuditStore(InMemoryAuditStore.creaet());
-
     FlamingockTestSupport
             .givenBuilder(builder)
+            .andOverrideAuditStore(InMemoryAuditStore.create())// Override only the audit store for testing
             .whenRun()
-            .thenExpectAuditFinalStateSequence(
-                    APPLIED(MyChange.class)
-            )
+            .thenExpectAuditFinalStateSequence(APPLIED(MyChange.class))
             .verify();
 }
 ```
