@@ -43,10 +43,10 @@ implementation("com.couchbase.client:java-client:3.6.0")
 Configure the target system:
 
 ```java
-var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, bucket);
+var couchbaseTarget = new CouchbaseTargetSystem("user-database-id", cluster, "userBucket");
 ```
 
-The constructor requires the target system name, Couchbase cluster, and bucket. Optional configurations can be added via `.withXXX()` methods.
+The constructor requires the target system name, Couchbase cluster, and bucket name. Optional configurations can be added via `.withXXX()` methods.
 
 :::info Register Target System
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
@@ -63,7 +63,7 @@ These dependencies must be provided at target system creation time with **no glo
 | Dependency | Constructor Parameter | Description |
 |------------|----------------------|-------------|
 | `Cluster` | `cluster` | Couchbase cluster connection - **required** for both target system configuration and change execution |
-| `Bucket` | `bucket` | Target bucket instance - **required** for both target system configuration and change execution |
+| `String` | `bucketName` | Target bucket name - **required** for both target system configuration and change execution |
 
 ## Dependencies available to Changes
 
@@ -79,7 +79,7 @@ Here's a comprehensive example showing the new architecture:
 
 ```java
 // Target system configuration (mandatory via constructor)
-var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, userBucket)
+var couchbaseTarget = new CouchbaseTargetSystem("user-database", productionCluster, "userBucket")
     .addDependency(auditService);          // Additional dependency for changes
 
 // Global context with shared dependencies
@@ -92,11 +92,11 @@ Flamingock.builder()
 
 **Target system configuration resolution:**
 - **Cluster**: Must be provided via constructor (`productionCluster`)
-- **Bucket**: Must be provided via constructor (`userBucket`)
+- **Bucket name**: Must be provided via constructor (`"userBucket"`)
 
 **Change dependency resolution for Changes in "user-database":**
 - **Cluster**: From target system context (`productionCluster`)
-- **Bucket**: From target system context (`userBucket`)
+- **Bucket**: From target system context (derived from `productionCluster` + `"userBucket"`)
 - **TransactionAttemptContext**: From target system context (created by Flamingock)
 - **AuditService**: From target system additional dependencies
 - **EmailService**: From global context (fallback)
