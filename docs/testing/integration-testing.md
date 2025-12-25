@@ -55,16 +55,16 @@ See [BDD test API](./flamingock-bdd-api.md) for details on `andExistingAudit()`,
 
 For faster tests where audit store persistence doesn't matter, you can use the in-memory components:
 
-### InMemoryTestBuilder
+### InMemoryFlamingockBuilder
 
 Creates a pre-configured builder with an in-memory audit store:
 
 ```java
-import io.flamingock.support.InMemoryTestBuilder;
+import io.flamingock.support.InMemoryFlamingockBuilder;
 
 @Test
 void fastTestWithInMemoryAudit() {
-    var builder = InMemoryTestBuilder.create()
+    var builder = InMemoryFlamingockBuilder.create()
             .addTargetSystem(new NonTransactionalTargetSystem("kafka").addDependency(kafkaClient))
             .addStage(new Stage("kafka-changes").addCodePackage("com.myapp.changes.kafka"));
 
@@ -78,12 +78,12 @@ void fastTestWithInMemoryAudit() {
 }
 ```
 
-### InMemoryTestAuditStore
+### InMemoryAuditStore
 
 You can also use your production builder configured with all target systems, stages, and dependencies, and just override the audit store. This lets you test with your exact production configuration without needing a real audit store backend:
 
 ```java
-import io.flamingock.support.InMemoryTestAuditStore;
+import io.flamingock.support.InMemoryAuditStore;
 
 @Test
 void reuseProductionBuilderWithInMemoryAudit() {
@@ -91,7 +91,7 @@ void reuseProductionBuilderWithInMemoryAudit() {
     var builder = MyAppFlamingockConfig.createBuilder();
 
     // Override only the audit store for testing
-    builder.setAuditStore(new InMemoryTestAuditStore());
+    builder.setAuditStore(InMemoryAuditStore.creaet());
 
     FlamingockTestSupport
             .givenBuilder(builder)
