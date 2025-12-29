@@ -1,6 +1,6 @@
 ---
 title: Gradle plugin
-sidebar_position: 15
+sidebar_position: 25
 ---
 
 # Gradle plugin
