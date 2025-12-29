@@ -19,9 +19,18 @@ Add the Flamingock Spring Boot integration dependency:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
+
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$version")
+plugins {
+    id("io.flamingock") version "$version"
+}
+
+flamingock {
+    community()
+    springboot()
+}
 ```
+
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
@@ -33,10 +42,6 @@ implementation("io.flamingock:flamingock-springboot-integration:$version")
 ```
   </TabItem>
 </Tabs>
-
-### Version compatibility
-
-Check [Version compatibility](introduction.md#version-compatibility)
 
 ## Configure setup and build Flamingock manually
 

@@ -16,8 +16,10 @@ Add the Spring Boot test support dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
 
+If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
+
 ```kotlin
-testImplementation("io.flamingock:flamingock-test-support:$version")
+testImplementation("io.flamingock:flamingock-springboot-test-support:$version")
 ```
 
   </TabItem>
@@ -26,7 +28,7 @@ testImplementation("io.flamingock:flamingock-test-support:$version")
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-test-support</artifactId>
+    <artifactId>flamingock-springboot-test-support</artifactId>
     <version>${flamingock.version}</version>
     <scope>test</scope>
 </dependency>
