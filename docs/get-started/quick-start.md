@@ -24,12 +24,14 @@ Add Flamingock to your build:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
-
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-community")
+plugins {
+    id("io.flamingock") version "$version"
+}
 
-annotationProcessor("io.flamingock:flamingock-processor:$version")
+flamingock {
+    community()
+}
 ```
 
   </TabItem>

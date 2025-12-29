@@ -16,6 +16,8 @@ The recommended approach is to use your **production Flamingock builder** with c
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
 
+If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
+
 ```kotlin
 testImplementation("io.flamingock:flamingock-test-support:$version")
 ```
