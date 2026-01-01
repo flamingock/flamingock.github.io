@@ -35,7 +35,7 @@ public class FlamingockConfig {
 Alternatively, using a YAML file:
 
 ```java
-@EnableFlamingock( pipelineFile = "config/setup.yaml" )
+@EnableFlamingock( configFile = "config/setup.yaml" )
 public class FlamingockConfig {}
 ```
 
@@ -49,7 +49,7 @@ pipeline:
 
 :::info Advanced options:
 - **Multiple stages**: For complex scenarios requiring independent change sets go to the [stage section below](#multiple-stages-advanced)
-- **File-based configuration**: Use `pipelineFile` parameter for YAML configuration
+- **File-based configuration**: Use `configFile` parameter for YAML configuration
 - **Explicit naming**: Use `@Stage(name = "custom", location = "com.yourcompany.changes")`
 :::
 
