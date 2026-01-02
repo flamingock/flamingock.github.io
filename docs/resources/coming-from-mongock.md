@@ -35,7 +35,7 @@ Migrating from Mongock is intentionally simple, it only requires two additional 
 
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {

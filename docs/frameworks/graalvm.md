@@ -37,7 +37,7 @@ Learn more about the basics of GraalVM native image compilation in the [GraalVM 
 
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {

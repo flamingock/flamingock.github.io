@@ -90,7 +90,7 @@ To use the Spring Boot integration, add the following dependency:
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {

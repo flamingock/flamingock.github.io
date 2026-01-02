@@ -25,7 +25,7 @@ With the plugin, this becomes:
 ```kotlin
 // With the plugin - simple DSL
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
@@ -49,19 +49,7 @@ Add the plugin to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
-}
-
-flamingock {
-    community()
-}
-```
-
-Or in `build.gradle` (Groovy):
-
-```groovy
-plugins {
-    id 'io.flamingock' version '$version'
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
@@ -125,7 +113,7 @@ annotationProcessor("io.flamingock:mongock-support")
 ```kotlin
 plugins {
     java
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
@@ -148,7 +136,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
@@ -170,7 +158,7 @@ dependencies {
 ```kotlin
 plugins {
     java
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
@@ -186,7 +174,7 @@ flamingock {
 plugins {
     java
     id("org.graalvm.buildtools.native") version "0.9.28"
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {

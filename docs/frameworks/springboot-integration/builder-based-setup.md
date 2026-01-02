@@ -22,7 +22,7 @@ Add the Flamingock Spring Boot integration dependency:
 
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {

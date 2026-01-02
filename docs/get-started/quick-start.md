@@ -26,7 +26,7 @@ Add Flamingock to your build:
   <TabItem value="gradle" label="Gradle" default>
 ```kotlin
 plugins {
-    id("io.flamingock") version "$version"
+    id("io.flamingock") version "[VERSION]"
 }
 
 flamingock {
