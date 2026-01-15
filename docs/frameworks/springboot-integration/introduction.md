@@ -89,8 +89,17 @@ To use the Spring Boot integration, add the following dependency:
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation("io.flamingock:flamingock-springboot-integration:$version")
+plugins {
+    id("io.flamingock") version "[VERSION]"
+}
+
+flamingock {
+    community()
+    springboot()
+}
 ```
+
+
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
@@ -103,13 +112,7 @@ implementation("io.flamingock:flamingock-springboot-integration:$version")
   </TabItem>
 </Tabs>
 
-### Version compatibility
-
-The `flamingock-springboot-integration` artifact is compatible with both Spring Boot 2.x and 3.x. Your project's Spring Boot version determines the appropriate Spring framework and JDK requirements.
-
-| Package Name                         | Spring Boot Version  |
-|-------------------------------------|----------------------|
-| `flamingock-springboot-integration` | 2.x and 3.x         |
+Flamingock's Spring Boot integration is compatible with both Spring Boot 2.x and 3.x.
 
 
 ## :white_check_mark: Best practices

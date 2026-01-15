@@ -30,21 +30,24 @@ Migrating from Mongock is intentionally simple, it only requires two additional 
 
 ### 1. Add Mongock Support dependency
 
-
-
-
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
+
 ```kotlin
-annotationProcessor("io.flamingock:mongock-support:$version")
-implementation("io.flamingock:mongock-support:$version")
+plugins {
+    id("io.flamingock") version "[VERSION]"
+}
+
+flamingock {
+    community()
+    mongock()  // Adds Mongock migration support
+}
 ```
 
   </TabItem>
   <TabItem value="maven" label="Maven">
 
 ```xml
-
 <dependency>
     <groupId>io.flamingock</groupId>
     <artifactId>mongock-support</artifactId>
@@ -52,7 +55,6 @@ implementation("io.flamingock:mongock-support:$version")
 </dependency>
 
 <!-- Annotation processor -->
-
 <build>
     <plugins>
         <plugin>
@@ -71,7 +73,6 @@ implementation("io.flamingock:mongock-support:$version")
         </plugin>
     </plugins>
 </build>
-
 ```
 
   </TabItem>

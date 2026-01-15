@@ -49,13 +49,17 @@ Register the audit store with the Flamingock builder:
 // Generic example - audit store configuration
 public class App {
   public static void main(String[] args) {
+
+    // TargetSystem
+    var targetSystem = new MongoDBSyncTargetSystem("mongodb-ts", mongoClient, "dbName");
+
     // Create your audit store connection
-    var auditStore = new MongoDBSyncAuditStore(mongoClient, mongoDatabase);
+    var auditStore = MongoDBSyncAuditStore.from(targetSystem);
 
     // Register with Flamingock
     Flamingock.builder()
       .setAuditStore(auditStore)  // Set the audit store
-      .addTargetSystems(myTargetSystem)
+      .addTargetSystems(targetSystem)
       .build()
       .run();
   }

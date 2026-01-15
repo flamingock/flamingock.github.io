@@ -13,12 +13,12 @@ Your Change methods receive the dependencies they need as parameters - Flamingoc
 
 ```java
 @Apply
-public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+public void apply(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
 
 }
 
 @Rollback
-public void configureBucket(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
+public void rollback(S3Client s3Client, AdminClient adminClient, FeatureFlagService flags) {
 
 }
 ```

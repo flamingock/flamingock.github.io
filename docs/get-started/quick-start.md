@@ -1,5 +1,5 @@
 ---
-sidebar_position: 20
+sidebar_position: 15
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -24,12 +24,14 @@ Add Flamingock to your build:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
-
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-community")
+plugins {
+    id("io.flamingock") version "[VERSION]"
+}
 
-annotationProcessor("io.flamingock:flamingock-processor:$version")
+flamingock {
+    community()
+}
 ```
 
   </TabItem>
@@ -90,7 +92,7 @@ For our example:
 - A Kafka cluster (`kafka`)
 
 ```java
-var sql = new SqlTargetSystem("mysql-inventory").withDatasource(ds);
+var sql = new SqlTargetSystem("mysql-inventory", mysqlDataSource);
 var s3 = new NonTransactionalTargetSystem("aws-s3-id");
 var kafka = new NonTransactionalTargetSystem("kafka-id");
 ```
