@@ -72,11 +72,11 @@ In the Flamingock builder, you must configure the events you intend to use and i
 <Tabs groupId="languages">
   <TabItem value="java" label="Java" default>
   ```java
-public class StageCompletedListener implements ApplicationListener<StageCompletedEvent> {
+public class StageCompletedListener implements Consumer<IStageStartedEvent> {
 
     public static int executed = 0;
     @Override
-    public void accept(StageCompletedEvent stageCompletedEvent) {
+    public void accept(IStageStartedEvent stageCompletedEvent) {
         executed++;
     }
 }
@@ -84,13 +84,13 @@ public class StageCompletedListener implements ApplicationListener<StageComplete
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
-class StageCompletedListener : (StageCompletedEvent) -> Unit {
+class StageCompletedListener : (IStageStartedEvent) -> Unit {
 
     companion object {
         var executed = 0
     }
 
-    override fun invoke(stageCompletedEvent: StageCompletedEvent) {
+    override fun invoke(stageCompletedEvent: IStageStartedEvent) {
         executed++
     }
 }
