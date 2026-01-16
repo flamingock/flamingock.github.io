@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 title: Create your template
 ---
 
@@ -42,7 +42,7 @@ Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three gener
 **Example:**
 
 ```java
-public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOperation, MongoOperation> {
+public class MongoChangeTemplate extends AbstractChangeTemplate<Void, Object, Object> {
 
     public MongoChangeTemplate() {
         super(MongoOperation.class);
@@ -51,24 +51,40 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
     @Apply
     public void apply(MongoDatabase db, @Nullable ClientSession clientSession) {
         if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
+            throw new IllegalArgumentException(
+                String.format("Transactional change[%s] requires ClientSession", changeId));
         }
-        executeOp(db, applyPayload, clientSession);
+        List<MongoOperation> operations = convertPayload(applyPayload);
+        executeOperations(db, operations, clientSession);
     }
 
     @Rollback
     public void rollback(MongoDatabase db, @Nullable ClientSession clientSession) {
         if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
+            throw new IllegalArgumentException(
+                String.format("Transactional change[%s] requires ClientSession", changeId));
         }
-        executeOp(db, rollbackPayload, clientSession);
+        List<MongoOperation> operations = convertPayload(rollbackPayload);
+        executeOperations(db, operations, clientSession);
     }
 
-    private void executeOp(MongoDatabase db, MongoOperation op, ClientSession clientSession) {
-        op.getOperator(db).apply(clientSession);
+    private void executeOperations(MongoDatabase db, List<MongoOperation> ops, ClientSession session) {
+        if (ops != null) {
+            ops.forEach(op -> op.getOperator(db).apply(session));
+        }
+    }
+
+    // Converts raw YAML payload (Map or List) to List<MongoOperation>
+    private List<MongoOperation> convertPayload(Object rawPayload) {
+        // Implementation handles both single operation (Map) and list formats
+        // ...
     }
 }
 ```
+
+:::note
+The `MongoChangeTemplate` uses `Object` as the generic type for apply/rollback payloads to handle both single-operation format (backward compatibility) and list format. The template internally converts the raw YAML data to `List<MongoOperation>`.
+:::
 
 #### Important notes
 - Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.

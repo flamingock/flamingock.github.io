@@ -17,77 +17,77 @@ Templates are available in **beta**.
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
 
-Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
+Using a Flamingock Template is straightforward. Here's an example of how you can apply MongoDB changes using the **MongoDB Template**.
 
 :::danger
-This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+This example uses the **MongoDB Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+:::
+
+:::tip
+For a complete reference of all MongoDB operations, parameters, and advanced options, see the [MongoDB Template Reference](./mongodb-template.md).
 :::
 
 ### Step 1: Add the Template dependency
 
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `SqlTemplate`:
+Ensure your **Flamingock Template** dependency is included in your project. Example of using `MongoChangeTemplate`:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-sql-template")
+implementation("io.flamingock:flamingock-mongodb-sync-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-sql-template</artifactId>
+    <artifactId>flamingock-mongodb-sync-template</artifactId>
 </dependency>
 ```
   </TabItem>
 </Tabs>
 
-### Step 2: define a Template-based change
+### Step 2: Define a Template-based change
 
-In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
+In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a collection, inserting documents, or creating an index.
 
-When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
+When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you're leveraging.
 
-Create a **YAML file** (e.g., `_0001__CreatePersonsTable.yaml`) inside your application’s resources directory:
+Create a **YAML file** (e.g., `_0001__create_users_collection.yaml`) inside your application's resources directory:
 
 ```yaml
-id: CreatePersonsTableFromTemplate
-targetSystem: "database-system"
-template: SqlTemplate
-recovery:
-  strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
-apply: |
-  CREATE TABLE IF NOT EXISTS Persons (
-    PersonID int,
-    LastName varchar(255),
-    FirstName varchar(255),
-    Address varchar(255),
-    City varchar(255)
-  )
-rollback: "DROP TABLE IF EXISTS Persons;"
+id: create-users-collection
+transactional: false
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb"
+apply:
+  - type: createCollection
+    collection: users
+  - type: createIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1
+      options:
+        unique: true
 ```
 
 #### 🔍 Understanding the configuration attributes
 
 - **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
-- **`order`**: Execution order relative to other changes (also shared with code-based).
-- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based Changes.
-- **`template`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
-- **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
-- **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
+- **`order`**: Execution order relative to other changes (also shared with code-based). When using YAML files, order is typically determined by filename prefix (e.g., `_0001__`, `_0002__`).
+- **`transactional`**: Whether to run the change in a MongoDB transaction. Set to `false` for DDL operations like `createCollection`.
+- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes.
+- **`template`**: Indicates which template should be used to handle the change logic. Use `MongoChangeTemplate` for MongoDB operations.
+- **`apply`**: List of MongoDB operations to execute. Each operation has:
+  - `type`: The operation type (e.g., `createCollection`, `insert`, `createIndex`)
+  - `collection`: The target collection name
+  - `parameters`: Operation-specific parameters (optional for some operations)
+- **`rollback`**: Optional list of operations to execute when rolling back the change.
 - **`recovery`**: Optional failure handling configuration. Contains:
-  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
-- **`configuration`**: Optional configuration parameters accessible within the `apply` and `rollback` sections. The structure and available parameters are defined by the specific template being used.
-  ```yaml
-  configuration:
-    timeout: 30
-    retryCount: 3
-  ```
-- **Other fields**: Templates may define additional configuration fields as needed.
-
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements. Templates can also accept optional `configuration` parameters to customize their behavior.
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations.
 
 ### Step 3: Configure Flamingock to use the template file
 
@@ -110,66 +110,62 @@ If you prefer to use a pipeline YAML file for configuration, refer to the [Setup
 
 At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
 
-## Use case: SQL database changes
+## Use case: MongoDB database changes
 
-Let's compare how an SQL change is handled using a **template-based Change** vs. a **traditional code-based Change**.
+Let's compare how a MongoDB change is handled using a **template-based Change** vs. a **traditional code-based Change**.
 
 ### Approach 1: Using a traditional code-based Change
 
 ```java
-@Change(id = "create-persons-table", order = "20250408_01", author = "developer")
-public class CreatePersonsTableChange {
-
-    private final DataSource dataSource;
-
-    public CreatePersonsTableChange(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+@Change(id = "create-users-collection", order = "20250408_01", author = "developer")
+public class CreateUsersCollectionChange {
 
     @Apply
-    public void apply() throws SQLException {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
+    public void apply(MongoDatabase db) {
+        // Create collection
+        db.createCollection("users");
 
-            statement.executeUpdate("""
-                CREATE TABLE Persons (
-                    PersonID int PRIMARY KEY,
-                    LastName varchar(255),
-                    FirstName varchar(255),
-                    Address varchar(255),
-                    City varchar(255)
-                )
-            """);
-        }
+        // Create unique index on email
+        db.getCollection("users").createIndex(
+            new Document("email", 1),
+            new IndexOptions().unique(true)
+        );
     }
 }
-
 ```
 
-### Approach 2: Using a Flamingock SQL Template
+### Approach 2: Using a Flamingock MongoDB Template
 
-With the **SQL Template**, users define the same change in **YAML** instead of Java:
+With the **MongoDB Template**, users define the same change in **YAML** instead of Java:
 
 ```yaml
-id: createPersonsTableFromTemplate
-targetSystem: "database-system"
-template: SqlTemplate
-recovery:
-  strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
-apply: |
-    CREATE TABLE Persons (
-        PersonID int PRIMARY KEY,
-        LastName varchar(255),
-        FirstName varchar(255),
-        Address varchar(255),
-        City varchar(255)
-    )
-rollback: "DROP TABLE Persons;"
+id: create-users-collection
+transactional: false
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb"
+apply:
+  - type: createCollection
+    collection: users
+  - type: createIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1
+      options:
+        unique: true
 ```
 
 ### Key benefits of using a Template instead of code-based Changes:
-- **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL apply manually.
+- **Less code maintenance**: No need to write Java classes, inject MongoDatabase, or handle operations manually.
 - **Faster onboarding**: YAML is easier for non-Java developers.
-- **Standardised changes**: Ensures best practices and avoids custom implementation errors.
+- **Standardized changes**: Ensures best practices and avoids custom implementation errors.
 - **Improved readability**: Easier to review and version control.
-- **Configurable flexibility**: Templates can be customized through configuration parameters without code changes.
+- **Multiple operations**: Group related operations in a single change file.
+
+## Next steps
+
+Now that you understand the basics of using templates, explore these resources:
+
+- **[MongoDB Template Reference](./mongodb-template.md)** - Complete documentation of all MongoDB operations, parameters, and advanced options including collation, array filters, and validation bypass
+- **[Create your own Template](./create-your-own-template.md)** - Learn how to build custom templates for your specific use cases
