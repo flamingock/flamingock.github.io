@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 # MongoDB Template Reference
 
 :::caution Beta feature
-The MongoDB Template is available in **beta**. Expect API and behavior changes before GA.
+The MongoDB Template is available in **beta**.
 :::
 
 The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This page documents all supported operations and their parameters.
