@@ -46,7 +46,7 @@ Configurable mechanisms determine how Flamingock handles failures:
 
 ## Target systems
 
-Flamingock can apply changes to any external service your application interacts with. Examples include:
+Flamingock can apply changes to any external system your application interacts with. Examples include:
 
 - **Message brokers**: e.g. Kafka, RabbitMQ, AWS SQS  
 - **Cloud services**: e.g. S3, Lambda, API Gateway  
@@ -68,7 +68,7 @@ The fundamental unit of change. Each **Change**:
 
 ### Audit store vs target system
 - **Audit store** → where Flamingock tracks execution history (managed by Flamingock).  
-- **Target system** → where your business changes are applied (any external service your application interacts with).  
+- **Target system** → where your business changes are applied (any external system your application interacts with).  
 
 ### Execution flow
 1. Application startup (or CLI invocation) triggers Flamingock  
