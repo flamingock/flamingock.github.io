@@ -54,7 +54,7 @@ In Flamingock, a **Change** represents a single unit of work that needs to be ap
 
 When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you're leveraging.
 
-Create a **YAML file** (e.g., `_0001__create_users_collection.yaml`) inside your application's resources directory:
+Create a **YAML file** (e.g., `_0001__create_users_collection.yaml`) inside your application's resources directory (e.g., `src/main/resources/flamingock/changes/`):
 
 ```yaml
 id: create-users-collection
@@ -63,15 +63,38 @@ template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
 apply:
-  - type: createCollection
-    collection: users
-  - type: createIndex
-    collection: users
-    parameters:
-      keys:
-        email: 1
-      options:
-        unique: true
+  type: createCollection
+  collection: users
+```
+
+For multiple operations, you can use the list format or the **steps format** (recommended when you need paired rollbacks):
+
+```yaml
+id: setup-users
+transactional: false
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb"
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_1"
 ```
 
 #### 🔍 Understanding the configuration attributes
@@ -81,11 +104,14 @@ apply:
 - **`transactional`**: Whether to run the change in a MongoDB transaction. Set to `false` for DDL operations like `createCollection`.
 - **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes.
 - **`template`**: Indicates which template should be used to handle the change logic. Use `MongoChangeTemplate` for MongoDB operations.
-- **`apply`**: List of MongoDB operations to execute. Each operation has:
+- **`apply`**: Operation(s) to execute. Can be a single operation or a list. Each operation has:
   - `type`: The operation type (e.g., `createCollection`, `insert`, `createIndex`)
   - `collection`: The target collection name
   - `parameters`: Operation-specific parameters (optional for some operations)
-- **`rollback`**: Optional list of operations to execute when rolling back the change.
+- **`rollback`**: Optional operation(s) to execute when rolling back the change.
+- **`steps`**: Alternative to `apply`/`rollback` for multiple operations with paired rollbacks. Each step contains:
+  - `apply`: The operation to execute
+  - `rollback`: Optional rollback operation paired with the apply
 - **`recovery`**: Optional failure handling configuration. Contains:
   - `strategy`: Can be `MANUAL_INTERVENTION` (default) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations.
 
@@ -144,16 +170,26 @@ transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  - type: createCollection
-    collection: users
-  - type: createIndex
-    collection: users
-    parameters:
-      keys:
-        email: 1
-      options:
-        unique: true
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_1"
 ```
 
 ### Key benefits of using a Template instead of code-based Changes:

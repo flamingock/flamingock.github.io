@@ -60,25 +60,109 @@ implementation("io.flamingock:flamingock-mongodb-sync-template")
 
 ## YAML Structure
 
+The template supports two formats: **simple format** for single operations, and **steps format** for multiple operations with paired rollbacks.
+
+### Simple format
+
+Use this format for single operations or multiple operations without paired rollbacks:
+
 ```yaml
-id: change-identifier          # Required: Unique identifier for the change
-transactional: false           # Optional: Whether to run in a transaction (default: true)
-template: MongoChangeTemplate  # Required: Template class name
+# Required: Unique identifier for this change
+id: my-change-id
+
+# Optional: Author of this change
+author: developer-name
+
+# Optional: Whether to run in a transaction (default: true)
+transactional: true
+
+# Required: Template to use
+template: MongoChangeTemplate
+
+# Required: Target system configuration
 targetSystem:
-  id: "mongodb"                # Required: Target system identifier
-apply:                         # Required: List of operations to apply
-  - type: operationType
-    collection: collectionName
-    parameters:
-      # Operation-specific parameters
-rollback:                      # Optional: List of operations for rollback
-  - type: operationType
-    collection: collectionName
-    parameters:
-      # Operation-specific parameters
+  id: "mongodb"
+
+# Required: Single operation to apply
+apply:
+  type: <operation-type>
+  collection: <collection-name>
+  parameters:
+    # Operation-specific parameters
+
+# Optional: Single rollback operation
+rollback:
+  type: <operation-type>
+  collection: <collection-name>
+  parameters:
+    # Operation-specific parameters
 ```
 
-### Transactional Behavior
+### Steps format
+
+Use this format when you need multiple operations with paired rollbacks:
+
+```yaml
+id: my-change-id
+transactional: false
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb"
+
+# List of steps, each with an apply and optional rollback
+steps:
+  - apply:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+    rollback:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+
+  - apply:
+      type: <another-operation>
+      collection: <collection-name>
+    rollback:
+      type: <rollback-operation>
+      collection: <collection-name>
+```
+
+**Example using steps format:**
+
+```yaml
+id: setup-products
+transactional: false
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createCollection
+      collection: products
+    rollback:
+      type: dropCollection
+      collection: products
+
+  - apply:
+      type: createIndex
+      collection: products
+      parameters:
+        keys:
+          category: 1
+        options:
+          name: "category_index"
+    rollback:
+      type: dropIndex
+      collection: products
+      parameters:
+        indexName: "category_index"
+```
+
+### Transactional behavior
 
 - Set `transactional: true` (default) for DML operations that support transactions
 - Set `transactional: false` for DDL operations like `createCollection`, `dropCollection`, `createIndex`, etc.
@@ -533,27 +617,49 @@ rollback:
     collection: premiumCustomers
 ```
 
-## Backward Compatibility
+## File naming convention
 
-The MongoDB Template supports two YAML formats for backward compatibility:
+Change files are executed in alphabetical order. Use a numeric prefix to control execution order:
 
-**New format (recommended) - List of operations:**
-```yaml
-apply:
-  - type: createCollection
-    collection: users
-  - type: createIndex
-    collection: users
-    parameters:
-      keys:
-        email: 1
+```
+_0001__create_users_collection.yaml
+_0002__seed_users.yaml
+_0003__create_indexes.yaml
 ```
 
-**Legacy format - Single operation:**
+## Format compatibility
+
+The MongoDB Template supports multiple YAML formats:
+
+**Simple format - Single operation (recommended for single operations):**
 ```yaml
 apply:
   type: createCollection
   collection: users
 ```
 
-The new list format is recommended as it allows multiple operations in a single change.
+
+**Steps format - Multiple operations with paired rollbacks:**
+```yaml
+steps:
+  - apply:
+      type: createCollection
+      collection: products
+    rollback:
+      type: dropCollection
+      collection: products
+  - apply:
+      type: createIndex
+      collection: products
+      parameters:
+        keys:
+          category: 1
+    rollback:
+      type: dropIndex
+      collection: products
+      parameters:
+        indexName: "category_index"
+```
+
+Use the steps format when you need fine-grained rollback control for each operation.
+

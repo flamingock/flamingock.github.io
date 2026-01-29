@@ -42,7 +42,7 @@ Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three gener
 **Example:**
 
 ```java
-public class MongoChangeTemplate extends AbstractChangeTemplate<Void, Object, Object> {
+public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOperation, MongoOperation> {
 
     public MongoChangeTemplate() {
         super(MongoOperation.class);
@@ -50,45 +50,88 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, Object, Ob
 
     @Apply
     public void apply(MongoDatabase db, @Nullable ClientSession clientSession) {
-        if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(
-                String.format("Transactional change[%s] requires ClientSession", changeId));
+        validateSession(clientSession);
+
+        if (hasStepsPayload()) {
+            // Steps format: execute each step with automatic rollback on failure
+            executeStepsWithRollback(db, stepsPayload, clientSession);
+        } else if (applyPayload != null) {
+            // Legacy simple format
+            applyPayload.getOperator(db).apply(clientSession);
         }
-        List<MongoOperation> operations = convertPayload(applyPayload);
-        executeOperations(db, operations, clientSession);
     }
 
     @Rollback
     public void rollback(MongoDatabase db, @Nullable ClientSession clientSession) {
+        validateSession(clientSession);
+
+        if (hasStepsPayload()) {
+            // Rollback all steps in reverse order
+            rollbackAllSteps(db, stepsPayload, clientSession);
+        } else if (rollbackPayload != null) {
+            // Legacy simple format
+            rollbackPayload.getOperator(db).apply(clientSession);
+        }
+    }
+
+    private void validateSession(ClientSession clientSession) {
         if (this.isTransactional && clientSession == null) {
             throw new IllegalArgumentException(
                 String.format("Transactional change[%s] requires ClientSession", changeId));
         }
-        List<MongoOperation> operations = convertPayload(rollbackPayload);
-        executeOperations(db, operations, clientSession);
     }
 
-    private void executeOperations(MongoDatabase db, List<MongoOperation> ops, ClientSession session) {
-        if (ops != null) {
-            ops.forEach(op -> op.getOperator(db).apply(session));
+    private void executeStepsWithRollback(MongoDatabase db,
+            List<TemplateStep<MongoOperation, MongoOperation>> steps,
+            ClientSession clientSession) {
+        List<TemplateStep<MongoOperation, MongoOperation>> completedSteps = new ArrayList<>();
+
+        for (TemplateStep<MongoOperation, MongoOperation> step : steps) {
+            try {
+                step.getApply().getOperator(db).apply(clientSession);
+                completedSteps.add(step);
+            } catch (Exception e) {
+                // Rollback completed steps in reverse order
+                rollbackAllSteps(db, completedSteps, clientSession);
+                throw e;
+            }
         }
     }
 
-    // Converts raw YAML payload (Map or List) to List<MongoOperation>
-    private List<MongoOperation> convertPayload(Object rawPayload) {
-        // Implementation handles both single operation (Map) and list formats
-        // ...
+    private void rollbackAllSteps(MongoDatabase db,
+            List<TemplateStep<MongoOperation, MongoOperation>> steps,
+            ClientSession clientSession) {
+        List<TemplateStep<MongoOperation, MongoOperation>> reversed = new ArrayList<>(steps);
+        Collections.reverse(reversed);
+
+        for (TemplateStep<MongoOperation, MongoOperation> step : reversed) {
+            if (step.hasRollback()) {
+                step.getRollback().getOperator(db).apply(clientSession);
+            }
+        }
     }
 }
 ```
 
 :::note
-The `MongoChangeTemplate` uses `Object` as the generic type for apply/rollback payloads to handle both single-operation format (backward compatibility) and list format. The template internally converts the raw YAML data to `List<MongoOperation>`.
+The `MongoChangeTemplate` supports both the **steps format** (recommended) and the **legacy simple format** for backward compatibility. The `hasStepsPayload()` method checks which format is being used.
 :::
 
 #### Important notes
-- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
+
+**Accessing payload data:**
+
+- **Steps format (recommended)**: Use `this.stepsPayload` to access the list of `TemplateStep<APPLY, ROLLBACK>` objects. Each step contains an `apply` payload and an optional `rollback` payload.
+- **Legacy format**: Access `this.applyPayload` and `this.rollbackPayload` fields directly.
+- Use `hasStepsPayload()` to check which format is being used.
 - Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
+
+:::warning Deprecation notice
+The fields `applyPayload` and `rollbackPayload` are **deprecated** and will be removed in a future release. New templates should use the `stepsPayload` field with `TemplateStep` objects instead. The steps format provides better rollback control with paired apply/rollback operations.
+:::
+
+**Reflection support:**
+
 - If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
 :::note
@@ -99,11 +142,38 @@ See [**2. Define Execution and Rollback methods** ](#2-define-execution-and-roll
 Each template must include an `@Apply` method, and may optionally include a `@Rollback` method.
 These methods define the core logic that will be executed when Flamingock runs the corresponding change.
 
-Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
+Inside these methods, access the data provided by the user in the template-based change unit through the following fields:
 
+**Steps format (recommended):**
+- `this.stepsPayload` — list of `TemplateStep<APPLY, ROLLBACK>` objects, each containing:
+  - `step.getApply()` — the apply payload for this step
+  - `step.getRollback()` — the rollback payload for this step (may be null)
+  - `step.hasRollback()` — check if rollback is defined
+- `hasStepsPayload()` — check if the change uses steps format
+
+**Legacy format (deprecated):**
 - `this.applyPayload` — the apply logic/data to apply during apply phase
 - `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
+
+**Shared configuration:**
 - `this.configuration` — shared configuration data (if using a non-Void shared config type)
+
+### The TemplateStep class
+
+The `TemplateStep<APPLY, ROLLBACK>` class represents a single step in a step-based change. Each step pairs an apply operation with an optional rollback operation:
+
+```java
+public class TemplateStep<APPLY, ROLLBACK> {
+    public APPLY getApply();           // Required: the apply payload
+    public ROLLBACK getRollback();     // Optional: the rollback payload (may be null)
+    public boolean hasRollback();      // Check if rollback is defined
+}
+```
+
+**Rollback behavior in steps format:**
+- When a step fails, all previously successful steps should be rolled back in reverse order
+- Steps without rollback operations are skipped during rollback
+- Rollback errors should be logged but shouldn't stop the rollback process for remaining steps
 
 An example of a template for Kafka topic management:
 
@@ -217,13 +287,13 @@ Flamingock automatically maps the `apply` and `rollback` sections in your declar
 
 ## 3. Register the Template with ServiceLoader
 
-Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
+Templates are discovered automatically at runtime using Java's `ServiceLoader` system.
 
 Steps:
 1. Create a file at:
 
 ```
-src/main/resources/META-INF/services/io.flamingock.core.api.template.ChangeTemplate
+src/main/resources/META-INF/services/io.flamingock.api.template.ChangeTemplate
 ```
 
 2. List the fully qualified class names of all templates in the file:
@@ -258,10 +328,13 @@ Depending on your target:
 - Public classes must be Javadoc-documented
 - Submit a Pull Request adding the template's documentation to [flamingock.github.io](https://github.com/flamingock/flamingock.github.io)
 
-## ✅ Best Practices
+## Best practices
 
-- Use `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>` with the appropriate generic types for your use case.
+- Use `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with the appropriate generic types for your use case.
+- **Use the steps format** with `stepsPayload` and `TemplateStep` for new templates. This provides fine-grained rollback control.
+- **Support both formats** in your template for backward compatibility: check `hasStepsPayload()` and handle both `stepsPayload` and legacy `applyPayload`/`rollbackPayload`.
 - Always provide an `@Rollback` method if rollback or undo is expected.
+- In steps format, implement automatic rollback of completed steps when a step fails.
 - Use `Void` for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
 - Use shared configuration (`<ConfigType, Void, Void>`) when both apply and rollback need the same configuration data.
 - Document your template's purpose and generic types clearly for users.
