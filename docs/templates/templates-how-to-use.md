@@ -62,12 +62,16 @@ transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  type: createCollection
-  collection: users
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
 ```
 
-For multiple operations, you can use the list format or the **steps format** (recommended when you need paired rollbacks):
+The MongoDB Template uses the **steps format** where each step contains an apply operation with an optional rollback. For multiple operations:
 
 ```yaml
 id: setup-users
@@ -104,13 +108,11 @@ steps:
 - **`transactional`**: Whether to run the change in a MongoDB transaction. Set to `false` for DDL operations like `createCollection`.
 - **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes.
 - **`template`**: Indicates which template should be used to handle the change logic. Use `MongoChangeTemplate` for MongoDB operations.
-- **`apply`**: Operation(s) to execute. Can be a single operation or a list. Each operation has:
-  - `type`: The operation type (e.g., `createCollection`, `insert`, `createIndex`)
-  - `collection`: The target collection name
-  - `parameters`: Operation-specific parameters (optional for some operations)
-- **`rollback`**: Optional operation(s) to execute when rolling back the change.
-- **`steps`**: Alternative to `apply`/`rollback` for multiple operations with paired rollbacks. Each step contains:
-  - `apply`: The operation to execute
+- **`steps`**: List of operations to execute, each with an apply and optional rollback. Each step contains:
+  - `apply`: The operation to execute, with:
+    - `type`: The operation type (e.g., `createCollection`, `insert`, `createIndex`)
+    - `collection`: The target collection name
+    - `parameters`: Operation-specific parameters (optional for some operations)
   - `rollback`: Optional rollback operation paired with the apply
 - **`recovery`**: Optional failure handling configuration. Contains:
   - `strategy`: Can be `MANUAL_INTERVENTION` (default) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations.

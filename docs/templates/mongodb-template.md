@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 The MongoDB Template is available in **beta**.
 :::
 
-The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This page documents all supported operations and their parameters.
+The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This template extends `AbstractSteppableTemplate` and is designed for step-based changes where each step can have its own apply and rollback operation.
 
 ## Getting started
 
@@ -25,16 +25,26 @@ transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  - type: createCollection
-    collection: users
-  - type: createIndex
-    collection: users
-    parameters:
-      keys:
-        email: 1
-      options:
-        unique: true
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_1"
 ```
 
 This single YAML file replaces what would typically require a Java class with annotations and MongoDB driver code. For a step-by-step guide on setting up templates, see [How to use Templates](./templates-how-to-use.md).
@@ -58,13 +68,9 @@ implementation("io.flamingock:flamingock-mongodb-sync-template")
   </TabItem>
 </Tabs>
 
-## YAML Structure
+## YAML structure
 
-The template supports two formats: **simple format** for single operations, and **steps format** for multiple operations with paired rollbacks.
-
-### Simple format
-
-Use this format for single operations or multiple operations without paired rollbacks:
+The MongoDB Template uses the **steps format** where each step contains an apply operation and an optional rollback operation.
 
 ```yaml
 # Required: Unique identifier for this change
@@ -83,33 +89,7 @@ template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
 
-# Required: Single operation to apply
-apply:
-  type: <operation-type>
-  collection: <collection-name>
-  parameters:
-    # Operation-specific parameters
-
-# Optional: Single rollback operation
-rollback:
-  type: <operation-type>
-  collection: <collection-name>
-  parameters:
-    # Operation-specific parameters
-```
-
-### Steps format
-
-Use this format when you need multiple operations with paired rollbacks:
-
-```yaml
-id: my-change-id
-transactional: false
-template: MongoChangeTemplate
-targetSystem:
-  id: "mongodb"
-
-# List of steps, each with an apply and optional rollback
+# Required: List of steps, each with an apply and optional rollback
 steps:
   - apply:
       type: <operation-type>
@@ -130,7 +110,7 @@ steps:
       collection: <collection-name>
 ```
 
-**Example using steps format:**
+**Example:**
 
 ```yaml
 id: setup-products
@@ -162,6 +142,15 @@ steps:
         indexName: "category_index"
 ```
 
+### Rollback behavior
+
+When a step fails during execution:
+1. All previously successful steps are rolled back in reverse order
+2. Steps without rollback operations are skipped during rollback
+3. Rollback errors are logged but don't stop the rollback process for remaining steps
+
+This provides fine-grained control over rollback operations, ensuring each operation can be properly undone.
+
 ### Transactional behavior
 
 - Set `transactional: true` (default) for DML operations that support transactions
@@ -171,15 +160,19 @@ steps:
 MongoDB DDL operations (`createCollection`, `dropCollection`, `createView`, etc.) cannot run inside transactions. Always set `transactional: false` when using these operations.
 :::
 
-## Supported Operations
+## Supported operations
 
 ### createCollection
 
 Creates a new collection.
 
 ```yaml
-- type: createCollection
-  collection: users
+- apply:
+    type: createCollection
+    collection: users
+  rollback:
+    type: dropCollection
+    collection: users
 ```
 
 **Parameters:** None required.
@@ -191,8 +184,9 @@ Creates a new collection.
 Drops an existing collection.
 
 ```yaml
-- type: dropCollection
-  collection: users
+- apply:
+    type: dropCollection
+    collection: users
 ```
 
 **Parameters:** None required.
@@ -204,16 +198,22 @@ Drops an existing collection.
 Inserts one or more documents into a collection.
 
 ```yaml
-- type: insert
-  collection: users
-  parameters:
-    documents:
-      - name: "John Doe"
-        email: "john@example.com"
-        roles: ["admin", "user"]
-      - name: "Jane Smith"
-        email: "jane@example.com"
-        roles: ["user"]
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+          roles: ["admin", "user"]
+        - name: "Jane Smith"
+          email: "jane@example.com"
+          roles: ["user"]
+  rollback:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
 ```
 
 **Parameters:**
@@ -231,17 +231,18 @@ Inserts one or more documents into a collection.
 **Example with options:**
 
 ```yaml
-- type: insert
-  collection: users
-  parameters:
-    documents:
-      - name: "John Doe"
-        email: "john@example.com"
-      - name: "Jane Smith"
-        email: "jane@example.com"
-    options:
-      ordered: false
-      bypassDocumentValidation: true
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+        - name: "Jane Smith"
+          email: "jane@example.com"
+      options:
+        ordered: false
+        bypassDocumentValidation: true
 ```
 
 ---
@@ -251,15 +252,26 @@ Inserts one or more documents into a collection.
 Updates documents in a collection.
 
 ```yaml
-- type: update
-  collection: users
-  parameters:
-    filter:
-      status: "pending"
-    update:
-      $set:
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        status: "pending"
+      update:
+        $set:
+          status: "active"
+      multi: true  # Optional: update all matching documents
+  rollback:
+    type: update
+    collection: users
+    parameters:
+      filter:
         status: "active"
-    multi: true  # Optional: update all matching documents
+      update:
+        $set:
+          status: "pending"
+      multi: true
 ```
 
 **Parameters:**
@@ -281,34 +293,36 @@ Updates documents in a collection.
 **Example with collation:**
 
 ```yaml
-- type: update
-  collection: users
-  parameters:
-    filter:
-      name: "josé"
-    update:
-      $set:
-        verified: true
-    options:
-      collation:
-        locale: "es"
-        strength: 1  # Case-insensitive and accent-insensitive
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        name: "josé"
+      update:
+        $set:
+          verified: true
+      options:
+        collation:
+          locale: "es"
+          strength: 1  # Case-insensitive and accent-insensitive
 ```
 
 **Example with arrayFilters:**
 
 ```yaml
-- type: update
-  collection: orders
-  parameters:
-    filter:
-      orderId: "ORD-001"
-    update:
-      $set:
-        "items.$[elem].status": "shipped"
-    options:
-      arrayFilters:
-        - elem.status: "pending"
+- apply:
+    type: update
+    collection: orders
+    parameters:
+      filter:
+        orderId: "ORD-001"
+      update:
+        $set:
+          "items.$[elem].status": "shipped"
+      options:
+        arrayFilters:
+          - elem.status: "pending"
 ```
 
 ---
@@ -318,20 +332,22 @@ Updates documents in a collection.
 Deletes documents from a collection.
 
 ```yaml
-- type: delete
-  collection: users
-  parameters:
-    filter:
-      status: "inactive"
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter:
+        status: "inactive"
 ```
 
 To delete all documents:
 
 ```yaml
-- type: delete
-  collection: users
-  parameters:
-    filter: {}
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
 ```
 
 **Parameters:**
@@ -346,27 +362,39 @@ To delete all documents:
 Creates an index on a collection.
 
 ```yaml
-- type: createIndex
-  collection: users
-  parameters:
-    keys:
-      email: 1        # 1 for ascending, -1 for descending
-    options:
-      name: "email_unique_index"
-      unique: true
+- apply:
+    type: createIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1        # 1 for ascending, -1 for descending
+      options:
+        name: "email_unique_index"
+        unique: true
+  rollback:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
 ```
 
 **Compound index example:**
 
 ```yaml
-- type: createIndex
-  collection: orders
-  parameters:
-    keys:
-      customerId: 1
-      orderDate: -1
-    options:
-      name: "customer_orders_index"
+- apply:
+    type: createIndex
+    collection: orders
+    parameters:
+      keys:
+        customerId: 1
+        orderDate: -1
+      options:
+        name: "customer_orders_index"
+  rollback:
+    type: dropIndex
+    collection: orders
+    parameters:
+      indexName: "customer_orders_index"
 ```
 
 **Parameters:**
@@ -393,20 +421,22 @@ Drops an index from a collection.
 **By index name:**
 
 ```yaml
-- type: dropIndex
-  collection: users
-  parameters:
-    indexName: "email_unique_index"
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
 ```
 
 **By index keys:**
 
 ```yaml
-- type: dropIndex
-  collection: users
-  parameters:
-    keys:
-      email: 1
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1
 ```
 
 **Parameters:**
@@ -424,10 +454,16 @@ Drops an index from a collection.
 Renames a collection.
 
 ```yaml
-- type: renameCollection
-  collection: oldName
-  parameters:
-    target: newName
+- apply:
+    type: renameCollection
+    collection: oldName
+    parameters:
+      target: newName
+  rollback:
+    type: renameCollection
+    collection: newName
+    parameters:
+      target: oldName
 ```
 
 **Parameters:**
@@ -442,22 +478,23 @@ Renames a collection.
 Modifies collection options, such as adding validation rules.
 
 ```yaml
-- type: modifyCollection
-  collection: users
-  parameters:
-    validator:
-      $jsonSchema:
-        bsonType: "object"
-        required: ["email", "name"]
-        properties:
-          email:
-            bsonType: "string"
-            description: "must be a string and is required"
-          name:
-            bsonType: "string"
-            description: "must be a string and is required"
-    validationLevel: "moderate"
-    validationAction: "warn"
+- apply:
+    type: modifyCollection
+    collection: users
+    parameters:
+      validator:
+        $jsonSchema:
+          bsonType: "object"
+          required: ["email", "name"]
+          properties:
+            email:
+              bsonType: "string"
+              description: "must be a string and is required"
+            name:
+              bsonType: "string"
+              description: "must be a string and is required"
+      validationLevel: "moderate"
+      validationAction: "warn"
 ```
 
 **Parameters:**
@@ -474,16 +511,20 @@ Modifies collection options, such as adding validation rules.
 Creates a view based on an aggregation pipeline.
 
 ```yaml
-- type: createView
-  collection: activeUsers
-  parameters:
-    viewOn: users
-    pipeline:
-      - $match:
-          status: "active"
-      - $project:
-          name: 1
-          email: 1
+- apply:
+    type: createView
+    collection: activeUsers
+    parameters:
+      viewOn: users
+      pipeline:
+        - $match:
+            status: "active"
+        - $project:
+            name: 1
+            email: 1
+  rollback:
+    type: dropView
+    collection: activeUsers
 ```
 
 **Parameters:**
@@ -499,15 +540,16 @@ Creates a view based on an aggregation pipeline.
 Drops a view.
 
 ```yaml
-- type: dropView
-  collection: activeUsers
+- apply:
+    type: dropView
+    collection: activeUsers
 ```
 
 **Parameters:** None required.
 
 ---
 
-## Complete Examples
+## Complete examples
 
 ### Example 1: Setting up a users collection
 
@@ -517,43 +559,46 @@ transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  - type: createCollection
-    collection: users
 
-  - type: createIndex
-    collection: users
-    parameters:
-      keys:
-        email: 1
-      options:
-        name: "email_unique"
-        unique: true
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
 
-  - type: insert
-    collection: users
-    parameters:
-      documents:
-        - name: "Admin"
-          email: "admin@company.com"
-          roles: ["superuser"]
-        - name: "Support"
-          email: "support@company.com"
-          roles: ["readonly"]
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          name: "email_unique"
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_unique"
 
-rollback:
-  - type: dropIndex
-    collection: users
-    parameters:
-      indexName: "email_unique"
-
-  - type: delete
-    collection: users
-    parameters:
-      filter: {}
-
-  - type: dropCollection
-    collection: users
+  - apply:
+      type: insert
+      collection: users
+      parameters:
+        documents:
+          - name: "Admin"
+            email: "admin@company.com"
+            roles: ["superuser"]
+          - name: "Support"
+            email: "support@company.com"
+            roles: ["readonly"]
+    rollback:
+      type: delete
+      collection: users
+      parameters:
+        filter: {}
 ```
 
 ### Example 2: Data migration with update
@@ -564,31 +609,32 @@ transactional: true
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  - type: update
-    collection: users
-    parameters:
-      filter:
-        active: true
-      update:
-        $set:
-          status: "active"
-        $unset:
-          active: ""
-      multi: true
 
-rollback:
-  - type: update
-    collection: users
-    parameters:
-      filter:
-        status: "active"
-      update:
-        $set:
+steps:
+  - apply:
+      type: update
+      collection: users
+      parameters:
+        filter:
           active: true
-        $unset:
-          status: ""
-      multi: true
+        update:
+          $set:
+            status: "active"
+          $unset:
+            active: ""
+        multi: true
+    rollback:
+      type: update
+      collection: users
+      parameters:
+        filter:
+          status: "active"
+        update:
+          $set:
+            active: true
+          $unset:
+            status: ""
+        multi: true
 ```
 
 ### Example 3: Creating a view
@@ -599,22 +645,23 @@ transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
-apply:
-  - type: createView
-    collection: premiumCustomers
-    parameters:
-      viewOn: customers
-      pipeline:
-        - $match:
-            subscriptionTier: "premium"
-        - $project:
-            name: 1
-            email: 1
-            subscriptionTier: 1
 
-rollback:
-  - type: dropView
-    collection: premiumCustomers
+steps:
+  - apply:
+      type: createView
+      collection: premiumCustomers
+      parameters:
+        viewOn: customers
+        pipeline:
+          - $match:
+              subscriptionTier: "premium"
+          - $project:
+              name: 1
+              email: 1
+              subscriptionTier: 1
+    rollback:
+      type: dropView
+      collection: premiumCustomers
 ```
 
 ## File naming convention
@@ -626,40 +673,4 @@ _0001__create_users_collection.yaml
 _0002__seed_users.yaml
 _0003__create_indexes.yaml
 ```
-
-## Format compatibility
-
-The MongoDB Template supports multiple YAML formats:
-
-**Simple format - Single operation (recommended for single operations):**
-```yaml
-apply:
-  type: createCollection
-  collection: users
-```
-
-
-**Steps format - Multiple operations with paired rollbacks:**
-```yaml
-steps:
-  - apply:
-      type: createCollection
-      collection: products
-    rollback:
-      type: dropCollection
-      collection: products
-  - apply:
-      type: createIndex
-      collection: products
-      parameters:
-        keys:
-          category: 1
-    rollback:
-      type: dropIndex
-      collection: products
-      parameters:
-        indexName: "category_index"
-```
-
-Use the steps format when you need fine-grained rollback control for each operation.
 
