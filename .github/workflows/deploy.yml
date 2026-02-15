@@ -4,10 +4,18 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm deploying from this branch to production'
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'deploy')
 
     steps:
       - name: Checkout repository

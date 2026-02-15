@@ -29,7 +29,8 @@
       "Bash(docs/changes/best-practices.md)",
       "Bash(docs/target-systems/dynamodb-target-system.md)",
       "Bash(docs/target-systems/couchbase-target-system.md)",
-      "Bash(docs/target-systems/mongodb-target-system.md)"
+      "Bash(docs/target-systems/mongodb-target-system.md)",
+      "Bash(yarn docusaurus docs:version:*)"
     ],
     "deny": []
   }

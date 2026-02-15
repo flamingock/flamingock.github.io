@@ -1,0 +1,8 @@
+{
+  "label": "Safety and Recovery",
+  "position": 15,
+  "link": {
+    "type": "generated-index",
+    "description": "Flamingock's safety-first approach to distributed system evolution, with configurable recovery strategies and operational workflows."
+  }
+}

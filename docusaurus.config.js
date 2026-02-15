@@ -55,11 +55,18 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           //editUrl: 'https://github.com/flamingock/flamingock-java',
-          lastVersion: 'current',
+          lastVersion: '1.0.0',
+          onlyIncludeVersions: ['1.0.0'],
           versions: {
             current: {
+              label: 'Next',
+              path: 'next',
+              banner: 'unreleased',
+            },
+            '1.0.0': {
               label: '1.0.0',
               path: '',
+              banner: 'none',
             },
           },
         },
@@ -114,12 +121,11 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
-          //Disable version dropdown
-          /*{
+          {
             type: 'docsVersionDropdown',
             position: 'right',
-            dropdownActiveClassDisabled: true, // Muestra siempre el desplegable
-          },*/
+            dropdownActiveClassDisabled: true,
+          },
         ],
       },
       footer: {
