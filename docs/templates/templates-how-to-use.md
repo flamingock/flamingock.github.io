@@ -206,4 +206,5 @@ steps:
 Now that you understand the basics of using templates, explore these resources:
 
 - **[MongoDB Template Reference](./mongodb-template.md)** - Complete documentation of all MongoDB operations, parameters, and advanced options including collation, array filters, and validation bypass
+- **[SQL Template Reference](./sql-template.md)** - Complete documentation for SQL database changes with raw SQL statements
 - **[Create your own Template](./create-your-own-template.md)** - Learn how to build custom templates for your specific use cases

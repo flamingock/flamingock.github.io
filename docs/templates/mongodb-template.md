@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 The MongoDB Template is available in **beta**.
 :::
 
-The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This template extends `AbstractSteppableTemplate` and is designed for step-based changes where each step can have its own apply and rollback operation.
+The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This template extends `AbstractChangeTemplate` and is annotated with `@ChangeTemplate(multiStep = true)`, designed for step-based changes where each step can have its own apply and rollback operation.
 
 ## Getting started
 
