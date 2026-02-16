@@ -96,14 +96,15 @@ rollback: "DELETE FROM users WHERE id = 1"
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `splitStatements` | boolean | `true` | Controls SQL statement splitting. When `true`, the template automatically splits multi-statement SQL by `;` using dialect-aware parsing. Set to `false` to execute the entire SQL string as a single statement. |
+| `splitStatements` | boolean | `true` | Controls SQL statement splitting. When `true`, the template automatically splits multi-statement SQL using dialect-aware parsing. Set to `false` to execute the entire SQL string as a single statement. |
 
 ## Multi-statement support
 
-By default, the SQL Template automatically splits multi-statement SQL strings by `;` and executes each statement individually. The splitting is dialect-aware, correctly handling:
+The SQL Template includes intelligent SQL splitting that understands database-specific syntax. By default, it automatically splits multi-statement SQL strings and executes each statement individually. The splitting is dialect-aware, correctly handling:
 
 - Quoted strings containing semicolons (e.g., `'text;with;semi'`)
-- Dialect-specific syntax and delimiters
+- Dialect-specific delimiters and block syntax (e.g., `DELIMITER`, `GO`, `SET TERM`)
+- Dollar-quoted strings, PL/pgSQL blocks, and other dialect features
 
 ```yaml
 id: insert-seed-data
@@ -118,23 +119,44 @@ apply: |
 rollback: "DELETE FROM users WHERE id IN (1, 2, 3);"
 ```
 
+The splitter correctly handles complex dialect-specific syntax such as PL/pgSQL blocks:
+
+```yaml
+id: create-user-function
+transactional: false
+template: SqlTemplate
+targetSystem:
+  id: "sql"
+apply: |
+  CREATE OR REPLACE FUNCTION get_active_users()
+  RETURNS TABLE(id INT, name VARCHAR, email VARCHAR) AS $
+  BEGIN
+    RETURN QUERY SELECT u.id, u.name, u.email
+    FROM users u
+    WHERE u.active = true;
+  END;
+  $ LANGUAGE plpgsql
+rollback: |
+  DROP FUNCTION IF EXISTS get_active_users()
+```
+
 ## Supported databases
 
 The SQL Template supports dialect-aware statement splitting for the following databases:
 
-| Database | Dialect |
-|----------|---------|
-| MySQL | MySQL |
-| MariaDB | MariaDB |
-| PostgreSQL | PostgreSQL |
-| SQLite | SQLite |
-| H2 | H2 |
-| SQL Server | SQL Server |
-| Sybase | Sybase |
-| Firebird | Firebird |
-| Informix | Informix |
-| Oracle | Oracle |
-| DB2 | DB2 |
+| Database | Strategy | Key features |
+|----------|----------|--------------|
+| **MySQL** | `MySqlSplitter` | DELIMITER command, backticks, backslash escapes |
+| **MariaDB** | `MariaDbSplitter` | Inherits all MySQL features |
+| **PostgreSQL** | `PostgreSqlSplitter` | Dollar-quoted strings (`$`), E-strings |
+| **Oracle** | `OracleSplitter` | `/` delimiter, Q-strings (`q'[...]'`) |
+| **SQL Server** | `SqlServerSplitter` | `GO` batch separator, square brackets |
+| **SQLite** | `SqliteSplitter` | Square brackets, backticks (MySQL compat) |
+| **H2** | `H2Splitter` | Mixed mode support (PostgreSQL + MySQL features) |
+| **Firebird** | `FirebirdSplitter` | `SET TERM` directive, AS context awareness |
+| **IBM DB2** | `Db2Splitter` | `@` delimiter support, BEGIN ATOMIC |
+| **Informix** | `InformixSplitter` | Curly brace comments, compound END keywords |
+| **Sybase** | `SybaseSplitter` | Inherits SQL Server features |
 
 The dialect is automatically detected from the JDBC connection metadata.
 

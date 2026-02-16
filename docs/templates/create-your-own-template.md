@@ -319,7 +319,7 @@ Depending on your target:
 ## Best practices
 
 - **Choose the right template type**: Use `AbstractChangeTemplate` for simple single-operation templates. Add `@ChangeTemplate(multiStep = true)` for multi-step changes where the framework manages step iteration.
-- **Always provide an `@Rollback` method** if rollback or undo is expected.
+- **Always provide a `@Rollback` method** if rollback or undo is expected.
 - **For steppable templates**, the framework handles step iteration and rollback ordering automatically - keep your `@Apply` and `@Rollback` methods focused on a single operation.
 - **Use `Void`** for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
 - **Use shared configuration** when both apply and rollback need the same configuration data.
