@@ -55,17 +55,22 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           //editUrl: 'https://github.com/flamingock/flamingock-java',
-          lastVersion: '1.0.0',
-          onlyIncludeVersions: ['1.0.0'],
+          lastVersion: '1.1.0',
+          onlyIncludeVersions: ['1.1.0', '1.0.0'],
           versions: {
             current: {
               label: 'Next',
               path: 'next',
               banner: 'unreleased',
             },
+            '1.1.0': {
+              label: '1.1.0',
+              path: '',
+              banner: 'none',
+            },
             '1.0.0': {
               label: '1.0.0',
-              path: '',
+              path: '1.0.0',
               banner: 'none',
             },
           },

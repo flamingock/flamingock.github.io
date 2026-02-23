@@ -1,0 +1,8 @@
+{
+  "label": "Spring Boot",
+  "position": 10,
+  "link": {
+    "type": "doc",
+    "id": "frameworks/springboot-integration/introduction"
+  }
+}
