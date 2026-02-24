@@ -3943,7 +3943,7 @@ Configurable mechanisms determine how Flamingock handles failures:
 
 ## Target systems
 
-Flamingock can apply changes to any external service your application interacts with. Examples include:
+Flamingock can apply changes to any external system your application interacts with. Examples include:
 
 - **Message brokers**: e.g. Kafka, RabbitMQ, AWS SQS  
 - **Cloud services**: e.g. S3, Lambda, API Gateway  
@@ -3965,7 +3965,7 @@ The fundamental unit of change. Each **Change**:
 
 ### Audit store vs target system
 - **Audit store** → where Flamingock tracks execution history (managed by Flamingock).  
-- **Target system** → where your business changes are applied (any external service your application interacts with).  
+- **Target system** → where your business changes are applied (any external system your application interacts with).  
 
 ### Execution flow
 1. Application startup (or CLI invocation) triggers Flamingock  
@@ -5356,6 +5356,7 @@ If your question is not listed here, please check the corresponding edition’s 
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
 # Coming from Mongock
 
@@ -5456,6 +5457,38 @@ A full explanation of why this is required (and how Mongock’s model differs fr
 
 
 **That’s all you need to activate Mongock support.** From there, Flamingock handles the detection of legacy changes, audit import, and stage ordering automatically.
+
+### Optional configuration <VersionBadge version="1.1.0" />
+
+The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. Both fields accept **literal values** or **property placeholders**.
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. |
+| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. |
+
+:::info
+`origin` value by Mongock driver:
+
+- **MongoDB**: collection name.
+- **DynamoDB**: table name.
+- **Couchbase**: either the collection name (implicit `_default` scope) or `{scope}.{collection}` (for example, `"myscope.mycollection"`).
+:::
+
+Example:
+
+```java
+@MongockSupport(
+    targetSystem = "mongodb-target-system",
+    origin = "customChangeLog",
+    emptyOriginAllowed = "true"
+)
+public class Application { }
+```
+
+:::tip Property placeholders
+Configuration values can be set by referencing properties in the Flamingock context using the format `${my.custom.property:defaultValue}`.
+:::
 
 ## Understanding the target system for Mongock migrations
 
@@ -5886,7 +5919,7 @@ import TabItem from '@theme/TabItem';
 # Target systems
 
 Target systems are the real-world systems where your business changes are applied.
-These include any external service your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
+These include any external system your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
 
 A Change always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
