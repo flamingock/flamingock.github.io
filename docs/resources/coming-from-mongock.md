@@ -107,12 +107,12 @@ A full explanation of why this is required (and how Mongock’s model differs fr
 
 ### Optional configuration
 
-The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log:
+The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. Both fields accept **literal values** or **property placeholders**.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `origin` | `String` | "" | The Mongock audit origin to read from. When empty (default), Flamingock uses Mongock’s default origin value. |
-| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Allowed values: `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. |
+| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. |
+| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. |
 
 :::info
 `origin` value by Mongock driver:
@@ -127,11 +127,15 @@ Example:
 ```java
 @MongockSupport(
     targetSystem = "mongodb-target-system",
-    origin = "mongockChangeLog",
+    origin = "customChangeLog",
     emptyOriginAllowed = "true"
 )
 public class Application { }
 ```
+
+:::tip Property placeholders
+Configuration values can be set by referencing properties in the Flamingock context using the format `${my.custom.property:defaultValue}`.
+:::
 
 ## Understanding the target system for Mongock migrations
 
