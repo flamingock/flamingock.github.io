@@ -4,6 +4,7 @@ sidebar_position: 999
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
 # Coming from Mongock
 
@@ -105,7 +106,7 @@ A full explanation of why this is required (and how Mongock’s model differs fr
 
 **That’s all you need to activate Mongock support.** From there, Flamingock handles the detection of legacy changes, audit import, and stage ordering automatically.
 
-### Optional configuration
+### Optional configuration <VersionBadge version="1.1.0" />
 
 The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. Both fields accept **literal values** or **property placeholders**.
 
