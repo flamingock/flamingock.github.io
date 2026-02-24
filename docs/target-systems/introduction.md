@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 # Target systems
 
 Target systems are the real-world systems where your business changes are applied.
-These include any external service your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
+These include any external system your application interacts with or evolves - message queues, APIs, cloud services, databases, configuration stores, and more. The examples throughout this documentation are illustrative; Flamingock can work with any system your application needs to change.
 
 A Change always declares which target system it belongs to. This ensures Flamingock can:
 - Track and audit changes per system
