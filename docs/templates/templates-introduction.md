@@ -19,6 +19,14 @@ Templates are available in **beta**.
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
 
+:::tip Ready to get started?
+If you want to jump straight into using templates, check out:
+- **[MongoDB Template](./mongodb-template.md)** - for MongoDB database changes with step-based operations
+- **[SQL Template](./sql-template.md)** - for SQL database changes with raw SQL statements
+
+Both provide complete references with examples for all supported operations.
+:::
+
 ## Introduction
 
 Flamingock Templates are experimental modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define system changes in declarative format (such as **YAML** files), reducing the need for custom code-based Changes while ensuring execution and versioning of changes.

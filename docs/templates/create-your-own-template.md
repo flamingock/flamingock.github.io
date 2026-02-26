@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 title: Create your template
 ---
 
@@ -21,27 +21,89 @@ While official Flamingock templates are experimental, you can already build and 
 
 [Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
+## Template hierarchy
+
+Flamingock provides a unified template class hierarchy:
+
+```
+ChangeTemplate (interface)
+    │
+    AbstractChangeTemplate (abstract base class)
+        ├── @ChangeTemplate              → simple templates (single apply/rollback)
+        └── @ChangeTemplate(multiStep = true) → steppable templates (multiple steps)
+```
+
+### Choosing the template type
+
+| Annotation | Use case | YAML format |
+|------------|----------|-------------|
+| `@ChangeTemplate` (or no annotation) | Single operation with optional rollback | `apply:` / `rollback:` |
+| `@ChangeTemplate(multiStep = true)` | Multiple operations with per-step rollbacks | `steps:` with paired apply/rollback |
+
 ## Overview of the required components
 
 To create a template, you need:
 
-- A Java class extending `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>`
+- A Java class extending `AbstractChangeTemplate`
 - An `@Apply` method to perform the main change
 - (Optionally) A `@Rollback` method for undo support
+- (Optionally) A `@ChangeTemplate` annotation if multi-step is needed
 - A service loader registration file (`META-INF/services`)
 - (Optional) Package and distribute your template
 
-## 1. Implement the Template class
+## 1. Implement the template class
 
-Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three generics:
+### Option A: Simple templates (single-step changes)
 
-- **SHARED_CONFIG**: Shared configuration that applies to both apply and rollback (e.g., database connection, common settings). Use `Void` if no shared config is needed.
-- **APPLY**: The type representing the apply logic/data
-- **ROLLBACK**: The type representing the rollback logic/data
+Use `AbstractChangeTemplate` without `@ChangeTemplate(multiStep = true)` when your template processes a single apply/rollback operation pair. The framework sets `applyPayload` and `rollbackPayload` directly before calling your `@Apply` and `@Rollback` methods.
 
-**Example:**
+**Generic parameters:**
+- **SHARED_CONFIG**: Shared configuration (use `Void` if not needed)
+- **APPLY**: The type representing the apply payload
+- **ROLLBACK**: The type representing the rollback payload
+
+**Example - Simple SQL template:**
 
 ```java
+public class SqlTemplate extends AbstractChangeTemplate<SqlTemplateConfig, String, String> {
+
+    public SqlTemplate() {
+        super();
+    }
+
+    @Apply
+    public void apply(Connection connection) {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(applyPayload);
+        }
+    }
+
+    @Rollback
+    public void rollback(Connection connection) {
+        if (rollbackPayload != null && !rollbackPayload.trim().isEmpty()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute(rollbackPayload);
+            }
+        }
+    }
+}
+```
+
+**Key fields from AbstractChangeTemplate:**
+- `applyPayload` - The apply payload (set by the framework before calling `@Apply`)
+- `rollbackPayload` - The rollback payload (set by the framework before calling `@Rollback`, may be null)
+- `configuration` - Shared configuration (if using non-Void config type)
+- `changeId` - The unique identifier for the change
+- `isTransactional` - Whether the change runs in a transaction
+
+### Option B: Steppable templates (multi-step changes)
+
+Use `AbstractChangeTemplate` with `@ChangeTemplate(multiStep = true)` when your template processes multiple operations, each with its own apply and optional rollback. The framework manages step iteration, calling your `@Apply` and `@Rollback` methods once per step with the appropriate payload set.
+
+**Example - MongoDB template:**
+
+```java
+@ChangeTemplate(multiStep = true)
 public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOperation, MongoOperation> {
 
     public MongoChangeTemplate() {
@@ -50,49 +112,62 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 
     @Apply
     public void apply(MongoDatabase db, @Nullable ClientSession clientSession) {
-        if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
-        }
-        executeOp(db, applyPayload, clientSession);
+        // Framework calls this once per step with applyPayload set
+        applyPayload.getOperator(db).apply(clientSession);
     }
 
     @Rollback
     public void rollback(MongoDatabase db, @Nullable ClientSession clientSession) {
-        if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
-        }
-        executeOp(db, rollbackPayload, clientSession);
-    }
-
-    private void executeOp(MongoDatabase db, MongoOperation op, ClientSession clientSession) {
-        op.getOperator(db).apply(clientSession);
+        // Framework calls this once per step (in reverse) with rollbackPayload set
+        rollbackPayload.getOperator(db).apply(clientSession);
     }
 }
 ```
 
+**Steppable execution behavior (managed by the framework):**
+- The framework iterates through steps, setting `applyPayload` before each `@Apply` call
+- On failure, previously successful steps are rolled back in reverse order
+- Steps without rollback operations are skipped during rollback
+- Rollback errors are logged but don't stop the rollback process for remaining steps
+
+### Common fields from AbstractChangeTemplate
+
+All template classes inherit these fields from `AbstractChangeTemplate`:
+- `changeId` - The unique identifier for the change
+- `isTransactional` - Whether the change runs in a transaction
+- `configuration` - Shared configuration (if using non-Void config type)
+- `applyPayload` - The apply payload for the current operation
+- `rollbackPayload` - The rollback payload for the current operation
+
 #### Important notes
-- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
-- Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
-- If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
-:::note
-See [**2. Define Execution and Rollback methods** ](#2-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
-:::
+**Reflection support:**
 
-## 2. Define Execution and Rollback methods
-Each template must include an `@Apply` method, and may optionally include a `@Rollback` method.
-These methods define the core logic that will be executed when Flamingock runs the corresponding change.
+If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending the abstract classes, you can pass your custom types to the superclass constructor:
 
-Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
+```java
+public MongoChangeTemplate() {
+    super(MongoOperation.class);  // Register MongoOperation for reflection
+}
+```
 
-- `this.applyPayload` — the apply logic/data to apply during apply phase
-- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
-- `this.configuration` — shared configuration data (if using a non-Void shared config type)
+## 2. Define execution and rollback methods
 
-An example of a template for Kafka topic management:
+Each template must include an `@Apply` method, and may optionally include a `@Rollback` method. These methods define the core logic that will be executed when Flamingock runs the corresponding change.
+
+### Payload access
+
+For **simple templates**, `applyPayload` and `rollbackPayload` are set once by the framework before calling the respective method.
+
+For **steppable templates**, the framework iterates through steps and sets `applyPayload`/`rollbackPayload` before each call:
+- During apply: steps are processed in order, with `applyPayload` set per step
+- During rollback: completed steps are processed in reverse order, with `rollbackPayload` set per step
+- Steps without rollback are automatically skipped
+
+### Example: Kafka topic template (simple)
 
 :::info
-This is an illustrative example to demonstrate the template structure. Real Kafka templates would use different parameters and configuration structures based on actual requirements.
+This is an illustrative example to demonstrate the template structure.
 :::
 
 ```java
@@ -104,21 +179,20 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
 
     @Apply
     public void apply(AdminClient adminClient) throws Exception {
-        // Create topic using the apply configuration
         var newTopic = new NewTopic(
-            this.applyPayload.getName(),
-            this.applyPayload.getPartitions(),
-            this.applyPayload.getReplicationFactor()
+            applyPayload.getName(),
+            applyPayload.getPartitions(),
+            applyPayload.getReplicationFactor()
         );
-        newTopic.configs(this.applyPayload.getConfigs());
-
+        newTopic.configs(applyPayload.getConfigs());
         adminClient.createTopics(List.of(newTopic)).all().get();
     }
 
     @Rollback
     public void rollback(AdminClient adminClient) throws Exception {
-        // Delete topic using the rollback topic name
-        adminClient.deleteTopics(List.of(this.rollbackPayload)).all().get();
+        if (rollbackPayload != null) {
+            adminClient.deleteTopics(List.of(rollbackPayload)).all().get();
+        }
     }
 }
 ```
@@ -128,7 +202,7 @@ public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig
 When you need to share configuration between apply and rollback (such as connection details, common settings, etc.), you can use a non-Void shared configuration type:
 
 :::info
-This is an illustrative example to demonstrate the shared configuration pattern. Real S3 templates would use different parameters and configuration structures based on actual AWS SDK requirements.
+This is an illustrative example to demonstrate the shared configuration pattern.
 :::
 
 ```java
@@ -146,28 +220,25 @@ public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig,
             .withCredentials(this.configuration.getCredentialsProvider())
             .build();
 
-        // Create bucket using apply configuration
-        var request = new CreateBucketRequest(this.applyPayload.getBucketName())
-            .withCannedAcl(this.applyPayload.getAcl());
-
-        if (this.applyPayload.getEncryption() != null) {
-            // Apply encryption settings
-            request.withObjectLockEnabledForBucket(this.applyPayload.getEncryption().isEnabled());
-        }
+        // Create bucket using apply payload
+        var request = new CreateBucketRequest(applyPayload.getBucketName())
+            .withCannedAcl(applyPayload.getAcl());
 
         s3Client.createBucket(request);
     }
 
     @Rollback
     public void rollback() {
-        // Use the same shared configuration for rollback
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(this.configuration.getRegion())
-            .withCredentials(this.configuration.getCredentialsProvider())
-            .build();
+        if (rollbackPayload != null) {
+            // Use the same shared configuration for rollback
+            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                .withRegion(this.configuration.getRegion())
+                .withCredentials(this.configuration.getCredentialsProvider())
+                .build();
 
-        // Delete bucket using rollback bucket name
-        s3Client.deleteBucket(this.rollbackPayload);
+            // Delete bucket using rollback bucket name
+            s3Client.deleteBucket(rollbackPayload);
+        }
     }
 }
 ```
@@ -177,11 +248,11 @@ This pattern is useful when:
 - You want to avoid duplicating connection details or common settings
 - The template needs different data for apply vs rollback operations
 
-### Injecting dependencies into Template methods
+### Injecting dependencies into template methods
+
 Template methods (such as those annotated with `@Apply` and `@Rollback`) support method-level dependency injection using the same mechanism as change units.
 
-Template classes do not support constructor injection.
-All dependencies must be injected as parameters in the `@Apply` and `@Rollback` methods.
+Template classes do not support constructor injection. All dependencies must be injected as parameters in the `@Apply` and `@Rollback` methods.
 
 You can inject any registered dependency as a method parameter:
 
@@ -191,23 +262,26 @@ public void apply(MongoDatabase db, ClientService clientService) {
   clientService.doSomething();
 }
 ```
+
 :::info
 Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
 :::
 
-### Mapping between template-base change file and template methods
+### Mapping between template-based change file and template methods
 
-Flamingock automatically maps the `apply` and `rollback` sections in your declarative change unit to the corresponding methods in your template class.
+Flamingock automatically maps the YAML content to the corresponding template methods based on the `@ChangeTemplate` annotation:
+- For simple templates (no annotation or `@ChangeTemplate(multiStep = false)`): `apply:` and `rollback:` fields are set as `applyPayload` and `rollbackPayload`
+- For steppable templates (`@ChangeTemplate(multiStep = true)`): `steps:` list is iterated by the framework, setting `applyPayload` and `rollbackPayload` per step
 
-## 3. Register the Template with ServiceLoader
+## 3. Register the template with ServiceLoader
 
-Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
+Templates are discovered automatically at runtime using Java's `ServiceLoader` system.
 
 Steps:
 1. Create a file at:
 
 ```
-src/main/resources/META-INF/services/io.flamingock.core.api.template.ChangeTemplate
+src/main/resources/META-INF/services/io.flamingock.api.template.ChangeTemplate
 ```
 
 2. List the fully qualified class names of all templates in the file:
@@ -222,15 +296,15 @@ io.flamingock.template.kafka.DeleteTopicTemplate
 Group templates by domain or technology for better maintainability.
 :::
 
-## 4. Package and distribute the Template
+## 4. Package and distribute the template
 
 Depending on your target:
 
-### Internal Templates (private)
+### Internal templates (private)
 - No special packaging needed.
 - Keep your template class inside your application.
 
-### Public Templates (contributing to the Community)
+### Public templates (contributing to the community)
 - Package your template as a JAR.
 - Notify the Flamingock team via [development@flamingock.io](mailto:development@flamingock.io) or GitHub.
 - Submit your template for validation.
@@ -242,12 +316,14 @@ Depending on your target:
 - Public classes must be Javadoc-documented
 - Submit a Pull Request adding the template's documentation to [flamingock.github.io](https://github.com/flamingock/flamingock.github.io)
 
-## ✅ Best Practices
+## Best practices
 
-- Use `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>` with the appropriate generic types for your use case.
-- Always provide an `@Rollback` method if rollback or undo is expected.
-- Use `Void` for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
-- Use shared configuration (`<ConfigType, Void, Void>`) when both apply and rollback need the same configuration data.
-- Document your template's purpose and generic types clearly for users.
-- Ensure all custom types are registered for reflection by passing them to the superclass constructor, especially when targeting native builds.
-- Group multiple templates by domain when packaging a library.
+- **Choose the right template type**: Use `AbstractChangeTemplate` for simple single-operation templates. Add `@ChangeTemplate(multiStep = true)` for multi-step changes where the framework manages step iteration.
+- **Always provide a `@Rollback` method** if rollback or undo is expected.
+- **For steppable templates**, the framework handles step iteration and rollback ordering automatically - keep your `@Apply` and `@Rollback` methods focused on a single operation.
+- **Use `Void`** for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
+- **Use shared configuration** when both apply and rollback need the same configuration data.
+- **Document your template's purpose** and generic types clearly for users.
+- **Ensure all custom types are registered for reflection** by passing them to the superclass constructor, especially when targeting native builds.
+- **Group multiple templates by domain** when packaging a library.
+
