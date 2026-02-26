@@ -17,114 +17,142 @@ Templates are available in **beta**.
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
 
-Using a Flamingock Template is straightforward. Here's an example of how you can apply MongoDB changes using the **MongoDB Template**.
+Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
 
 :::danger
-This example uses the **MongoDB Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
 :::
 
-:::tip
-For a complete reference of all MongoDB operations, parameters, and advanced options, see the [MongoDB Template Reference](./mongodb-template.md).
-:::
+## Step 1: Add the Template dependency
 
-### Step 1: Add the Template dependency
-
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `MongoChangeTemplate`:
+Ensure your **Flamingock Template** dependency is included in your project. Example of using `SqlTemplate`:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-mongodb-sync-template")
+implementation("io.flamingock:flamingock-sql-template")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-mongodb-sync-template</artifactId>
+    <artifactId>flamingock-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>
 </Tabs>
 
-### Step 2: Define a Template-based change
+## Step 2: Create the change file
 
-In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a collection, inserting documents, or creating an index.
+Template-based changes are defined in **YAML files** placed inside your application's resources directory. Each file represents a single change.
 
-When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you're leveraging.
+The **filename** determines the execution order. Use a numeric prefix followed by a double underscore and a descriptive name:
 
-Create a **YAML file** (e.g., `_0001__create_users_collection.yaml`) inside your application's resources directory (e.g., `src/main/resources/flamingock/changes/`):
-
-```yaml
-id: create-users-collection
-transactional: false
-template: MongoChangeTemplate
-targetSystem:
-  id: "mongodb"
-steps:
-  - apply:
-      type: createCollection
-      collection: users
-    rollback:
-      type: dropCollection
-      collection: users
+```
+_0001__create_persons_table.yaml
+_0002__seed_initial_data.yaml
+_0003__add_orders_collection.yaml
 ```
 
-The MongoDB Template uses the **steps format** where each step contains an apply operation with an optional rollback. For multiple operations:
+Flamingock sorts files by this prefix, so `_0001__` always runs before `_0002__`, regardless of the descriptive part of the name.
+
+## Step 3: Define the change content
+
+In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
+
+When using template-based changes, instead of writing a Java class, you describe the change declaratively in the YAML file. Every template-based change shares the same set of common fields. The only difference is how you define the **body** of the change — which depends on the template type (simple or multi-step).
+
+### Common fields
+
+These fields are shared by all template-based changes, regardless of the template type:
+
+- **`id`** *(required)*: Unique identifier for the change, used for tracking (same as in code-based changes).
+- **`template`** *(required)*: The name of the template to use. This must match the template's registered name (defined via `@ChangeTemplate(name = ...)` on the template class). For example, `template: SqlTemplate` uses the template registered with the name `"SqlTemplate"`.
+- **`targetSystem`** *(required)*: Specifies which target system this change applies to. Contains an `id` field that must match a registered target system.
+- **`recovery`** *(optional)*: Failure handling configuration. Contains:
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
+- **`configuration`** *(optional)*: Shared configuration parameters accessible to both apply and rollback logic. The structure and available parameters are defined by the specific template being used.
+  ```yaml
+  configuration:
+    timeout: 30
+    retryCount: 3
+  ```
+- **`transactional`** *(optional)*: Whether the change should run inside a transaction. Defaults to `true` when the target system supports transactions; ignored when it does not. Set to `false` to explicitly opt out of transactional execution for a specific change.
+- **`author`** *(optional)*: The author of the change, for audit and tracking purposes.
+- **`profiles`** *(optional)*: A list of profiles for conditional execution. The change only runs when one of the specified profiles is active.
+
+### Change body: simple vs multi-step
+
+The remaining structure of the YAML file — the **body** — depends on the template type. Whether a template is simple or multi-step is defined by the template developer, and each template's own documentation will describe the exact payload format. What all templates share is the **frame**: simple templates use root-level `apply`/`rollback`, and multi-step templates use `steps`, each with its own `apply`/`rollback`.
+
+#### Simple templates
+
+Simple templates use root-level `apply` and `rollback` fields. They are used when the template is inherently single-operation, or when the payload format is free-form and can naturally contain multiple operations (e.g., SQL).
 
 ```yaml
-id: setup-users
-transactional: false
+id: CreatePersonsTableFromTemplate
+targetSystem: "database-system"
+template: SqlTemplate
+recovery:
+  strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
+apply: |
+  CREATE TABLE IF NOT EXISTS Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255)
+  )
+rollback: "DROP TABLE IF EXISTS Persons;"
+```
+
+- **`apply`** *(required)*: The apply payload for the change. The format depends on the template (string for SQL, map for others, etc.).
+- **`rollback`** *(required by default)*: The rollback payload for the change. By default, templates require rollback data, but a template developer can make it optional via `@ChangeTemplate(rollbackPayloadRequired = false)`.
+
+#### Multi-step templates
+
+Multi-step templates use a `steps` array instead of root-level `apply`/`rollback`. They are used when the target technology requires structured payloads per operation (e.g., MongoDB, Kafka), where each step has its own distinct set of parameters.
+
+```yaml
+id: setup-orders-collection
 template: MongoChangeTemplate
 targetSystem:
-  id: "mongodb"
+  id: "mongodb-system"
 steps:
   - apply:
       type: createCollection
-      collection: users
+      collection: orders
     rollback:
       type: dropCollection
-      collection: users
+      collection: orders
   - apply:
       type: createIndex
-      collection: users
-      parameters:
-        keys:
-          email: 1
-        options:
-          unique: true
+      collection: orders
+      keys: { orderId: 1 }
     rollback:
       type: dropIndex
-      collection: users
-      parameters:
-        indexName: "email_1"
+      collection: orders
+      index: orderId_1
 ```
 
-#### 🔍 Understanding the configuration attributes
+- **`steps`** *(required)*: An array of steps, each containing:
+  - **`apply`** *(required)*: The apply payload for this step.
+  - **`rollback`** *(optional per template setting)*: The rollback payload for this step. Whether it's required depends on the template's `rollbackPayloadRequired` setting.
 
-- **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
-- **`order`**: Execution order relative to other changes (also shared with code-based). When using YAML files, order is typically determined by filename prefix (e.g., `_0001__`, `_0002__`).
-- **`transactional`**: Whether to run the change in a MongoDB transaction. Set to `false` for DDL operations like `createCollection`.
-- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes.
-- **`template`**: Indicates which template should be used to handle the change logic. Use `MongoChangeTemplate` for MongoDB operations.
-- **`steps`**: List of operations to execute, each with an apply and optional rollback. Each step contains:
-  - `apply`: The operation to execute, with:
-    - `type`: The operation type (e.g., `createCollection`, `insert`, `createIndex`)
-    - `collection`: The target collection name
-    - `parameters`: Operation-specific parameters (optional for some operations)
-  - `rollback`: Optional rollback operation paired with the apply
-- **`recovery`**: Optional failure handling configuration. Contains:
-  - `strategy`: Can be `MANUAL_INTERVENTION` (default) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations.
+:::info
+If a multi-step change fails at step N, Flamingock rolls back the previously successful steps in **reverse order** (N, N-1, ..., 0). Steps without rollback data are skipped during rollback.
+:::
 
-### Step 3: Configure Flamingock to use the template file
+## Step 4: Configure Flamingock
 
-To configure Flamingock to use the YAML template file, you need to define a stage that includes the path to the template file using the `@EnableFlamingock` annotation:
+Point a stage to the location where your change files live using the `@EnableFlamingock` annotation:
 
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(location = "resources/templates")
+        @Stage(location = "io.flamingock.example.changes")
     }
 )
 public class MainApplication {
@@ -132,79 +160,16 @@ public class MainApplication {
 }
 ```
 
-If you prefer to use a pipeline YAML file for configuration, refer to the [Setup & Stages guide](../flamingock-library-config/setup-and-stages.md) for more details.
+Although YAML files are not compiled code, Flamingock supports placing them in **source packages** alongside code-based changes — and this is actually the recommended approach. A stage can contain both code-based and template-based changes, and execution order is determined by the filename prefix (`_0001__`, `_0002__`, etc.) across all changes in the stage. Keeping them in the same package makes the full sequence visible at a glance, rather than having to mentally merge two separate locations.
 
-### Step 4: Run Flamingock
-
-At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
-
-## Use case: MongoDB database changes
-
-Let's compare how a MongoDB change is handled using a **template-based Change** vs. a **traditional code-based Change**.
-
-### Approach 1: Using a traditional code-based Change
+Using a **resource folder** works too — just point the stage location to the resource path instead:
 
 ```java
-@Change(id = "create-users-collection", order = "20250408_01", author = "developer")
-public class CreateUsersCollectionChange {
-
-    @Apply
-    public void apply(MongoDatabase db) {
-        // Create collection
-        db.createCollection("users");
-
-        // Create unique index on email
-        db.getCollection("users").createIndex(
-            new Document("email", 1),
-            new IndexOptions().unique(true)
-        );
-    }
-}
+@Stage(location = "templates/sql")
 ```
 
-### Approach 2: Using a Flamingock MongoDB Template
+If you prefer to use a pipeline YAML file for configuration, refer to the [Setup & Stages guide](../flamingock-library-config/setup-and-stages.md) for more details.
 
-With the **MongoDB Template**, users define the same change in **YAML** instead of Java:
+## Step 5: Run Flamingock
 
-```yaml
-id: create-users-collection
-transactional: false
-template: MongoChangeTemplate
-targetSystem:
-  id: "mongodb"
-steps:
-  - apply:
-      type: createCollection
-      collection: users
-    rollback:
-      type: dropCollection
-      collection: users
-  - apply:
-      type: createIndex
-      collection: users
-      parameters:
-        keys:
-          email: 1
-        options:
-          unique: true
-    rollback:
-      type: dropIndex
-      collection: users
-      parameters:
-        indexName: "email_1"
-```
-
-### Key benefits of using a Template instead of code-based Changes:
-- **Less code maintenance**: No need to write Java classes, inject MongoDatabase, or handle operations manually.
-- **Faster onboarding**: YAML is easier for non-Java developers.
-- **Standardized changes**: Ensures best practices and avoids custom implementation errors.
-- **Improved readability**: Easier to review and version control.
-- **Multiple operations**: Group related operations in a single change file.
-
-## Next steps
-
-Now that you understand the basics of using templates, explore these resources:
-
-- **[MongoDB Template Reference](./mongodb-template.md)** - Complete documentation of all MongoDB operations, parameters, and advanced options including collation, array filters, and validation bypass
-- **[SQL Template Reference](./sql-template.md)** - Complete documentation for SQL database changes with raw SQL statements
-- **[Create your own Template](./create-your-own-template.md)** - Learn how to build custom templates for your specific use cases
+At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
