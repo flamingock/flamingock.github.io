@@ -34,8 +34,8 @@ There are **four levels** at which Flamingock-related functionality can be teste
 
 Verify that your change classes carry the correct annotations before running any Flamingock execution.
 
-- Use `ChangeValidator` to assert `@Change` metadata (id, author, order, target system, recovery strategy)
-- Detect missing `@Rollback` methods
+- Use `ChangeValidator` to validate `@Change` metadata on code-based changes **and** YAML metadata on template-based changes — no runtime or external system needed
+- Detect missing rollback definitions (methods or YAML fields)
 - Runs without any external system or Flamingock runtime
 
 See [Change validator](./change-validator.md)
