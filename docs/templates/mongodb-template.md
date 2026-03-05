@@ -22,7 +22,7 @@ The MongoDB Template allows you to define database changes declaratively in YAML
 ```yaml
 id: create-users-collection
 transactional: false
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 steps:
@@ -83,7 +83,7 @@ author: developer-name
 transactional: true
 
 # Required: Template to use
-template: MongoChangeTemplate
+template: mongodb-sync-template
 
 # Required: Target system configuration
 targetSystem:
@@ -115,7 +115,7 @@ steps:
 ```yaml
 id: setup-products
 transactional: false
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -556,7 +556,7 @@ Drops a view.
 ```yaml
 id: setup-users-collection
 transactional: false
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -606,7 +606,7 @@ steps:
 ```yaml
 id: migrate-user-status
 transactional: true
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -642,7 +642,7 @@ steps:
 ```yaml
 id: create-premium-customers-view
 transactional: false
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 

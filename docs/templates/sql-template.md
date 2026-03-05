@@ -22,7 +22,7 @@ The SQL Template allows you to define database changes declaratively in YAML ins
 ```yaml
 id: create-users-table
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255));"
@@ -57,7 +57,7 @@ SQL Template changes use a simple `apply`/`rollback` format:
 ```yaml
 id: <unique-change-id>
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "<target-system-id>"
 apply: "<SQL statement(s)>"
@@ -68,7 +68,7 @@ rollback: "<SQL statement(s)>"
 
 - **`id`**: Unique identifier for the change, used for tracking.
 - **`transactional`**: Whether to run the change in a database transaction (default: `true`).
-- **`template`**: Must be `SqlTemplate`.
+- **`template`**: Must be `sql-template`.
 - **`targetSystem`**: Specifies which SQL target system this change applies to.
 - **`apply`**: Required. Raw SQL string to execute. Multiple statements can be separated by `;`.
 - **`rollback`**: Optional. Raw SQL string to execute for rollback.
@@ -83,7 +83,7 @@ The SQL Template supports optional configuration via the `configuration` field:
 ```yaml
 id: bulk-insert
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 configuration:
@@ -109,7 +109,7 @@ The SQL Template includes intelligent SQL splitting that understands database-sp
 ```yaml
 id: insert-seed-data
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -124,7 +124,7 @@ The splitter correctly handles complex dialect-specific syntax such as PL/pgSQL 
 ```yaml
 id: create-user-function
 transactional: false
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -167,7 +167,7 @@ The dialect is automatically detected from the JDBC connection metadata.
 ```yaml
 id: create-users-table
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255), role VARCHAR(50));"
@@ -177,7 +177,7 @@ rollback: "DROP TABLE users;"
 ```yaml
 id: seed-users
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -191,7 +191,7 @@ rollback: "DELETE FROM users WHERE id IN (1, 2);"
 ```yaml
 id: add-status-column
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -207,7 +207,7 @@ rollback: |
 ```yaml
 id: migrate-user-roles
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |

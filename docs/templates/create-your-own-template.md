@@ -51,16 +51,16 @@ Here is the simplest possible template — a skeleton showing only the structura
 
 ```java
 @ChangeTemplate(name = "MyTemplate")
-public class MyTemplate extends AbstractChangeTemplate<Void, String, String> {
+public class MyTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
 
     @Apply
     public void apply() {
-        // Use this.applyPayload to perform the change
+        // Use this.applyPayload.getValue() to perform the change
     }
 
     @Rollback
     public void rollback() {
-        // Use this.rollbackPayload to undo the change
+        // Use this.rollbackPayload.getValue() to undo the change
     }
 }
 ```
@@ -79,7 +79,7 @@ Every template class **must** be annotated with `@ChangeTemplate`. This annotati
 
 ```java
 @ChangeTemplate(name = "MyTemplate", multiStep = false, rollbackPayloadRequired = true)
-public class MyTemplate extends AbstractChangeTemplate<Void, String, String> {
+public class MyTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
     // ...
 }
 ```
@@ -95,48 +95,51 @@ public class MyTemplate extends AbstractChangeTemplate<Void, String, String> {
 When Flamingock processes a YAML change like:
 
 ```yaml
-template: SqlTemplate
+template: sql-template
 ```
 
-It looks up the template class registered with `@ChangeTemplate(name = "SqlTemplate")`. The `name` attribute is the key — not the Java class name.
+It looks up the template class registered with `@ChangeTemplate(name = "sql-template")`. The `name` attribute is the key — not the Java class name.
 
 ## 1. Template class and generics
 
 Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three generics:
 
-- **SHARED_CONFIG**: Shared configuration that applies to both apply and rollback (e.g., database connection, common settings). Use `Void` if no shared config is needed.
-- **APPLY**: The type representing the apply logic/data
-- **ROLLBACK**: The type representing the rollback logic/data
+- **SHARED_CONFIG**: Shared configuration that applies to both apply and rollback (e.g., database connection, common settings). Use `TemplateVoid` if no shared config is needed.
+- **APPLY**: The type representing the apply logic/data. Must implement `TemplatePayload`.
+- **ROLLBACK**: The type representing the rollback logic/data. Must implement `TemplatePayload`.
+
+Flamingock provides two built-in `TemplatePayload` implementations: `TemplateVoid` (for unused generics) and `TemplateString` (for raw string payloads like SQL). For structured payloads, create your own class implementing `TemplatePayload`.
 
 **Example:**
 
 ```java
-@ChangeTemplate(name = "SqlTemplate")
-public class SqlTemplate extends AbstractChangeTemplate<Void, String, String> {
+@ChangeTemplate(name = "sql-template")
+public class SqlTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
 
     @Apply
     public void apply(Connection connection) throws SQLException {
-        // this.applyPayload contains the SQL from the YAML "apply" field
+        // this.applyPayload.getValue() contains the SQL from the YAML "apply" field
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(this.applyPayload);
+            stmt.execute(this.applyPayload.getValue());
         }
     }
 
     @Rollback
     public void rollback(Connection connection) throws SQLException {
-        // this.rollbackPayload contains the SQL from the YAML "rollback" field
+        // this.rollbackPayload.getValue() contains the SQL from the YAML "rollback" field
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(this.rollbackPayload);
+            stmt.execute(this.rollbackPayload.getValue());
         }
     }
 }
 ```
 
-In this example, `SHARED_CONFIG` is `Void` because no shared configuration is needed. When you use a non-Void type instead, the framework populates `this.configuration` from the YAML `configuration:` field before calling `@Apply` or `@Rollback`. See [section 2](#2-apply-and-rollback-methods) for a full example with shared configuration.
+In this example, `SHARED_CONFIG` is `TemplateVoid` because no shared configuration is needed. When you use a non-`TemplateVoid` type instead, the framework populates `this.configuration` from the YAML `configuration:` field before calling `@Apply` or `@Rollback`. See [section 2](#2-apply-and-rollback-methods) for a full example with shared configuration.
 
 #### Important notes
 - Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
-- Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
+- Access shared configuration via `this.configuration` field (if using a non-`TemplateVoid` shared config type).
+- All three generic types (`SHARED_CONFIG`, `APPLY`, `ROLLBACK`) must implement `TemplatePayload`. Use `TemplateVoid` for unused generics and `TemplateString` for raw string payloads. Custom payload types must implement `TemplatePayload` and its `validate()` method.
 - If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
 
 :::note
@@ -151,7 +154,7 @@ The `@Rollback` method is **required**. Template registration will fail at start
 
 - `this.applyPayload` — the apply logic/data to apply during the apply phase
 - `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
-- `this.configuration` — shared configuration data (if using a non-Void shared config type)
+- `this.configuration` — shared configuration data (if using a non-`TemplateVoid` shared config type)
 
 *Illustrative, non-production example:*
 
@@ -159,6 +162,8 @@ The `@Rollback` method is **required**. Template registration will fail at start
   <TabItem value="template" label="Template class">
 
 ```java
+// KafkaConnectionConfig, TopicCreationRequest, and TopicDeletionRequest
+// are custom types that implement TemplatePayload
 @ChangeTemplate(name = "KafkaTopicTemplate")
 public class KafkaTopicTemplate
         extends AbstractChangeTemplate<KafkaConnectionConfig, TopicCreationRequest, TopicDeletionRequest> {
@@ -208,7 +213,7 @@ rollback:
   </TabItem>
 </Tabs>
 
-> `configuration` is populated into `this.configuration` before `@Apply` or `@Rollback` is called. When shared configuration isn’t needed, use `Void` as the first generic (as shown in [section 1](#1-template-class-and-generics)).
+> `configuration` is populated into `this.configuration` before `@Apply` or `@Rollback` is called. When shared configuration isn’t needed, use `TemplateVoid` as the first generic (as shown in [section 1](#1-template-class-and-generics)).
 
 ### Injecting dependencies into Template methods
 
@@ -241,8 +246,9 @@ When `multiStep = true`:
   <TabItem value="template" label="Template class">
 
 ```java
+// MongoOperation is a custom type that implements TemplatePayload
 @ChangeTemplate(name = "MongoChangeTemplate", multiStep = true)
-public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOperation, MongoOperation> {
+public class MongoChangeTemplate extends AbstractChangeTemplate<TemplateVoid, MongoOperation, MongoOperation> {
 
     public MongoChangeTemplate() {
         super(MongoOperation.class);
@@ -413,7 +419,7 @@ If validation fails, Flamingock reports a clear error with details about which c
 - Always provide both `@Apply` and `@Rollback` methods — both are required for template registration.
 - Set `rollbackPayloadRequired = false` only when rollback logic can derive what it needs from the apply data or doesn't need external input (see [Understanding rollback behavior](#advanced-understanding-rollback-behavior)).
 - Choose `multiStep = true` when the target technology requires structured payloads per operation; use simple templates when the payload format can naturally express multiple operations or is inherently single-operation.
-- Use `Void` for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
+- Use `TemplateVoid` for generics when that type is not needed (e.g., `<TemplateVoid, TemplateString, TemplateString>` for simple SQL templates).
 - Use shared configuration (`<ConfigType, Apply, Rollback>`) when both apply and rollback need the same configuration data.
 - Document your template's purpose, generic types, and expected YAML structure clearly for users.
 - Ensure all custom types are registered for reflection by passing them to the superclass constructor, especially when targeting native builds.
