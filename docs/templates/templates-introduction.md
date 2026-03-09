@@ -19,6 +19,14 @@ Templates are available in **beta**.
 This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
 :::
 
+:::tip Ready to get started?
+If you want to jump straight into using templates, check out:
+- **[MongoDB Template](./mongodb-template.md)** - for MongoDB database changes with step-based operations
+- **[SQL Template](./sql-template.md)** - for SQL database changes with raw SQL statements
+
+Both provide complete references with examples for all supported operations.
+:::
+
 ## Introduction
 
 Flamingock Templates are experimental modules designed to streamline the integration of common third-party services, databases, and configurations into the **Flamingock change management system**. These templates provide a structured way to define system changes in declarative format (such as **YAML** files), reducing the need for custom code-based Changes while ensuring execution and versioning of changes.
@@ -44,12 +52,26 @@ Instead of repeating the same boilerplate code over and over, templates let you 
 
 Today, Flamingock templates can already be created and used in your own projects. However, the official templates provided by the Flamingock team are experimental, and their APIs may change before GA.
 
+## Template types
+
+Templates come in two flavors, based on the **nature of their payload**:
+
+- **Simple templates** — A single `apply` and optional `rollback` payload. Best suited when the template is inherently single-operation, or when the payload format is free-form and can naturally contain multiple operations — for example, SQL, where a single string can hold multiple statements.
+- **Multi-step templates** — A sequence of `steps`, each with its own structured `apply` and optional `rollback` payload. Best suited for technologies that require structured payloads per operation — for example, MongoDB or Kafka, where each operation (create collection, create index, etc.) has its own distinct set of parameters.
+
+The choice between simple and multi-step is driven by the nature of the template's target technology, not solely by how many operations the change performs. A simple SQL template can execute multiple statements in a single payload, while a MongoDB template needs separate structured steps for each operation.
+
+:::info
+The template type is defined by the template developer and determines the YAML structure you use. See [How to use Templates](./templates-how-to-use.md) for details on both formats.
+:::
+
 ## Key features
 
 - **Reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative Changes**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.
+- **Load-time validation**: Flamingock validates YAML structure and payloads before any changes are executed.
 - **Designed to encourage best practices, though still experimental**.
 - **Extensible by the community**: Developers can contribute new templates to expand Flamingock's ecosystem.
 
