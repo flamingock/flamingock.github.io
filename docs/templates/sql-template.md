@@ -56,7 +56,7 @@ SQL Template changes use a simple `apply`/`rollback` format:
 
 ```yaml
 id: <unique-change-id>
-transactional: true
+# transactional: defaults to true when omitted (SQL payloads make no claim)
 template: SqlTemplate
 targetSystem:
   id: "<target-system-id>"
@@ -67,7 +67,7 @@ rollback: "<SQL statement(s)>"
 ### Configuration attributes
 
 - **`id`**: Unique identifier for the change, used for tracking.
-- **`transactional`**: Whether to run the change in a database transaction (default: `true`).
+- **`transactional`**: Whether to run the change in a database transaction. When omitted, defaults to `true` (the SQL Template's payloads make no transaction claim). Set `false` explicitly to opt out.
 - **`template`**: Must be `SqlTemplate`.
 - **`targetSystem`**: Specifies which SQL target system this change applies to.
 - **`apply`**: Required. Raw SQL string to execute. Multiple statements can be separated by `;`.

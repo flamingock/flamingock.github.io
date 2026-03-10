@@ -79,7 +79,11 @@ These fields are shared by all template-based changes, regardless of the templat
     timeout: 30
     retryCount: 3
   ```
-- **`transactional`** *(optional)*: Whether the change should run inside a transaction. Defaults to `true` when the target system supports transactions; ignored when it does not. Set to `false` to explicitly opt out of transactional execution for a specific change.
+- **`transactional`** *(optional)*: Whether the change should run inside a transaction. When omitted, Flamingock infers the value from the template's apply payload metadata: if any apply payload declares it doesn't support transactions, the change is treated as non-transactional; otherwise it defaults to `true`. An explicit value always takes precedence over inference.
+:::tip
+Well-designed templates declare transaction support in their payloads, so you can safely omit `transactional` and let Flamingock infer the right value.
+:::
+
 - **`author`** *(optional)*: The author of the change, for audit and tracking purposes.
 - **`profiles`** *(optional)*: A list of profiles for conditional execution. The change only runs when one of the specified profiles is active.
 
