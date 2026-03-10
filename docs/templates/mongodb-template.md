@@ -21,7 +21,6 @@ The MongoDB Template allows you to define database changes declaratively in YAML
 
 ```yaml
 id: create-users-collection
-transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
@@ -79,8 +78,8 @@ id: my-change-id
 # Optional: Author of this change
 author: developer-name
 
-# Optional: Whether to run in a transaction (default: true)
-transactional: true
+# Optional: Whether to run in a transaction
+# When omitted, inferred from operations (DDL → false, DML → true)
 
 # Required: Template to use
 template: MongoChangeTemplate
@@ -114,7 +113,6 @@ steps:
 
 ```yaml
 id: setup-products
-transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
@@ -153,11 +151,24 @@ This provides fine-grained control over rollback operations, ensuring each opera
 
 ### Transactional behavior
 
-- Set `transactional: true` (default) for DML operations that support transactions
-- Set `transactional: false` for DDL operations like `createCollection`, `dropCollection`, `createIndex`, etc.
+Each MongoDB operation declares whether it supports transactions. When you omit `transactional` from YAML, Flamingock infers the value automatically based on the operations used.
+
+| Operation | Supports transactions |
+|-----------|----------------------|
+| `createCollection` | No |
+| `dropCollection` | No |
+| `createIndex` | No |
+| `dropIndex` | No |
+| `createView` | No |
+| `dropView` | No |
+| `renameCollection` | No |
+| `modifyCollection` | No |
+| `insert` | Yes |
+| `update` | Yes |
+| `delete` | Yes |
 
 :::warning
-MongoDB DDL operations (`createCollection`, `dropCollection`, `createView`, etc.) cannot run inside transactions. Always set `transactional: false` when using these operations.
+MongoDB DDL operations cannot run inside transactions. If any step uses a DDL operation, Flamingock will infer `transactional: false` automatically. Explicitly setting `transactional: true` on a change that contains DDL operations will result in a validation error at load time.
 :::
 
 ## Supported operations
@@ -555,7 +566,6 @@ Drops a view.
 
 ```yaml
 id: setup-users-collection
-transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
@@ -641,7 +651,6 @@ steps:
 
 ```yaml
 id: create-premium-customers-view
-transactional: false
 template: MongoChangeTemplate
 targetSystem:
   id: "mongodb"
