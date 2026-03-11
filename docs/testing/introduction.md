@@ -2,6 +2,8 @@
 title: Testing Flamingock
 sidebar_position: 1
 ---
+import VersionBadge from '@site/src/components/VersionBadge';
+
 
 ## Introduction
 
@@ -18,15 +20,70 @@ Flamingock provides a **BDD-style test support framework** that simplifies integ
 
 | Module | Use case |
 |--------|----------|
-| `flamingock-test-support` | Standalone/programmatic tests without Spring |
+| `flamingock-test-support` | Standalone/programmatic tests without Spring — also includes `ChangeValidator` for structural validation |
 | `flamingock-springboot-test-support` | Spring Boot integration tests |
 
 Both modules share the same BDD API for defining expectations and validating results. See [BDD test API](./flamingock-bdd-api.md) for the complete API reference.
 
 
+## Setup
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+
+When using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md), test support dependencies are included automatically:
+
+- `community()` adds `flamingock-test-support`
+- `springboot()` adds `flamingock-springboot-test-support`
+
+No manual action needed.
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+If you are **not** using Spring Boot, add:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-test-support</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+If you **are** using Spring Boot, add:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-springboot-test-support</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+No `<version>` tag needed — the [Flamingock BOM](../get-started/quick-start.md) manages versioning.
+
+  </TabItem>
+</Tabs>
+
+
 ## What to test
 
-There are **three primary levels** at which Flamingock-related functionality can be tested:
+There are **four levels** at which Flamingock-related functionality can be tested:
+
+### 0. Validate change structure <VersionBadge version="1.2.0" />
+
+Verify that your change classes carry the correct annotations before running any Flamingock execution.
+
+- Use `ChangeValidator` to validate `@Change` metadata on code-based changes **and** YAML metadata on template-based changes — no runtime or external system needed
+- Detect missing rollback definitions (methods or YAML fields)
+- Runs without any external system or Flamingock runtime
+
+See [Change validator](./change-validator.md)
+
 
 ### 1. Unit test: Change logic
 Isolate and test the logic inside your `@Apply` and `@Rollback` methods without involving Flamingock's runtime or audit mechanism.

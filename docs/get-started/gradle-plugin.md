@@ -83,6 +83,7 @@ annotationProcessor("io.flamingock:flamingock-processor:$version")
 ```kotlin
 implementation(platform("io.flamingock:flamingock-community-bom:$version"))
 implementation("io.flamingock:flamingock-community")
+testImplementation("io.flamingock:flamingock-test-support")
 ```
 
 ### springboot()
