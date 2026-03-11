@@ -26,32 +26,7 @@ Add `ChangeValidator` to your test class alongside business-logic tests.
 - Pairs naturally with the unit-testing approach described in [Unit testing your change units](./unit-testing.md)
 
 
-## Dependency
-
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-<Tabs>
-<TabItem value="maven" label="Maven">
-
-```xml
-<dependency>
-  <groupId>io.flamingock</groupId>
-  <artifactId>flamingock-test-support</artifactId>
-  <version>VERSION</version>
-  <scope>test</scope>
-</dependency>
-```
-
-</TabItem>
-<TabItem value="gradle" label="Gradle (Kotlin DSL)">
-
-```kotlin
-testImplementation("io.flamingock:flamingock-test-support:VERSION")
-```
-
-</TabItem>
-</Tabs>
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
 
 
 ## Usage — code-based changes

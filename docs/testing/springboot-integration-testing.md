@@ -2,40 +2,11 @@
 title: Spring Boot testing
 sidebar_position: 4
 ---
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 ## Introduction
 
 For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module uses the same BDD API as the standalone module, but with Spring-specific components for easier integration.
 
-## Setup
-
-Add the Spring Boot test support dependency:
-
-<Tabs groupId="gradle_maven">
-  <TabItem value="gradle" label="Gradle" default>
-
-If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
-
-```kotlin
-testImplementation("io.flamingock:flamingock-springboot-test-support:$version")
-```
-
-  </TabItem>
-  <TabItem value="maven" label="Maven">
-
-```xml
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-test-support</artifactId>
-    <version>${flamingock.version}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-  </TabItem>
-</Tabs>
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
 
 ## @FlamingockSpringBootTest
 

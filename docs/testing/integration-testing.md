@@ -2,40 +2,13 @@
 title: Integration testing
 sidebar_position: 3
 ---
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 ## Introduction
 
 Integration tests verify that Flamingock executes changes correctly against real systems. The `flamingock-test-support` module provides a BDD-style API for writing expressive, maintainable integration tests.
 
 The recommended approach is to use your **production Flamingock builder** with containerized backends (via Testcontainers), ensuring your tests match real-world behavior.
 
-## Setup
-
-<Tabs groupId="gradle_maven">
-  <TabItem value="gradle" label="Gradle" default>
-
-If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
-
-```kotlin
-testImplementation("io.flamingock:flamingock-test-support:$version")
-```
-
-  </TabItem>
-  <TabItem value="maven" label="Maven">
-
-```xml
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-test-support</artifactId>
-    <version>${flamingock.version}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-  </TabItem>
-</Tabs>
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
 
 ## FlamingockTestSupport
 
