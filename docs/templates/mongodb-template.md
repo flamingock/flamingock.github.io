@@ -50,22 +50,37 @@ This single YAML file replaces what would typically require a Java class with an
 
 ## Installation
 
+### Dependency setup
+
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-mongodb-sync-template")
+import io.flamingock.gradle.FlamingockTemplate.MONGODB
+
+flamingock {
+    //...
+    templates(MONGODB)
+}
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-mongodb-sync-template</artifactId>
+    <artifactId>flamingock-java-template-mongodb</artifactId>
 </dependency>
 ```
   </TabItem>
 </Tabs>
+
+### Prerequisites
+
+The MongoDB Template requires the following to be configured in your project:
+
+- The [MongoDB Sync Target System](../target-systems/mongodb-target-system.md) module.
+- MongoDB Java Driver (`mongodb-driver-sync`) 4.0.0+ as a direct dependency.
+
+MongoDB 4.0+ is required for transaction support.
 
 ## YAML structure
 
