@@ -25,20 +25,24 @@ This example uses the **SQL Template**, which is experimental. It is intended fo
 
 ## Step 1: Add the Template dependency
 
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `SqlTemplate`:
+Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-sql-template")
+import io.flamingock.gradle.FlamingockTemplate.SQL
+
+flamingock {
+    //...
+    templates(SQL)
+}
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-sql-template</artifactId>
+    <artifactId>flamingock-java-template-sql</artifactId>
 </dependency>
 ```
   </TabItem>
@@ -69,7 +73,7 @@ When using template-based changes, instead of writing a Java class, you describe
 These fields are shared by all template-based changes, regardless of the template type:
 
 - **`id`** *(required)*: Unique identifier for the change, used for tracking (same as in code-based changes).
-- **`template`** *(required)*: The name of the template to use. This must match the template's registered name (defined via `@ChangeTemplate(name = ...)` on the template class). For example, `template: SqlTemplate` uses the template registered with the name `"SqlTemplate"`.
+- **`template`** *(required)*: The name of the template to use. This must match the template's registered name (defined via `@ChangeTemplate(name = ...)` on the template class). For example, `template: sql-template` uses the template registered with the name `"sql-template"`.
 - **`targetSystem`** *(required)*: Specifies which target system this change applies to. Contains an `id` field that must match a registered target system.
 - **`recovery`** *(optional)*: Failure handling configuration. Contains:
   - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
@@ -98,7 +102,7 @@ Simple templates use root-level `apply` and `rollback` fields. They are used whe
 ```yaml
 id: CreatePersonsTableFromTemplate
 targetSystem: "database-system"
-template: SqlTemplate
+template: sql-template
 recovery:
   strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
 apply: |

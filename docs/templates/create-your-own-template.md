@@ -32,14 +32,14 @@ Creating a template requires the `flamingock-core-api` artifact on the classpath
   <TabItem value="gradle" label="Gradle">
 ```kotlin
 implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-sql-template")
+implementation("io.flamingock:flamingock-core-api")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-sql-template</artifactId>
+    <artifactId>flamingock-core-api</artifactId>
 </dependency>
 ```
   </TabItem>
@@ -95,10 +95,10 @@ public class MyTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateStr
 When Flamingock processes a YAML change like:
 
 ```yaml
-template: SqlTemplate
+template: sql-template
 ```
 
-It looks up the template class registered with `@ChangeTemplate(name = "SqlTemplate")`. The `name` attribute is the key — not the Java class name.
+It looks up the template class registered with `@ChangeTemplate(name = "sql-template")`. The `name` attribute is the key — not the Java class name.
 
 ## 1. Template class and generics
 
@@ -113,7 +113,7 @@ For simple types, Flamingock provides built-in wrappers: `TemplateVoid` (no data
 **Example:**
 
 ```java
-@ChangeTemplate(name = "SqlTemplate")
+@ChangeTemplate(name = "sql-template")
 public class SqlTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
 
     @Apply

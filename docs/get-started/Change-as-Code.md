@@ -266,7 +266,7 @@ rollback:
 id: "SeedDatabase"
 author: "devops"
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem: "sql-target-system"
 apply: |
   INSERT INTO tenants (id, name, created_at)
