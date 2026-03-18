@@ -6,8 +6,9 @@ sidebar_label: MongoDB Template
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# MongoDB Template Reference
+# MongoDB Template Reference <VersionBadge version="1.2.0" />
 
 :::caution Beta feature
 The MongoDB Template is available in **beta**.
