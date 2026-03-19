@@ -5,8 +5,9 @@ title: How to use Templates
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# How to use Flamingock Templates
+# How to use Flamingock Templates <VersionBadge version="1.2.0" />
 
 :::caution Beta feature
 Templates are available in **beta**.

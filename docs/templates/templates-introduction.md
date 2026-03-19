@@ -6,8 +6,9 @@ sidebar_label: Introduction
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# Templates
+# Templates <VersionBadge version="1.2.0" />
 
 :::caution Beta feature
 Templates are available in **beta**.
