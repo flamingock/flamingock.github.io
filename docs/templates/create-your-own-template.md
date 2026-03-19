@@ -5,8 +5,9 @@ title: Create your template
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# Create your own Flamingock template
+# Create your own Flamingock template <VersionBadge version="1.2.0" />
 
 
 :::caution Beta feature

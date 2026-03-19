@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 The MongoDB Template is available in **beta**.
 :::
 
-The `MongoChangeTemplate` provides a declarative way to define MongoDB operations in YAML format. This template extends `AbstractChangeTemplate` and is annotated with `@ChangeTemplate(multiStep = true)`, designed for step-based changes where each step can have its own apply and rollback operation.
+The MongoDB Template (`mongodb-sync-template`) provides a declarative way to define MongoDB operations in YAML format. It is designed for step-based changes where each step can have its own apply and rollback operation.
 
 ## Getting started
 
@@ -21,7 +21,7 @@ The MongoDB Template allows you to define database changes declaratively in YAML
 
 ```yaml
 id: create-users-collection
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 steps:
@@ -97,7 +97,7 @@ author: developer-name
 # When omitted, inferred from operations (DDL → false, DML → true)
 
 # Required: Template to use
-template: MongoChangeTemplate
+template: mongodb-sync-template
 
 # Required: Target system configuration
 targetSystem:
@@ -124,11 +124,18 @@ steps:
       collection: <collection-name>
 ```
 
+:::info Collection name rules
+Collection names must:
+- Not be empty
+- Not contain `$` or null characters
+- Not start with `system.` (reserved by MongoDB)
+:::
+
 **Example:**
 
 ```yaml
 id: setup-products
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -190,7 +197,7 @@ MongoDB DDL operations cannot run inside transactions. If any step uses a DDL op
 
 ### createCollection
 
-Creates a new collection.
+Creates a new collection. This operation is idempotent — if the collection already exists, it is skipped.
 
 ```yaml
 - apply:
@@ -366,7 +373,7 @@ Deletes documents from a collection.
         status: "inactive"
 ```
 
-To delete all documents:
+To delete all matching documents:
 
 ```yaml
 - apply:
@@ -374,12 +381,14 @@ To delete all documents:
     collection: users
     parameters:
       filter: {}
+      multi: true
 ```
 
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `filter` | Object | Yes | Query filter to select documents to delete. Use `{}` for all documents. |
+| `multi` | Boolean | No | If `true`, deletes all matching documents. Default: `false` (deletes first match only) |
 
 ---
 
@@ -430,6 +439,9 @@ Creates an index on a collection.
 | `options` | Object | No | Index options |
 
 **Index Options:**
+
+*Common options:*
+
 | Option | Type | Description |
 |--------|------|-------------|
 | `name` | String | Index name |
@@ -437,12 +449,39 @@ Creates an index on a collection.
 | `sparse` | Boolean | Create a sparse index |
 | `expireAfterSeconds` | Integer | TTL index expiration time |
 | `background` | Boolean | Build index in background (deprecated in MongoDB 4.2+) |
+| `version` | Integer | Index version |
+
+*Text index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `weights` | Object | Text index field weights |
+| `defaultLanguage` | String | Default language for text index |
+| `languageOverride` | String | Field name that contains the language |
+| `textVersion` | Integer | Text index version |
+
+*Geospatial index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `sphereVersion` | Integer | 2dsphere index version |
+| `bits` | Integer | Geohash precision for 2d indexes |
+| `min` | Number | Minimum boundary for 2d index |
+| `max` | Number | Maximum boundary for 2d index |
+
+*Advanced options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `storageEngine` | Object | Storage engine configuration |
+| `partialFilterExpression` | Object | Filter expression for partial indexes |
+| `collation` | Object | Collation settings for string comparison |
 
 ---
 
 ### dropIndex
 
-Drops an index from a collection.
+Drops an index from a collection. This operation is idempotent — if the index does not exist, it is skipped.
 
 **By index name:**
 
@@ -477,7 +516,7 @@ Drops an index from a collection.
 
 ### renameCollection
 
-Renames a collection.
+Renames a collection. This operation is idempotent — if the source collection does not exist but the target does, it is skipped.
 
 ```yaml
 - apply:
@@ -496,6 +535,12 @@ Renames a collection.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `target` | String | Yes | New collection name |
+| `options` | Object | No | Rename options |
+
+**Rename Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `dropTarget` | Boolean | If `true`, drops the target collection if it already exists |
 
 ---
 
@@ -530,11 +575,15 @@ Modifies collection options, such as adding validation rules.
 | `validationLevel` | String | No | `"off"`, `"moderate"`, or `"strict"` |
 | `validationAction` | String | No | `"error"` or `"warn"` |
 
+:::note
+At least one of `validator`, `validationLevel`, or `validationAction` must be provided.
+:::
+
 ---
 
 ### createView
 
-Creates a view based on an aggregation pipeline.
+Creates a view based on an aggregation pipeline. This operation is idempotent — if the view already exists, it is skipped.
 
 ```yaml
 - apply:
@@ -558,6 +607,12 @@ Creates a view based on an aggregation pipeline.
 |-----------|------|----------|-------------|
 | `viewOn` | String | Yes | Source collection name |
 | `pipeline` | List | Yes | Aggregation pipeline stages |
+| `options` | Object | No | View options |
+
+**View Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `collation` | Object | Collation settings for string comparison |
 
 ---
 
@@ -581,7 +636,7 @@ Drops a view.
 
 ```yaml
 id: setup-users-collection
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -631,7 +686,7 @@ steps:
 ```yaml
 id: migrate-user-status
 transactional: true
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
@@ -666,7 +721,7 @@ steps:
 
 ```yaml
 id: create-premium-customers-view
-template: MongoChangeTemplate
+template: mongodb-sync-template
 targetSystem:
   id: "mongodb"
 
