@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 The SQL Template is available in **beta**.
 :::
 
-The `SqlTemplate` provides a declarative way to define SQL database changes in YAML format. This template extends `AbstractChangeTemplate` and uses simple `apply`/`rollback` fields where the payloads are raw SQL strings.
+The `sql-template` provides a declarative way to define SQL database changes in YAML format. This template uses simple `apply`/`rollback` fields where the payloads are raw SQL strings.
 
 ## Getting started
 
@@ -22,7 +22,7 @@ The SQL Template allows you to define database changes declaratively in YAML ins
 ```yaml
 id: create-users-table
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255));"
@@ -31,24 +31,35 @@ rollback: "DROP TABLE users;"
 
 ## Installation
 
-Add the SQL Template dependency to your project:
+### Dependency setup
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-template-sql")
+import io.flamingock.gradle.FlamingockTemplate.SQL
+
+flamingock {
+    //...
+    templates(SQL)
+}
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-template-sql</artifactId>
+    <artifactId>flamingock-java-template-sql</artifactId>
 </dependency>
 ```
   </TabItem>
 </Tabs>
+
+### Prerequisites
+
+The SQL Template requires the following to be configured in your project:
+
+- The [SQL Target System](../target-systems/sql-target-system.md) module.
+- A JDBC driver for the target database.
 
 ## YAML structure
 
@@ -57,7 +68,7 @@ SQL Template changes use a simple `apply`/`rollback` format:
 ```yaml
 id: <unique-change-id>
 # transactional: defaults to true when omitted (SQL payloads make no claim)
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "<target-system-id>"
 apply: "<SQL statement(s)>"
@@ -68,7 +79,7 @@ rollback: "<SQL statement(s)>"
 
 - **`id`**: Unique identifier for the change, used for tracking.
 - **`transactional`**: Whether to run the change in a database transaction. When omitted, defaults to `true` (the SQL Template's payloads make no transaction claim). Set `false` explicitly to opt out.
-- **`template`**: Must be `SqlTemplate`.
+- **`template`**: Must be `sql-template`.
 - **`targetSystem`**: Specifies which SQL target system this change applies to.
 - **`apply`**: Required. Raw SQL string to execute. Multiple statements can be separated by `;`.
 - **`rollback`**: Optional. Raw SQL string to execute for rollback.
@@ -83,7 +94,7 @@ The SQL Template supports optional configuration via the `configuration` field:
 ```yaml
 id: bulk-insert
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 configuration:
@@ -109,7 +120,7 @@ The SQL Template includes intelligent SQL splitting that understands database-sp
 ```yaml
 id: insert-seed-data
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -124,7 +135,7 @@ The splitter correctly handles complex dialect-specific syntax such as PL/pgSQL 
 ```yaml
 id: create-user-function
 transactional: false
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -167,7 +178,7 @@ The dialect is automatically detected from the JDBC connection metadata.
 ```yaml
 id: create-users-table
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255), role VARCHAR(50));"
@@ -177,7 +188,7 @@ rollback: "DROP TABLE users;"
 ```yaml
 id: seed-users
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -191,7 +202,7 @@ rollback: "DELETE FROM users WHERE id IN (1, 2);"
 ```yaml
 id: add-status-column
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
@@ -207,7 +218,7 @@ rollback: |
 ```yaml
 id: migrate-user-roles
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem:
   id: "sql"
 apply: |
