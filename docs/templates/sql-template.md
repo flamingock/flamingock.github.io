@@ -6,7 +6,6 @@ sidebar_label: SQL Template
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import VersionBadge from '@site/src/components/VersionBadge';
 
 # SQL Template Reference
 

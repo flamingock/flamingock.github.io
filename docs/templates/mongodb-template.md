@@ -6,7 +6,6 @@ sidebar_label: MongoDB Template
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import VersionBadge from '@site/src/components/VersionBadge';
 
 # MongoDB Template Reference
 
