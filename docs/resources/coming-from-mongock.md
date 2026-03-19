@@ -108,12 +108,13 @@ A full explanation of why this is required (and how Mongock’s model differs fr
 
 ### Optional configuration <VersionBadge version="1.1.0" />
 
-The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. Both fields accept **literal values** or **property placeholders**.
+The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. All fields accept **literal values** or **property placeholders**.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. |
-| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. |
+| `skipImport` <br/> <VersionBadge version="1.2.0" /> | `String` | "" | Determines whether Mongock audit import is skipped. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false` (import enabled). When `true`, import is skipped. |
+| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. **Only applies when `skipImport` is `false`.** |
+| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. **Only applies when `skipImport` is `false`.** |
 
 :::info
 `origin` value by Mongock driver:
@@ -128,8 +129,9 @@ Example:
 ```java
 @MongockSupport(
     targetSystem = "mongodb-target-system",
-    origin = "customChangeLog",
-    emptyOriginAllowed = "true"
+    skipImport = "false", // optional
+    origin = "customChangeLog", // optional
+    emptyOriginAllowed = "true" // optional
 )
 public class Application { }
 ```
