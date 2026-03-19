@@ -8,7 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# SQL Template Reference <VersionBadge version="1.2.0" />
+# SQL Template Reference
 
 :::caution Beta feature
 The SQL Template is available in **beta**.

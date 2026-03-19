@@ -8,7 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# MongoDB Template Reference <VersionBadge version="1.2.0" />
+# MongoDB Template Reference
 
 :::caution Beta feature
 The MongoDB Template is available in **beta**.
