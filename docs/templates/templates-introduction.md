@@ -10,16 +10,6 @@ import VersionBadge from '@site/src/components/VersionBadge';
 
 # Templates <VersionBadge version="1.2.0" />
 
-:::caution Beta feature
-Templates are available in **beta**.
-- You can already create **custom templates** for your own use cases.
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
-- We're building a **comprehensive template catalog** where teams can discover, share, and contribute templates for common integration patterns.
-- Expect API and behavior changes before GA.
-
-This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
-:::
-
 :::tip Ready to get started?
 If you want to jump straight into using templates, check out:
 - **[MongoDB Template](./mongodb-template.md)** - for MongoDB database changes with step-based operations
