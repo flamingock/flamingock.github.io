@@ -36,15 +36,16 @@ rollback: "DROP TABLE users;"
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-import io.flamingock.gradle.FlamingockTemplate.SQL
-
 flamingock {
     //...
-    templates(SQL)
+    sql()
 }
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section:
+
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
