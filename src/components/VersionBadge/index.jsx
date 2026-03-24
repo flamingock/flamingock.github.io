@@ -1,6 +1,6 @@
 const VARIANT_STYLES = {
   default: { fontSize: '0.65em', padding: '0.1rem 0.5rem',   marginLeft: '0.5rem' },
-  title:   { fontSize: '0.5em',  padding: '0.08rem 0.4rem',  marginLeft: '0.5rem' },
+  title:   { fontSize: '0.35em', padding: '0.05rem 0.28rem', marginLeft: '0.5rem' },
   table:   { fontSize: '0.6em',  padding: '0.05rem 0.35rem', marginLeft: '0.3rem' },
 };
 
