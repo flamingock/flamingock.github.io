@@ -49,7 +49,7 @@ Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependenc
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-java-template-sql</artifactId>
+    <artifactId>flamingock-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>

@@ -68,7 +68,7 @@ Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependenc
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-java-template-mongodb</artifactId>
+    <artifactId>flamingock-mongodb-template</artifactId>
 </dependency>
 ```
   </TabItem>
