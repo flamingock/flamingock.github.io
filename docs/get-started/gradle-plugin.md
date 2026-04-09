@@ -13,7 +13,7 @@ Setting up Flamingock manually requires adding several dependencies:
 
 ```kotlin
 // Without the plugin - multiple dependencies to manage
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 implementation("io.flamingock:flamingock-springboot-integration")
 testImplementation("io.flamingock:flamingock-springboot-test-support")
@@ -85,7 +85,7 @@ annotationProcessor("io.flamingock:flamingock-processor:$version")
 ### community()
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 testImplementation("io.flamingock:flamingock-test-support")
 ```
