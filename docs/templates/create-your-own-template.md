@@ -22,7 +22,7 @@ Creating a template requires the `flamingock-template-api` artifact on the class
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-template-api")
 ```
   </TabItem>
