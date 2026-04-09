@@ -727,7 +727,7 @@ Use YAML or JSON definitions with reusable templates. Perfect for repetitive ope
 # File: _0002__AddStatusColumn.yaml
 id: add_status_column
 author: "db-team"
-template: SqlTemplate
+template: sql-template
 targetSystem: "sql-target-system"
 apply: "ALTER TABLE orders ADD COLUMN status VARCHAR(20);"
 rollback: "ALTER TABLE orders DROP COLUMN status;"
@@ -4028,7 +4028,7 @@ flamingock {
   <dependencies>
     <dependency>
       <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
+      <artifactId>flamingock-bom</artifactId>
       <version>${flamingockVersion}</version>
       <type>pom</type>
       <scope>import</scope>
@@ -4107,7 +4107,7 @@ Changes can be:
 id: add-product-category
 author: team
 targetSystem: mysql-inventory
-template: SqlTemplate
+template: sql-template
 apply: |
   ALTER TABLE products ADD COLUMN category VARCHAR(255)
 rollback: |
@@ -4273,7 +4273,7 @@ Setting up Flamingock manually requires adding several dependencies:
 
 ```kotlin
 // Without the plugin - multiple dependencies to manage
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 implementation("io.flamingock:flamingock-springboot-integration")
 testImplementation("io.flamingock:flamingock-springboot-test-support")
@@ -4323,6 +4323,10 @@ flamingock {
 | Method | Description |
 |--------|-------------|
 | `community()` | Enables Community edition (adds BOM and core library) |
+| `sql()` | Adds SQL template and target system support |
+| `mongodb()` | Adds MongoDB sync template and target system support |
+| `dynamodb()` | Adds DynamoDB target system support |
+| `couchbase()` | Adds Couchbase target system support |
 | `springboot()` | Adds Spring Boot integration and test support |
 | `graalvm()` | Adds GraalVM native image support |
 | `mongock()` | Enables seamless migration from Mongock — imports audit log, detects legacy change units, and executes pending ones |
@@ -4341,8 +4345,41 @@ annotationProcessor("io.flamingock:flamingock-processor:$version")
 ### community()
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
+testImplementation("io.flamingock:flamingock-test-support")
+```
+
+### sql()
+
+```kotlin
+implementation("io.flamingock:flamingock-sql-template")
+implementation("io.flamingock:flamingock-sql-targetsystem")
+```
+
+### mongodb()
+
+```kotlin
+implementation("io.flamingock:flamingock-mongodb-sync-template")
+implementation("io.flamingock:flamingock-mongodb-sync-targetsystem")
+```
+
+When `springboot()` is also enabled:
+
+```kotlin
+implementation("io.flamingock:flamingock-mongodb-springdata-targetsystem")
+```
+
+### dynamodb()
+
+```kotlin
+implementation("io.flamingock:flamingock-dynamodb-targetsystem")
+```
+
+### couchbase()
+
+```kotlin
+implementation("io.flamingock:flamingock-couchbase-targetsystem")
 ```
 
 ### springboot()
@@ -5048,7 +5085,7 @@ rollback:
 id: "SeedDatabase"
 author: "devops"
 transactional: true
-template: SqlTemplate
+template: sql-template
 targetSystem: "sql-target-system"
 apply: |
   INSERT INTO tenants (id, name, created_at)
@@ -5460,12 +5497,13 @@ A full explanation of why this is required (and how Mongock’s model differs fr
 
 ### Optional configuration <VersionBadge version="1.1.0" />
 
-The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. Both fields accept **literal values** or **property placeholders**.
+The `@MongockSupport` annotation includes optional fields you can use to configure how Flamingock reads Mongock’s audit log. All fields accept **literal values** or **property placeholders**.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. |
-| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. |
+| `skipImport` <br/> <VersionBadge version="1.2.0" /> | `String` | "" | Determines whether Mongock audit import is skipped. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false` (import enabled). When `true`, import is skipped. |
+| `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. **Only applies when `skipImport` is `false`.** |
+| `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. **Only applies when `skipImport` is `false`.** |
 
 :::info
 `origin` value by Mongock driver:
@@ -5480,8 +5518,9 @@ Example:
 ```java
 @MongockSupport(
     targetSystem = "mongodb-target-system",
-    origin = "customChangeLog",
-    emptyOriginAllowed = "true"
+    skipImport = "false", // optional
+    origin = "customChangeLog", // optional
+    emptyOriginAllowed = "true" // optional
 )
 public class Application { }
 ```
@@ -7017,17 +7056,16 @@ For comprehensive details on change dependency resolution, see [Change Anatomy &
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# Templates
+# Templates <VersionBadge version="1.2.0" />
 
-:::caution Beta feature
-Templates are available in **beta**.
-- You can already create **custom templates** for your own use cases.
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
-- We're building a **comprehensive template catalog** where teams can discover, share, and contribute templates for common integration patterns.
-- Expect API and behavior changes before GA.
+:::tip Ready to get started?
+If you want to jump straight into using templates, check out:
+- **[MongoDB Template](./mongodb-template.md)** - for MongoDB database changes with step-based operations
+- **[SQL Template](./sql-template.md)** - for SQL database changes with raw SQL statements
 
-This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
+Both provide complete references with examples for all supported operations.
 :::
 
 ## Introduction
@@ -7036,7 +7074,7 @@ Flamingock Templates are experimental modules designed to streamline the integra
 
 ## How it works
 
-Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on code-based Changes to manage database and system changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each change, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
+Flamingock Templates are designed to simplify change definitions by extracting reusable logic into modular building blocks. While **Flamingock’s core approach** relies on code-based changes, Flamingock Templates provide a **low-code alternative** that simplifies the process for common integration scenarios. Instead of writing Java classes for each change, users can leverage existing templates by defining changes in a declarative format(**YAML**, etc.).
 
 ### Who provides Templates?
 
@@ -7055,12 +7093,26 @@ Instead of repeating the same boilerplate code over and over, templates let you 
 
 Today, Flamingock templates can already be created and used in your own projects. However, the official templates provided by the Flamingock team are experimental, and their APIs may change before GA.
 
+## Template types
+
+Templates come in two flavors, based on the **nature of their payload**:
+
+- **Simple templates** — A single `apply` and optional `rollback` payload. Best suited when the template is inherently single-operation, or when the payload format is free-form and can naturally contain multiple operations — for example, SQL, where a single string can hold multiple statements.
+- **Multi-step templates** — A sequence of `steps`, each with its own structured `apply` and optional `rollback` payload. Best suited for technologies that require structured payloads per operation — for example, MongoDB or Kafka, where each operation (create collection, create index, etc.) has its own distinct set of parameters.
+
+The choice between simple and multi-step is driven by the nature of the template's target technology, not solely by how many operations the change performs. A simple SQL template can execute multiple statements in a single payload, while a MongoDB template needs separate structured steps for each operation.
+
+:::info
+The template type is defined by the template developer and determines the YAML structure you use. See [How to use Templates](./templates-how-to-use.md) for details on both formats.
+:::
+
 ## Key features
 
 - **Reusable modules**: Each template provides a well-defined structure for managing system changes and configurations.
 - **Declarative Changes**: Users define changes in YAML, avoiding Java boilerplate.
 - **Support for third-party integrations**: Includes databases, messaging systems, and cloud configurations.
 - **Automatic execution and versioning**: Templates are applied and tracked as part of Flamingock's change management process.
+- **Load-time validation**: Flamingock validates YAML structure and payloads before any changes are executed.
 - **Designed to encourage best practices, though still experimental**.
 - **Extensible by the community**: Developers can contribute new templates to expand Flamingock's ecosystem.
 
@@ -7095,36 +7147,37 @@ Join the [**Flamingock community**](https://github.com/flamingock/flamingock-jav
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-# How to use Flamingock Templates
-
-:::caution Beta feature
-Templates are available in **beta**.
-- You can already create **custom templates** for your own use cases.
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
-- Expect API and behavior changes before GA.
-
-This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
-:::
+# How to use Flamingock Templates <VersionBadge version="1.2.0" />
 
 Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
 
-:::danger
-This example uses the **SQL Template**, which is experimental. It is intended for testing and feedback, not yet production use.
+:::info
+This section uses the **SQL Template** as example.
 :::
 
-### Step 1: Add the Template dependency
+## Step 1: Add the template dependency
 
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `SqlTemplate`:
+How you set up the dependency depends on where the template comes from.
+
+### Official Flamingock templates
+
+Official templates are included in the Flamingock Gradle plugin and the BOM, so no version management is needed. For example, to use the SQL Template:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-sql-template")
+flamingock {
+    //...
+    sql()
+}
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section. Then add the template dependency without a version:
+
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
@@ -7134,18 +7187,75 @@ implementation("io.flamingock:flamingock-sql-template")
   </TabItem>
 </Tabs>
 
-### Step 2: define a Template-based change
+Each official template has its own plugin function (`sql()`, `mongodb()`, etc.) and BOM-managed artifact. See the individual template reference pages for the exact setup.
+
+### Third-party or community templates
+
+For templates published by third parties, add them as a standard dependency:
+
+```kotlin
+implementation("com.example:custom-template:1.0.0")
+```
+
+### In-project templates
+
+If the template is defined within your own project, no additional dependency is needed — Flamingock discovers it automatically via [ServiceLoader registration](./create-your-own-template.md#3-register-the-template-with-serviceloader).
+
+## Step 2: Create the change file
+
+Template-based changes are defined in **YAML files** placed inside your application's resources directory. Each file represents a single change.
+
+The **filename** determines the execution order. Use a numeric prefix followed by a double underscore and a descriptive name:
+
+```
+_0001__create_persons_table.yaml
+_0002__seed_initial_data.yaml
+_0003__add_orders_collection.yaml
+```
+
+Flamingock sorts files by this prefix, so `_0001__` always runs before `_0002__`, regardless of the descriptive part of the name.
+
+## Step 3: Define the change content
 
 In Flamingock, a **Change** represents a single unit of work that needs to be applied to your system — for example, creating a table, updating a configuration, or setting up a cloud resource.
 
-When using template-based changes, instead of implementing a code-based file to define the logic of the change, you describe the change in a declarative format (e.g., **YAML** file). The structure you use will depend on the template you’re leveraging.
+When using template-based changes, instead of writing a Java class, you describe the change declaratively in the YAML file. Every template-based change shares the same set of common fields. The only difference is how you define the **body** of the change — which depends on the template type (simple or multi-step).
 
-Create a **YAML file** (e.g., `_0001__CreatePersonsTable.yaml`) inside your application’s resources directory:
+### Common fields
+
+These fields are shared by all template-based changes, regardless of the template type:
+
+- **`id`** *(required)*: Unique identifier for the change, used for tracking (same as in code-based changes).
+- **`template`** *(required)*: The name of the template to use. This must match the template's registered name (defined via `@ChangeTemplate(name = ...)` on the template class). For example, `template: sql-template` uses the template registered with the name `"sql-template"`.
+- **`targetSystem`** *(required)*: Specifies which target system this change applies to. Contains an `id` field that must match a registered target system.
+- **`recovery`** *(optional)*: Failure handling configuration. Contains:
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
+- **`configuration`** *(optional)*: Shared configuration parameters accessible to both apply and rollback logic. The structure and available parameters are defined by the specific template being used.
+  ```yaml
+  configuration:
+    timeout: 30
+    retryCount: 3
+  ```
+- **`transactional`** *(optional)*: Whether the change should run inside a transaction. When omitted, Flamingock infers the value from the template's apply payload metadata: if any apply payload declares it doesn't support transactions, the change is treated as non-transactional; otherwise it defaults to `true`. An explicit value always takes precedence over inference.
+:::tip
+Well-designed templates declare transaction support in their payloads, so you can safely omit `transactional` and let Flamingock infer the right value.
+:::
+
+- **`author`** *(optional)*: The author of the change, for audit and tracking purposes.
+- **`profiles`** *(optional)*: A list of profiles for conditional execution. The change only runs when one of the specified profiles is active.
+
+### Change body: simple vs multi-step
+
+The remaining structure of the YAML file — the **body** — depends on the template type. Whether a template is simple or multi-step is defined by the template developer, and each template's own documentation will describe the exact payload format. What all templates share is the **frame**: simple templates use root-level `apply`/`rollback`, and multi-step templates use `steps`, each with its own `apply`/`rollback`.
+
+#### Simple templates
+
+Simple templates use root-level `apply` and `rollback` fields. They are used when the template is inherently single-operation, or when the payload format is free-form and can naturally contain multiple operations (e.g., SQL).
 
 ```yaml
 id: CreatePersonsTableFromTemplate
 targetSystem: "database-system"
-template: SqlTemplate
+template: sql-template
 recovery:
   strategy: ALWAYS_RETRY  # Safe to retry - CREATE TABLE IF NOT EXISTS semantics
 apply: |
@@ -7159,34 +7269,51 @@ apply: |
 rollback: "DROP TABLE IF EXISTS Persons;"
 ```
 
-#### 🔍 Understanding the configuration attributes
+- **`apply`** *(required)*: The apply payload for the change. The format depends on the template (string for SQL, map for others, etc.).
+- **`rollback`** *(required by default)*: The rollback payload for the change. By default, templates require rollback data, but a template developer can make it optional via `@ChangeTemplate(rollbackPayloadRequired = false)`.
 
-- **`id`**: Unique identifier for the change, used for tracking (same as in code-based changes).
-- **`order`**: Execution order relative to other changes (also shared with code-based).
-- **`targetSystem`**: Specifies which target system this change applies to - **required** for all template-based changes, just like code-based Changes.
-- **`template`**: Indicates which template should be used to handle the change logic. This is **required** for all template-based changes.
-- **`apply`**: Direct apply logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
-- **`rollback`**: Direct rollback logic for the change. The format depends on the template type (string for SQL, map for MongoDB, etc.).
-- **`recovery`**: Optional failure handling configuration. Contains:
-  - `strategy`: Can be `MANUAL_INTERVENTION` (default if not specified) or `ALWAYS_RETRY`. Use `ALWAYS_RETRY` for idempotent operations that can be safely retried.
-- **`configuration`**: Optional configuration parameters accessible within the `apply` and `rollback` sections. The structure and available parameters are defined by the specific template being used.
-  ```yaml
-  configuration:
-    timeout: 30
-    retryCount: 3
-  ```
-- **Other fields**: Templates may define additional configuration fields as needed.
+#### Multi-step templates
 
-Template-based changes provide both **structure and flexibility**. They share the core concepts of change tracking with code-based Changes, but use a standardized format with `apply` and `rollback` sections that each template interprets according to its specific requirements. Templates can also accept optional `configuration` parameters to customize their behavior.
+Multi-step templates use a `steps` array instead of root-level `apply`/`rollback`. They are used when the target technology requires structured payloads per operation (e.g., MongoDB, Kafka), where each step has its own distinct set of parameters.
 
-### Step 3: Configure Flamingock to use the template file
+```yaml
+id: setup-orders-collection
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb-system"
+steps:
+  - apply:
+      type: createCollection
+      collection: orders
+    rollback:
+      type: dropCollection
+      collection: orders
+  - apply:
+      type: createIndex
+      collection: orders
+      keys: { orderId: 1 }
+    rollback:
+      type: dropIndex
+      collection: orders
+      index: orderId_1
+```
 
-To configure Flamingock to use the YAML template file, you need to define a stage that includes the path to the template file using the `@EnableFlamingock` annotation:
+- **`steps`** *(required)*: An array of steps, each containing:
+  - **`apply`** *(required)*: The apply payload for this step.
+  - **`rollback`** *(optional per template setting)*: The rollback payload for this step. Whether it's required depends on the template's `rollbackPayloadRequired` setting.
+
+:::info
+If a multi-step change fails at step N, Flamingock rolls back the previously successful steps in **reverse order** (N, N-1, ..., 0). Steps without rollback data are skipped during rollback.
+:::
+
+## Step 4: Configure Flamingock
+
+Point a stage to the location where your change files live using the `@EnableFlamingock` annotation:
 
 ```java
 @EnableFlamingock(
     stages = {
-        @Stage(location = "resources/templates")
+        @Stage(location = "io.flamingock.example.changes")
     }
 )
 public class MainApplication {
@@ -7194,91 +7321,29 @@ public class MainApplication {
 }
 ```
 
-If you prefer to use a pipeline YAML file for configuration, refer to the [Setup & Stages guide](../flamingock-library-config/setup-and-stages.md) for more details.
+Although YAML files are not compiled code, Flamingock supports placing them in **source packages** alongside code-based changes — and this is actually the recommended approach. A stage can contain both code-based and template-based changes, and execution order is determined by the filename prefix (`_0001__`, `_0002__`, etc.) across all changes in the stage. Keeping them in the same package makes the full sequence visible at a glance, rather than having to mentally merge two separate locations.
 
-### Step 4: Run Flamingock
-
-At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
-
-## Use case: SQL database changes
-
-Let's compare how an SQL change is handled using a **template-based Change** vs. a **traditional code-based Change**.
-
-### Approach 1: Using a traditional code-based Change
+Using a **resource folder** works too — just point the stage location to the resource path instead:
 
 ```java
-@Change(id = "create-persons-table", order = "20250408_01", author = "developer")
-public class CreatePersonsTableChange {
-
-    private final DataSource dataSource;
-
-    public CreatePersonsTableChange(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    @Apply
-    public void apply() throws SQLException {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-
-            statement.executeUpdate("""
-                CREATE TABLE Persons (
-                    PersonID int PRIMARY KEY,
-                    LastName varchar(255),
-                    FirstName varchar(255),
-                    Address varchar(255),
-                    City varchar(255)
-                )
-            """);
-        }
-    }
-}
-
+@Stage(location = "templates/sql")
 ```
 
-### Approach 2: Using a Flamingock SQL Template
+If you prefer to use a pipeline YAML file for configuration, refer to the [Setup & Stages guide](../flamingock-library-config/setup-and-stages.md) for more details.
 
-With the **SQL Template**, users define the same change in **YAML** instead of Java:
+## Step 5: Run Flamingock
 
-```yaml
-id: createPersonsTableFromTemplate
-targetSystem: "database-system"
-template: SqlTemplate
-recovery:
-  strategy: MANUAL_INTERVENTION  # Critical DDL operation - requires manual review on failure
-apply: |
-    CREATE TABLE Persons (
-        PersonID int PRIMARY KEY,
-        LastName varchar(255),
-        FirstName varchar(255),
-        Address varchar(255),
-        City varchar(255)
-    )
-rollback: "DROP TABLE Persons;"
-```
-
-### Key benefits of using a Template instead of code-based Changes:
-- **Less code maintenance**: No need to write Java classes, inject DataSource, manage connections, or handle SQL apply manually.
-- **Faster onboarding**: YAML is easier for non-Java developers.
-- **Standardised changes**: Ensures best practices and avoids custom implementation errors.
-- **Improved readability**: Easier to review and version control.
-- **Configurable flexibility**: Templates can be customized through configuration parameters without code changes.
+At application startup, Flamingock will automatically detect the YAML file and process it as a standard change, following the same apply flow as code-based changes.
 
 ---
 
 // File: templates/create-your-own-template
 
-# Create your own Flamingock template
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
-
-:::caution Beta feature
-Templates are available in **beta**.
-- You can already create **custom templates** for your own use cases.
-- Flamingock is actively developing **official templates** for key technologies (Kafka, SQL, MongoDB, S3, Redis, etc.) that are currently in development and not yet production-ready.
-- Expect API and behavior changes before GA.
-
-This feature is a **sneak peek of Flamingock's future**: a low-code, reusable ecosystem on top of Changes.
-:::
+# Create your own Flamingock template <VersionBadge version="1.2.0" />
 
 While official Flamingock templates are experimental, you can already build and use your own custom templates in production if needed. This page explains how.
 
@@ -7286,46 +7351,234 @@ While official Flamingock templates are experimental, you can already build and 
 
 [Flamingock Templates](./templates-introduction.md) allow you to encapsulate common logic and reduce boilerplate when defining change units. This document explains how to create your own templates for reuse across projects or for contribution to the Flamingock community.
 
+## Dependency
+
+Creating a template requires the `flamingock-template-api` artifact on the classpath. This dependency is transitively included by the core Flamingock library, so you only need to declare it explicitly when the template lives in its own dedicated module (e.g., a reusable template library):
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+implementation(platform("io.flamingock:flamingock-bom:$version"))
+implementation("io.flamingock:flamingock-template-api")
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-template-api</artifactId>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
 ## Overview of the required components
 
-To create a template, you need:
+Here is the simplest possible template — a skeleton showing only the structural components:
 
-- A Java class extending `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>`
-- An `@Apply` method to perform the main change
-- (Optionally) A `@Rollback` method for undo support
-- A service loader registration file (`META-INF/services`)
-- (Optional) Package and distribute your template
+```java
+@ChangeTemplate(name = "MyTemplate")
+public class MyTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
 
-## 1. Implement the Template class
+    @ApplyTemplate
+    public void apply() {
+        // Use this.applyPayload to perform the change
+    }
 
-Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three generics:
+    @RollbackTemplate
+    public void rollback() {
+        // Use this.rollbackPayload to undo the change
+    }
+}
+```
 
-- **SHARED_CONFIG**: Shared configuration that applies to both apply and rollback (e.g., database connection, common settings). Use `Void` if no shared config is needed.
-- **APPLY**: The type representing the apply logic/data
-- **ROLLBACK**: The type representing the rollback logic/data
+Each component is explained in detail in the sections below:
+
+- [`@ChangeTemplate` annotation](#the-changetemplate-annotation) — controls template identity and behavior
+- [Template class and generics](#1-template-class-and-generics) — `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>`
+- [`@ApplyTemplate` and `@RollbackTemplate` methods](#2-applytemplate-and-rollbacktemplate-methods) — core execution logic with dependency injection
+- [ServiceLoader registration](#3-register-the-template-with-serviceloader) — how Flamingock discovers your template
+- [Packaging and distribution](#4-package-and-distribute-the-template) — internal use vs. community contribution
+
+## The `@ChangeTemplate` annotation
+
+Every template class **must** be annotated with `@ChangeTemplate`. This annotation is how Flamingock discovers your template and controls its behavior.
+
+```java
+@ChangeTemplate(name = "MyTemplate", multiStep = false, rollbackPayloadRequired = true)
+public class MyTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
+    // ...
+}
+```
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | `String` | *(required)* | The template identifier. YAML files reference your template by this name in the `template:` field. This decouples the template identity from the Java class name. |
+| `multiStep` | `boolean` | `false` | Controls the YAML structure the template expects. `false` (simple template) expects root-level `apply`/`rollback`. `true` (multi-step template) expects a `steps` array. |
+| `rollbackPayloadRequired` | `boolean` | `true` | Controls whether YAML authors **must** provide rollback data. Default: `true`. See [Understanding rollback behavior](#advanced-understanding-rollback-behavior) for the full implications. |
+
+### How template resolution works
+
+When Flamingock processes a YAML change like:
+
+```yaml
+template: sql-template
+```
+
+It looks up the template class registered with `@ChangeTemplate(name = "sql-template")`. The `name` attribute is the key — not the Java class name.
+
+## 1. Template class and generics
+
+Extend `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with three generics. `APPLY` and `ROLLBACK` must implement `TemplatePayload` (which adds transaction support metadata via `getInfo()`), while `SHARED_CONFIG` implements `TemplateField` (the base interface for load-time validation):
+
+- **SHARED_CONFIG**: Configuration shared between apply and rollback (e.g., connection settings). Use `TemplateVoid` when not needed.
+- **APPLY**: The payload type for the apply operation.
+- **ROLLBACK**: The payload type for the rollback operation.
+
+For simple types, Flamingock provides built-in wrappers: `TemplateVoid` (no data) and `TemplateString` (raw string). For structured payloads, implement `TemplatePayload` directly — see [transaction support metadata](#advanced-transaction-support-metadata-in-payloads) for details on what `validate()` and `getInfo()` enable.
 
 **Example:**
 
 ```java
-public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOperation, MongoOperation> {
+@ChangeTemplate(name = "sql-template")
+public class SqlTemplate extends AbstractChangeTemplate<TemplateVoid, TemplateString, TemplateString> {
 
-    public MongoChangeTemplate() {
-        super(MongoOperation.class);
+    @ApplyTemplate
+    public void apply(Connection connection) throws SQLException {
+        // this.applyPayload (TemplateString) contains the SQL from the YAML "apply" field
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(this.applyPayload.getValue());
+        }
     }
 
-    @Apply
-    public void apply(MongoDatabase db, @Nullable ClientSession clientSession) {
-        if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
+    @RollbackTemplate
+    public void rollback(Connection connection) throws SQLException {
+        // this.rollbackPayload (TemplateString) contains the SQL from the YAML "rollback" field
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(this.rollbackPayload.getValue());
         }
+    }
+}
+```
+
+In this example, `SHARED_CONFIG` is `TemplateVoid` because no shared configuration is needed. When you use a different type instead, the framework populates `this.configuration` from the YAML `configuration:` field before calling `@ApplyTemplate` or `@RollbackTemplate`. See [section 2](#2-applytemplate-and-rollbacktemplate-methods) for a full example with shared configuration.
+
+#### Important notes
+- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
+- Access shared configuration via `this.configuration` field (if using a non-`TemplateVoid` shared config type).
+- `AbstractChangeTemplate` automatically registers its three generic type arguments (plus built-in types like `TemplateVoid` and `TemplateString`) for GraalVM reflection. You only need to pass additional classes to the superclass constructor if your generic types internally reference other custom classes that also require reflection registration.
+
+:::note
+See [**2. `@ApplyTemplate` and `@RollbackTemplate` methods**](#2-applytemplate-and-rollbacktemplate-methods) for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
+:::
+
+## 2. `@ApplyTemplate` and `@RollbackTemplate` methods
+
+:::caution
+The `@RollbackTemplate` method is **required**. Template registration will fail at startup if the class is missing a `@RollbackTemplate` method.
+:::
+
+- `this.applyPayload` — the apply logic/data to apply during the apply phase
+- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
+- `this.configuration` — shared configuration data (if using a non-`TemplateVoid` shared config type)
+
+*Illustrative, non-production example:*
+
+<Tabs groupId="template_yaml">
+  <TabItem value="template" label="Template class">
+
+```java
+@ChangeTemplate(name = "KafkaTopicTemplate")
+public class KafkaTopicTemplate
+        extends AbstractChangeTemplate<KafkaConnectionConfig, TopicCreationRequest, TopicDeletionRequest> {
+    // All three generic types implement TemplatePayload
+
+    @ApplyTemplate
+    public void apply(AdminClient adminClient) throws Exception {
+        // this.configuration — shared Kafka connection config
+        // this.applyPayload — topic creation request from YAML "apply" field
+        NewTopic newTopic = new NewTopic(
+            this.applyPayload.getName(),
+            this.applyPayload.getPartitions(),
+            this.applyPayload.getReplicationFactor()
+        );
+        adminClient.createTopics(List.of(newTopic)).all().get();
+    }
+
+    @RollbackTemplate
+    public void rollback(AdminClient adminClient) throws Exception {
+        // this.rollbackPayload — topic deletion request from YAML "rollback" field
+        adminClient.deleteTopics(List.of(this.rollbackPayload.getName())).all().get();
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="yaml" label="Change YAML">
+
+```yaml
+id: create-orders-topic
+template: KafkaTopicTemplate
+targetSystem:
+  id: "kafka-system"
+configuration:
+  bootstrapServers: "localhost:9092"
+apply:
+  name: orders
+  partitions: 6
+  replicationFactor: 3
+rollback:
+  name: orders
+```
+
+  </TabItem>
+</Tabs>
+
+> `configuration` is populated into `this.configuration` before `@ApplyTemplate` or `@RollbackTemplate` is called. When shared configuration isn’t needed, use `TemplateVoid` as the first generic (as shown in [section 1](#1-template-class-and-generics)).
+
+### Injecting dependencies into Template methods
+
+Templates use the **same dependency injection mechanism as change units** — all dependencies are injected as method parameters, not via the constructor:
+
+```java
+@ApplyTemplate
+public void apply(MongoDatabase db, ClientService clientService) {
+    clientService.doSomething();
+}
+```
+
+Use `@Nullable` for optional dependencies — the parameter won’t cause a failure if the dependency is not registered in the context.
+
+:::info
+Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
+:::
+
+### Creating a multi-step template
+
+Use `@ChangeTemplate(multiStep = true)` when your target technology requires **structured payloads per operation**. Technologies like MongoDB or Kafka need distinct parameters for each operation (create collection, create index, etc.), so each operation is naturally represented as a separate step. Simple templates (`multiStep = false`) are the right choice when the template is inherently single-operation, or when the payload format is free-form and can naturally express multiple operations (like SQL strings).
+
+When `multiStep = true`:
+- YAML authors define a `steps` array instead of root-level `apply`/`rollback`
+- Before each step execution, Flamingock sets `this.applyPayload` and `this.rollbackPayload` with the step's data, so your `@ApplyTemplate` and `@RollbackTemplate` methods access the current step's payloads via those fields
+- On failure at step N, previously successful steps are rolled back in **reverse order** (N, N-1, ..., 0)
+- Steps without rollback data are skipped during rollback
+
+<Tabs groupId="template_yaml">
+  <TabItem value="template" label="Template class">
+
+```java
+@ChangeTemplate(name = "MongoChangeTemplate", multiStep = true)
+public class MongoChangeTemplate extends AbstractChangeTemplate<TemplateVoid, MongoOperation, MongoOperation> {
+
+    @ApplyTemplate
+    public void apply(MongoDatabase db, @Nullable ClientSession clientSession) {
+        // Called once per step with the step's applyPayload
         executeOp(db, applyPayload, clientSession);
     }
 
-    @Rollback
+    @RollbackTemplate
     public void rollback(MongoDatabase db, @Nullable ClientSession clientSession) {
-        if (this.isTransactional && clientSession == null) {
-            throw new IllegalArgumentException(String.format("Transactional change[%s] requires transactional ecosystem with ClientSession", changeId));
-        }
+        // Called once per step (in reverse) with the step's rollbackPayload
         executeOp(db, rollbackPayload, clientSession);
     }
 
@@ -7335,157 +7588,53 @@ public class MongoChangeTemplate extends AbstractChangeTemplate<Void, MongoOpera
 }
 ```
 
-#### Important notes
-- Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
-- Access shared configuration via `this.configuration` field (if using a non-Void shared config type).
-- If your template references custom types, make sure to register them for reflection—especially for **GraalVM** native builds. When extending `AbstractChangeTemplate`, you can pass your custom types to the superclass constructor to ensure proper reflection support.
+  </TabItem>
+  <TabItem value="yaml" label="Change YAML">
 
-:::note
-See [**2. Define Execution and Rollback methods** ](#2-define-execution-and-rollback-methods) section for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
-:::
-
-## 2. Define Execution and Rollback methods
-Each template must include an `@Apply` method, and may optionally include a `@Rollback` method.
-These methods define the core logic that will be executed when Flamingock runs the corresponding change.
-
-Inside these methods, it’s expected that you use the data provided by the user in the template-based change unit through the following fields:
-
-- `this.applyPayload` — the apply logic/data to apply during apply phase
-- `this.rollbackPayload` — the rollback logic/data to apply during rollback or undo
-- `this.configuration` — shared configuration data (if using a non-Void shared config type)
-
-An example of a template for Kafka topic management:
-
-:::info
-This is an illustrative example to demonstrate the template structure. Real Kafka templates would use different parameters and configuration structures based on actual requirements.
-:::
-
-```java
-public class KafkaTopicTemplate extends AbstractChangeTemplate<Void, TopicConfig, String> {
-
-    public KafkaTopicTemplate() {
-        super(TopicConfig.class);
-    }
-
-    @Apply
-    public void apply(AdminClient adminClient) throws Exception {
-        // Create topic using the apply configuration
-        var newTopic = new NewTopic(
-            this.applyPayload.getName(),
-            this.applyPayload.getPartitions(),
-            this.applyPayload.getReplicationFactor()
-        );
-        newTopic.configs(this.applyPayload.getConfigs());
-
-        adminClient.createTopics(List.of(newTopic)).all().get();
-    }
-
-    @Rollback
-    public void rollback(AdminClient adminClient) throws Exception {
-        // Delete topic using the rollback topic name
-        adminClient.deleteTopics(List.of(this.rollbackPayload)).all().get();
-    }
-}
+```yaml
+id: setup-orders-collection
+template: MongoChangeTemplate
+targetSystem:
+  id: "mongodb-system"
+steps:
+  - apply:
+      type: createCollection
+      collection: orders
+    rollback:
+      type: dropCollection
+      collection: orders
+  - apply:
+      type: createIndex
+      collection: orders
+      keys: { orderId: 1 }
+    rollback:
+      type: dropIndex
+      collection: orders
+      index: orderId_1
 ```
 
-### Example with shared configuration
-
-When you need to share configuration between apply and rollback (such as connection details, common settings, etc.), you can use a non-Void shared configuration type:
-
-:::info
-This is an illustrative example to demonstrate the shared configuration pattern. Real S3 templates would use different parameters and configuration structures based on actual AWS SDK requirements.
-:::
-
-```java
-public class S3BucketTemplate extends AbstractChangeTemplate<S3ConnectionConfig, BucketCreationRequest, String> {
-
-    public S3BucketTemplate() {
-        super(S3ConnectionConfig.class, BucketCreationRequest.class);
-    }
-
-    @Apply
-    public void apply() {
-        // Access shared configuration for AWS connection
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(this.configuration.getRegion())
-            .withCredentials(this.configuration.getCredentialsProvider())
-            .build();
-
-        // Create bucket using apply configuration
-        var request = new CreateBucketRequest(this.applyPayload.getBucketName())
-            .withCannedAcl(this.applyPayload.getAcl());
-
-        if (this.applyPayload.getEncryption() != null) {
-            // Apply encryption settings
-            request.withObjectLockEnabledForBucket(this.applyPayload.getEncryption().isEnabled());
-        }
-
-        s3Client.createBucket(request);
-    }
-
-    @Rollback
-    public void rollback() {
-        // Use the same shared configuration for rollback
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(this.configuration.getRegion())
-            .withCredentials(this.configuration.getCredentialsProvider())
-            .build();
-
-        // Delete bucket using rollback bucket name
-        s3Client.deleteBucket(this.rollbackPayload);
-    }
-}
-```
-
-This pattern is useful when:
-- Both apply and rollback need the same configuration data (AWS credentials, region, etc.)
-- You want to avoid duplicating connection details or common settings
-- The template needs different data for apply vs rollback operations
-
-### Injecting dependencies into Template methods
-Template methods (such as those annotated with `@Apply` and `@Rollback`) support method-level dependency injection using the same mechanism as change units.
-
-Template classes do not support constructor injection.
-All dependencies must be injected as parameters in the `@Apply` and `@Rollback` methods.
-
-You can inject any registered dependency as a method parameter:
-
-```java
-@Apply
-public void apply(MongoDatabase db, ClientService clientService) {
-  clientService.doSomething();
-}
-```
-:::info
-Flamingock will apply lock-safety guards unless you annotate the parameter with `@NonLockGuarded`.
-:::
-
-### Mapping between template-base change file and template methods
-
-Flamingock automatically maps the `apply` and `rollback` sections in your declarative change unit to the corresponding methods in your template class.
+  </TabItem>
+</Tabs>
 
 ## 3. Register the Template with ServiceLoader
 
 Templates are discovered automatically at runtime using Java’s `ServiceLoader` system.
 
-Steps:
-1. Create a file at:
+### Direct registration
+
+Create a file at:
 
 ```
-src/main/resources/META-INF/services/io.flamingock.core.api.template.ChangeTemplate
+src/main/resources/META-INF/services/io.flamingock.api.template.ChangeTemplate
 ```
 
-2. List the fully qualified class names of all templates in the file:
+List the fully qualified class names of all templates in the file:
 
 ```plaintext
 io.flamingock.template.kafka.CreateTopicTemplate
 io.flamingock.template.kafka.UpdateTopicConfigTemplate
 io.flamingock.template.kafka.DeleteTopicTemplate
 ```
-
-:::tip
-Group templates by domain or technology for better maintainability.
-:::
 
 ## 4. Package and distribute the Template
 
@@ -7507,19 +7656,1310 @@ Depending on your target:
 - Public classes must be Javadoc-documented
 - Submit a Pull Request adding the template's documentation to [flamingock.github.io](https://github.com/flamingock/flamingock.github.io)
 
+## Advanced: understanding rollback behavior
+
+Rollback is a critical part of every template. This section explains when rollback runs, what outcomes are possible, and how the `rollbackPayloadRequired` flag connects to it all.
+
+### When rollback is triggered
+
+Rollback runs in two scenarios:
+
+1. **Apply failure (automatic)** — when the `@ApplyTemplate` method throws an exception **and the change is non-transactional** (the target system doesn't support transactions, or the change is explicitly flagged as non-transactional), Flamingock automatically calls the `@RollbackTemplate` method to undo the change. For transactional changes, the rollback is handled natively.
+2. **CLI undo operation (manual)** — an operator explicitly requests reverting an already-committed change via the Flamingock CLI.
+
+### Two possible outcomes
+
+Every rollback execution ends in one of two states:
+
+| Outcome | What happened | Next Flamingock run |
+|---------|---------------|---------------------|
+| `ROLLED_BACK` | The `@RollbackTemplate` method completed without throwing an exception. | Re-applies the change as if nothing happened. |
+| `ROLLBACK_FAILED` | The `@RollbackTemplate` method threw an exception. | Requires **manual intervention** before proceeding. |
+
+### What the template developer controls
+
+The `@RollbackTemplate` method body decides the outcome. If it completes normally — even as a no-op — the result is `ROLLED_BACK`. If it throws an exception, the result is `ROLLBACK_FAILED`. This gives the template developer full control over how rollback behaves.
+
+### Connection to `rollbackPayloadRequired`
+
+The `rollbackPayloadRequired` flag (set in the [`@ChangeTemplate` annotation](#the-changetemplate-annotation)) controls whether YAML authors must provide rollback data:
+
+- **`true` (default)** — YAML authors must supply a `rollback` field. The template needs external input to know what to undo.
+- **`false`** — the `@RollbackTemplate` method derives everything it needs from internal state (apply data, configuration, etc.) or performs a fixed strategy.
+
+The `@RollbackTemplate` method is **always required** regardless of this flag — the flag only controls whether YAML authors must provide *data* for it.
+
+### When to set `rollbackPayloadRequired = false`
+
+Set this to `false` when:
+- The rollback logic can derive everything it needs from the apply data and shared configuration
+- The rollback uses a fixed strategy regardless of input
+- The operation is inherently idempotent and doesn't need explicit rollback data
+
+### CLI rollback chain
+
+The CLI undo operation runs rollbacks in sequence. If any `@RollbackTemplate` method throws an exception, the chain stops immediately (fail-fast). This means a `ROLLBACK_FAILED` result doesn't just affect one change — it halts the entire undo operation.
+
+## Advanced: understanding load-time validation
+
+Flamingock validates all template-based changes at **pipeline load time**, before any changes are executed. This catches configuration errors early and provides clear error messages.
+
+**Identity validation:**
+- Change `id` must be non-null and non-empty
+- Source file name must be present
+
+**Order validation:**
+- For sorted stages, the change must include an order (extracted from the filename prefix, e.g., `_0001__create_users.yaml`)
+- Order must contain at least 3 alphanumeric characters
+
+**Template registration validation:**
+- The template referenced in the YAML must be registered via SPI
+- The template class must have a `@ChangeTemplate` annotation with a non-empty name
+- The template class must have a `@RollbackTemplate` method
+
+**Structure validation:**
+- Simple templates (`multiStep = false`): YAML must have `apply`, may have `rollback`, must **not** have `steps`
+- Multi-step templates (`multiStep = true`): YAML must have `steps`, must **not** have root-level `apply` or `rollback`
+
+**Payload validation:**
+- `apply` payloads must not be null (always validated)
+- `rollback` payloads must not be null when the template has `rollbackPayloadRequired = true` (the default)
+- For multi-step templates: each step's `apply` is validated; each step's `rollback` is validated per the template's `rollbackPayloadRequired` setting
+
+If validation fails, Flamingock reports a clear error with details about which change and which field caused the issue.
+
+## Advanced: transaction support metadata in payloads
+
+Template payloads carry metadata about whether they support transactions. This allows Flamingock to **infer** the `transactional` flag when YAML authors omit it — reducing boilerplate and preventing misconfiguration.
+
+### Metadata via `TemplatePayload`
+
+As described in [section 1](#1-template-class-and-generics), all generic types must implement `TemplatePayload`. The key metadata method is `getInfo()`, which returns `TemplatePayloadInfo` — this is how the framework knows what the payload supports.
+
+```java
+public interface TemplatePayload {
+    List<TemplatePayloadValidationError> validate(TemplateValidationContext context);
+    TemplatePayloadInfo getInfo();
+}
+```
+
+### `supportsTransactions` — three-valued semantics
+
+The `TemplatePayloadInfo.supportsTransactions` field uses three-valued logic:
+
+| Value | Meaning |
+|-------|---------|
+| `null` (default) | No claim — framework defers to the target system (transactional if the target system supports transactions, non-transactional otherwise) |
+| `true` | Explicitly supports transactions |
+| `false` | Explicitly does **not** support transactions |
+
+### Inference rules
+
+When a YAML change omits the `transactional` field, Flamingock infers it from the apply payloads:
+
+- If **any** apply payload declares `supportsTransactions = false` → the change is inferred as **non-transactional**
+- Otherwise → the change defers to the target system's transactionality
+- An **explicit** `transactional` value in YAML always takes precedence over inference
+- Only **apply** payloads participate in inference (not rollback)
+
+### Validation
+
+If a YAML change explicitly sets `transactional: true` but an apply payload declares `supportsTransactions = false`, Flamingock raises a **validation error at load time**. This catches the contradiction early — before any change executes.
+
+### Example: a payload that declares non-transactional support
+
+```java
+public class DdlOperation implements TemplatePayload {
+
+    private String type;
+    private String collection;
+
+    @Override
+    public List<TemplatePayloadValidationError> validate(TemplateValidationContext context) {
+        // validation logic...
+        return Collections.emptyList();
+    }
+
+    @Override
+    public TemplatePayloadInfo getInfo() {
+        TemplatePayloadInfo info = new TemplatePayloadInfo();
+        info.setSupportsTransactions(false);
+        return info;
+    }
+}
+```
+
+With this payload, YAML authors can safely omit `transactional` — Flamingock will infer `false` automatically.
+
+### Note about wrapper types
+
+Flamingock's built-in `TemplateString` makes **no claim** about transaction support — it returns a default `TemplatePayloadInfo`. This means that when a template uses `TemplateString` as its payload type and the YAML omits `transactional`, the framework defers to the target system's transactionality.
+
 ## ✅ Best Practices
 
-- Use `AbstractChangeTemplate<SHARED_CONFIG, EXECUTION, ROLLBACK>` with the appropriate generic types for your use case.
-- Always provide an `@Rollback` method if rollback or undo is expected.
-- Use `Void` for generics when that type is not needed (e.g., `<Void, String, String>` for simple SQL templates).
-- Use shared configuration (`<ConfigType, Void, Void>`) when both apply and rollback need the same configuration data.
-- Document your template's purpose and generic types clearly for users.
-- Ensure all custom types are registered for reflection by passing them to the superclass constructor, especially when targeting native builds.
+- Always annotate your template class with `@ChangeTemplate(name = "...")` — choose a descriptive, stable name since YAML authors depend on it.
+- Use `AbstractChangeTemplate<SHARED_CONFIG, APPLY, ROLLBACK>` with the appropriate generic types for your use case.
+- Always provide both `@ApplyTemplate` and `@RollbackTemplate` methods — both are required for template registration.
+- Set `rollbackPayloadRequired = false` only when rollback logic can derive what it needs from the apply data or doesn't need external input (see [Understanding rollback behavior](#advanced-understanding-rollback-behavior)).
+- Choose `multiStep = true` when the target technology requires structured payloads per operation; use simple templates when the payload format can naturally express multiple operations or is inherently single-operation.
+- Use `TemplateVoid` for generics when that type is not needed (e.g., `<TemplateVoid, TemplateString, TemplateString>` for simple SQL templates).
+- Use shared configuration (`<ConfigType, Apply, Rollback>`) when both apply and rollback need the same configuration data.
+- Document your template's purpose, generic types, and expected YAML structure clearly for users.
+- If your payload types internally reference other custom classes, pass those classes to the superclass constructor for GraalVM reflection registration. The generic type arguments and built-in types (`TemplateVoid`, `TemplateString`) are registered automatically.
 - Group multiple templates by domain when packaging a library.
+- Implement `TemplatePayload` in custom payload types and declare `supportsTransactions(false)` for non-transactional operations — this enables automatic inference of the `transactional` flag for YAML authors.
+
+---
+
+// File: templates/mongodb-template
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# MongoDB Template Reference
+
+:::caution Beta feature
+The MongoDB Template is available in **beta**.
+:::
+
+The MongoDB Template (`mongodb-sync-template`) provides a declarative way to define MongoDB operations in YAML format. It is designed for step-based changes where each step can have its own apply and rollback operation.
+
+## Getting started
+
+The MongoDB Template allows you to define database changes declaratively in YAML instead of writing Java code. Here's a quick example:
+
+```yaml
+id: create-users-collection
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_1"
+```
+
+This single YAML file replaces what would typically require a Java class with annotations and MongoDB driver code. For a step-by-step guide on setting up templates, see [How to use Templates](./templates-how-to-use.md).
+
+## Installation
+
+### Dependency setup
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+flamingock {
+    //...
+    mongodb()
+}
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-mongodb-template</artifactId>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+### Prerequisites
+
+The MongoDB Template requires the following to be configured in your project:
+
+- The [MongoDB Sync Target System](../target-systems/mongodb-target-system.md) module.
+- MongoDB Java Driver (`mongodb-driver-sync`) 4.0.0+ as a direct dependency.
+
+MongoDB 4.0+ is required for transaction support.
+
+## YAML structure
+
+The MongoDB Template uses the **steps format** where each step contains an apply operation and an optional rollback operation.
+
+```yaml
+# Required: Unique identifier for this change
+id: my-change-id
+
+# Optional: Author of this change
+author: developer-name
+
+# Optional: Whether to run in a transaction
+# When omitted, inferred from operations (DDL → false, DML → true)
+
+# Required: Template to use
+template: mongodb-sync-template
+
+# Required: Target system configuration
+targetSystem:
+  id: "mongodb"
+
+# Required: List of steps, each with an apply and optional rollback
+steps:
+  - apply:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+    rollback:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+
+  - apply:
+      type: <another-operation>
+      collection: <collection-name>
+    rollback:
+      type: <rollback-operation>
+      collection: <collection-name>
+```
+
+:::info Collection name rules
+Collection names must:
+- Not be empty
+- Not contain `$` or null characters
+- Not start with `system.` (reserved by MongoDB)
+:::
+
+**Example:**
+
+```yaml
+id: setup-products
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createCollection
+      collection: products
+    rollback:
+      type: dropCollection
+      collection: products
+
+  - apply:
+      type: createIndex
+      collection: products
+      parameters:
+        keys:
+          category: 1
+        options:
+          name: "category_index"
+    rollback:
+      type: dropIndex
+      collection: products
+      parameters:
+        indexName: "category_index"
+```
+
+### Rollback behavior
+
+When a step fails during execution:
+1. All previously successful steps are rolled back in reverse order
+2. Steps without rollback operations are skipped during rollback
+3. Rollback errors are logged but don't stop the rollback process for remaining steps
+
+This provides fine-grained control over rollback operations, ensuring each operation can be properly undone.
+
+### Transactional behavior
+
+Each MongoDB operation declares whether it supports transactions. When you omit `transactional` from YAML, Flamingock infers the value automatically based on the operations used.
+
+| Operation | Supports transactions |
+|-----------|----------------------|
+| `createCollection` | No |
+| `dropCollection` | No |
+| `createIndex` | No |
+| `dropIndex` | No |
+| `createView` | No |
+| `dropView` | No |
+| `renameCollection` | No |
+| `modifyCollection` | No |
+| `insert` | Yes |
+| `update` | Yes |
+| `delete` | Yes |
+
+:::warning
+MongoDB DDL operations cannot run inside transactions. If any step uses a DDL operation, Flamingock will infer `transactional: false` automatically. Explicitly setting `transactional: true` on a change that contains DDL operations will result in a validation error at load time.
+:::
+
+## Supported operations
+
+### createCollection
+
+Creates a new collection. This operation is idempotent — if the collection already exists, it is skipped.
+
+```yaml
+- apply:
+    type: createCollection
+    collection: users
+  rollback:
+    type: dropCollection
+    collection: users
+```
+
+**Parameters:** None required.
+
+---
+
+### dropCollection
+
+Drops an existing collection.
+
+```yaml
+- apply:
+    type: dropCollection
+    collection: users
+```
+
+**Parameters:** None required.
+
+---
+
+### insert
+
+Inserts one or more documents into a collection.
+
+```yaml
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+          roles: ["admin", "user"]
+        - name: "Jane Smith"
+          email: "jane@example.com"
+          roles: ["user"]
+  rollback:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `documents` | List | Yes | List of documents to insert |
+| `options` | Object | No | Insert options |
+
+**Insert Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `bypassDocumentValidation` | Boolean | If `true`, allows insertion of documents that don't pass validation |
+| `ordered` | Boolean | If `true` (default), stops on first error. If `false`, continues inserting remaining documents |
+
+**Example with options:**
+
+```yaml
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+        - name: "Jane Smith"
+          email: "jane@example.com"
+      options:
+        ordered: false
+        bypassDocumentValidation: true
+```
+
+---
+
+### update
+
+Updates documents in a collection.
+
+```yaml
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        status: "pending"
+      update:
+        $set:
+          status: "active"
+      multi: true  # Optional: update all matching documents
+  rollback:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        status: "active"
+      update:
+        $set:
+          status: "pending"
+      multi: true
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filter` | Object | Yes | Query filter to select documents |
+| `update` | Object | Yes | Update operations to apply |
+| `multi` | Boolean | No | If `true`, updates all matching documents. Default: `false` (updates first match only) |
+| `options` | Object | No | Additional update options (upsert, etc.) |
+
+**Update Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `upsert` | Boolean | Insert if no document matches |
+| `bypassDocumentValidation` | Boolean | If `true`, allows update to bypass document validation |
+| `collation` | Object | Collation settings for string comparison (see example below) |
+| `arrayFilters` | List | Filters specifying which array elements to update |
+
+**Example with collation:**
+
+```yaml
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        name: "josé"
+      update:
+        $set:
+          verified: true
+      options:
+        collation:
+          locale: "es"
+          strength: 1  # Case-insensitive and accent-insensitive
+```
+
+**Example with arrayFilters:**
+
+```yaml
+- apply:
+    type: update
+    collection: orders
+    parameters:
+      filter:
+        orderId: "ORD-001"
+      update:
+        $set:
+          "items.$[elem].status": "shipped"
+      options:
+        arrayFilters:
+          - elem.status: "pending"
+```
+
+---
+
+### delete
+
+Deletes documents from a collection.
+
+```yaml
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter:
+        status: "inactive"
+```
+
+To delete all matching documents:
+
+```yaml
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
+      multi: true
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filter` | Object | Yes | Query filter to select documents to delete. Use `{}` for all documents. |
+| `multi` | Boolean | No | If `true`, deletes all matching documents. Default: `false` (deletes first match only) |
+
+---
+
+### createIndex
+
+Creates an index on a collection.
+
+```yaml
+- apply:
+    type: createIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1        # 1 for ascending, -1 for descending
+      options:
+        name: "email_unique_index"
+        unique: true
+  rollback:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
+```
+
+**Compound index example:**
+
+```yaml
+- apply:
+    type: createIndex
+    collection: orders
+    parameters:
+      keys:
+        customerId: 1
+        orderDate: -1
+      options:
+        name: "customer_orders_index"
+  rollback:
+    type: dropIndex
+    collection: orders
+    parameters:
+      indexName: "customer_orders_index"
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `keys` | Object | Yes | Index key specification. Use `1` for ascending, `-1` for descending |
+| `options` | Object | No | Index options |
+
+**Index Options:**
+
+*Common options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `name` | String | Index name |
+| `unique` | Boolean | Create a unique index |
+| `sparse` | Boolean | Create a sparse index |
+| `expireAfterSeconds` | Integer | TTL index expiration time |
+| `background` | Boolean | Build index in background (deprecated in MongoDB 4.2+) |
+| `version` | Integer | Index version |
+
+*Text index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `weights` | Object | Text index field weights |
+| `defaultLanguage` | String | Default language for text index |
+| `languageOverride` | String | Field name that contains the language |
+| `textVersion` | Integer | Text index version |
+
+*Geospatial index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `sphereVersion` | Integer | 2dsphere index version |
+| `bits` | Integer | Geohash precision for 2d indexes |
+| `min` | Number | Minimum boundary for 2d index |
+| `max` | Number | Maximum boundary for 2d index |
+
+*Advanced options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `storageEngine` | Object | Storage engine configuration |
+| `partialFilterExpression` | Object | Filter expression for partial indexes |
+| `collation` | Object | Collation settings for string comparison |
+
+---
+
+### dropIndex
+
+Drops an index from a collection. This operation is idempotent — if the index does not exist, it is skipped.
+
+**By index name:**
+
+```yaml
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
+```
+
+**By index keys:**
+
+```yaml
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `indexName` | String | No* | Name of the index to drop |
+| `keys` | Object | No* | Index key specification |
+
+*One of `indexName` or `keys` is required.
+
+---
+
+### renameCollection
+
+Renames a collection. This operation is idempotent — if the source collection does not exist but the target does, it is skipped.
+
+```yaml
+- apply:
+    type: renameCollection
+    collection: oldName
+    parameters:
+      target: newName
+  rollback:
+    type: renameCollection
+    collection: newName
+    parameters:
+      target: oldName
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `target` | String | Yes | New collection name |
+| `options` | Object | No | Rename options |
+
+**Rename Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `dropTarget` | Boolean | If `true`, drops the target collection if it already exists |
+
+---
+
+### modifyCollection
+
+Modifies collection options, such as adding validation rules.
+
+```yaml
+- apply:
+    type: modifyCollection
+    collection: users
+    parameters:
+      validator:
+        $jsonSchema:
+          bsonType: "object"
+          required: ["email", "name"]
+          properties:
+            email:
+              bsonType: "string"
+              description: "must be a string and is required"
+            name:
+              bsonType: "string"
+              description: "must be a string and is required"
+      validationLevel: "moderate"
+      validationAction: "warn"
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `validator` | Object | No | JSON Schema validator |
+| `validationLevel` | String | No | `"off"`, `"moderate"`, or `"strict"` |
+| `validationAction` | String | No | `"error"` or `"warn"` |
+
+:::note
+At least one of `validator`, `validationLevel`, or `validationAction` must be provided.
+:::
+
+---
+
+### createView
+
+Creates a view based on an aggregation pipeline. This operation is idempotent — if the view already exists, it is skipped.
+
+```yaml
+- apply:
+    type: createView
+    collection: activeUsers
+    parameters:
+      viewOn: users
+      pipeline:
+        - $match:
+            status: "active"
+        - $project:
+            name: 1
+            email: 1
+  rollback:
+    type: dropView
+    collection: activeUsers
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `viewOn` | String | Yes | Source collection name |
+| `pipeline` | List | Yes | Aggregation pipeline stages |
+| `options` | Object | No | View options |
+
+**View Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `collation` | Object | Collation settings for string comparison |
+
+---
+
+### dropView
+
+Drops a view.
+
+```yaml
+- apply:
+    type: dropView
+    collection: activeUsers
+```
+
+**Parameters:** None required.
+
+---
+
+## Complete examples
+
+### Example 1: Setting up a users collection
+
+```yaml
+id: setup-users-collection
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          name: "email_unique"
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_unique"
+
+  - apply:
+      type: insert
+      collection: users
+      parameters:
+        documents:
+          - name: "Admin"
+            email: "admin@company.com"
+            roles: ["superuser"]
+          - name: "Support"
+            email: "support@company.com"
+            roles: ["readonly"]
+    rollback:
+      type: delete
+      collection: users
+      parameters:
+        filter: {}
+```
+
+### Example 2: Data migration with update
+
+```yaml
+id: migrate-user-status
+transactional: true
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: update
+      collection: users
+      parameters:
+        filter:
+          active: true
+        update:
+          $set:
+            status: "active"
+          $unset:
+            active: ""
+        multi: true
+    rollback:
+      type: update
+      collection: users
+      parameters:
+        filter:
+          status: "active"
+        update:
+          $set:
+            active: true
+          $unset:
+            status: ""
+        multi: true
+```
+
+### Example 3: Creating a view
+
+```yaml
+id: create-premium-customers-view
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createView
+      collection: premiumCustomers
+      parameters:
+        viewOn: customers
+        pipeline:
+          - $match:
+              subscriptionTier: "premium"
+          - $project:
+              name: 1
+              email: 1
+              subscriptionTier: 1
+    rollback:
+      type: dropView
+      collection: premiumCustomers
+```
+
+## File naming convention
+
+Change files are executed in alphabetical order. Use a numeric prefix to control execution order:
+
+```
+_0001__create_users_collection.yaml
+_0002__seed_users.yaml
+_0003__create_indexes.yaml
+```
+
+---
+
+// File: templates/sql-template
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# SQL Template Reference
+
+:::caution Beta feature
+The SQL Template is available in **beta**.
+:::
+
+The `sql-template` provides a declarative way to define SQL database changes in YAML format. This template uses simple `apply`/`rollback` fields where the payloads are raw SQL strings.
+
+## Getting started
+
+The SQL Template allows you to define database changes declaratively in YAML instead of writing Java code. Here's a quick example:
+
+```yaml
+id: create-users-table
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255));"
+rollback: "DROP TABLE users;"
+```
+
+## Installation
+
+### Dependency setup
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+flamingock {
+    //...
+    sql()
+}
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-sql-template</artifactId>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+### Prerequisites
+
+The SQL Template requires the following to be configured in your project:
+
+- The [SQL Target System](../target-systems/sql-target-system.md) module.
+- A JDBC driver for the target database.
+
+## YAML structure
+
+SQL Template changes use a simple `apply`/`rollback` format:
+
+```yaml
+id: <unique-change-id>
+# transactional: defaults to true when omitted (SQL payloads make no claim)
+template: sql-template
+targetSystem:
+  id: "<target-system-id>"
+apply: "<SQL statement(s)>"
+rollback: "<SQL statement(s)>"
+```
+
+### Configuration attributes
+
+- **`id`**: Unique identifier for the change, used for tracking.
+- **`transactional`**: Whether to run the change in a database transaction. When omitted, defaults to `true` (the SQL Template's payloads make no transaction claim). Set `false` explicitly to opt out.
+- **`template`**: Must be `sql-template`.
+- **`targetSystem`**: Specifies which SQL target system this change applies to.
+- **`apply`**: Required. Raw SQL string to execute. Multiple statements can be separated by `;`.
+- **`rollback`**: Optional. Raw SQL string to execute for rollback.
+- **`configuration`**: Optional. Template-specific configuration (see below).
+- **`recovery`**: Optional failure handling configuration.
+  - `strategy`: Can be `MANUAL_INTERVENTION` (default) or `ALWAYS_RETRY`.
+
+## Configuration
+
+The SQL Template supports optional configuration via the `configuration` field:
+
+```yaml
+id: bulk-insert
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+configuration:
+  splitStatements: false
+apply: "INSERT INTO users VALUES (1, 'Admin', 'admin@example.com')"
+rollback: "DELETE FROM users WHERE id = 1"
+```
+
+### Configuration options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `splitStatements` | boolean | `true` | Controls SQL statement splitting. When `true`, the template automatically splits multi-statement SQL using dialect-aware parsing. Set to `false` to execute the entire SQL string as a single statement. |
+
+## Multi-statement support
+
+The SQL Template includes intelligent SQL splitting that understands database-specific syntax. By default, it automatically splits multi-statement SQL strings and executes each statement individually. The splitting is dialect-aware, correctly handling:
+
+- Quoted strings containing semicolons (e.g., `'text;with;semi'`)
+- Dialect-specific delimiters and block syntax (e.g., `DELIMITER`, `GO`, `SET TERM`)
+- Dollar-quoted strings, PL/pgSQL blocks, and other dialect features
+
+```yaml
+id: insert-seed-data
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: |
+  INSERT INTO users (id, name, role) VALUES (1, 'Admin', 'superuser');
+  INSERT INTO users (id, name, role) VALUES (2, 'Support', 'readonly');
+  INSERT INTO users (id, name, role) VALUES (3, 'Developer', 'user');
+rollback: "DELETE FROM users WHERE id IN (1, 2, 3);"
+```
+
+The splitter correctly handles complex dialect-specific syntax such as PL/pgSQL blocks:
+
+```yaml
+id: create-user-function
+transactional: false
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: |
+  CREATE OR REPLACE FUNCTION get_active_users()
+  RETURNS TABLE(id INT, name VARCHAR, email VARCHAR) AS $
+  BEGIN
+    RETURN QUERY SELECT u.id, u.name, u.email
+    FROM users u
+    WHERE u.active = true;
+  END;
+  $ LANGUAGE plpgsql
+rollback: |
+  DROP FUNCTION IF EXISTS get_active_users()
+```
+
+## Supported databases
+
+The SQL Template supports dialect-aware statement splitting for the following databases:
+
+| Database | Strategy | Key features |
+|----------|----------|--------------|
+| **MySQL** | `MySqlSplitter` | DELIMITER command, backticks, backslash escapes |
+| **MariaDB** | `MariaDbSplitter` | Inherits all MySQL features |
+| **PostgreSQL** | `PostgreSqlSplitter` | Dollar-quoted strings (`$`), E-strings |
+| **Oracle** | `OracleSplitter` | `/` delimiter, Q-strings (`q'[...]'`) |
+| **SQL Server** | `SqlServerSplitter` | `GO` batch separator, square brackets |
+| **SQLite** | `SqliteSplitter` | Square brackets, backticks (MySQL compat) |
+| **H2** | `H2Splitter` | Mixed mode support (PostgreSQL + MySQL features) |
+| **Firebird** | `FirebirdSplitter` | `SET TERM` directive, AS context awareness |
+| **IBM DB2** | `Db2Splitter` | `@` delimiter support, BEGIN ATOMIC |
+| **Informix** | `InformixSplitter` | Curly brace comments, compound END keywords |
+| **Sybase** | `SybaseSplitter` | Inherits SQL Server features |
+
+The dialect is automatically detected from the JDBC connection metadata.
+
+## Complete examples
+
+### Example 1: Create table with seed data
+
+```yaml
+id: create-users-table
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255), role VARCHAR(50));"
+rollback: "DROP TABLE users;"
+```
+
+```yaml
+id: seed-users
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: |
+  INSERT INTO users (id, name, email, role) VALUES (1, 'Admin', 'admin@company.com', 'superuser');
+  INSERT INTO users (id, name, email, role) VALUES (2, 'Support', 'support@company.com', 'readonly');
+rollback: "DELETE FROM users WHERE id IN (1, 2);"
+```
+
+### Example 2: Schema change with index
+
+```yaml
+id: add-status-column
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: |
+  ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active';
+  CREATE INDEX idx_users_status ON users (status);
+rollback: |
+  DROP INDEX idx_users_status;
+  ALTER TABLE users DROP COLUMN status;
+```
+
+### Example 3: Data migration
+
+```yaml
+id: migrate-user-roles
+transactional: true
+template: sql-template
+targetSystem:
+  id: "sql"
+apply: |
+  CREATE TABLE roles (id INT PRIMARY KEY, name VARCHAR(50));
+  INSERT INTO roles (id, name) VALUES (1, 'superuser'), (2, 'readonly'), (3, 'user');
+  ALTER TABLE users ADD COLUMN role_id INT REFERENCES roles(id);
+  UPDATE users SET role_id = (SELECT id FROM roles WHERE name = users.role);
+rollback: |
+  ALTER TABLE users DROP COLUMN role_id;
+  DROP TABLE roles;
+```
+
+## File naming convention
+
+Change files are executed in alphabetical order. Use a numeric prefix to control execution order:
+
+```
+_0001__create_users_table.yaml
+_0002__seed_users.yaml
+_0003__add_status_column.yaml
+```
+
+---
+
+// File: testing/change-validator
+
+import VersionBadge from '@site/src/components/VersionBadge';
+
+# Change validator <VersionBadge version="1.2.0" />
+
+`ChangeValidator` is a fluent assertion utility for verifying that change units carry the correct metadata — both code-based change **classes** and YAML **template-based change files**. It reads metadata via reflection or YAML parsing and asserts that the values match your expectations.
+
+All assertions use a **soft-assertion pattern**: each chained call queues an assertion, and `validate()` executes them all together, collecting every failure into a single `AssertionError`. This means you see all problems at once rather than stopping at the first mismatch.
+
+:::info Eager checks at construction
+Both factory methods validate the change eagerly before any chained assertions run:
+
+- `ChangeValidator.of(MyChange.class)` immediately verifies that the class has `@Change` and at least one `@Apply` method. If either is absent, an `IllegalArgumentException` is thrown.
+- `ChangeValidator.of(yamlPath)` immediately verifies that the file exists, that `id` and `template` are present and non-empty, and that either an `apply` field or a `steps` list is present. If any check fails, an `IllegalArgumentException` is thrown.
+:::
+
+## When to use it
+
+Add `ChangeValidator` to your test class alongside business-logic tests.
+
+- Catches mistakes (wrong id, missing rollback, wrong target system, wrong template name) before running any container or runtime
+- Requires no external system, no Flamingock runtime, and no test framework — pure reflection or YAML parsing
+- Pairs naturally with the unit-testing approach described in [Unit testing your change units](./unit-testing.md)
+
+
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
+
+
+## Usage — code-based changes
+
+Entry point: `ChangeValidator.of(MyChange.class)` — returns a `CodeBasedChangeValidator` ready for chaining.
+
+```java
+@Test
+void validate_createCollection() {
+    ChangeValidator.of(_0001__CreateCollectionChange.class)
+        .withId("create-collection")
+        .withAuthor("flamingock-team")
+        .withOrder("0001")
+        .isNotTransactional()
+        .withTargetSystem("mongodb-target-system")
+        .hasRollbackMethod()
+        .validate();
+}
+```
+
+
+## Usage — template-based changes
+
+Entry point: `ChangeValidator.of(Paths.get(...))` — returns a `TemplateBasedChangeValidator` ready for chaining.
+
+**Simple template** (single `apply` / optional `rollback`):
+
+```java
+@Test
+void validate_createUsersCollection() {
+    ChangeValidator.of(Paths.get("src/test/java/.../changes/_0001__create_users_collection.yaml"))
+        .withId("create-users-collection")
+        .withOrder("0001")
+        .withTemplateName("MongoChangeTemplate")
+        .isNotTransactional()
+        .withTargetSystem("mongodb")
+        .hasRollback()
+        .validate();
+}
+```
+
+**Multi-step template** (`steps` list):
+
+```java
+@Test
+void validate_stepBasedChange() {
+    ChangeValidator.of(Paths.get("src/test/java/.../changes/_0005__step_based_change.yaml"))
+        .withId("step-based-change")
+        .withOrder("0005")
+        .withTemplateName("MongoChangeTemplate")
+        .withStepCount(3)
+        .hasRollbackForStep(0)
+        .hasRollbackForStep(1)
+        .validate();
+}
+```
+
+
+## Available assertions
+
+### Shared (code-based and template-based)
+
+| Method | What it checks | Notes |
+|--------|----------------|-------|
+| `withId(String)` | Change id equals expected | |
+| `withAuthor(String)` | Author equals expected | |
+| `withOrder(String)` | Order extracted from name via `_ORDER__Name` convention | Fails if name doesn't follow the convention |
+| `withTargetSystem(String)` | Target system id equals expected | Fails if no target system is declared |
+| `withRecovery(RecoveryStrategy)` | Recovery strategy equals expected | Defaults to `MANUAL_INTERVENTION` when not declared |
+| `isTransactional()` | Transactional is `true` | Default is `true` for both change types |
+| `isNotTransactional()` | Transactional is `false` | |
+| `validate()` | Runs all queued assertions; throws `AssertionError` listing every failure. Silent on success. | Terminal — call last |
+
+### Code-based only
+
+| Method | What it checks | Notes |
+|--------|----------------|-------|
+| `hasRollbackMethod()` | At least one method annotated `@Rollback` exists | Only directly declared methods are checked |
+
+### Template-based only
+
+| Method | What it checks | Notes |
+|--------|----------------|-------|
+| `withTemplateName(String)` | The `template` field equals expected | |
+| `withStepCount(int)` | The `steps` list has exactly this many entries | Fails with descriptive error on simple templates |
+| `hasRollback()` | Simple: top-level `rollback` field present. Multi-step: all steps have a `rollback` field. | Reports the first failing step index for multi-step |
+| `hasRollbackForStep(int)` | The step at the given 0-based index has a `rollback` field | Fails with descriptive error on simple templates |
+
+
+## Naming convention for order extraction
+
+The `withOrder` assertion extracts the order from the class simple name or the file name (without extension) using the `_ORDER__DescriptiveName` pattern:
+
+| Name | Extracted order |
+|------|----------------|
+| `_0001__CreateCollection` (class) | `"0001"` |
+| `_0002__seed_users.yaml` (file) | `"0002"` |
+| `_20250101_01__InitSchema` | `"20250101_01"` |
+
+If the name does not follow this convention, `withOrder` reports a failure explaining that the order could not be extracted.
+
+
+## Error reporting
+
+All failures are collected and thrown together as a single `AssertionError`:
+
+```
+TemplateBasedChangeValidator failed for _0001__create_users_collection:
+  - withId: expected "create-users" but was "create-users-collection"
+  - isTransactional: expected transactional=true but was false
+```
+
+```
+CodeBasedChangeValidator failed for _0001__CreateCollectionChange:
+  - withId: expected "create-users" but was "create-collection"
+  - isTransactional: expected transactional=true but was false
+```
+
+This ensures every problem is visible in a single test run rather than requiring repeated fixes to uncover subsequent failures.
 
 ---
 
 // File: testing/introduction
+
+import VersionBadge from '@site/src/components/VersionBadge';
+
 
 ## Introduction
 
@@ -7536,15 +8976,70 @@ Flamingock provides a **BDD-style test support framework** that simplifies integ
 
 | Module | Use case |
 |--------|----------|
-| `flamingock-test-support` | Standalone/programmatic tests without Spring |
+| `flamingock-test-support` | Standalone/programmatic tests without Spring — also includes `ChangeValidator` for structural validation |
 | `flamingock-springboot-test-support` | Spring Boot integration tests |
 
 Both modules share the same BDD API for defining expectations and validating results. See [BDD test API](./flamingock-bdd-api.md) for the complete API reference.
 
 
+## Setup
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle" default>
+
+When using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md), test support dependencies are included automatically:
+
+- `community()` adds `flamingock-test-support`
+- `springboot()` adds `flamingock-springboot-test-support`
+
+No manual action needed.
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+If you are **not** using Spring Boot, add:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-test-support</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+If you **are** using Spring Boot, add:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-springboot-test-support</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+No `<version>` tag needed — the [Flamingock BOM](../get-started/quick-start.md) manages versioning.
+
+  </TabItem>
+</Tabs>
+
+
 ## What to test
 
-There are **three primary levels** at which Flamingock-related functionality can be tested:
+There are **four levels** at which Flamingock-related functionality can be tested:
+
+### 0. Validate change structure <VersionBadge version="1.2.0" />
+
+Verify that your change classes carry the correct annotations before running any Flamingock execution.
+
+- Use `ChangeValidator` to validate `@Change` metadata on code-based changes **and** YAML metadata on template-based changes — no runtime or external system needed
+- Detect missing rollback definitions (methods or YAML fields)
+- Runs without any external system or Flamingock runtime
+
+See [Change validator](./change-validator.md)
+
 
 ### 1. Unit test: Change logic
 Isolate and test the logic inside your `@Apply` and `@Rollback` methods without involving Flamingock's runtime or audit mechanism.
@@ -7836,40 +9331,13 @@ class _0001__CreateS3BucketChangeTest {
 
 // File: testing/integration-testing
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 ## Introduction
 
 Integration tests verify that Flamingock executes changes correctly against real systems. The `flamingock-test-support` module provides a BDD-style API for writing expressive, maintainable integration tests.
 
 The recommended approach is to use your **production Flamingock builder** with containerized backends (via Testcontainers), ensuring your tests match real-world behavior.
 
-## Setup
-
-<Tabs groupId="gradle_maven">
-  <TabItem value="gradle" label="Gradle" default>
-
-If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
-
-```kotlin
-testImplementation("io.flamingock:flamingock-test-support:$version")
-```
-
-  </TabItem>
-  <TabItem value="maven" label="Maven">
-
-```xml
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-test-support</artifactId>
-    <version>${flamingock.version}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-  </TabItem>
-</Tabs>
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
 
 ## FlamingockTestSupport
 
@@ -8069,40 +9537,11 @@ class S3IntegrationTest {
 
 // File: testing/springboot-integration-testing
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 ## Introduction
 
 For Spring Boot applications, Flamingock provides dedicated test support that integrates with the Spring test framework. The `flamingock-springboot-test-support` module uses the same BDD API as the standalone module, but with Spring-specific components for easier integration.
 
-## Setup
-
-Add the Spring Boot test support dependency:
-
-<Tabs groupId="gradle_maven">
-  <TabItem value="gradle" label="Gradle" default>
-
-If using the [Flamingock Gradle Plugin](../get-started/gradle-plugin.md) with `springboot()`, test support is already included. Otherwise, add manually:
-
-```kotlin
-testImplementation("io.flamingock:flamingock-springboot-test-support:$version")
-```
-
-  </TabItem>
-  <TabItem value="maven" label="Maven">
-
-```xml
-<dependency>
-    <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-springboot-test-support</artifactId>
-    <version>${flamingock.version}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-  </TabItem>
-</Tabs>
+> For setup instructions, see [Testing Flamingock — Setup](./introduction.md#setup).
 
 ## @FlamingockSpringBootTest
 
