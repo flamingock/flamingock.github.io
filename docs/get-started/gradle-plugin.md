@@ -13,7 +13,7 @@ Setting up Flamingock manually requires adding several dependencies:
 
 ```kotlin
 // Without the plugin - multiple dependencies to manage
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 implementation("io.flamingock:flamingock-springboot-integration")
 testImplementation("io.flamingock:flamingock-springboot-test-support")
@@ -63,6 +63,10 @@ flamingock {
 | Method | Description |
 |--------|-------------|
 | `community()` | Enables Community edition (adds BOM and core library) |
+| `sql()` | Adds SQL template and target system support |
+| `mongodb()` | Adds MongoDB sync template and target system support |
+| `dynamodb()` | Adds DynamoDB target system support |
+| `couchbase()` | Adds Couchbase target system support |
 | `springboot()` | Adds Spring Boot integration and test support |
 | `graalvm()` | Adds GraalVM native image support |
 | `mongock()` | Enables seamless migration from Mongock — imports audit log, detects legacy change units, and executes pending ones |
@@ -81,9 +85,41 @@ annotationProcessor("io.flamingock:flamingock-processor:$version")
 ### community()
 
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
+implementation(platform("io.flamingock:flamingock-bom:$version"))
 implementation("io.flamingock:flamingock-community")
 testImplementation("io.flamingock:flamingock-test-support")
+```
+
+### sql()
+
+```kotlin
+implementation("io.flamingock:flamingock-sql-template")
+implementation("io.flamingock:flamingock-sql-targetsystem")
+```
+
+### mongodb()
+
+```kotlin
+implementation("io.flamingock:flamingock-mongodb-sync-template")
+implementation("io.flamingock:flamingock-mongodb-sync-targetsystem")
+```
+
+When `springboot()` is also enabled:
+
+```kotlin
+implementation("io.flamingock:flamingock-mongodb-springdata-targetsystem")
+```
+
+### dynamodb()
+
+```kotlin
+implementation("io.flamingock:flamingock-dynamodb-targetsystem")
+```
+
+### couchbase()
+
+```kotlin
+implementation("io.flamingock:flamingock-couchbase-targetsystem")
 ```
 
 ### springboot()

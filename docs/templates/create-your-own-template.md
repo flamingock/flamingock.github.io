@@ -17,20 +17,20 @@ While official Flamingock templates are experimental, you can already build and 
 
 ## Dependency
 
-Creating a template requires the `flamingock-core-api` artifact on the classpath. This dependency is transitively included by the core Flamingock library, so you only need to declare it explicitly when the template lives in its own dedicated module (e.g., a reusable template library):
+Creating a template requires the `flamingock-template-api` artifact on the classpath. This dependency is transitively included by the core Flamingock library, so you only need to declare it explicitly when the template lives in its own dedicated module (e.g., a reusable template library):
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-implementation(platform("io.flamingock:flamingock-community-bom:$version"))
-implementation("io.flamingock:flamingock-core-api")
+implementation(platform("io.flamingock:flamingock-bom:$version"))
+implementation("io.flamingock:flamingock-template-api")
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-core-api</artifactId>
+    <artifactId>flamingock-template-api</artifactId>
 </dependency>
 ```
   </TabItem>

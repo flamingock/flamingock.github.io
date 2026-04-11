@@ -15,30 +15,49 @@ Using a Flamingock Template is straightforward. Here's an example of how you can
 This section uses the **SQL Template** as example.
 :::
 
-## Step 1: Add the Template dependency
+## Step 1: Add the template dependency
 
-Ensure your **Flamingock Template** dependency is included in your project. Example of using `sql-template`:
+How you set up the dependency depends on where the template comes from.
+
+### Official Flamingock templates
+
+Official templates are included in the Flamingock Gradle plugin and the BOM, so no version management is needed. For example, to use the SQL Template:
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle">
 ```kotlin
-import io.flamingock.gradle.FlamingockTemplate.SQL
-
 flamingock {
     //...
-    templates(SQL)
+    sql()
 }
 ```
   </TabItem>
   <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section. Then add the template dependency without a version:
+
 ```xml
 <dependency>
     <groupId>io.flamingock</groupId>
-    <artifactId>flamingock-java-template-sql</artifactId>
+    <artifactId>flamingock-sql-template</artifactId>
 </dependency>
 ```
   </TabItem>
 </Tabs>
+
+Each official template has its own plugin function (`sql()`, `mongodb()`, etc.) and BOM-managed artifact. See the individual template reference pages for the exact setup.
+
+### Third-party or community templates
+
+For templates published by third parties, add them as a standard dependency:
+
+```kotlin
+implementation("com.example:custom-template:1.0.0")
+```
+
+### In-project templates
+
+If the template is defined within your own project, no additional dependency is needed — Flamingock discovers it automatically via [ServiceLoader registration](./create-your-own-template.md#3-register-the-template-with-serviceloader).
 
 ## Step 2: Create the change file
 

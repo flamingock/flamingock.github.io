@@ -42,7 +42,7 @@ flamingock {
   <dependencies>
     <dependency>
       <groupId>io.flamingock</groupId>
-      <artifactId>flamingock-community-bom</artifactId>
+      <artifactId>flamingock-bom</artifactId>
       <version>${flamingockVersion}</version>
       <type>pom</type>
       <scope>import</scope>
