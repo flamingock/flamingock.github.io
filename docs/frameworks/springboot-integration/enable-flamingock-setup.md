@@ -9,6 +9,9 @@ import TabItem from '@theme/TabItem';
 
 Flamingock provides a convenient automatic integration with Spring Boot using the `@Flamingock` annotation. This setup is ideal when you want Flamingock to automatically detect and wire required components without writing explicit builder logic.
 
+:::tip Prerequisites
+Before following this guide, make sure you have completed **[the quick start](../../get-started/quick-start.md)** to set up Flamingock in your project.
+:::
 
 ## Import the springboot integration library
 
