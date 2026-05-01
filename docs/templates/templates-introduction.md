@@ -12,10 +12,11 @@ import VersionBadge from '@site/src/components/VersionBadge';
 
 :::tip Ready to get started?
 If you want to jump straight into using templates, check out:
-- **[MongoDB Template](./mongodb-template.md)** - for MongoDB database changes with step-based operations
-- **[SQL Template](./sql-template.md)** - for SQL database changes with raw SQL statements
+- **[MongoDB Template](./mongodb-template.md)** — for MongoDB database changes with step-based operations
+- **[SQL Template](./sql-template.md)** — for SQL database changes with raw SQL statements
+- **[Schema Registry Template](./schema-registry-template.md)** — for Kafka Schema Registry changes with step-based operations
 
-Both provide complete references with examples for all supported operations.
+All provide complete references with examples for all supported operations.
 :::
 
 ## Introduction
