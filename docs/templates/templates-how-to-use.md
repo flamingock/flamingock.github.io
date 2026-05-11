@@ -7,7 +7,8 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# How to use Flamingock Templates <VersionBadge version="1.2.0" />
+# How to use Flamingock Templates
+<VersionBadge version="1.2.0" variant="subtitle" />
 
 Using a Flamingock Template is straightforward. Here's an example of how you can apply an SQL-based change using the **SQL Template**.
 

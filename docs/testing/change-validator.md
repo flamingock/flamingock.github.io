@@ -4,7 +4,8 @@ sidebar_position: 1.5
 ---
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# Change validator <VersionBadge version="1.2.0" variant="title" />
+# Change validator
+<VersionBadge version="1.2.0" variant="subtitle" />
 
 `ChangeValidator` is a fluent assertion utility for verifying that change units carry the correct metadata — both code-based change **classes** and YAML **template-based change files**. It reads metadata via reflection or YAML parsing and asserts that the values match your expectations.
 
