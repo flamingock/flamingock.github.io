@@ -7,7 +7,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# Create your own Flamingock template <VersionBadge version="1.2.0" />
+# Create your own Flamingock template <VersionBadge version="1.3.0" />
 
 While official Flamingock templates are experimental, you can already build and use your own custom templates in production if needed. This page explains how.
 
