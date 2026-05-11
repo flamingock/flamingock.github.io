@@ -25,6 +25,15 @@ Flamingock does **not** support creating new Mongock ChangeUnits going forward.
 This integration exists purely to make the migration **fast, simple and safe**.
 :::
 
+:::caution One-time clean build on upgrade
+When migrating from Mongock to Flamingock **1.3.0** or later, run a clean build once after adding the Flamingock dependencies:
+
+- Gradle: `./gradlew clean build`
+- Maven: `mvn clean install`
+
+This regenerates Flamingock's per-module metadata in the new incremental format. Without a clean build, the build system may skip recompiling already-compiled change classes, and the resulting metadata file will omit them — potentially causing changes to be missing at runtime. Subsequent builds are incremental as normal.
+:::
+
 ## Quick start for Mongock users
 
 Migrating from Mongock is intentionally simple, it only requires two additional steps on top of the [standard Flamingock setup](../get-started/quick-start).
