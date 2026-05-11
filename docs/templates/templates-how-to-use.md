@@ -179,7 +179,7 @@ public class MainApplication {
 }
 ```
 
-Although YAML files are not compiled code, Flamingock supports placing them in **source packages** alongside code-based changes — and this is actually the recommended approach. A stage can contain both code-based and template-based changes, and execution order is determined by the filename prefix (`_0001__`, `_0002__`, etc.) across all changes in the stage. Keeping them in the same package makes the full sequence visible at a glance, rather than having to mentally merge two separate locations.
+Flamingock supports — and recommends — placing YAML template files in **source packages** alongside code-based changes. The Gradle plugin tracks them as compile-task inputs, so edits and additions are picked up on the next build or IDE sync without a manual clean. A stage can contain both code-based and template-based changes, and execution order is determined by the filename prefix (`_0001__`, `_0002__`, etc.) across all changes in the stage. Keeping them in the same package makes the full sequence visible at a glance, rather than having to mentally merge two separate locations.
 
 Using a **resource folder** works too — just point the stage location to the resource path instead:
 
