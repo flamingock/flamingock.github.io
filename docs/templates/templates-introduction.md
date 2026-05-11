@@ -8,7 +8,8 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# Templates <VersionBadge version="1.2.0" variant="title" />
+# Templates
+<VersionBadge version="1.2.0" variant="subtitle" />
 
 :::tip Ready to get started?
 If you want to jump straight into using templates, check out:
