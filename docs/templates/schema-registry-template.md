@@ -47,7 +47,7 @@ This single YAML file replaces what would typically require a Java class with an
 ```kotlin
 flamingock {
     //...
-    schemaRegistry()
+    schemaregistry()
 }
 ```
   </TabItem>
@@ -221,12 +221,18 @@ configuration:
 # Required: List of steps, each with an apply and optional rollback
 steps:
   - apply:
-      operation: <REGISTER|EVOLVE|SET_COMPATIBILITY|DELETE_SUBJECT|DELETE_VERSION>
+      operation: <REGISTER|EVOLVE|SET_SUBJECT_CONFIG|RESET_SUBJECT_CONFIG|DELETE_SUBJECT|DELETE_VERSION>
       subject: <subject-name>
       schemaType: <AVRO|JSON|PROTOBUF>    # Required for REGISTER, EVOLVE
       schemaFile: <classpath-path>         # Or use inline schema below
       schema: <inline-schema-string>      # Mutually exclusive with schemaFile
-      compatibility: <mode>               # Only for SET_COMPATIBILITY
+      references:                         # Only for REGISTER, EVOLVE
+        - name: <type-name>               # Name used in the schema
+          subject: <referenced-subject>   # Subject of the referenced schema
+          version: <version-number>       # Version of the referenced schema
+      compatibility: <mode>               # Only for SET_SUBJECT_CONFIG
+      normalize: <boolean>               # Only for SET_SUBJECT_CONFIG (optional)
+      compatibilityGroup: <group-name>   # Only for SET_SUBJECT_CONFIG (optional)
       validateCompatibility: true         # Only for EVOLVE (default: true)
       permanent: false                    # Only for DELETE_SUBJECT/DELETE_VERSION
     rollback:
@@ -293,7 +299,7 @@ steps:
 
 ### REGISTER
 
-Registers the first version of a schema under a subject. This operation is idempotent — if the exact schema is already registered, the existing version is returned.
+Registers the first version of a schema under a subject. This operation enforces that the subject does not already have versions — if versions exist, it fails with an error directing the user to use `EVOLVE` instead.
 
 ```yaml
 - apply:
@@ -306,6 +312,23 @@ Registers the first version of a schema under a subject. This operation is idemp
     subject: user-events-value
 ```
 
+**With schema references:**
+
+```yaml
+- apply:
+    operation: REGISTER
+    subject: order-events-value
+    schemaType: AVRO
+    schemaFile: order-event.avsc
+    references:
+      - name: io.flamingock.Address
+        subject: address-value
+        version: 1
+  rollback:
+    operation: DELETE_SUBJECT
+    subject: order-events-value
+```
+
 **Parameters:**
 
 | Parameter | Type | Required | Description |
@@ -315,8 +338,13 @@ Registers the first version of a schema under a subject. This operation is idemp
 | `schemaType` | String | Yes | One of: `AVRO`, `JSON`, `PROTOBUF` |
 | `schema` | String | Conditional | Inline schema content. Mutually exclusive with `schemaFile` |
 | `schemaFile` | String | Conditional | Classpath path to schema file. Mutually exclusive with `schema` |
+| `references` | List | No | Schema references for schemas that depend on other registered schemas |
 
 One of `schema` or `schemaFile` is required.
+
+:::caution Subject must be new
+`REGISTER` will fail if the subject already has versions. Use `EVOLVE` to add new versions to an existing subject.
+:::
 
 **Typical rollback:** `DELETE_SUBJECT`
 
@@ -324,7 +352,7 @@ One of `schema` or `schemaFile` is required.
 
 ### EVOLVE
 
-Registers a new version of an existing subject. Optionally validates compatibility before registering.
+Registers a new version of an existing subject. Optionally validates compatibility before registering. This operation enforces that the subject already exists — if it doesn't, it fails with an error directing the user to use `REGISTER` instead.
 
 ```yaml
 - apply:
@@ -347,7 +375,12 @@ Registers a new version of an existing subject. Optionally validates compatibili
 | `schemaType` | String | Yes | — | One of: `AVRO`, `JSON`, `PROTOBUF` |
 | `schema` | String | Conditional | — | Inline schema content. Mutually exclusive with `schemaFile` |
 | `schemaFile` | String | Conditional | — | Classpath path to schema file. Mutually exclusive with `schema` |
+| `references` | List | No | — | Schema references for schemas that depend on other registered schemas |
 | `validateCompatibility` | boolean | No | `true` | When `true`, calls `testCompatibility()` before `register()`. An incompatible schema throws an error before any state is modified |
+
+:::caution Subject must exist
+`EVOLVE` will fail if the subject does not exist. Use `REGISTER` for initial schema registration.
+:::
 
 :::info No-op safety
 If the exact schema is already registered under the subject, `EVOLVE` is a no-op — no new version is created. In this case, the schema is **not** cached for rollback, ensuring that a `DELETE_VERSION` rollback won't accidentally delete a pre-existing version.
@@ -357,28 +390,43 @@ If the exact schema is already registered under the subject, `EVOLVE` is a no-op
 
 ---
 
-### SET_COMPATIBILITY
+### SET_SUBJECT_CONFIG
 
-Sets the compatibility mode for a subject.
+Sets subject-level configuration including compatibility mode and optional normalization settings.
 
 ```yaml
 - apply:
-    operation: SET_COMPATIBILITY
+    operation: SET_SUBJECT_CONFIG
     subject: user-events-value
     compatibility: FULL
   rollback:
-    operation: SET_COMPATIBILITY
+    operation: RESET_SUBJECT_CONFIG
     subject: user-events-value
-    compatibility: BACKWARD
+```
+
+**With optional fields:**
+
+```yaml
+- apply:
+    operation: SET_SUBJECT_CONFIG
+    subject: user-events-value
+    compatibility: FULL_TRANSITIVE
+    normalize: true
+    compatibilityGroup: myGroup
+  rollback:
+    operation: RESET_SUBJECT_CONFIG
+    subject: user-events-value
 ```
 
 **Parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `operation` | String | Yes | Must be `SET_COMPATIBILITY` |
+| `operation` | String | Yes | Must be `SET_SUBJECT_CONFIG` |
 | `subject` | String | Yes | Schema registry subject name |
 | `compatibility` | String | Yes | The compatibility mode to set (see table below) |
+| `normalize` | boolean | No | Whether schema normalization is enabled for the subject |
+| `compatibilityGroup` | String | No | The compatibility group for the subject |
 
 **Compatibility modes:**
 
@@ -392,7 +440,32 @@ Sets the compatibility mode for a subject.
 | `FORWARD_TRANSITIVE` | Forward against **all** prior versions |
 | `FULL_TRANSITIVE` | Full against **all** prior versions |
 
-**Typical rollback:** `SET_COMPATIBILITY` with the previous mode
+**Typical rollback:** `RESET_SUBJECT_CONFIG` (reverts to global defaults) or `SET_SUBJECT_CONFIG` with the previous values
+
+---
+
+### RESET_SUBJECT_CONFIG
+
+Removes all subject-level configuration overrides, reverting the subject to global defaults.
+
+```yaml
+- apply:
+    operation: RESET_SUBJECT_CONFIG
+    subject: user-events-value
+  rollback:
+    operation: SET_SUBJECT_CONFIG
+    subject: user-events-value
+    compatibility: FULL
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `operation` | String | Yes | Must be `RESET_SUBJECT_CONFIG` |
+| `subject` | String | Yes | Schema registry subject name |
+
+**Typical rollback:** `SET_SUBJECT_CONFIG` with the previous configuration values
 
 ---
 
@@ -558,23 +631,22 @@ steps:
       subject: user-events-value
 ```
 
-**`_0003__set_compatibility_full.yaml`**
+**`_0003__set_subject_config.yaml`**
 
 ```yaml
-id: set-compatibility-full
+id: set-subject-config
 transactional: false
 template: schema-registry-template
 targetSystem:
   id: "schema-registry"
 steps:
   - apply:
-      operation: SET_COMPATIBILITY
+      operation: SET_SUBJECT_CONFIG
       subject: user-events-value
       compatibility: FULL
     rollback:
-      operation: SET_COMPATIBILITY
+      operation: RESET_SUBJECT_CONFIG
       subject: user-events-value
-      compatibility: BACKWARD
 ```
 
 ### Example 3: Inline schema and multiple formats
@@ -645,6 +717,6 @@ Change files are executed in alphabetical order. Use a numeric prefix to control
 ```
 _0001__register_user_event.yaml
 _0002__evolve_user_event.yaml
-_0003__set_compatibility_full.yaml
+_0003__set_subject_config.yaml
 _0004__register_product_event_json.yaml
 ```
