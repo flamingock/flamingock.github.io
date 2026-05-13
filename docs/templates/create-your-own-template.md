@@ -7,7 +7,8 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionBadge from '@site/src/components/VersionBadge';
 
-# Create your own Flamingock template <VersionBadge version="1.2.0" />
+# Create your own Flamingock template
+<VersionBadge version="1.3.0" variant="subtitle" />
 
 While official Flamingock templates are experimental, you can already build and use your own custom templates in production if needed. This page explains how.
 
@@ -130,7 +131,7 @@ In this example, `SHARED_CONFIG` is `TemplateVoid` because no shared configurati
 #### Important notes
 - Access your apply and rollback data directly via `this.applyPayload` and `this.rollbackPayload` fields.
 - Access shared configuration via `this.configuration` field (if using a non-`TemplateVoid` shared config type).
-- `AbstractChangeTemplate` automatically registers its three generic type arguments (plus built-in types like `TemplateVoid` and `TemplateString`) for GraalVM reflection. You only need to pass additional classes to the superclass constructor if your generic types internally reference other custom classes that also require reflection registration.
+- `AbstractChangeTemplate` automatically registers its three generic type arguments (plus built-in types like `TemplateVoid` and `TemplateString`) for GraalVM reflection. If your generic types internally reference other custom classes that also require reflection registration, list them in `@ChangeTemplate(reflectiveClasses = {...})`.
 
 :::note
 See [**2. `@ApplyTemplate` and `@RollbackTemplate` methods**](#2-applytemplate-and-rollbacktemplate-methods) for how to implement the core logic inside your template class using the apply/rollback data and dependency injection
@@ -469,6 +470,6 @@ Flamingock's built-in `TemplateString` makes **no claim** about transaction supp
 - Use `TemplateVoid` for generics when that type is not needed (e.g., `<TemplateVoid, TemplateString, TemplateString>` for simple SQL templates).
 - Use shared configuration (`<ConfigType, Apply, Rollback>`) when both apply and rollback need the same configuration data.
 - Document your template's purpose, generic types, and expected YAML structure clearly for users.
-- If your payload types internally reference other custom classes, pass those classes to the superclass constructor for GraalVM reflection registration. The generic type arguments and built-in types (`TemplateVoid`, `TemplateString`) are registered automatically.
+- If your payload types internally reference other custom classes, list them in `@ChangeTemplate(reflectiveClasses = {...})` for GraalVM reflection registration. The generic type arguments and built-in types (`TemplateVoid`, `TemplateString`) are registered automatically.
 - Group multiple templates by domain when packaging a library.
 - Implement `TemplatePayload` in custom payload types and declare `supportsTransactions(false)` for non-transactional operations — this enables automatic inference of the `transactional` flag for YAML authors.
