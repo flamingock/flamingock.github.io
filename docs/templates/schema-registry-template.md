@@ -446,7 +446,7 @@ Sets subject-level configuration including compatibility mode and optional norma
 
 ### RESET_SUBJECT_CONFIG
 
-Removes all subject-level configuration overrides, reverting the subject to global defaults.
+Removes **all** subject-level configuration overrides (compatibility, normalize, compatibilityGroup), reverting the subject to global defaults. This is an all-or-nothing operation — individual fields cannot be selectively reset.
 
 ```yaml
 - apply:
@@ -464,6 +464,22 @@ Removes all subject-level configuration overrides, reverting the subject to glob
 |-----------|------|----------|-------------|
 | `operation` | String | Yes | Must be `RESET_SUBJECT_CONFIG` |
 | `subject` | String | Yes | Schema registry subject name |
+
+:::tip Selective config changes
+`RESET_SUBJECT_CONFIG` resets **all** subject-level settings at once. If you only need to change specific fields while preserving others, use `RESET_SUBJECT_CONFIG` followed by `SET_SUBJECT_CONFIG` with the desired values. For example, to change only the compatibility mode while preserving other settings, first reset, then set the fields you want:
+
+```yaml
+steps:
+  - apply:
+      operation: RESET_SUBJECT_CONFIG
+      subject: user-events-value
+  - apply:
+      operation: SET_SUBJECT_CONFIG
+      subject: user-events-value
+      compatibility: FULL_TRANSITIVE
+      normalize: true
+```
+:::
 
 **Typical rollback:** `SET_SUBJECT_CONFIG` with the previous configuration values
 
