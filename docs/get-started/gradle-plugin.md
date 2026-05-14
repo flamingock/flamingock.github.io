@@ -37,6 +37,21 @@ flamingock {
 The plugin automatically adds the correct dependencies, annotation processors, and BOMs based on your configuration.
 
 
+## Build integration
+
+:::caution One-time clean build on upgrade
+If you are upgrading to Flamingock **1.3.0** or later from a previous version, or migrating from Mongock to Flamingock 1.3.0+, run a clean build once after the upgrade:
+
+- Gradle: `./gradlew clean build`
+- Maven: `mvn clean install`
+
+This regenerates Flamingock's per-module metadata in the new incremental format. Without a clean build, the build system may skip recompiling already-compiled change classes, and the resulting metadata file will omit them — potentially causing changes to be missing at runtime. Subsequent builds are incremental as normal.
+:::
+
+- Template files (`*.yaml`, `*.yml`) under `src/main/resources` and `src/main/java` are registered as compile-task inputs, so changes are picked up by Gradle's up-to-date check and reflected in the IDE on the next sync.
+- The Flamingock annotation processor is registered as an aggregating incremental processor; subsequent builds reprocess only what changed.
+
+
 ## Requirements
 
 - **Gradle** 7.4+

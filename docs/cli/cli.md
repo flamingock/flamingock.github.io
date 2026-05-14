@@ -8,272 +8,207 @@ import TabItem from '@theme/TabItem';
 
 # Flamingock CLI
 
-Command-line tool for audit management and maintenance operations.
-
-> **Beta Release**
-> This is the beta version of Flamingock CLI, providing essential management operations for audit control and issue resolution. A more comprehensive CLI with full change execution capabilities is in development.
+Command-line tool to execute Flamingock operations outside your application's normal startup.
 
 ## Overview
 
-The Flamingock CLI provides operational commands for audit management and maintenance. Use these commands to view audit history, identify issues, and perform resolution operations.
+The Flamingock CLI spawns your application JAR in a separate JVM process, runs the requested operation, and returns structured results. This means you can run changes in CI/CD pipelines, audit history, diagnose issues, and fix audit states — before, after, or outside your application lifecycle.
 
 ## Installation
 
-### Download
+### Install script (recommended)
+
+<Tabs groupId="cli_install_os">
+  <TabItem value="linux" label="Linux / WSL" default>
 
 ```bash
-# Download the latest CLI distribution
-curl -L https://github.com/flamingock/flamingock-java/releases/latest/download/flamingock-cli.tar.gz -o flamingock-cli.tar.gz
+curl -fsSL https://flamingock.io/cli/install/linux | bash
 
-# Extract the archive and get into the directory
-tar -xzf flamingock-cli.tar.gz
-cd flamingock-cli/bin
-
-# Make script executable
-chmod +x flamingock
-
-# Run the CLI
-./flamingock --help
+# Specific version or custom install directory (no sudo)
+curl -fsSL https://flamingock.io/cli/install/linux | FLAMINGOCK_VERSION=1.1.0 FLAMINGOCK_INSTALL_DIR=~/.local/bin bash
 ```
 
-### Configuration
-
-Modify the `flamingock-cli.yml` configuration file in flamingock-cli/bin directory according to your audit store setup:
-
-<Tabs groupId="cli_config">
-  <TabItem value="mongodb" label="MongoDB" default>
-#### MongoDB configuration
-```yaml
-serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
-audit:
-  mongodb:
-    connectionString: mongodb://localhost:27017
-    database: myapp
-    # Or use individual properties:
-    # host: localhost
-    # port: 27017
-    # username: admin
-    # password: secret
-    collection: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
-```
   </TabItem>
-  <TabItem value="dynamodb" label="Amazon DynamoDB">
-#### DynamoDB configuration
-```yaml
-serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
-audit:
-  dynamodb:
-    region: us-east-1
-    # Optional endpoint for local development:
-    # endpoint: http://localhost:8000
-    # accessKey: local
-    # secretKey: local
-    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
+  <TabItem value="macos" label="macOS">
+
+```bash
+curl -fsSL https://flamingock.io/cli/install/macos | bash
+
+# Specific version or custom install directory (no sudo)
+curl -fsSL https://flamingock.io/cli/install/macos | FLAMINGOCK_VERSION=1.1.0 FLAMINGOCK_INSTALL_DIR=~/.local/bin bash
 ```
+
   </TabItem>
-  <TabItem value="couchbase" label="Couchabse">
-#### Couchbase configuration
-```yaml
-serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
-audit:
-  couchbase:
-    endpoint: "couchbase://localhost:12110"
-    username: "your-username"
-    password: "your-password"
-    bucket-name: "my-app"
-    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
+  <TabItem value="windows" label="Windows (PowerShell)">
+
+```powershell
+irm https://flamingock.io/cli/install/win | iex
+
+# Specific version
+$env:FLAMINGOCK_VERSION="1.1.0"; irm https://flamingock.io/cli/install/win | iex
 ```
-  </TabItem>
-  <TabItem value="sql" label="SQL">
-#### SQL configuration
-```yaml
-serviceIdentifier: my-service  # Optional, defaults to "flamingock-cli"
-audit:
-  sql:
-    endpoint: "jdbc:sqlserver://localhost:1433/test-db"
-    username: "your-username"
-    password: "your-password"
-    sql-dialect: "SqlServer" # Optional, if not set will be auto-detected based on endpoint
-    table: "flamingockAuditLog" # Optional, defaults to "flamingockAuditLog"
-```
-To see actual supported databases, check [SQL Audit Store](../audit-stores/community/sql-audit-store#supported-databases).
+
   </TabItem>
 </Tabs>
 
-You can specify a custom configuration file using the `-c` or `--config` option:
+### Homebrew (macOS / Linux)
+
 ```bash
-flamingock -c custom-config.yaml audit list
+brew tap flamingock/tap
+brew install flamingock
 ```
 
-## Core commands
-
-### View audit entries
-
-List the current state of all changes (snapshot view):
-```bash
-flamingock audit list
-```
-
-View the complete chronological history:
-```bash
-flamingock audit list --history
-```
-
-View changes since a specific date:
-```bash
-flamingock audit list --since 2025-01-01T00:00:00
-```
-
-Show extended information including execution details:
-```bash
-flamingock audit list --extended
-```
-
-### Find issues
-
-List all change units with inconsistent audit states:
-```bash
-flamingock issue list
-```
-
-Output in JSON format for automation:
-```bash
-flamingock issue list --json
-```
-
-### Investigate issues
-
-Get detailed information about a specific issue:
-```bash
-flamingock issue get -c user-change-v2
-```
-
-Include resolution guidance:
-```bash
-flamingock issue get -c user-change-v2 --guidance
-```
-
-Get the next priority issue (when no change ID specified):
-```bash
-flamingock issue get --guidance
-```
-
-### Resolve issues
-
-After manually verifying or fixing the state, mark the change as resolved:
-
-If the change was successfully applied:
-```bash
-flamingock audit fix -c user-change-v2 -r APPLIED
-```
-
-If the change was not applied or rolled back:
-```bash
-flamingock audit fix -c user-change-v2 -r ROLLED_BACK
-```
-
-For detailed workflows on issue resolution, see [Issue resolution](../safety-and-recovery/issue-resolution.md).
-
-## Command Reference
-
-### Global options
+## Commands
 
 ```bash
 flamingock [global-options] <command> [command-options]
 ```
 
-- `-c, --config <file>` - Configuration file path (default: `bin/flamingock-cli.yml`)
-- `--verbose` - Enable verbose logging
-- `--debug` - Enable debug logging
-- `--trace` - Enable trace logging (most detailed level)
-- `--quiet` - Suppress non-essential output
-- `--help` - Show help information
-- `--version` - Show version information
+### Global options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--log-level` | `-l` | Application log level: `debug`, `info`, `warn`, `error` |
+| `--quiet` | `-q` | Suppress non-essential output |
+| `--no-color` | | Disable colored output |
+| `--help` | `-h` | Show help information |
+| `--version` | | Show version information |
+
+Global options are inherited by all subcommands.
+
+### `execute apply`
+
+Apply pending changes by spawning your application JAR.
+
+| Option | Short | Required | Description |
+|--------|-------|----------|-------------|
+| `--jar` | `-j` | Yes | Path to the application JAR |
+| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
+| `--` | | No | Separator — everything after is passed as application arguments |
+
+```bash
+# Apply pending changes
+flamingock execute apply --jar ./my-app.jar
+
+# Pass Spring profiles or other application arguments
+flamingock execute apply --jar ./my-app.jar -- --spring.profiles.active=prod --spring.datasource.url=jdbc:mysql://prod/db
+
+# Pass JVM arguments
+flamingock execute apply --jar ./my-app.jar -J -Xmx512m -J -Xms256m
+
+# Combine JVM and application arguments
+flamingock execute apply --jar ./my-app.jar -J -Xmx1g -- --spring.profiles.active=staging
+```
 
 ### `audit list`
 
-Display audit entries from the audit store.
+List audit entries from the change history.
 
-**Options:**
-- `--history` - Show full chronological history (all entries)
-- `--since <datetime>` - Show entries since date (ISO-8601 format: `2025-01-01T00:00:00`)
-- `-e, --extended` - Show extended information (execution ID, duration, class, method, hostname)
+| Option | Short | Required | Description |
+|--------|-------|----------|-------------|
+| `--jar` | `-j` | Yes | Path to the application JAR |
+| `--history` | | No | Show full chronological history instead of snapshot |
+| `--since` | | No | Filter entries since date (ISO-8601: `yyyy-MM-dd` or `yyyy-MM-ddTHH:mm:ss`) |
+| `--extended` | `-e` | No | Show extended information (execution ID, class, method, hostname) |
+| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
+| `--` | | No | Separator — everything after is passed as application arguments |
 
-**Examples:**
 ```bash
-# View current state (latest per change unit)
-flamingock audit list
+# Current state (latest per change unit)
+flamingock audit list --jar ./my-app.jar
 
-# View all historical entries
-flamingock audit list --history
+# Full chronological history
+flamingock audit list --jar ./my-app.jar --history
 
-# View changes from last 24 hours
-flamingock audit list --since 2025-01-07T00:00:00
+# Filter entries since a specific date
+flamingock audit list --jar ./my-app.jar --since 2025-01-01
 
-# View with extended details
-flamingock audit list --extended
+# Show extended information (execution ID, class, method, hostname)
+flamingock audit list --jar ./my-app.jar --extended
 ```
 
 ### `audit fix`
 
-Resolve an inconsistent audit state after manual intervention.
+Fix audit state for a change with issues. After manually verifying or fixing the state, mark the change as resolved.
 
-**Options:**
-- `-c, --change-id <id>` - Change unit ID to fix (required)
-- `-r, --resolution <type>` - Resolution type: `APPLIED` or `ROLLED_BACK` (required)
+| Option | Short | Required | Description |
+|--------|-------|----------|-------------|
+| `--jar` | `-j` | Yes | Path to the application JAR |
+| `--change-id` | `-c` | Yes | Change unit ID to fix |
+| `--resolution` | `-r` | Yes | Resolution type: `APPLIED` or `ROLLED_BACK` |
+| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
+| `--` | | No | Separator — everything after is passed as application arguments |
 
-**Examples:**
 ```bash
 # Mark as successfully applied
-flamingock audit fix -c create-user-index -r APPLIED
+flamingock audit fix --jar ./my-app.jar -c user-change-v2 -r APPLIED
 
-# Mark as rolled back (will be retried on next execution)
-flamingock audit fix -c create-user-index -r ROLLED_BACK
+# Mark as not applied (Flamingock will retry on next execution)
+flamingock audit fix --jar ./my-app.jar -c user-change-v2 -r ROLLED_BACK
 ```
+
+For detailed workflows on issue resolution, see [Issue resolution](../safety-and-recovery/issue-resolution.md).
 
 ### `issue list` (alias: `ls`)
 
 List all change units with inconsistent audit states.
 
-**Options:**
-- `-j, --json` - Output in JSON format
+| Option | Short | Required | Description |
+|--------|-------|----------|-------------|
+| `--jar` | `-j` | Yes | Path to the application JAR |
+| `--json` | | No | Output in JSON format |
+| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
+| `--` | | No | Separator — everything after is passed as application arguments |
 
-**Examples:**
 ```bash
 # List issues in table format
-flamingock issue list
+flamingock issue list --jar ./my-app.jar
 
-# Output as JSON for automation
-flamingock issue list --json
+# JSON output for CI/CD pipelines
+flamingock issue list --jar ./my-app.jar --json
 ```
 
 ### `issue get` (alias: `describe`)
 
-Show detailed information about an issue.
+Get detailed information about an audit issue.
 
-**Options:**
-- `-c, --change-id <id>` - Specific change unit ID (optional, shows next issue if omitted)
-- `-g, --guidance` - Include resolution guidance
-- `-j, --json` - Output in JSON format
+| Option | Short | Required | Description |
+|--------|-------|----------|-------------|
+| `--jar` | `-j` | Yes | Path to the application JAR |
+| `--change-id` | `-c` | No | Specific change unit ID (shows first issue if omitted) |
+| `--guidance` | `-g` | No | Include resolution guidance |
+| `--json` | | No | Output in JSON format |
+| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
+| `--` | | No | Separator — everything after is passed as application arguments |
 
-**Examples:**
 ```bash
-# Get next priority issue
-flamingock issue get --guidance
+# Get next priority issue with resolution guidance
+flamingock issue get --jar ./my-app.jar --guidance
 
-# Get specific issue details
-flamingock issue get -c user-change-v3
+# Get details for a specific issue
+flamingock issue get --jar ./my-app.jar -c user-change-v2
 
-# Get with resolution guidance
-flamingock issue get -c user-change-v3 --guidance
+# Get specific issue with resolution guidance
+flamingock issue get --jar ./my-app.jar -c user-change-v2 --guidance
 
-# Output as JSON
-flamingock issue get -c user-change-v3 --json
+# JSON output
+flamingock issue get --jar ./my-app.jar -c user-change-v2 --json
 ```
+
+## Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Execution error (change failed, process error, etc.) |
+| `2` | Usage error (invalid arguments) |
+| `126` | JAR not found or not a file |
+| `130` | Interrupted (Ctrl+C) |
 
 ## Example output
 
 ### Audit list output
+
 ```
 Audit Entries Snapshot (Latest per Change Unit):
 ==================================================
@@ -292,6 +227,7 @@ Total entries: 3
 ```
 
 ### Issue details output
+
 ```
 Issue Details: seed-initial-data
 ==================================================
@@ -324,10 +260,10 @@ Issue Details: seed-initial-data
      3. Fix the audit state based on your findings:
 
         ✅ If change was successfully applied:
-           flamingock audit fix -c seed-initial-data -r APPLIED
+           flamingock audit fix --jar ./my-app.jar -c seed-initial-data -r APPLIED
 
         ↩️  If change was not applied or you've manually rolled it back:
-           flamingock audit fix -c seed-initial-data -r ROLLED_BACK
+           flamingock audit fix --jar ./my-app.jar -c seed-initial-data -r ROLLED_BACK
            (Flamingock will retry this change in the next execution)
 
      ⚠️  Important: For partially applied changes, you must either:
@@ -335,44 +271,56 @@ Issue Details: seed-initial-data
          • Manually revert the change, then fix it with resolution(-r) ROLLED_BACK
 ```
 
-## Logging levels
+## How it works
 
-Control the verbosity of output using logging options:
+The CLI contains no execution logic. It is purely an orchestrator:
 
-```bash
-# Normal output (default)
-flamingock audit list
-
-# Verbose output with info logs
-flamingock --verbose audit list
-
-# Debug output with detailed logs
-flamingock --debug audit list
-
-# Minimal output
-flamingock --quiet audit list
 ```
+┌─────────────────────┐         ┌──────────────────────────────────────┐
+│   Flamingock CLI    │ spawns  │   Your app (spawned JVM)             │
+│   (Picocli-based)   │────────►│                                      │
+│                     │         │   --flamingock.cli.mode=true         │
+│   - Parse args      │◄────────│   --flamingock.operation=...         │
+│   - Build command   │exit code│   --flamingock.output-file=...       │
+│   - Launch JVM      │         │                                      │
+│   - Read result     │◄────────│                                      │
+└─────────────────────┘  file   └──────────────────────────────────────┘
+```
+
+1. Creates a temporary file for the response
+2. Spawns your application JAR with Flamingock flags
+3. Your app executes the operation and writes the result
+4. CLI reads, formats, and displays the result
+5. Returns the appropriate exit code
+
+User-provided arguments are forwarded to the spawned process:
+- **`-J` / `--java-opt`**: JVM arguments placed before `-jar` (e.g., `-J -Xmx512m`)
+- **`--` separator**: Application arguments appended at the end (e.g., `-- --spring.profiles.active=prod`)
 
 ## Troubleshooting
 
 ### Connection issues
 
-If you see "Cannot connect to audit store":
-1. Verify your configuration file exists and is valid YAML
-2. Check database connection parameters
-3. Ensure the database is accessible from your location
-4. Test with verbose logging: `flamingock --verbose audit list`
+If changes fail to connect to the audit store:
+1. Verify your application configuration is correct for the target environment
+2. Pass the right profile or datasource via app arguments: `-- --spring.profiles.active=prod`
+3. Enable log output to see application logs: `flamingock --log-level=debug execute apply --jar ./my-app.jar`
+
+### JAR not found (exit code 126)
+
+If you get `JAR file not found`:
+1. Check the path to your JAR is correct
+2. Ensure the JAR has been built before running the CLI
+
+### Missing Flamingock runtime
+
+If the CLI reports a missing entry point:
+1. Ensure you are using an uber JAR (fat JAR with all dependencies bundled), not a thin JAR
+2. Verify `flamingock-core` is included in your shading/shadow configuration and not excluded
 
 ### No issues found
 
 If `issue list` shows no issues but you expect some:
-1. Verify you're connecting to the correct audit store
+1. Verify you are connecting to the correct environment
 2. Check if issues were already resolved
 3. Use `audit list --history` to see all historical entries
-
-### Permission errors
-
-If you get permission errors when running `audit fix`:
-1. Ensure your database credentials have write access
-2. Verify the audit collection/table permissions
-3. Check if the database user can modify audit entries
