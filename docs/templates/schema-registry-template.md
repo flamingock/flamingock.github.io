@@ -227,8 +227,8 @@ steps:
       schemaFile: <classpath-path>         # Or use inline schema below
       schema: <inline-schema-string>      # Mutually exclusive with schemaFile
       references:                         # Only for REGISTER, EVOLVE
-        - name: <type-name>               # Name used in the schema
-          subject: <referenced-subject>   # Subject of the referenced schema
+        - name: <reference-name>          # AVRO/JSON: fully qualified type name. PROTOBUF: imported .proto filename
+          subject: <referenced-subject>   # Subject under which the referenced schema is registered
           version: <version-number>       # Version of the referenced schema
       compatibility: <mode>               # Only for SET_SUBJECT_CONFIG
       normalize: <boolean>               # Only for SET_SUBJECT_CONFIG (optional)
@@ -314,6 +314,13 @@ Registers the first version of a schema under a subject. This operation enforces
 
 **With schema references:**
 
+The `name` field follows the schema format's referencing convention:
+
+- **AVRO / JSON**: the fully qualified type name as it appears in the referencing schema (e.g. `io.flamingock.Address`).
+- **PROTOBUF**: the filename used in the `import` statement of the referencing `.proto` file (e.g. `address.proto`).
+
+The referenced subject must already be registered — typically in an earlier change within the same stage.
+
 ```yaml
 - apply:
     operation: REGISTER
@@ -328,6 +335,24 @@ Registers the first version of a schema under a subject. This operation enforces
     operation: DELETE_SUBJECT
     subject: order-events-value
 ```
+
+:::caution Engine support for AVRO references
+Confluent, Apicurio, and Redpanda support schema references for all three formats.
+
+**Karapace 3.x rejects Avro references** with HTTP 422 and `errorCode 44302` (`Schema references are not supported for 'AVRO' schema type`). This is enforced server-side in Karapace's schema validation path, before any version is persisted — so neither the template nor the Confluent client can work around it.
+
+Why: Avro reference resolution requires the server-side parser to merge referenced type definitions into the parsing context of the referencing schema (Avro identifies cross-schema types by fully qualified name, not by file/import like Protobuf). Confluent's server-side Java Avro stack does this merge; Karapace's Avro path does not. JSON Schema and Protobuf are unaffected because their reference models are simpler — `$ref` URIs and `import` filenames resolved without re-parsing referenced types into a shared symbol table.
+
+Workarounds, in order of preference:
+
+1. **Switch engines** if you need Avro references — Confluent, Apicurio, or Redpanda all support them.
+2. **Inline the referenced types** into each referencing Avro schema (no `references:` block). You lose the registry-level dependency record, but the schema parses standalone. Suitable when the reference graph is shallow and reuse is mostly editorial.
+3. **Use Protobuf or JSON Schema** for cross-schema models on Karapace.
+
+The template intentionally does not silently rewrite `references:` into inlined types — that would lose the dependency metadata the user explicitly asked for, and break consumers that look up references via the registry (e.g. Avro `SpecificAvroSerde` with reference resolution).
+
+Upstream tracking: see Karapace's open issues on Avro reference support.
+:::
 
 **Parameters:**
 
@@ -724,6 +749,78 @@ steps:
     rollback:
       operation: DELETE_SUBJECT
       subject: order-events-value
+```
+
+### Example 4: Schema references across subjects
+
+Register a referenced schema first, then a schema that depends on it. The template fetches the referenced schema content from the registry at apply time so cross-schema types resolve during parsing.
+
+**`address-ref.proto`** (referenced schema content):
+
+```proto
+syntax = "proto3";
+package io.flamingock.examples;
+
+message Address {
+  string street = 1;
+  string city   = 2;
+}
+```
+
+**`customer-event-ref.proto`** (referencing schema content):
+
+```proto
+syntax = "proto3";
+package io.flamingock.examples;
+
+import "address-ref.proto";
+
+message CustomerEvent {
+  string customer_id = 1;
+  io.flamingock.examples.Address address = 2;
+}
+```
+
+**`_0001__register_address.yaml`**
+
+```yaml
+id: register-address-proto
+transactional: false
+template: schema-registry-template
+targetSystem:
+  id: "schema-registry"
+steps:
+  - apply:
+      operation: REGISTER
+      subject: address-value
+      schemaType: PROTOBUF
+      schemaFile: address-ref.proto
+    rollback:
+      operation: DELETE_SUBJECT
+      subject: address-value
+```
+
+**`_0002__register_customer_with_ref.yaml`**
+
+```yaml
+id: register-customer-event-with-ref
+transactional: false
+template: schema-registry-template
+targetSystem:
+  id: "schema-registry"
+steps:
+  - apply:
+      operation: REGISTER
+      subject: customer-events-value
+      schemaType: PROTOBUF
+      schemaFile: customer-event-ref.proto
+      references:
+        - name: address-ref.proto         # MUST match the proto import statement
+          subject: address-value
+          version: 1
+    rollback:
+      operation: DELETE_SUBJECT
+      subject: customer-events-value
 ```
 
 ## File naming convention
