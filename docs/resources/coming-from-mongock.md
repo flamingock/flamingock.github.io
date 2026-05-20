@@ -124,6 +124,7 @@ The `@MongockSupport` annotation includes optional fields you can use to configu
 | `skipImport` <br/> <VersionBadge version="1.2.0" /> | `String` | "" | Determines whether Mongock audit import is skipped. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false` (import enabled). When `true`, import is skipped. |
 | `origin` | `String` | "" | The Mongock audit origin to read from. Supports literal values and placeholders. When empty (default), Flamingock uses Mongock’s default origin value. **Only applies when `skipImport` is `false`.** |
 | `emptyOriginAllowed` | `String` | "" | Whether Flamingock should allow an empty origin during import. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if the origin is empty. **Only applies when `skipImport` is `false`.** |
+| `ignoreUnknownAuditEntries` <br/> <VersionBadge version="1.4.0" /> | `String` | "" | Whether Flamingock should ignore Mongock audit entries that do not match any change in the current Flamingock pipeline. Supports literal values and placeholders. Allowed values are `true`, `false`, or empty. When empty (default), it is treated as `false`, and Flamingock will fail if no matching change is found. When `true`, unmatched entries are ignored during audit-history import. **Only applies when `skipImport` is `false`.** |
 
 :::info
 `origin` value by Mongock driver:
@@ -140,10 +141,19 @@ Example:
     targetSystem = "mongodb-target-system",
     skipImport = "false", // optional
     origin = "customChangeLog", // optional
-    emptyOriginAllowed = "true" // optional
+    emptyOriginAllowed = "true", // optional
+    ignoreUnknownAuditEntries = "true" // optional
 )
 public class Application { }
 ```
+
+By default, Flamingock uses **strict import behaviour**: if an audit entry does not match any change in the current Flamingock pipeline, the import fails. When `ignoreUnknownAuditEntries` is set to `true`, Flamingock switches to a **relaxed import mode** and ignores those unmatched entries so the import can continue.
+
+:::caution Intended for legacy shared-origin scenarios
+This option exists to help with historical migration cases where a Mongock audit origin contains mixed entries that do not belong to the current application or service. It is a tolerance mechanism, not the primary recommended setup.
+
+The expected model remains that each application or service uses its own independent audit origin: for example, a separate MongoDB collection, DynamoDB table, or Couchbase collection.
+:::
 
 :::tip Property placeholders
 Configuration values can be set by referencing properties in the Flamingock context using the format `${my.custom.property:defaultValue}`.
