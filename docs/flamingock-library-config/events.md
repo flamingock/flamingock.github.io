@@ -47,20 +47,24 @@ If a stage fails, both StageFailedEvent and PipelineFailedEvent will be emitted.
 
 Flamingock supports events at two levels:
 
-- **Pipeline Events**: Provide information about the entire migration process.
+- **Pipeline Events**: Provide information about the entire execution.
 - **Stage Events**: Provide granular information about individual stage executions.
 
 This allows you to monitor both high-level progress and detailed stage-by-stage execution status.
 
-## Event Data
+## Event data
 
 Events provide access to relevant information about the execution state:
 
-- **Started Events** (`PipelineStartedEvent`, `StageStartedEvent`): These events are simple markers with no additional data.
-- **Completed Events**:
-  - `StageCompletedEvent`: Provides access to the execution result via `getResult()`, which returns a `StageExecutor.Output` object containing the stage summary with details like the number of applied changes.
-  - `PipelineCompletedEvent`: A simple marker event with no additional data.
-- **Failed Events** (`StageFailedEvent`, `PipelineFailedEvent`): Provide access to the exception that caused the failure via `getException()`, allowing you to inspect the error details.
+- **Started events** (`PipelineStartedEvent`, `StageStartedEvent`): simple marker events with no additional data.
+- **Completed events**:
+  - `PipelineCompletedEvent`: `getResult()` returns an `ExecuteResponseData` with the overall status, durations, per-stage breakdown, and aggregate change counters.
+  - `StageCompletedEvent`: `getResult()` returns a `StageResult` with the stage state, duration, and per-change details.
+- **Failed events**:
+  - `PipelineFailedEvent`: `getResult()` returns the `ExecuteResponseData` accumulated up to the failure; `getException()` returns the underlying `Exception`.
+  - `StageFailedEvent`: `getResult()` returns the `StageResult` for the failed stage; `getException()` returns the underlying `Exception`.
+
+See [Event payload reference](#event-payload-reference) below for the fields you can read from `ExecuteResponseData` and `StageResult`. For the structured execution report that Flamingock writes by default after every run, see [Execution report logging](./execution-report.md).
 
 ## Standalone basic example
 
@@ -105,17 +109,19 @@ In the Flamingock builder, you must configure the events you intend to use and i
   public class StageCompletedListener implements Consumer<IStageCompletedEvent> {
       @Override
       public void accept(IStageCompletedEvent event) {
-          System.out.println("Stage execution completed with " + event.getResult().getSummary().getAppliedChangesCount() + " changes applied");
+          StageResult result = event.getResult();
+          System.out.println("Stage '" + result.getStageName() + "' completed with "
+                  + result.getAppliedCount() + " change(s) applied");
       }
   }
-}
   ```
   </TabItem>
   <TabItem value="kotlin" label="Kotlin">
   ```kotlin
    class StageCompletedListener : (IStageCompletedEvent) -> Unit {
        override fun invoke(event: IStageCompletedEvent) {
-           println("Stage execution completed with ${event.result.summary.appliedChangesCount} changes applied")
+           val result = event.result
+           println("Stage '${result.stageName}' completed with ${result.appliedCount} change(s) applied")
        }
    }
   ```
@@ -123,6 +129,10 @@ In the Flamingock builder, you must configure the events you intend to use and i
 </Tabs>
 
 ## Spring-based basic example
+
+:::note
+Earlier releases shipped the `SpringStage*Event` classes implementing the wrong interfaces (`IPipeline*Event` instead of `IStage*Event`). They are now correctly typed against `IStage*Event`. Any Spring listener that was previously typed against the wrong interface will need to be re-typed when upgrading.
+:::
 
 ### Beans
 
@@ -225,4 +235,33 @@ class StageCompletedListener : ApplicationListener<SpringStageCompletedEvent> {
   ```
   </TabItem>
 </Tabs>
+
+## Event payload reference
+
+The pipeline-level events carry `ExecuteResponseData`; the stage-level events carry `StageResult`. The fields a typical listener reads are:
+
+### `ExecuteResponseData`
+
+| Method                                                       | Description                                                                                                                          |
+|--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `getStatus()`                                                | Overall outcome: `SUCCESS`, `FAILED`, `PARTIAL`, or `NO_CHANGES` (`ExecutionStatus`).                                                |
+| `getStartTime()` / `getEndTime()`                            | Run window as `Instant`s.                                                                                                            |
+| `getTotalDurationMs()`                                       | Total run duration in milliseconds.                                                                                                  |
+| `getTotalStages()` / `getCompletedStages()` / `getFailedStages()` | Stage counters.                                                                                                                  |
+| `getTotalChanges()` / `getAppliedChanges()` / `getSkippedChanges()` / `getFailedChanges()` | Aggregate change counters across the whole run.                                                              |
+| `getStages()`                                                | `List<StageResult>` — one entry per stage, in declaration order.                                                                     |
+
+### `StageResult`
+
+| Method                                                       | Description                                                                                                                          |
+|--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `getStageId()` / `getStageName()`                            | Stage identifiers.                                                                                                                   |
+| `getState()`                                                 | `StageState` — one of `NotStarted`, `Started`, `Completed`, `Failed`, or `BlockedForMI` (manual intervention required).              |
+| `getDurationMs()`                                            | Stage duration in milliseconds.                                                                                                      |
+| `getAppliedCount()` / `getSkippedCount()` / `getFailedCount()` | Per-stage change counters.                                                                                                         |
+| `getChanges()`                                               | `List<ChangeResult>` — one entry per change in the stage.                                                                            |
+
+`StageState` also carries error context: `getErrorInfo()` returns details for `Failed` stages, and `getRecoveryIssues()` returns the list of changes requiring manual intervention for `BlockedForMI` stages (each `RecoveryIssue.getChangeId()` identifies a change you need to resolve).
+
+See also: [Execution report logging](./execution-report.md) for the default SLF4J report Flamingock writes from these payloads after every run.
 
