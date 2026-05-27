@@ -81,7 +81,6 @@ const config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-        // GA4 - replace with real Measurement ID
         gtag: {
           trackingID: 'G-LJD5X6BDNH',
           anonymizeIP: true,
