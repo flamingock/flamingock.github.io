@@ -258,14 +258,14 @@ The counters always reconcile against the totals: `completed + failed + upToDate
 | Method                                                       | Description                                                                                                                          |
 |--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | `getStageId()` / `getStageName()`                            | Stage identifiers.                                                                                                                   |
-| `getState()`                                                 | `StageState` — what the executor did this run: one of `NotStarted`, `Started`, `Completed`, `Failed`, or `BlockedForMI` (manual intervention required). |
+| `getState()`                                                 | `StageState` — what the executor did this run. Sealed abstract type with five variants (`NotStarted`, `Started`, `Completed`, `Failed`, `BlockedForMI`), not a plain enum. Query the variant via `isNotStarted()` / `isStarted()` / `isCompleted()` / `isFailed()` / `isBlockedForManualIntervention()`. |
 | `getPlannerVerdict()`                                        | `PlannerVerdict` — what the audit log says about the stage, independent of execution: `NOT_EVALUATED`, `NEEDS_WORK`, or `UP_TO_DATE`. Drives the `[UP TO DATE]` / `[NOT REACHED]` labels in the report when the stage was not executed. |
 | `getDurationMs()`                                            | Stage duration in milliseconds.                                                                                                      |
 | `getTotalChanges()`                                          | Number of changes declared on the stage in the loaded pipeline (structural count, independent of how many ran).                      |
 | `getAppliedCount()` / `getAlreadyAppliedCount()` / `getFailedCount()` | Per-stage change counters.                                                                                                  |
 | `getChanges()`                                               | `List<ChangeResult>` — one entry per change in the stage.                                                                            |
 
-`StageState` also carries error context: `getErrorInfo()` returns details for `Failed` stages, and `getRecoveryIssues()` returns the list of changes requiring manual intervention for `BlockedForMI` stages (each `RecoveryIssue.getChangeId()` identifies a change you need to resolve).
+`getErrorInfo()` and `getRecoveryIssues()` are declared on the base `StageState` type so you can call them on any instance without down-casting; what they return depends on the variant. `getErrorInfo()` returns an `Optional<ErrorInfo>` — populated on `Failed` and `BlockedForMI`, empty otherwise. `getRecoveryIssues()` returns a `List<RecoveryIssue>` — empty unless the variant is `BlockedForMI`, in which case each `RecoveryIssue.getChangeId()` identifies a change you need to resolve.
 
 See also: [Execution report logging](./execution-report.md) for the default SLF4J report Flamingock writes from these payloads after every run.
 

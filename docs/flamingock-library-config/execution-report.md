@@ -122,8 +122,8 @@ Set the `FK-Report` logger level to `OFF`. No code change, no rebuild — purely
   </TabItem>
 </Tabs>
 
-Use `WARN` (or any level above `ERROR`) instead of `OFF` to keep failure reports while suppressing successful runs — the failure listener logs at `ERROR`, the success listener at `INFO`.
-
+Use `WARN` (any level between `INFO` and ERROR)" instead of `OFF` to keep failure reports while suppressing successful runs — the failure listener logs at `ERROR`, the success listener at `INFO`.
+ 
 ## Disabling the report via the builder flag
 
 Set the flag to `false` on the runner builder. Default is `true`.
