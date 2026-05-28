@@ -247,18 +247,22 @@ The pipeline-level events carry `ExecuteResponseData`; the stage-level events ca
 | `getStatus()`                                                | Overall outcome: `SUCCESS`, `FAILED`, `PARTIAL`, or `NO_CHANGES` (`ExecutionStatus`).                                                |
 | `getStartTime()` / `getEndTime()`                            | Run window as `Instant`s.                                                                                                            |
 | `getTotalDurationMs()`                                       | Total run duration in milliseconds.                                                                                                  |
-| `getTotalStages()` / `getCompletedStages()` / `getFailedStages()` | Stage counters.                                                                                                                  |
-| `getTotalChanges()` / `getAppliedChanges()` / `getSkippedChanges()` / `getFailedChanges()` | Aggregate change counters across the whole run.                                                              |
+| `getTotalStages()` / `getCompletedStages()` / `getFailedStages()` / `getUpToDateStages()` / `getNotReachedStages()` | Stage counters. `upToDate` = confirmed already applied without running; `notReached` = never reached this run. |
+| `getTotalChanges()` / `getAppliedChanges()` / `getAlreadyAppliedChanges()` / `getFailedChanges()` / `getNotReachedChanges()` | Aggregate change counters across the whole run. `applied` = newly applied this run; `alreadyApplied` = found already applied. |
 | `getStages()`                                                | `List<StageResult>` — one entry per stage, in declaration order.                                                                     |
+
+The counters always reconcile against the totals: `completed + failed + upToDate + notReached == totalStages`, and `applied + alreadyApplied + failed + notReached == totalChanges`.
 
 ### `StageResult`
 
 | Method                                                       | Description                                                                                                                          |
 |--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | `getStageId()` / `getStageName()`                            | Stage identifiers.                                                                                                                   |
-| `getState()`                                                 | `StageState` — one of `NotStarted`, `Started`, `Completed`, `Failed`, or `BlockedForMI` (manual intervention required).              |
+| `getState()`                                                 | `StageState` — what the executor did this run: one of `NotStarted`, `Started`, `Completed`, `Failed`, or `BlockedForMI` (manual intervention required). |
+| `getPlannerVerdict()`                                        | `PlannerVerdict` — what the audit log says about the stage, independent of execution: `NOT_EVALUATED`, `NEEDS_WORK`, or `UP_TO_DATE`. Drives the `[UP TO DATE]` / `[NOT REACHED]` labels in the report when the stage was not executed. |
 | `getDurationMs()`                                            | Stage duration in milliseconds.                                                                                                      |
-| `getAppliedCount()` / `getSkippedCount()` / `getFailedCount()` | Per-stage change counters.                                                                                                         |
+| `getTotalChanges()`                                          | Number of changes declared on the stage in the loaded pipeline (structural count, independent of how many ran).                      |
+| `getAppliedCount()` / `getAlreadyAppliedCount()` / `getFailedCount()` | Per-stage change counters.                                                                                                  |
 | `getChanges()`                                               | `List<ChangeResult>` — one entry per change in the stage.                                                                            |
 
 `StageState` also carries error context: `getErrorInfo()` returns details for `Failed` stages, and `getRecoveryIssues()` returns the list of changes requiring manual intervention for `BlockedForMI` stages (each `RecoveryIssue.getChangeId()` identifies a change you need to resolve).

@@ -25,16 +25,16 @@ On a successful run:
  Finished:  2026-05-15T08:00:00.180Z
  Duration:  180 ms
 
- Stages:    2 total — 2 completed, 0 failed
- Changes:   3 total — 3 applied, 0 skipped, 0 failed
+ Stages:    2 total — 2 completed, 0 failed, 0 up to date, 0 not reached
+ Changes:   3 total — 3 newly applied, 0 already applied, 0 failed, 0 not reached
 
  Per-stage breakdown:
 
    [COMPLETED] user-database-stage (75 ms)
-               changes: 2 applied, 0 skipped, 0 failed
+               changes: 2 newly applied, 0 already applied, 0 failed, 0 not reached
 
    [COMPLETED] kafka-topics-stage (105 ms)
-               changes: 1 applied, 0 skipped, 0 failed
+               changes: 1 newly applied, 0 already applied, 0 failed, 0 not reached
 
 ========================================================================
 ```
@@ -49,16 +49,16 @@ On a failed run:
  Finished:  2026-05-15T08:00:00.312Z
  Duration:  312 ms
 
- Stages:    2 total — 1 completed, 1 failed
- Changes:   3 total — 2 applied, 0 skipped, 1 failed
+ Stages:    2 total — 1 completed, 1 failed, 0 up to date, 0 not reached
+ Changes:   3 total — 2 newly applied, 0 already applied, 1 failed, 0 not reached
 
  Per-stage breakdown:
 
    [COMPLETED] user-database-stage (75 ms)
-               changes: 2 applied, 0 skipped, 0 failed
+               changes: 2 newly applied, 0 already applied, 0 failed, 0 not reached
 
    [FAILED]    kafka-topics-stage (237 ms)
-               changes: 0 applied, 0 skipped, 1 failed
+               changes: 0 newly applied, 0 already applied, 1 failed, 0 not reached
                error:   TopicCreationFailed
                         Broker rejected creation: replication factor 3 > available brokers 1
                failed change(s): create-orders-topic
@@ -66,10 +66,37 @@ On a failed run:
 ========================================================================
 ```
 
-Stages that need manual intervention show up with a distinct label — `[BLOCKED — manual intervention required]` — followed by a `change(s) requiring intervention:` line listing the change IDs.
+## Reading the counters
+
+Each run reports two count lines, and both always add up to the total:
+
+- **Stages:** `completed + failed + up to date + not reached = total`.
+- **Changes:** `newly applied + already applied + failed + not reached = total`.
+
+What each bucket means:
+
+- **newly applied** — change executed and applied during this run.
+- **already applied** — change was found already applied (confirmed against the audit log), so nothing ran for it.
+- **failed** — change failed this run. A transactional change that failed and was automatically rolled back is also counted here.
+- **not reached** — change was never processed this run (for example, it sits after a failed change in the same stage, or in a stage the run never got to).
+
+## Other run shapes
+
+Beyond the success and failure examples above, the report adapts to what actually happened:
+
+- **`NO CHANGES`** — the headline reads `Flamingock execution report — NO CHANGES` when nothing needed applying (every change is already applied, or there was nothing to do). This is the common steady-state report you'll see on most application restarts after the first.
+- **`[UP TO DATE]` stages** — a stage Flamingock confirmed was already applied without running anything appears with the `[UP TO DATE]` label and no duration, e.g. `[UP TO DATE] user-database-stage  (3 changes already applied)`.
+- **`[NOT REACHED]` stages** — when a run stops early (for example after a failure), the stages it never got to are summarised in a separate `Not reached (N):` section that lists each stage name with its change count.
+- **`[BLOCKED — manual intervention required]` stages** — a stage that needs manual intervention shows this distinct label, followed by a `change(s) requiring intervention:` line listing the change IDs to resolve.
 
 :::note
-If your code catches the exception raised when stages fail, its `getMessage()` returns a single-line summary of the same data (failed stage names, change counts, duration, and any change IDs blocked for manual intervention). The multi-line report above is emitted by the SLF4J listener, never by the exception itself, so log aggregators don't see duplicated dumps on `printStackTrace`.
+If your code catches the exception raised when stages fail, its `getMessage()` returns a single-line summary of the same data — failed stage names plus the change counters and duration, for example:
+
+```
+Flamingock execution failed: 1 of 2 stage(s) failed [kafka-topics-stage]; changes newly_applied=2, already_applied=0, failed=1, not_reached=0; duration=312ms
+```
+
+When a stage is blocked for manual intervention, the line ends with `; manual intervention required for change(s): <ids>`. The multi-line report above is emitted by the SLF4J listener, never by the exception itself, so log aggregators don't see duplicated dumps on `printStackTrace`.
 :::
 
 ## Silencing the report via SLF4J (recommended for production)
