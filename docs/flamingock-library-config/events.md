@@ -4,6 +4,7 @@ sidebar_position: 90
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
 # Events
 
@@ -236,7 +237,7 @@ class StageCompletedListener : ApplicationListener<SpringStageCompletedEvent> {
   </TabItem>
 </Tabs>
 
-## Event payload reference
+## Event payload reference <VersionBadge version="1.4.0" />
 
 The pipeline-level events carry `ExecuteResponseData`; the stage-level events carry `StageResult`. The fields a typical listener reads are:
 
