@@ -4,8 +4,10 @@ sidebar_position: 95
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import VersionBadge from '@site/src/components/VersionBadge';
 
 # Execution report logging
+<VersionBadge version="1.4.0" variant="subtitle" />
 
 After every run, Flamingock emits a structured execution report through SLF4J under the logger name `FK-Report` — at `INFO` on success and `ERROR` on failure. The report shows the overall status, duration, per-stage breakdown, and — when something went wrong — the failing change IDs and error details.
 
