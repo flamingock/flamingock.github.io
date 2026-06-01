@@ -2,12 +2,19 @@
 <html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-get-started/audit-store-vs-target-system" data-has-hydrated="false">
 <head>
 <meta charset="UTF-8">
-<meta name="generator" content="Docusaurus v3.9.1">
-<title data-rh="true">Target systems vs audit store | Flamingock </title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://flamingock.github.io/img/Logo-long.png"><meta data-rh="true" name="twitter:image" content="https://flamingock.github.io/img/Logo-long.png"><meta data-rh="true" property="og:url" content="https://flamingock.github.io/get-started/audit-store-vs-target-system"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Target systems vs audit store | Flamingock "><meta data-rh="true" name="description" content="Understanding Flamingock’s dual-system model for safe, controlled evolution"><meta data-rh="true" property="og:description" content="Understanding Flamingock’s dual-system model for safe, controlled evolution"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://flamingock.github.io/get-started/audit-store-vs-target-system"><link data-rh="true" rel="alternate" href="https://flamingock.github.io/get-started/audit-store-vs-target-system" hreflang="en"><link data-rh="true" rel="alternate" href="https://flamingock.github.io/get-started/audit-store-vs-target-system" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Target systems vs audit store","item":"https://flamingock.github.io/get-started/audit-store-vs-target-system"}]}</script><link rel="search" type="application/opensearchdescription+xml" title="Flamingock " href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.99fe105c.css">
-<script src="/assets/js/runtime~main.f2cf5af7.js" defer="defer"></script>
-<script src="/assets/js/main.ac1e955e.js" defer="defer"></script>
+<meta name="generator" content="Docusaurus v3.10.1">
+<title data-rh="true">Target systems vs audit store | Flamingock </title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://flamingock.github.io/img/Logo-long.png"><meta data-rh="true" name="twitter:image" content="https://flamingock.github.io/img/Logo-long.png"><meta data-rh="true" property="og:url" content="https://flamingock.github.io/get-started/audit-store-vs-target-system"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Target systems vs audit store | Flamingock "><meta data-rh="true" name="description" content="Understanding Flamingock’s dual-system model for safe, controlled evolution"><meta data-rh="true" property="og:description" content="Understanding Flamingock’s dual-system model for safe, controlled evolution"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://flamingock.github.io/get-started/audit-store-vs-target-system"><link data-rh="true" rel="alternate" href="https://flamingock.github.io/get-started/audit-store-vs-target-system" hreflang="en"><link data-rh="true" rel="alternate" href="https://flamingock.github.io/get-started/audit-store-vs-target-system" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Target systems vs audit store","item":"https://flamingock.github.io/get-started/audit-store-vs-target-system"}]}</script><link rel="preconnect" href="https://www.google-analytics.com">
+<link rel="preconnect" href="https://www.googletagmanager.com">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJD5X6BDNH"></script>
+<script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-LJD5X6BDNH",{anonymize_ip:!0})</script>
+
+
+
+<link rel="search" type="application/opensearchdescription+xml" title="Flamingock " href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.e54bee26.css">
+<script src="/assets/js/runtime~main.c75f4d09.js" defer="defer"></script>
+<script src="/assets/js/main.417afa48.js" defer="defer"></script>
 </head>
-<body class="navigation-with-keyboard">
+<body>
 <svg style="display: none;"><defs>
 <symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
 </defs></svg>
@@ -15,8 +22,8 @@
 <p><em>Understanding Flamingock’s dual-system model for safe, controlled evolution</em></p>
 <p>Flamingock works with two closely related concepts:</p>
 <ul>
-<li>The <strong>Target System</strong> — where your application applies real, versioned changes.</li>
-<li>The <strong>Audit Store</strong> — where Flamingock records the execution history of those changes.</li>
+<li class="">The <strong>Target System</strong> — where your application applies real, versioned changes.</li>
+<li class="">The <strong>Audit Store</strong> — where Flamingock records the execution history of those changes.</li>
 </ul>
 <p>Although they are conceptually distinct, the Audit Store is not an entirely separate system.<br>
 <!-- -->Instead, it is <strong>a specialized form of a Target System</strong>, created from a Target System that supports this role and used exclusively for audit tracking.</p>
@@ -24,54 +31,54 @@
 <p>This separation — yet tight relationship — is key to Flamingock’s safety model.</p>
 <div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>Clarification</div><div class="admonitionContent_BuS1"><p>Flamingock can register multiple Target Systems, but only one of them is used as the base for the Audit Store</p></div></div>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="quick-definitions-tldr">Quick definitions (TL;DR)<a href="#quick-definitions-tldr" class="hash-link" aria-label="Direct link to Quick definitions (TL;DR)" title="Direct link to Quick definitions (TL;DR)" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="quick-definitions-tldr">Quick definitions (TL;DR)<a href="#quick-definitions-tldr" class="hash-link" aria-label="Direct link to Quick definitions (TL;DR)" title="Direct link to Quick definitions (TL;DR)" translate="no">​</a></h2>
 <p><strong>Target System →</strong>  The external system where Flamingock applies your changes (e.g., a database, a schema registry, object storage, or an API).</p>
 <p><strong>Audit Store →</strong>  A Target System that supports audit tracking and is used to record what Flamingock executed.<br>
 <em>(Only some Target Systems support this role.)</em></p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="target-systems-where-your-changes-happen">Target Systems: where your changes happen<a href="#target-systems-where-your-changes-happen" class="hash-link" aria-label="Direct link to Target Systems: where your changes happen" title="Direct link to Target Systems: where your changes happen" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="target-systems-where-your-changes-happen">Target Systems: where your changes happen<a href="#target-systems-where-your-changes-happen" class="hash-link" aria-label="Direct link to Target Systems: where your changes happen" title="Direct link to Target Systems: where your changes happen" translate="no">​</a></h2>
 <p>A <strong>Target System</strong> is any external system your application depends on and where Flamingock applies your changes.</p>
 <p>Typical examples:</p>
 <ul>
-<li>Databases (MongoDB, SQL, DynamoDB, Couchbase)</li>
-<li>Kafka Schema Registry</li>
-<li>Kafka topics</li>
-<li>S3/object storage</li>
-<li>External configuration stores</li>
-<li>REST APIs or service endpoints</li>
+<li class="">Databases (MongoDB, SQL, DynamoDB, Couchbase)</li>
+<li class="">Kafka Schema Registry</li>
+<li class="">Kafka topics</li>
+<li class="">S3/object storage</li>
+<li class="">External configuration stores</li>
+<li class="">REST APIs or service endpoints</li>
 </ul>
 <p>The Target System represents your <em>business system</em>:<br>
 <!-- -->it stores the data, schemas, state or configuration that your application relies on.</p>
 <p>Flamingock applies real changes here — safely, sequentially, and in a controlled manner.</p>
 <p>For setup details, see:<br>
-<strong><a href="/target-systems/introduction">Target Systems › Introduction</a></strong></p>
+<strong><a class="" href="/target-systems/introduction">Target Systems › Introduction</a></strong></p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="audit-store-where-execution-is-tracked">Audit Store: where execution is tracked<a href="#audit-store-where-execution-is-tracked" class="hash-link" aria-label="Direct link to Audit Store: where execution is tracked" title="Direct link to Audit Store: where execution is tracked" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="audit-store-where-execution-is-tracked">Audit Store: where execution is tracked<a href="#audit-store-where-execution-is-tracked" class="hash-link" aria-label="Direct link to Audit Store: where execution is tracked" title="Direct link to Audit Store: where execution is tracked" translate="no">​</a></h2>
 <p>The <strong>Audit Store</strong> is where Flamingock records the state of every changes:</p>
 <ul>
-<li>when it ran</li>
-<li>in what order</li>
-<li>in which environment</li>
-<li>its execution status</li>
-<li>and all relevant metadata</li>
+<li class="">when it ran</li>
+<li class="">in what order</li>
+<li class="">in which environment</li>
+<li class="">its execution status</li>
+<li class="">and all relevant metadata</li>
 </ul>
 <p>Its purpose:</p>
 <ul>
-<li>Ensure idempotency</li>
-<li>Prevent duplicate execution</li>
-<li>Provide a reliable audit trail</li>
-<li>Enable safe recovery after failures</li>
-<li>Give full visibility into system evolution</li>
+<li class="">Ensure idempotency</li>
+<li class="">Prevent duplicate execution</li>
+<li class="">Provide a reliable audit trail</li>
+<li class="">Enable safe recovery after failures</li>
+<li class="">Give full visibility into system evolution</li>
 </ul>
 <p>For setup details, see:<br>
-<strong><a href="/audit-stores/introduction">Audit Stores › Introduction</a></strong></p>
+<strong><a class="" href="/audit-stores/introduction">Audit Stores › Introduction</a></strong></p>
 <hr>
 <h1>The Audit Store is a specialized Target System</h1>
 <p>Although conceptually separate, the Audit Store is <strong>not a new database</strong>, nor a new cluster, nor a separate connection.</p>
 <p>Instead:</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-it-is-built-from-an-existing-target-system">✔ It is built from an existing Target System<a href="#-it-is-built-from-an-existing-target-system" class="hash-link" aria-label="Direct link to ✔ It is built from an existing Target System" title="Direct link to ✔ It is built from an existing Target System" translate="no">​</a></h3>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-it-reuses-the-same-driver-and-connection-settings-but-creates-its-own-internal-access-handle">✔ It reuses the same driver and connection settings, but creates its own internal access handle<a href="#-it-reuses-the-same-driver-and-connection-settings-but-creates-its-own-internal-access-handle" class="hash-link" aria-label="Direct link to ✔ It reuses the same driver and connection settings, but creates its own internal access handle" title="Direct link to ✔ It reuses the same driver and connection settings, but creates its own internal access handle" translate="no">​</a></h3>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="-it-adds-only-the-minimal-configuration-needed-for-auditing">✔ It adds only the minimal configuration needed for auditing<a href="#-it-adds-only-the-minimal-configuration-needed-for-auditing" class="hash-link" aria-label="Direct link to ✔ It adds only the minimal configuration needed for auditing" title="Direct link to ✔ It adds only the minimal configuration needed for auditing" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="-it-is-built-from-an-existing-target-system">✔ It is built from an existing Target System<a href="#-it-is-built-from-an-existing-target-system" class="hash-link" aria-label="Direct link to ✔ It is built from an existing Target System" title="Direct link to ✔ It is built from an existing Target System" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="-it-reuses-the-same-driver-and-connection-settings-but-creates-its-own-internal-access-handle">✔ It reuses the same driver and connection settings, but creates its own internal access handle<a href="#-it-reuses-the-same-driver-and-connection-settings-but-creates-its-own-internal-access-handle" class="hash-link" aria-label="Direct link to ✔ It reuses the same driver and connection settings, but creates its own internal access handle" title="Direct link to ✔ It reuses the same driver and connection settings, but creates its own internal access handle" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="-it-adds-only-the-minimal-configuration-needed-for-auditing">✔ It adds only the minimal configuration needed for auditing<a href="#-it-adds-only-the-minimal-configuration-needed-for-auditing" class="hash-link" aria-label="Direct link to ✔ It adds only the minimal configuration needed for auditing" title="Direct link to ✔ It adds only the minimal configuration needed for auditing" translate="no">​</a></h3>
 <p>In practice, the Audit Store is simply:</p>
 <blockquote>
 <p><strong>the same Target System (when it supports audit tracking) running in audit mode.</strong></p>
@@ -79,71 +86,71 @@
 <p>It uses the same underlying configuration (driver, client, database/namespace),
 but through <strong>its own internal object</strong>, ensuring isolation from the Target System’s business operations.</p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="why-separate-the-concepts">Why separate the concepts?<a href="#why-separate-the-concepts" class="hash-link" aria-label="Direct link to Why separate the concepts?" title="Direct link to Why separate the concepts?" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-separate-the-concepts">Why separate the concepts?<a href="#why-separate-the-concepts" class="hash-link" aria-label="Direct link to Why separate the concepts?" title="Direct link to Why separate the concepts?" translate="no">​</a></h2>
 <p>Even though the Audit Store is technically built from a Target System, separating the <strong>concepts</strong> gives you clear guarantees:</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="1-different-responsibilities">1. Different responsibilities<a href="#1-different-responsibilities" class="hash-link" aria-label="Direct link to 1. Different responsibilities" title="Direct link to 1. Different responsibilities" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="1-different-responsibilities">1. Different responsibilities<a href="#1-different-responsibilities" class="hash-link" aria-label="Direct link to 1. Different responsibilities" title="Direct link to 1. Different responsibilities" translate="no">​</a></h3>
 <ul>
-<li><strong>Target System →</strong> business data</li>
-<li><strong>Audit Store →</strong> execution history</li>
+<li class=""><strong>Target System →</strong> business data</li>
+<li class=""><strong>Audit Store →</strong> execution history</li>
 </ul>
 <p>This prevents mixing operational data with audit metadata.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="2-predictable-recovery">2. Predictable recovery<a href="#2-predictable-recovery" class="hash-link" aria-label="Direct link to 2. Predictable recovery" title="Direct link to 2. Predictable recovery" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="2-predictable-recovery">2. Predictable recovery<a href="#2-predictable-recovery" class="hash-link" aria-label="Direct link to 2. Predictable recovery" title="Direct link to 2. Predictable recovery" translate="no">​</a></h3>
 <p>If something fails halfway:</p>
 <ul>
-<li>Flamingock consults the <strong>Audit Store</strong>, not the business system.</li>
-<li>Flamingock knows exactly what ran and what hasn’t.</li>
-<li>Flamingock can safely resume or stop.</li>
+<li class="">Flamingock consults the <strong>Audit Store</strong>, not the business system.</li>
+<li class="">Flamingock knows exactly what ran and what hasn’t.</li>
+<li class="">Flamingock can safely resume or stop.</li>
 </ul>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="3-governance-and-compliance">3. Governance and compliance<a href="#3-governance-and-compliance" class="hash-link" aria-label="Direct link to 3. Governance and compliance" title="Direct link to 3. Governance and compliance" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="3-governance-and-compliance">3. Governance and compliance<a href="#3-governance-and-compliance" class="hash-link" aria-label="Direct link to 3. Governance and compliance" title="Direct link to 3. Governance and compliance" translate="no">​</a></h3>
 <p>Audit data often has:</p>
 <ul>
-<li>different retention rules</li>
-<li>different permissions</li>
-<li>stricter access controls</li>
-<li>different visibility requirements</li>
+<li class="">different retention rules</li>
+<li class="">different permissions</li>
+<li class="">stricter access controls</li>
+<li class="">different visibility requirements</li>
 </ul>
 <p>The conceptual separation supports this.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="4-deployment-flexibility">4. Deployment flexibility<a href="#4-deployment-flexibility" class="hash-link" aria-label="Direct link to 4. Deployment flexibility" title="Direct link to 4. Deployment flexibility" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="4-deployment-flexibility">4. Deployment flexibility<a href="#4-deployment-flexibility" class="hash-link" aria-label="Direct link to 4. Deployment flexibility" title="Direct link to 4. Deployment flexibility" translate="no">​</a></h3>
 <p>You can store the audit history in:</p>
 <ul>
-<li><strong>Flamingock Cloud</strong>, or</li>
-<li>a local collection/table in the same Target System, or</li>
-<li>a separate Target System altogether</li>
+<li class=""><strong>Flamingock Cloud</strong>, or</li>
+<li class="">a local collection/table in the same Target System, or</li>
+<li class="">a separate Target System altogether</li>
 </ul>
 <p>The model works consistently in all cases.</p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-it-works-visual-overview">How it works (visual overview)<a href="#how-it-works-visual-overview" class="hash-link" aria-label="Direct link to How it works (visual overview)" title="Direct link to How it works (visual overview)" translate="no">​</a></h2>
-<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">     Your Changes:</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">     ┌──────────────────────────────────────────────────────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">     │ 1. Change[UpdateKafkaSchema] → Target System[Kafka Schema Registry]      │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">     │ 2. Change[SeedKafkaEvents]   → Target System[Kafka Topics]               │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">     │ 3. Change[AddUserStatus]     → Target System[User Database]              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">     └──────────────────────────────────────────────────────────────────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    ┌───────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │      Flamingock       │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    │    (Orchestrator)     │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                    └───────────────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │ Executes sequentially</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                 Change #1      │───────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">            (UpdateKafkaSchema) │                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │             ┌─────────────┴────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │             ▼                          ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     ┌─────────────────────┐      ┌──────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │   Target System:    │      │ Audit Store  │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ ┌─────────────────┐ │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ │ Schema Registry │ │      │   Records:   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ └─────────────────┘ │      │ #1 applied   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │  (applies change)   │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     └─────────────────────┘      └──────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                  Change #2     │───────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              (SeedKafkaEvents) │                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │                           │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │             ┌─────────────┴────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │             ▼                          ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     ┌─────────────────────┐      ┌──────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │   Target System:    │      │ Audit Store  │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ ┌─────────────────┐ │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ │  Kafka Topics   │ │      │   Records:   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │ └─────────────────┘ │      │ #2 applied   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     │  (applies change)   │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │     └─────────────────────┘      └──────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                  Change #3     └───────────────────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                (AddUserStatus)                             │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                                            │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                              ┌─────────────┴────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                              ▼                          ▼</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      ┌─────────────────────┐      ┌──────────────┐</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      │   Target System:    │      │ Audit Store  │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      │ ┌─────────────────┐ │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      │ │  User Database  │ │      │   Records:   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      │ └─────────────────┘ │      │ #3 applied   │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      │  (applies change)   │      │              │</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                                      └─────────────────────┘      └──────────────┘</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-it-works-visual-overview">How it works (visual overview)<a href="#how-it-works-visual-overview" class="hash-link" aria-label="Direct link to How it works (visual overview)" title="Direct link to How it works (visual overview)" translate="no">​</a></h2>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><div class="token-line" style="color:#393A34"><span class="token plain">     Your Changes:</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">     ┌──────────────────────────────────────────────────────────────────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">     │ 1. Change[UpdateKafkaSchema] → Target System[Kafka Schema Registry]      │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">     │ 2. Change[SeedKafkaEvents]   → Target System[Kafka Topics]               │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">     │ 3. Change[AddUserStatus]     → Target System[User Database]              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">     └──────────────────────────────────────────────────────────────────────────┘</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                ▼</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                    ┌───────────────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                    │      Flamingock       │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                    │    (Orchestrator)     │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                    └───────────────────────┘</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │ Executes sequentially</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                 Change #1      │───────────────────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">            (UpdateKafkaSchema) │                           │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │                           │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │             ┌─────────────┴────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │             ▼                          ▼</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     ┌─────────────────────┐      ┌──────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │   Target System:    │      │ Audit Store  │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ ┌─────────────────┐ │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ │ Schema Registry │ │      │   Records:   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ └─────────────────┘ │      │ #1 applied   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │  (applies change)   │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     └─────────────────────┘      └──────────────┘</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                  Change #2     │───────────────────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">              (SeedKafkaEvents) │                           │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │                           │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │             ┌─────────────┴────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │             ▼                          ▼</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     ┌─────────────────────┐      ┌──────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │   Target System:    │      │ Audit Store  │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ ┌─────────────────┐ │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ │  Kafka Topics   │ │      │   Records:   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │ └─────────────────┘ │      │ #2 applied   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     │  (applies change)   │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │     └─────────────────────┘      └──────────────┘</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                  Change #3     └───────────────────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                (AddUserStatus)                             │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                                            │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                              ┌─────────────┴────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                              ▼                          ▼</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      ┌─────────────────────┐      ┌──────────────┐</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      │   Target System:    │      │ Audit Store  │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      │ ┌─────────────────┐ │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      │ │  User Database  │ │      │   Records:   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      │ └─────────────────┘ │      │ #3 applied   │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      │  (applies change)   │      │              │</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">                                      └─────────────────────┘      └──────────────┘</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></div></code></pre></div></div>
 <p><strong>Summary of the flow:</strong></p>
 <ol>
-<li><strong>You define changes</strong></li>
-<li><strong>Flamingock executes them safely</strong></li>
-<li><strong>Target Systems evolve</strong></li>
-<li><strong>Audit Store captures the complete execution history</strong></li>
+<li class=""><strong>You define changes</strong></li>
+<li class=""><strong>Flamingock executes them safely</strong></li>
+<li class=""><strong>Target Systems evolve</strong></li>
+<li class=""><strong>Audit Store captures the complete execution history</strong></li>
 </ol>
 <p>This is the foundation of Flamingock’s safety guarantees.</p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="key-takeaways">Key takeaways<a href="#key-takeaways" class="hash-link" aria-label="Direct link to Key takeaways" title="Direct link to Key takeaways" translate="no">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="for-developers">For developers<a href="#for-developers" class="hash-link" aria-label="Direct link to For developers" title="Direct link to For developers" translate="no">​</a></h3>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-takeaways">Key takeaways<a href="#key-takeaways" class="hash-link" aria-label="Direct link to Key takeaways" title="Direct link to Key takeaways" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-developers">For developers<a href="#for-developers" class="hash-link" aria-label="Direct link to For developers" title="Direct link to For developers" translate="no">​</a></h3>
 <ul>
-<li>Target Systems → where changes actually happen</li>
-<li>Audit Store → automatically maintained by Flamingock</li>
-<li>You never write to the Audit Store yourself</li>
+<li class="">Target Systems → where changes actually happen</li>
+<li class="">Audit Store → automatically maintained by Flamingock</li>
+<li class="">You never write to the Audit Store yourself</li>
 </ul>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="for-architects">For architects<a href="#for-architects" class="hash-link" aria-label="Direct link to For architects" title="Direct link to For architects" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-architects">For architects<a href="#for-architects" class="hash-link" aria-label="Direct link to For architects" title="Direct link to For architects" translate="no">​</a></h3>
 <ul>
-<li>Clean separation of business vs control responsibilities</li>
-<li>Consistent behaviour across environments</li>
-<li>Predictable recovery even in distributed systems</li>
+<li class="">Clean separation of business vs control responsibilities</li>
+<li class="">Consistent behaviour across environments</li>
+<li class="">Predictable recovery even in distributed systems</li>
 </ul>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="for-operations">For operations<a href="#for-operations" class="hash-link" aria-label="Direct link to For operations" title="Direct link to For operations" translate="no">​</a></h3>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="for-operations">For operations<a href="#for-operations" class="hash-link" aria-label="Direct link to For operations" title="Direct link to For operations" translate="no">​</a></h3>
 <ul>
-<li>Diagnose issues using audit data</li>
-<li>Always know the exact execution state</li>
-<li>Avoid duplicates and inconsistent partial updates</li>
+<li class="">Diagnose issues using audit data</li>
+<li class="">Always know the exact execution state</li>
+<li class="">Avoid duplicates and inconsistent partial updates</li>
 </ul>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="bottom-line">Bottom line<a href="#bottom-line" class="hash-link" aria-label="Direct link to Bottom line" title="Direct link to Bottom line" translate="no">​</a></h2>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="bottom-line">Bottom line<a href="#bottom-line" class="hash-link" aria-label="Direct link to Bottom line" title="Direct link to Bottom line" translate="no">​</a></h2>
 <blockquote>
 <p><strong>Flamingock’s dual-system model (where the Audit Store is a specialization of the Target System) is what enables safe, predictable and auditable evolution of distributed systems.</strong></p>
 </blockquote>
