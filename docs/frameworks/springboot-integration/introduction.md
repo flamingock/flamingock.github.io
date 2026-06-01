@@ -112,7 +112,7 @@ flamingock {
   </TabItem>
 </Tabs>
 
-Flamingock's Spring Boot integration is compatible with both Spring Boot 2.x and 3.x.
+Flamingock's Spring Boot integration is compatible with Spring Boot versions 2.x through 4.x.
 
 
 ## :white_check_mark: Best practices
@@ -133,5 +133,4 @@ Consider the following recommendations to get the most out of Flamingock’s Spr
 
 - **Register custom platform components using `.addDependency(...)` only when required**
   Most applications using automatic setup will not need to register components manually.
-
 
