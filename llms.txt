@@ -4601,6 +4601,8 @@ Note:    [Flamingock] Final processing round detected - skipping execution.
 
 // File: get-started/gradle-plugin
 
+import VersionBadge from '@site/src/components/VersionBadge';
+
 # Gradle plugin
 
 The Flamingock Gradle Plugin provides zero-boilerplate dependency configuration for your Gradle projects. Instead of manually managing multiple dependencies, you configure Flamingock with a simple DSL.
@@ -4683,6 +4685,42 @@ flamingock {
 | `springboot()` | Adds Spring Boot integration and test support |
 | `graalvm()` | Adds GraalVM native image support |
 | `mongock()` | Enables seamless migration from Mongock — imports audit log, detects legacy change units, and executes pending ones |
+
+
+## Kotlin support <VersionBadge version="1.4.2" />
+
+Kotlin (JVM) projects are supported automatically. When the plugin detects `org.jetbrains.kotlin.jvm`, it applies `org.jetbrains.kotlin.kapt` and registers `flamingock-processor` under the `kapt` configuration so the annotation processor runs against your Kotlin sources. No additional setup is required:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "..."
+    id("io.flamingock") version "..."
+}
+
+flamingock {
+    community()
+    springboot()
+}
+```
+
+### Opting out of the kapt auto-apply <VersionBadge version="1.4.2" />
+
+Set the Gradle property `flamingock.autoApplyKapt=false` if you want to manage kapt yourself (or are migrating to KSP, which the plugin will support in a future release). Recognised settings:
+
+```properties
+# gradle.properties
+flamingock.autoApplyKapt=false
+```
+
+or on the command line:
+
+```bash
+./gradlew build -Pflamingock.autoApplyKapt=false
+```
+
+:::note Why a Gradle property and not a `flamingock { … }` setting
+The `plugins { }` block evaluates before the `flamingock { }` block in `build.gradle.kts`. The auto-apply has to make its decision the moment `kotlin.jvm` is applied — well before any DSL setter would run. A Gradle property is the only mechanism available at that point. When you opt out, you are responsible for wiring `kotlin.kapt` (or your annotation-processor of choice) yourself; the plugin will still register `flamingock-processor` under the `kapt` configuration if one exists.
+:::
 
 
 ## What gets added
