@@ -8,6 +8,10 @@ import TabItem from '@theme/TabItem';
 
 # Setup & Stages
 
+:::tip Using an AI assistant?
+The [`flamingock-onboarding`](../resources/agentic-coders.md) skill guides your agent through the full Flamingock setup — including `@EnableFlamingock`, `@Stage`, and dependencies — for any runtime, edition, and build tool.
+:::
+
 The Flamingock **setup** organizes and executes your changes using **stages**. By default, you'll use a single stage that groups all your changes and executes them sequentially.
 
 Changes within a stage are executed sequentially with order guaranteed. However, execution order between stages is not guaranteed.

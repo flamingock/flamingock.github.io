@@ -195,9 +195,33 @@ const config = {
     }),
   plugins: [
     [
-      "docusaurus-plugin-generate-llms-txt",
+      'docusaurus-plugin-llms', // https://github.com/rachfop/docusaurus-plugin-llms
       {
-        outputFile: "llms.txt",
+        generateLLMsTxt: true,
+        generateLLMsFullTxt: true,
+        docsDir: 'docs',
+        includeBlog: true,
+        excludeImports: true,
+        removeDuplicateHeadings: true,
+        generateMarkdownFiles: true,
+        includeOrder: [
+          'overview.md',
+          'get-started/**/*',
+          'flamingock-library-config/**/*',
+          'changes/**/*',
+          'target-systems/**/*',
+          'audit-stores/**/*',
+          'safety-and-recovery/**/*',
+          'templates/**/*',
+          'frameworks/**/*',
+          'testing/**/*',
+          'cli/**/*',
+          'resources/**/*',
+        ],
+        includeUnmatchedLast: true,
+        pathTransformation: {
+          ignorePaths: ['docs'],
+        },
       },
     ],
     [require.resolve('docusaurus-lunr-search'), {
