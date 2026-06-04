@@ -33,6 +33,10 @@ claude "Create a new Flamingock change to add an index to the users collection. 
 
 ## 🧠 Pillar 2: Agent skills (`agentskills.io`)
 
+:::caution Beta feature
+Flamingock Skills are still in **beta**.
+:::
+
 Beyond general documentation, Flamingock provides specialized **Skills** following the [agentskills.io](https://agentskills.io/) standard. A skill is a set of machine-readable instructions that teaches an agent exactly how to perform a specific task within the Flamingock ecosystem — without guessing or hallucinating APIs.
 
 All official skills are hosted at: [github.com/flamingock/flamingock-skills](https://github.com/flamingock/flamingock-skills).

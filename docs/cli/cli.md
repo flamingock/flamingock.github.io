@@ -89,6 +89,8 @@ Install skills from the Flamingock registry. By default, installs all skills to 
 Paths are resolved relative to the directory where you run the command.
 :::
 
+More info at [Using Flamingock with agentic coders](../resources/agentic-coders.md).
+
 ### `execute apply`
 
 Apply pending changes by spawning your application JAR.
