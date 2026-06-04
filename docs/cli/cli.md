@@ -66,25 +66,40 @@ flamingock [global-options] <command> [command-options]
 
 ### Global options
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--log-level` | `-l` | Application log level: `debug`, `info`, `warn`, `error` |
-| `--quiet` | `-q` | Suppress non-essential output |
-| `--no-color` | | Disable colored output |
-| `--help` | `-h` | Show help information |
-| `--version` | | Show version information |
+| Option        | Short  | Description                                             |
+|---------------|--------|---------------------------------------------------------|
+| `--log-level` | `-l`   | Application log level: `debug`, `info`, `warn`, `error` |
+| `--quiet`     | `-q`   | Suppress non-essential output                           |
+| `--no-color`  |        | Disable colored output                                  |
+| `--help`      | `-h`   | Show help information                                   |
+| `--version`   |        | Show version information                                |
 
 Global options are inherited by all subcommands.
+
+### `install-skills`
+
+Install skills from the Flamingock registry. By default, installs all skills to `./.agents/skills`. Use `--agent` to install skills for a specific agent.
+
+| Command                                                                                      | Destination                                                          |
+|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| `flamingock install-skills`                                                                  | `./.agents/skills`                                                   |
+| `flamingock install-skills --agent {claude, github, cursor, opencode, gemini, windsurf, pi}` | `./.{claude, github, cursor, opencode, gemini, windsurf, pi}/skills` |
+
+:::note
+Paths are resolved relative to the directory where you run the command.
+:::
+
+More info at [Using Flamingock with agentic coders](../resources/agentic-coders.md).
 
 ### `execute apply`
 
 Apply pending changes by spawning your application JAR.
 
-| Option | Short | Required | Description |
-|--------|-------|----------|-------------|
-| `--jar` | `-j` | Yes | Path to the application JAR |
-| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
-| `--` | | No | Separator — everything after is passed as application arguments |
+| Option       | Short | Required | Description                                                     |
+|--------------|-------|----------|-----------------------------------------------------------------|
+| `--jar`      | `-j`  | Yes      | Path to the application JAR                                     |
+| `--java-opt` | `-J`  | No       | JVM argument for the spawned process (repeatable)               |
+| `--`         |       | No       | Separator — everything after is passed as application arguments |
 
 ```bash
 # Apply pending changes
@@ -104,14 +119,14 @@ flamingock execute apply --jar ./my-app.jar -J -Xmx1g -- --spring.profiles.activ
 
 List audit entries from the change history.
 
-| Option | Short | Required | Description |
-|--------|-------|----------|-------------|
-| `--jar` | `-j` | Yes | Path to the application JAR |
-| `--history` | | No | Show full chronological history instead of snapshot |
-| `--since` | | No | Filter entries since date (ISO-8601: `yyyy-MM-dd` or `yyyy-MM-ddTHH:mm:ss`) |
-| `--extended` | `-e` | No | Show extended information (execution ID, class, method, hostname) |
-| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
-| `--` | | No | Separator — everything after is passed as application arguments |
+| Option       | Short | Required | Description                                                                 |
+|--------------|-------|----------|-----------------------------------------------------------------------------|
+| `--jar`      | `-j`  | Yes      | Path to the application JAR                                                 |
+| `--history`  |       | No       | Show full chronological history instead of snapshot                         |
+| `--since`    |       | No       | Filter entries since date (ISO-8601: `yyyy-MM-dd` or `yyyy-MM-ddTHH:mm:ss`) |
+| `--extended` | `-e`  | No       | Show extended information (execution ID, class, method, hostname)           |
+| `--java-opt` | `-J`  | No       | JVM argument for the spawned process (repeatable)                           |
+| `--`         |       | No       | Separator — everything after is passed as application arguments             |
 
 ```bash
 # Current state (latest per change unit)
@@ -131,13 +146,13 @@ flamingock audit list --jar ./my-app.jar --extended
 
 Fix audit state for a change with issues. After manually verifying or fixing the state, mark the change as resolved.
 
-| Option | Short | Required | Description |
-|--------|-------|----------|-------------|
-| `--jar` | `-j` | Yes | Path to the application JAR |
-| `--change-id` | `-c` | Yes | Change unit ID to fix |
-| `--resolution` | `-r` | Yes | Resolution type: `APPLIED` or `ROLLED_BACK` |
-| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
-| `--` | | No | Separator — everything after is passed as application arguments |
+| Option         | Short | Required | Description                                                     |
+|----------------|-------|----------|-----------------------------------------------------------------|
+| `--jar`        | `-j`  | Yes      | Path to the application JAR                                     |
+| `--change-id`  | `-c`  | Yes      | Change unit ID to fix                                           |
+| `--resolution` | `-r`  | Yes      | Resolution type: `APPLIED` or `ROLLED_BACK`                     |
+| `--java-opt`   | `-J`  | No       | JVM argument for the spawned process (repeatable)               |
+| `--`           |       | No       | Separator — everything after is passed as application arguments |
 
 ```bash
 # Mark as successfully applied
@@ -153,12 +168,12 @@ For detailed workflows on issue resolution, see [Issue resolution](../safety-and
 
 List all change units with inconsistent audit states.
 
-| Option | Short | Required | Description |
-|--------|-------|----------|-------------|
-| `--jar` | `-j` | Yes | Path to the application JAR |
-| `--json` | | No | Output in JSON format |
-| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
-| `--` | | No | Separator — everything after is passed as application arguments |
+| Option       | Short | Required | Description                                                     |
+|--------------|-------|----------|-----------------------------------------------------------------|
+| `--jar`      | `-j`  | Yes      | Path to the application JAR                                     |
+| `--json`     |       | No       | Output in JSON format                                           |
+| `--java-opt` | `-J`  | No       | JVM argument for the spawned process (repeatable)               |
+| `--`         |       | No       | Separator — everything after is passed as application arguments |
 
 ```bash
 # List issues in table format
@@ -172,14 +187,14 @@ flamingock issue list --jar ./my-app.jar --json
 
 Get detailed information about an audit issue.
 
-| Option | Short | Required | Description |
-|--------|-------|----------|-------------|
-| `--jar` | `-j` | Yes | Path to the application JAR |
-| `--change-id` | `-c` | No | Specific change unit ID (shows first issue if omitted) |
-| `--guidance` | `-g` | No | Include resolution guidance |
-| `--json` | | No | Output in JSON format |
-| `--java-opt` | `-J` | No | JVM argument for the spawned process (repeatable) |
-| `--` | | No | Separator — everything after is passed as application arguments |
+| Option        | Short | Required | Description                                                     |
+|---------------|-------|----------|-----------------------------------------------------------------|
+| `--jar`       | `-j`  | Yes      | Path to the application JAR                                     |
+| `--change-id` | `-c`  | No       | Specific change unit ID (shows first issue if omitted)          |
+| `--guidance`  | `-g`  | No       | Include resolution guidance                                     |
+| `--json`      |       | No       | Output in JSON format                                           |
+| `--java-opt`  | `-J`  | No       | JVM argument for the spawned process (repeatable)               |
+| `--`          |       | No       | Separator — everything after is passed as application arguments |
 
 ```bash
 # Get next priority issue with resolution guidance
@@ -197,13 +212,13 @@ flamingock issue get --jar ./my-app.jar -c user-change-v2 --json
 
 ## Exit codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | Execution error (change failed, process error, etc.) |
-| `2` | Usage error (invalid arguments) |
-| `126` | JAR not found or not a file |
-| `130` | Interrupted (Ctrl+C) |
+| Code  | Meaning                                              |
+|-------|------------------------------------------------------|
+| `0`   | Success                                              |
+| `1`   | Execution error (change failed, process error, etc.) |
+| `2`   | Usage error (invalid arguments)                      |
+| `126` | JAR not found or not a file                          |
+| `130` | Interrupted (Ctrl+C)                                 |
 
 ## Example output
 
