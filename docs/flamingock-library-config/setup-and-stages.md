@@ -283,8 +283,8 @@ You can customize the compiler arguments to tell Flamingock where to look:
 ```kotlin
 tasks.withType<JavaCompile> {
     options.compilerArgs.addAll(listOf(
-        "-Asources=custom/src",
-        "-Aresources=custom/resources"
+        "-Aflamingock.sources=custom/src",
+        "-Aflamingock.resources=custom/resources"
     ))
 }
 ```
@@ -297,8 +297,8 @@ tasks.withType<JavaCompile> {
       <artifactId>maven-compiler-plugin</artifactId>
       <configuration>
         <compilerArgs>
-          <arg>-Asources=custom/src</arg>
-          <arg>-Aresources=custom/resources</arg>
+          <arg>-Aflamingock.sources=custom/src</arg>
+          <arg>-Aflamingock.resources=custom/resources</arg>
         </compilerArgs>
       </configuration>
     </plugin>
@@ -383,6 +383,5 @@ If you have a change at `com.yourcompany.yourpackage.OldChange`:
 :::tip Best Practice
 Keep `strictStageMapping = true` (default) to ensure all changes are properly mapped and executed. Only disable it temporarily during large refactoring or migration scenarios.
 :::
-
 
 

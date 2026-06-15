@@ -72,6 +72,20 @@ flamingock {
         </annotationProcessorPaths>
       </configuration>
     </plugin>
+
+    <!-- Recommended for YAML/template-based changes: tracks YAML inputs and passes Flamingock source/resource paths to the compiler -->
+    <plugin>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-maven-plugin</artifactId>
+      <version>${flamingockVersion}</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>generate</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
   </plugins>
 </build>
 ```
