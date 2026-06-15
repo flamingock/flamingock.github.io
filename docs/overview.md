@@ -41,6 +41,7 @@ public class _0001__CreateUsersCollection {
 - 👉 [Quick Start](./get-started/quick-start) – set up Flamingock in minutes
 - 👉 [Core Concepts](./get-started/core-concepts) – understand the building blocks
 - 👉 [FAQ](./resources/faq) – Frequently asked questions
+- 👉 [Agentic Coders](./resources/agentic-coders) – Using Flamingock with AI assistants
 
 ---
 
@@ -59,5 +60,6 @@ public class _0001__CreateUsersCollection {
 
 - [GitHub repository](https://github.com/flamingock/flamingock-java)
 - [Examples GitHub repository](https://github.com/flamingock/flamingock-java-examples)
+- [Skills repository (Agentic Coders)](https://github.com/flamingock/flamingock-skills)
 - [Releases](https://github.com/flamingock/flamingock-java/releases)
 - [Issue tracker](https://github.com/flamingock/flamingock-java/issues)

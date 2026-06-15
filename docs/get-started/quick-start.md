@@ -18,6 +18,10 @@ Even in this basic example, Flamingock ensures all these changes are applied **s
 This guide walks you through the process in 5 simple steps.
 
 
+:::tip Using an AI assistant?
+The [`flamingock-onboarding`](../resources/agentic-coders.md) skill teaches your agent how to generate the exact setup for your project — standalone or Spring Boot, Community or Cloud, any build tool. Install it once and your agent handles steps 1–5 automatically.
+:::
+
 ## 1. Set up Flamingock in your project
 
 Add Flamingock to your build:

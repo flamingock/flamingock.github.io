@@ -8,6 +8,10 @@ import TabItem from '@theme/TabItem';
 
 # Spring Boot integration
 
+:::tip Using an AI assistant?
+The [`flamingock-onboarding`](../../resources/agentic-coders.md) skill supports Spring Boot natively — it selects the right dependencies, generates the correct `@EnableFlamingock` setup, configures the AuditStore for Community edition, or wires Cloud edition credentials when using Cloud.
+:::
+
 Flamingock integrates seamlessly with Spring Boot, offering a powerful and flexible setup for managing your change units in Spring-based applications.
 
 This integration leverages Spring Boot’s features—such as dependency injection, profiles, event publishing, and property configuration—to provide a streamlined and production-ready experience.
