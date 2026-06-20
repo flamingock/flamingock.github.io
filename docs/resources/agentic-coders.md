@@ -5,7 +5,7 @@ sidebar_position: 50
 
 # Using Flamingock with agentic coders
 
-**Flamingock** is designed to be **agent-ready**. Modern agentic coding assistants — such as **Claude Code**, **Gemini CLI**, and **OpenCode** — can be significantly more productive and accurate when working with Flamingock thanks to our adherence to emerging standards for AI-developer collaboration.
+**Flamingock** is designed to be **agent-ready**. Modern agentic coding assistants — such as **Claude Code**, **Codex**, **Gemini** and **OpenCode** — can be significantly more productive and accurate when working with Flamingock thanks to our adherence to emerging standards for AI-developer collaboration.
 
 By providing structured context and specialized skills, Flamingock ensures that AI agents generate setup and change code that is not only syntactically correct but also follows all architectural best practices, naming conventions, and safety patterns.
 
@@ -49,6 +49,7 @@ Skills are installed per project, and you can install all of them using the Flam
 |----------------------------------------------|----------------------|
 | `flamingock install-skills`                  | `./.agents/skills`   |
 | `flamingock install-skills --agent claude`   | `./.claude/skills`   |
+| `flamingock install-skills --agent codex`    | `./.agents/skills`   |
 | `flamingock install-skills --agent github`   | `./.github/skills`   |
 | `flamingock install-skills --agent cursor`   | `./.cursor/skills`   |
 | `flamingock install-skills --agent opencode` | `./.opencode/skills` |

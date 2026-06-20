@@ -80,10 +80,10 @@ Global options are inherited by all subcommands.
 
 Install skills from the Flamingock registry. By default, installs all skills to `./.agents/skills`. Use `--agent` to install skills for a specific agent.
 
-| Command                                                                                      | Destination                                                          |
-|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| `flamingock install-skills`                                                                  | `./.agents/skills`                                                   |
-| `flamingock install-skills --agent {claude, github, cursor, opencode, gemini, windsurf, pi}` | `./.{claude, github, cursor, opencode, gemini, windsurf, pi}/skills` |
+| Command                                                                                             | Destination                                                          |
+|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| `flamingock install-skills`                                                                         | `./.agents/skills`                                                   |
+| `flamingock install-skills --agent {claude, codex, github, cursor, opencode, gemini, windsurf, pi}` | `./.{claude, github, cursor, opencode, gemini, windsurf, pi}/skills` |
 
 :::note
 Paths are resolved relative to the directory where you run the command.
