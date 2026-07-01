@@ -47,25 +47,29 @@ This regenerates Flamingock's per-module metadata in the new incremental format.
 
 ## Migrate with an agentic coder
 
-Flamingock ships a dedicated **Mongock migration skill** for agentic coders (Claude Code, Codex, Cursor, Gemini, OpenCode, and others). The skill encodes the exact migration steps described in this guide — preserving legacy `@ChangeUnit`, `@ChangeLog`, and `@ChangeSet` classes, enabling `@MongockSupport`, replacing Mongock runner/driver/wiring with the matching Flamingock target-system path, and choosing the correct backend adapter.
+Flamingock ships a dedicated **Mongock migration skill** that lets an agentic coder perform this migration for you — increasing velocity and reducing manual errors.
 
-Install it in your project:
+Once the skill is installed in your project (see [Using Flamingock with agentic coders](./agentic-coders)), trigger the migration with a prompt such as:
 
-```bash
-flamingock install-skills --agent claude
+> migrate from Mongock to Flamingock [VERSION]
+
+You should see a line in the agent's output confirming the skill is in use, similar to:
+
+```
+Using flamingock-mongock-migration-skill…
 ```
 
-Then ask the agent to migrate the project. See [Using Flamingock with agentic coders](./agentic-coders) for the full list of supported agents and installation targets, and the [flamingock-skills repository](https://github.com/flamingock/flamingock-skills) for the skill source.
+The skill performs the same steps described manually below.
 
 :::note
-Skills are in beta. The manual steps in this guide remain fully supported and are what the skill executes on your behalf.
+Skills are in beta.
 :::
 
 ## Quick start for Mongock users
 
 Migrating from Mongock is intentionally simple, it only requires two additional steps on top of the [standard Flamingock setup](../get-started/quick-start).
 
-### 1. Add Mongock Support dependency
+### 1. Add Mongock support dependency
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
