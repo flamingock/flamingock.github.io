@@ -122,6 +122,18 @@ sidebar_position: 160
 
     If you are currently using Mongock, we encourage you to [review the migration guide](coming-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
+- **How do I migrate an existing Mongock application to Flamingock?**
+
+    In most cases, only two steps are required on top of the standard Flamingock setup:
+        1. Add the `mongock-support` dependency (Gradle plugin flag `mongock()` or Maven `mongock-support` artifact + annotation processor).
+        2. Add `@MongockSupport(targetSystem = "...")` to a configuration class, referencing the target system that maps to the database Mongock previously used.
+
+    Flamingock then imports Mongock's audit log, skips already-applied change units, executes pending ones, and continues with your Flamingock stages. Legacy `@ChangeUnit` classes must remain immutable. See the [migration guide](coming-from-mongock.md) for optional fields (`skipImport`, `origin`, `emptyOriginAllowed`, `ignoreUnknownEntries`) and the internal stage model.
+
+- **Which Mongock versions are supported for migration?**
+
+    Both Mongock v4 (`@ChangeLog` + `@ChangeSet`) and Mongock v5 (`@ChangeUnit`) are supported. Legacy classes remain untouched as historical artifacts in both cases. For new work written after the migration, use Flamingock-native annotations: `@Change`, `@Apply`, `@Rollback`, `@FlamingockConstructor`.
+
 
 ## Recovery strategies & safety
 
