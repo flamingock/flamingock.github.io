@@ -21,8 +21,8 @@ This feature is designed to:
 - **Let you continue using Flamingock natively for all new changes**  
 
 :::info
-Flamingock does **not** support creating new Mongock ChangeUnits going forward.  
-This integration exists purely to make the migration **fast, simple and safe**.
+Flamingock does **not** support authoring new Mongock changes (`@ChangeUnit`, `@ChangeLog`, `@ChangeSet`) going forward.  
+This integration exists purely to make the migration **fast, simple and safe**. All new changes must be written as Flamingock-native `@Change` classes.
 :::
 
 ## Supported Mongock versions
@@ -142,8 +142,6 @@ Flamingock will use this target system to:
 
 A full explanation of why this is required (and how Mongock’s model differs from Flamingock’s) is provided in the section [Understanding the target system for Mongock migrations](#understanding-the-target-system-for-mongock-migrations) below.
 
-
-
 **That’s all you need to activate Mongock support.** From there, Flamingock handles the detection of legacy changes, audit import, and stage ordering automatically.
 
 ### Optional configuration <VersionBadge version="1.1.0" />
@@ -197,7 +195,7 @@ Mongock and Flamingock follow different models when interacting with external sy
 ### 1. How Mongock handled databases
 
 Mongock used a **single database for everything**. There was no distinction between *audit store* and *target system*.  
-A single MongoDB/DynamoDB/DocumentDB instance played both roles, storing its **audit log**, and  applying its **change units**.
+A single MongoDB/DynamoDB/DocumentDB/Couchbase instance played both roles, storing its **audit log** and applying its **change units**.
 
 ### 2. How Flamingock handles external systems
 
@@ -291,6 +289,28 @@ For Mongock v4 users, the move is conceptual rather than a direct rename:
 - `@ChangeLog` and `@ChangeSet` remain in place as legacy code.
 - New Flamingock work is authored as standalone `@Change` classes (no `@ChangeLog` wrapper).
 
+## Mongock v4 vs v5 vs Flamingock model comparison
+
+Migration decisions are easier to reason about when the programming model differences are made explicit.
+
+| Topic                    | Mongock v4                                 | Mongock v5                                       | Flamingock                                 |
+| ------------------------ | ------------------------------------------ | ------------------------------------------------ | ------------------------------------------ |
+| Main unit                | `@ChangeLog` + `@ChangeSet`                | `@ChangeUnit` class                              | `@Change` class                            |
+| Execution method         | `@ChangeSet` method                        | `@Execution`                                     | `@Apply`                                   |
+| Rollback method          | old model / environment-dependent behavior | `@RollbackExecution`                             | `@Rollback`                                |
+| Pre-execution hook       | not part of the same primary model         | `@BeforeExecution` + `@RollbackBeforeExecution`  | model the intent explicitly in Flamingock  |
+| Spring-specific wrapper  | `MongockTemplate` in Spring Mongo setups   | direct dependency injection into `@ChangeUnit`   | direct dependency injection into `@Change` |
+| Audit default            | `mongockChangeLog`                         | `mongockChangeLog`                               | `flamingockAuditLog`                       |
+| Lock default             | `mongockLock`                              | `mongockLock`                                    | `flamingockLock`                           |
+| Spring Boot runner       | old Spring integration model               | `MongockSpringboot` / standalone runner          | `ApplicationRunner` or `InitializingBean`  |
+| Main architectural model | database migration tool                    | cleaner ChangeUnit model, still database-centric | explicit Target System + Audit Store       |
+
+Practical recommendation:
+
+- If you are on **Mongock v4**, leave old `@ChangeLog` / `@ChangeSet` code alone.
+- If you are on **Mongock v5**, leave old `@ChangeUnit` code alone too.
+- In both cases, author **new** work as Flamingock `@Change` classes once the migration bridge is active.
+
 ## Edge cases to review before migrating
 
 Some Mongock features need explicit review during the migration. Validate behaviour per feature before rolling out to production:
@@ -351,7 +371,7 @@ After this stage finishes, Flamingock continues with your normal user-defined st
 
 ## Compatibility notes
 
-- Works with MongoDB, DynamoDB, DocumentDB, CouchBase and other systems supported by Mongock  
+- Works with MongoDB, DynamoDB, DocumentDB, Couchbase and other systems supported by Mongock  
 - Flamingock restrictions on change IDs, order, etc. do not apply to Mongock change units because they are historical artifacts that must remain unchanged.
 - Compatible with Standalone and Spring Boot runners  
 - Does not interfere with your normal Flamingock stages  
@@ -359,10 +379,12 @@ After this stage finishes, Flamingock continues with your normal user-defined st
 
 ## Summary
 
-Migrating from Mongock is intentionally simple:
+Migrating from Mongock is intentionally simple. Two paths:
 
-1. Add the `mongock-support` dependency  
-2. Add the `@MongockSupport` annotation  
+- **Agentic coder** — install the Flamingock Mongock migration skill and prompt the agent (see [Migrate with an agentic coder](#migrate-with-an-agentic-coder)).
+- **Manual** — two steps on top of the standard Flamingock setup:
+  1. Add Mongock support (Gradle plugin flag `mongock()` or Maven `mongock-support` artifact + annotation processor).
+  2. Add the `@MongockSupport` annotation.
 
 Flamingock then:
 
