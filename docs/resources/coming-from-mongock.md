@@ -11,7 +11,7 @@ import VersionBadge from '@site/src/components/VersionBadge';
 Flamingock provides first-class support for teams migrating from **Mongock**.  
 If your application was previously using Mongock, Flamingock allows you to transition **quickly, safely, and with minimal effort** — without rewriting any legacy migration code.
 
-In most cases, the migration consists of only adding **one dependency and one annotation**, and Flamingock takes care of everything else.
+In most cases, the migration consists of only adding **one dependency (or Gradle plugin flag) and one annotation**, and Flamingock takes care of everything else.
 
 This feature is designed to:
 
@@ -45,6 +45,19 @@ When migrating from Mongock to Flamingock **1.3.0** or later, run a clean build 
 This regenerates Flamingock's per-module metadata in the new incremental format. Without a clean build, the build system may skip recompiling already-compiled change classes, and the resulting metadata file will omit them — potentially causing changes to be missing at runtime. Subsequent builds are incremental as normal.
 :::
 
+## Before you start
+
+Before making any code changes, verify these points:
+
+1. Your application already runs successfully with Mongock.
+2. You know which backend Mongock is using for its audit history (MongoDB, DynamoDB, Couchbase, etc.).
+3. You know which Mongock version you are on (v4 or v5).
+4. You can test the migration against an environment or dataset that includes a copy of your existing Mongock audit history.
+
+:::caution Legacy changes are immutable
+Existing Mongock changes are historical records. They must not be modified as part of the migration. Violating immutability is one of the fastest ways to break execution continuity. See [Treat legacy Mongock change units as immutable](#treat-legacy-mongock-change-units-as-immutable) below.
+:::
+
 ## Migrate with an agentic coder
 
 Flamingock ships a dedicated **Mongock migration skill** that lets an agentic coder perform this migration for you — increasing velocity and reducing manual errors.
@@ -55,7 +68,7 @@ Once the skill is installed in your project (see [Using Flamingock with agentic 
 
 You should see a line in the agent's output confirming the skill is in use, similar to:
 
-```
+```text
 Using flamingock-mongock-migration-skill…
 ```
 
@@ -332,6 +345,56 @@ After the first Flamingock run against a copy of your Mongock audit history, ver
 - **Pending legacy changes were applied** — previously-pending Mongock change units now appear as executed.
 - **No gaps or duplicates** — final Flamingock audit state matches the expected executed set.
 
+### Validate via the Flamingock CLI
+
+Instead of inspecting the store manually, use the Flamingock CLI against your application JAR as the source of truth:
+
+```bash
+# Snapshot of the current audit state
+flamingock audit list --jar ./my-app.jar
+
+# Optional: full audit history
+flamingock audit list --jar ./my-app.jar --history
+
+# Optional: detect inconsistent states that require attention
+flamingock issue list --jar ./my-app.jar
+```
+
+Example snapshot output:
+
+```text
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✓      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total: 3 entries
+```
+
+Successful migration signal: legacy Mongock changes appear as executed, with no failed or in-progress states left behind.
+
+Practical verification flow:
+
+1. Run the application once with Flamingock enabled.
+2. Run `flamingock audit list --jar ./my-app.jar`.
+3. Confirm legacy Mongock changes that had already executed appear in the output and were not re-executed.
+4. Confirm previously pending legacy changes now appear as executed.
+5. Run `flamingock issue list --jar ./my-app.jar` and confirm no inconsistent audit states.
+
+If your application needs profiles, datasource URLs, or other runtime arguments, pass them through the CLI as well:
+
+```bash
+flamingock audit list --jar ./my-app.jar -- --spring.profiles.active=staging
+```
+
 ## Production recommendations
 
 Treat the first production Flamingock run as a controlled migration event, not a routine startup:
@@ -339,6 +402,20 @@ Treat the first production Flamingock run as a controlled migration event, not a
 - **Test against real history** — use a copy of production Mongock audit entries, executed history, pending changes, and realistic lock/startup timing.
 - **Plan the rollout** — observable release, clear logs, controlled timing, rollback plan at the platform level.
 - **Do not bundle unrelated refactors** — avoid mixing the Mongock migration with framework upgrades, driver changes, or package moves. Isolate the change to make failures diagnosable.
+
+## Migration checklist
+
+Before calling the migration ready, verify:
+
+- [ ] Flamingock dependencies are in place.
+- [ ] `@MongockSupport` is configured.
+- [ ] The target system points to the backend previously managed by Mongock.
+- [ ] The audit store is configured.
+- [ ] Historical Mongock changes were left untouched.
+- [ ] A clean build was run once (Flamingock 1.3.0+).
+- [ ] The migration was tested against realistic Mongock audit history.
+- [ ] The first production Flamingock run is planned as a controlled transition.
+- [ ] All new changes will be written in Flamingock, not Mongock.
 
 ## How it works internally (Advanced)
 
