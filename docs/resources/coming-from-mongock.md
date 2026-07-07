@@ -11,7 +11,7 @@ import VersionBadge from '@site/src/components/VersionBadge';
 Flamingock provides first-class support for teams migrating from **Mongock**.  
 If your application was previously using Mongock, Flamingock allows you to transition **quickly, safely, and with minimal effort** — without rewriting any legacy migration code.
 
-In most cases, the migration consists of only adding **one dependency and one annotation**, and Flamingock takes care of everything else.
+In most cases, the migration consists of only adding **one dependency (or Gradle plugin flag) and one annotation**, and Flamingock takes care of everything else.
 
 This feature is designed to:
 
@@ -21,9 +21,20 @@ This feature is designed to:
 - **Let you continue using Flamingock natively for all new changes**  
 
 :::info
-Flamingock does **not** support creating new Mongock ChangeUnits going forward.  
-This integration exists purely to make the migration **fast, simple and safe**.
+Flamingock does **not** support authoring new Mongock changes (`@ChangeUnit`, `@ChangeLog`, `@ChangeSet`) going forward.  
+This integration exists purely to make the migration **fast, simple and safe**. All new changes must be written as Flamingock-native `@Change` classes.
 :::
+
+## Supported Mongock versions
+
+Flamingock's Mongock support covers both major Mongock generations:
+
+- **Mongock v4** — legacy model based on `@ChangeLog` + `@ChangeSet`
+- **Mongock v5** — `@ChangeUnit` model with `@Execution` and `@RollbackExecution`
+
+In both cases, existing change classes are treated as immutable historical artifacts. The migration path is the same: keep legacy code untouched, import Mongock audit history, execute any pending legacy changes, and author all new work as Flamingock-native `@Change` classes.
+
+MongoDB is the most common starting backend, but the migration model also applies to other Mongock-supported backends such as DynamoDB and Couchbase.
 
 :::caution One-time clean build on upgrade
 When migrating from Mongock to Flamingock **1.3.0** or later, run a clean build once after adding the Flamingock dependencies:
@@ -34,11 +45,44 @@ When migrating from Mongock to Flamingock **1.3.0** or later, run a clean build 
 This regenerates Flamingock's per-module metadata in the new incremental format. Without a clean build, the build system may skip recompiling already-compiled change classes, and the resulting metadata file will omit them — potentially causing changes to be missing at runtime. Subsequent builds are incremental as normal.
 :::
 
+## Before you start
+
+Before making any code changes, verify these points:
+
+1. Your application already runs successfully with Mongock.
+2. You know which backend Mongock is using for its audit history (MongoDB, DynamoDB, Couchbase, etc.).
+3. You know which Mongock version you are on (v4 or v5).
+4. You can test the migration against an environment or dataset that includes a copy of your existing Mongock audit history.
+
+:::caution Legacy changes are immutable
+Existing Mongock changes are historical records. They must not be modified as part of the migration. Violating immutability is one of the fastest ways to break execution continuity. See [Treat legacy Mongock change units as immutable](#treat-legacy-mongock-change-units-as-immutable) below.
+:::
+
+## Migrate with an agentic coder
+
+Flamingock ships a dedicated **Mongock migration skill** that lets an agentic coder perform this migration for you — increasing velocity and reducing manual errors.
+
+Once the skill is installed in your project (see [Using Flamingock with agentic coders](./agentic-coders)), trigger the migration with a prompt such as:
+
+> migrate from Mongock to Flamingock [VERSION]
+
+You should see a line in the agent's output confirming the skill is in use, similar to:
+
+```text
+Using flamingock-mongock-migration-skill…
+```
+
+The skill performs the same steps described manually below.
+
+:::note
+Skills are in beta.
+:::
+
 ## Quick start for Mongock users
 
 Migrating from Mongock is intentionally simple, it only requires two additional steps on top of the [standard Flamingock setup](../get-started/quick-start).
 
-### 1. Add Mongock Support dependency
+### 1. Add Mongock support dependency
 
 <Tabs groupId="gradle_maven">
   <TabItem value="gradle" label="Gradle" default>
@@ -111,8 +155,6 @@ Flamingock will use this target system to:
 
 A full explanation of why this is required (and how Mongock’s model differs from Flamingock’s) is provided in the section [Understanding the target system for Mongock migrations](#understanding-the-target-system-for-mongock-migrations) below.
 
-
-
 **That’s all you need to activate Mongock support.** From there, Flamingock handles the detection of legacy changes, audit import, and stage ordering automatically.
 
 ### Optional configuration <VersionBadge version="1.1.0" />
@@ -166,7 +208,7 @@ Mongock and Flamingock follow different models when interacting with external sy
 ### 1. How Mongock handled databases
 
 Mongock used a **single database for everything**. There was no distinction between *audit store* and *target system*.  
-A single MongoDB/DynamoDB/DocumentDB instance played both roles, storing its **audit log**, and  applying its **change units**.
+A single MongoDB/DynamoDB/DocumentDB/Couchbase instance played both roles, storing its **audit log** and applying its **change units**.
 
 ### 2. How Flamingock handles external systems
 
@@ -220,8 +262,8 @@ For more details about configuring target systems in Flamingock, see [Target Sys
 
 ## Treat legacy Mongock change units as immutable
 
-Mongock `@ChangeUnit` classes represent historical operations that may already have been executed in production.  
-To ensure a safe and predictable migration, Flamingock **treats these legacy change units as immutable artifacts**, following the same best practices we apply to Flamingock changes.
+Mongock `@ChangeUnit` classes (v5) and `@ChangeLog` / `@ChangeSet` classes (v4) represent historical operations that may already have been executed in production.  
+To ensure a safe and predictable migration, Flamingock **treats these legacy classes as immutable artifacts**, following the same best practices we apply to Flamingock changes.
 
 **Immutability implies:**
 
@@ -244,14 +286,145 @@ Preserving immutability ensures:
 Treat legacy Mongock changes as **immutable historical records**.
 
 
+## Annotation mapping for new changes
+
+Legacy Mongock classes remain untouched. For **new** changes written after the migration bridge is in place, use the Flamingock-native annotations. Direct mapping for teams coming from Mongock v5:
+
+| Mongock                  | Flamingock               |
+| ------------------------ | ------------------------ |
+| `@ChangeUnit`            | `@Change`                |
+| `@Execution`             | `@Apply`                 |
+| `@RollbackExecution`     | `@Rollback`              |
+| `@ChangeUnitConstructor` | `@FlamingockConstructor` |
+
+For Mongock v4 users, the move is conceptual rather than a direct rename:
+
+- `@ChangeLog` and `@ChangeSet` remain in place as legacy code.
+- New Flamingock work is authored as standalone `@Change` classes (no `@ChangeLog` wrapper).
+
+## Mongock v4 vs v5 vs Flamingock model comparison
+
+Migration decisions are easier to reason about when the programming model differences are made explicit.
+
+| Topic                    | Mongock v4                                 | Mongock v5                                       | Flamingock                                 |
+| ------------------------ | ------------------------------------------ | ------------------------------------------------ | ------------------------------------------ |
+| Main unit                | `@ChangeLog` + `@ChangeSet`                | `@ChangeUnit` class                              | `@Change` class                            |
+| Execution method         | `@ChangeSet` method                        | `@Execution`                                     | `@Apply`                                   |
+| Rollback method          | old model / environment-dependent behavior | `@RollbackExecution`                             | `@Rollback`                                |
+| Pre-execution hook       | not part of the same primary model         | `@BeforeExecution` + `@RollbackBeforeExecution`  | model the intent explicitly in Flamingock  |
+| Spring-specific wrapper  | `MongockTemplate` in Spring Mongo setups   | direct dependency injection into `@ChangeUnit`   | direct dependency injection into `@Change` |
+| Audit default            | `mongockChangeLog`                         | `mongockChangeLog`                               | `flamingockAuditLog`                       |
+| Lock default             | `mongockLock`                              | `mongockLock`                                    | `flamingockLock`                           |
+| Spring Boot runner       | old Spring integration model               | `MongockSpringboot` / standalone runner          | `ApplicationRunner` or `InitializingBean`  |
+| Main architectural model | database migration tool                    | cleaner ChangeUnit model, still database-centric | explicit Target System + Audit Store       |
+
+Practical recommendation:
+
+- If you are on **Mongock v4**, leave old `@ChangeLog` / `@ChangeSet` code alone.
+- If you are on **Mongock v5**, leave old `@ChangeUnit` code alone too.
+- In both cases, author **new** work as Flamingock `@Change` classes once the migration bridge is active.
+
+## Edge cases to review before migrating
+
+Some Mongock features need explicit review during the migration. Validate behaviour per feature before rolling out to production:
+
+- `@BeforeExecution`
+- `@RollbackBeforeExecution`
+- `runAlways`
+- `systemVersion`
+- `MongockTemplate` (Spring MongoDB wrapper)
+
+These are migration-sensitive and should be verified against a realistic pre-production dataset that includes Mongock audit history.
+
+## Validating the migration
+
+After the first Flamingock run against a copy of your Mongock audit history, verify:
+
+- **Audit import completed** — Mongock audit entries appear in the Flamingock audit store. Default MongoDB collection names are `mongockChangeLog` (Mongock) and `flamingockAuditLog` (Flamingock); compare configured names if customised.
+- **Already-executed changes were skipped** — no legacy change re-runs during the transition.
+- **Pending legacy changes were applied** — previously-pending Mongock change units now appear as executed.
+- **No gaps or duplicates** — final Flamingock audit state matches the expected executed set.
+
+### Validate via the Flamingock CLI
+
+Instead of inspecting the store manually, use the Flamingock CLI against your application JAR as the source of truth:
+
+```bash
+# Snapshot of the current audit state
+flamingock audit list --jar ./my-app.jar
+
+# Optional: full audit history
+flamingock audit list --jar ./my-app.jar --history
+
+# Optional: detect inconsistent states that require attention
+flamingock issue list --jar ./my-app.jar
+```
+
+Example snapshot output:
+
+```text
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✓      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total: 3 entries
+```
+
+Successful migration signal: legacy Mongock changes appear as executed, with no failed or in-progress states left behind.
+
+Practical verification flow:
+
+1. Run the application once with Flamingock enabled.
+2. Run `flamingock audit list --jar ./my-app.jar`.
+3. Confirm legacy Mongock changes that had already executed appear in the output and were not re-executed.
+4. Confirm previously pending legacy changes now appear as executed.
+5. Run `flamingock issue list --jar ./my-app.jar` and confirm no inconsistent audit states.
+
+If your application needs profiles, datasource URLs, or other runtime arguments, pass them through the CLI as well:
+
+```bash
+flamingock audit list --jar ./my-app.jar -- --spring.profiles.active=staging
+```
+
+## Production recommendations
+
+Treat the first production Flamingock run as a controlled migration event, not a routine startup:
+
+- **Test against real history** — use a copy of production Mongock audit entries, executed history, pending changes, and realistic lock/startup timing.
+- **Plan the rollout** — observable release, clear logs, controlled timing, rollback plan at the platform level.
+- **Do not bundle unrelated refactors** — avoid mixing the Mongock migration with framework upgrades, driver changes, or package moves. Isolate the change to make failures diagnosable.
+
+## Migration checklist
+
+Before calling the migration ready, verify:
+
+- [ ] Flamingock dependencies are in place.
+- [ ] `@MongockSupport` is configured.
+- [ ] The target system points to the backend previously managed by Mongock.
+- [ ] The audit store is configured.
+- [ ] Historical Mongock changes were left untouched.
+- [ ] A clean build was run once (Flamingock 1.3.0+).
+- [ ] The migration was tested against realistic Mongock audit history.
+- [ ] The first production Flamingock run is planned as a controlled transition.
+- [ ] All new changes will be written in Flamingock, not Mongock.
+
 ## How it works internally (Advanced)
 
 Mongock support activates **when the `@MongockSupport` annotation is present**.
 
-At compilation time, Flamingock’s annotation processor scans the entire classpath and discovers all legacy Mongock changeUnits(clases annotated with `@ChangeUnit`)
+At compilation time, Flamingock’s annotation processor scans the entire classpath and discovers all legacy Mongock changes (classes annotated with `@ChangeUnit` or `@ChangeLog`).
 
 :::info 
-if the annotation processor is present in your build but `@MongockSupport` is missing, Flamingock will fail fast to avoid misconfiguration.
+If the annotation processor is present in your build but `@MongockSupport` is missing, Flamingock will fail fast to avoid misconfiguration.
 :::
 
 ### Automatic stage structure
@@ -263,7 +436,7 @@ Imports the Mongock audit log and converts it to Flamingock’s audit format.
 This always runs first so Flamingock can safely determine which legacy changes were already applied.
 
 #### 2. Mongock Legacy Stage (auto-generated user stage)
-Contains all Mongock `@ChangeUnit` classes that were detected during compilation.
+Contains all Mongock `@ChangeUnit` (v5) and `@ChangeLog` (v4) classes that were detected during compilation.
 
 At runtime:
 
@@ -275,7 +448,7 @@ After this stage finishes, Flamingock continues with your normal user-defined st
 
 ## Compatibility notes
 
-- Works with MongoDB, DynamoDB, DocumentDB, CouchBase and other systems supported by Mongock  
+- Works with MongoDB, DynamoDB, DocumentDB, Couchbase and other systems supported by Mongock  
 - Flamingock restrictions on change IDs, order, etc. do not apply to Mongock change units because they are historical artifacts that must remain unchanged.
 - Compatible with Standalone and Spring Boot runners  
 - Does not interfere with your normal Flamingock stages  
@@ -283,10 +456,12 @@ After this stage finishes, Flamingock continues with your normal user-defined st
 
 ## Summary
 
-Migrating from Mongock is intentionally simple:
+Migrating from Mongock is intentionally simple. Two paths:
 
-1. Add the `mongock-support` dependency  
-2. Add the `@MongockSupport` annotation  
+- **Agentic coder** — install the Flamingock Mongock migration skill and prompt the agent (see [Migrate with an agentic coder](#migrate-with-an-agentic-coder)).
+- **Manual** — two steps on top of the standard Flamingock setup:
+  1. Add Mongock support (Gradle plugin flag `mongock()` or Maven `mongock-support` artifact + annotation processor).
+  2. Add the `@MongockSupport` annotation.
 
 Flamingock then:
 

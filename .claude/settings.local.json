@@ -29,7 +29,13 @@
       "Bash(docs/changes/best-practices.md)",
       "Bash(docs/target-systems/dynamodb-target-system.md)",
       "Bash(docs/target-systems/couchbase-target-system.md)",
-      "Bash(docs/target-systems/mongodb-target-system.md)"
+      "Bash(docs/target-systems/mongodb-target-system.md)",
+      "Bash(git -C /Users/david/Development/Flamingock/docusaurus/flamingock add docs/resources/coming-from-mongock.md)",
+      "Bash(git -C /Users/david/Development/Flamingock/docusaurus/flamingock commit -m ' *)",
+      "Bash(git -C /Users/david/Development/Flamingock/docusaurus/flamingock push)",
+      "Bash(gh api *)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(f'--- {c[\\\\\"user\\\\\"][\\\\\"login\\\\\"]} @ {c[\\\\\"created_at\\\\\"]} line {c.get\\(\\\\\"line\\\\\"\\)} path={c[\\\\\"path\\\\\"]}\\\\\\\\n{c[\\\\\"body\\\\\"]}\\\\\\\\n'\\) for c in data]\")",
+      "Bash(git -C /Users/david/Development/Flamingock/docusaurus/flamingock add docs/resources/faq.md)"
     ],
     "deny": []
   }
