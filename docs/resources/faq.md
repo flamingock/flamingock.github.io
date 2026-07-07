@@ -122,6 +122,30 @@ sidebar_position: 160
 
     If you are currently using Mongock, we encourage you to [review the migration guide](coming-from-mongock.md) and explore what Flamingock can offer in modern change management.
 
+- **How do I migrate an existing Mongock application to Flamingock?**
+
+    In most cases, only two steps are required on top of the standard Flamingock setup:
+        1. Add the `mongock-support` dependency (Gradle plugin flag `mongock()` or Maven `mongock-support` artifact + annotation processor).
+        2. Add `@MongockSupport(targetSystem = "...")` to a configuration class, referencing the target system that maps to the database Mongock previously used.
+
+    Flamingock then imports Mongock's audit log, skips already-applied change units, executes pending ones, and continues with your Flamingock stages. Legacy `@ChangeUnit` classes must remain immutable. See the [migration guide](coming-from-mongock.md) for optional fields (`skipImport`, `origin`, `emptyOriginAllowed`, `ignoreUnknownEntries`) and the internal stage model.
+
+    If you use an agentic coder, Flamingock ships a dedicated **Mongock migration skill** that performs this migration for you. See [Migrate with an agentic coder](coming-from-mongock.md#migrate-with-an-agentic-coder).
+
+- **Which Mongock versions are supported for migration?**
+
+    Both Mongock v4 (`@ChangeLog` + `@ChangeSet`) and Mongock v5 (`@ChangeUnit`) are supported. Legacy classes remain untouched as historical artifacts in both cases. For new work written after the migration, use Flamingock-native annotations: `@Change`, `@Apply`, `@Rollback`, `@FlamingockConstructor`.
+
+- **Can I migrate from an older version of Mongock (lower than v4)?**
+
+    Not directly. Flamingock's Mongock migration bridge covers Mongock v4 (`@ChangeLog` + `@ChangeSet`) and v5 (`@ChangeUnit`). Older Mongock versions (v3 and earlier) use annotations and audit formats that predate the supported bridge.
+
+    Recommended path:
+        1. Upgrade your existing application to **Mongock v4 or v5** first, following the official Mongock upgrade guidance. This typically requires minimal changes and preserves your audit history.
+        2. Once on v4 or v5, migrate to Flamingock using the [migration guide](coming-from-mongock.md).
+
+    If upgrading Mongock is not viable in your environment, contact the Flamingock team via GitHub discussions.
+
 
 ## Recovery strategies & safety
 
