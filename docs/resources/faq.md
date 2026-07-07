@@ -130,6 +130,8 @@ sidebar_position: 160
 
     Flamingock then imports Mongock's audit log, skips already-applied change units, executes pending ones, and continues with your Flamingock stages. Legacy `@ChangeUnit` classes must remain immutable. See the [migration guide](coming-from-mongock.md) for optional fields (`skipImport`, `origin`, `emptyOriginAllowed`, `ignoreUnknownEntries`) and the internal stage model.
 
+    If you use an agentic coder, Flamingock ships a dedicated **Mongock migration skill** that performs this migration for you. See [Migrate with an agentic coder](coming-from-mongock.md#migrate-with-an-agentic-coder).
+
 - **Which Mongock versions are supported for migration?**
 
     Both Mongock v4 (`@ChangeLog` + `@ChangeSet`) and Mongock v5 (`@ChangeUnit`) are supported. Legacy classes remain untouched as historical artifacts in both cases. For new work written after the migration, use Flamingock-native annotations: `@Change`, `@Apply`, `@Rollback`, `@FlamingockConstructor`.
