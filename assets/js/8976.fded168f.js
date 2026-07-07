@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkflamingock=globalThis.webpackChunkflamingock||[]).push([[8976],{8976(a,e,c){c.d(e,{createPieServices:()=>i.f});var i=c(6019);c(1400)}}]);

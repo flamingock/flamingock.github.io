@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkflamingock=globalThis.webpackChunkflamingock||[]).push([[8391],{8391(a,c,e){e.d(c,{createInfoServices:()=>i.v});var i=e(6491);e(1400)}}]);

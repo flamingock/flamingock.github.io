@@ -1,0 +1,752 @@
+# MongoDB Template
+
+> :::caution Beta feature
+The MongoDB Template is available in **beta**.
+:::
+
+# MongoDB Template Reference
+
+:::caution Beta feature
+The MongoDB Template is available in **beta**.
+:::
+
+The MongoDB Template (`mongodb-sync-template`) provides a declarative way to define MongoDB operations in YAML format. It is designed for step-based changes where each step can have its own apply and rollback operation.
+
+## Getting started
+
+The MongoDB Template allows you to define database changes declaratively in YAML instead of writing Java code. Here's a quick example:
+
+```yaml
+id: create-users-collection
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_1"
+```
+
+This single YAML file replaces what would typically require a Java class with annotations and MongoDB driver code. For a step-by-step guide on setting up templates, see [How to use Templates](./templates-how-to-use.md).
+
+## Installation
+
+### Dependency setup
+
+<Tabs groupId="gradle_maven">
+  <TabItem value="gradle" label="Gradle">
+```kotlin
+flamingock {
+    //...
+    mongodb()
+}
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+Requires the [Flamingock BOM](../get-started/quick-start.md) in your `<dependencyManagement>` section:
+
+```xml
+<dependency>
+    <groupId>io.flamingock</groupId>
+    <artifactId>flamingock-mongodb-template</artifactId>
+</dependency>
+```
+  </TabItem>
+</Tabs>
+
+### Prerequisites
+
+The MongoDB Template requires the following to be configured in your project:
+
+- The [MongoDB Sync Target System](../target-systems/mongodb-target-system.md) module.
+- MongoDB Java Driver (`mongodb-driver-sync`) 4.0.0+ as a direct dependency.
+
+MongoDB 4.0+ is required for transaction support.
+
+## YAML structure
+
+The MongoDB Template uses the **steps format** where each step contains an apply operation and an optional rollback operation.
+
+```yaml
+# Required: Unique identifier for this change
+id: my-change-id
+
+# Optional: Author of this change
+author: developer-name
+
+# Optional: Whether to run in a transaction
+# When omitted, inferred from operations (DDL → false, DML → true)
+
+# Required: Template to use
+template: mongodb-sync-template
+
+# Required: Target system configuration
+targetSystem:
+  id: "mongodb"
+
+# Required: List of steps, each with an apply and optional rollback
+steps:
+  - apply:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+    rollback:
+      type: <operation-type>
+      collection: <collection-name>
+      parameters:
+        # Operation-specific parameters
+
+  - apply:
+      type: <another-operation>
+      collection: <collection-name>
+    rollback:
+      type: <rollback-operation>
+      collection: <collection-name>
+```
+
+:::info Collection name rules
+Collection names must:
+- Not be empty
+- Not contain `$` or null characters
+- Not start with `system.` (reserved by MongoDB)
+:::
+
+**Example:**
+
+```yaml
+id: setup-products
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createCollection
+      collection: products
+    rollback:
+      type: dropCollection
+      collection: products
+
+  - apply:
+      type: createIndex
+      collection: products
+      parameters:
+        keys:
+          category: 1
+        options:
+          name: "category_index"
+    rollback:
+      type: dropIndex
+      collection: products
+      parameters:
+        indexName: "category_index"
+```
+
+### Rollback behavior
+
+When a step fails during execution:
+1. All previously successful steps are rolled back in reverse order
+2. Steps without rollback operations are skipped during rollback
+3. Rollback errors are logged but don't stop the rollback process for remaining steps
+
+This provides fine-grained control over rollback operations, ensuring each operation can be properly undone.
+
+### Transactional behavior
+
+Each MongoDB operation declares whether it supports transactions. When you omit `transactional` from YAML, Flamingock infers the value automatically based on the operations used.
+
+| Operation | Supports transactions |
+|-----------|----------------------|
+| `createCollection` | No |
+| `dropCollection` | No |
+| `createIndex` | No |
+| `dropIndex` | No |
+| `createView` | No |
+| `dropView` | No |
+| `renameCollection` | No |
+| `modifyCollection` | No |
+| `insert` | Yes |
+| `update` | Yes |
+| `delete` | Yes |
+
+:::warning
+MongoDB DDL operations cannot run inside transactions. If any step uses a DDL operation, Flamingock will infer `transactional: false` automatically. Explicitly setting `transactional: true` on a change that contains DDL operations will result in a validation error at load time.
+:::
+
+## Supported operations
+
+### createCollection
+
+Creates a new collection. This operation is idempotent — if the collection already exists, it is skipped.
+
+```yaml
+- apply:
+    type: createCollection
+    collection: users
+  rollback:
+    type: dropCollection
+    collection: users
+```
+
+**Parameters:** None required.
+
+---
+
+### dropCollection
+
+Drops an existing collection.
+
+```yaml
+- apply:
+    type: dropCollection
+    collection: users
+```
+
+**Parameters:** None required.
+
+---
+
+### insert
+
+Inserts one or more documents into a collection.
+
+```yaml
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+          roles: ["admin", "user"]
+        - name: "Jane Smith"
+          email: "jane@example.com"
+          roles: ["user"]
+  rollback:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `documents` | List | Yes | List of documents to insert |
+| `options` | Object | No | Insert options |
+
+**Insert Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `bypassDocumentValidation` | Boolean | If `true`, allows insertion of documents that don't pass validation |
+| `ordered` | Boolean | If `true` (default), stops on first error. If `false`, continues inserting remaining documents |
+
+**Example with options:**
+
+```yaml
+- apply:
+    type: insert
+    collection: users
+    parameters:
+      documents:
+        - name: "John Doe"
+          email: "john@example.com"
+        - name: "Jane Smith"
+          email: "jane@example.com"
+      options:
+        ordered: false
+        bypassDocumentValidation: true
+```
+
+---
+
+### update
+
+Updates documents in a collection.
+
+```yaml
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        status: "pending"
+      update:
+        $set:
+          status: "active"
+      multi: true  # Optional: update all matching documents
+  rollback:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        status: "active"
+      update:
+        $set:
+          status: "pending"
+      multi: true
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filter` | Object | Yes | Query filter to select documents |
+| `update` | Object | Yes | Update operations to apply |
+| `multi` | Boolean | No | If `true`, updates all matching documents. Default: `false` (updates first match only) |
+| `options` | Object | No | Additional update options (upsert, etc.) |
+
+**Update Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `upsert` | Boolean | Insert if no document matches |
+| `bypassDocumentValidation` | Boolean | If `true`, allows update to bypass document validation |
+| `collation` | Object | Collation settings for string comparison (see example below) |
+| `arrayFilters` | List | Filters specifying which array elements to update |
+
+**Example with collation:**
+
+```yaml
+- apply:
+    type: update
+    collection: users
+    parameters:
+      filter:
+        name: "josé"
+      update:
+        $set:
+          verified: true
+      options:
+        collation:
+          locale: "es"
+          strength: 1  # Case-insensitive and accent-insensitive
+```
+
+**Example with arrayFilters:**
+
+```yaml
+- apply:
+    type: update
+    collection: orders
+    parameters:
+      filter:
+        orderId: "ORD-001"
+      update:
+        $set:
+          "items.$[elem].status": "shipped"
+      options:
+        arrayFilters:
+          - elem.status: "pending"
+```
+
+---
+
+### delete
+
+Deletes documents from a collection.
+
+```yaml
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter:
+        status: "inactive"
+```
+
+To delete all matching documents:
+
+```yaml
+- apply:
+    type: delete
+    collection: users
+    parameters:
+      filter: {}
+      multi: true
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filter` | Object | Yes | Query filter to select documents to delete. Use `{}` for all documents. |
+| `multi` | Boolean | No | If `true`, deletes all matching documents. Default: `false` (deletes first match only) |
+
+---
+
+### createIndex
+
+Creates an index on a collection.
+
+```yaml
+- apply:
+    type: createIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1        # 1 for ascending, -1 for descending
+      options:
+        name: "email_unique_index"
+        unique: true
+  rollback:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
+```
+
+**Compound index example:**
+
+```yaml
+- apply:
+    type: createIndex
+    collection: orders
+    parameters:
+      keys:
+        customerId: 1
+        orderDate: -1
+      options:
+        name: "customer_orders_index"
+  rollback:
+    type: dropIndex
+    collection: orders
+    parameters:
+      indexName: "customer_orders_index"
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `keys` | Object | Yes | Index key specification. Use `1` for ascending, `-1` for descending |
+| `options` | Object | No | Index options |
+
+**Index Options:**
+
+*Common options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `name` | String | Index name |
+| `unique` | Boolean | Create a unique index |
+| `sparse` | Boolean | Create a sparse index |
+| `expireAfterSeconds` | Integer | TTL index expiration time |
+| `background` | Boolean | Build index in background (deprecated in MongoDB 4.2+) |
+| `version` | Integer | Index version |
+
+*Text index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `weights` | Object | Text index field weights |
+| `defaultLanguage` | String | Default language for text index |
+| `languageOverride` | String | Field name that contains the language |
+| `textVersion` | Integer | Text index version |
+
+*Geospatial index options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `sphereVersion` | Integer | 2dsphere index version |
+| `bits` | Integer | Geohash precision for 2d indexes |
+| `min` | Number | Minimum boundary for 2d index |
+| `max` | Number | Maximum boundary for 2d index |
+
+*Advanced options:*
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `storageEngine` | Object | Storage engine configuration |
+| `partialFilterExpression` | Object | Filter expression for partial indexes |
+| `collation` | Object | Collation settings for string comparison |
+
+---
+
+### dropIndex
+
+Drops an index from a collection. This operation is idempotent — if the index does not exist, it is skipped.
+
+**By index name:**
+
+```yaml
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      indexName: "email_unique_index"
+```
+
+**By index keys:**
+
+```yaml
+- apply:
+    type: dropIndex
+    collection: users
+    parameters:
+      keys:
+        email: 1
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `indexName` | String | No* | Name of the index to drop |
+| `keys` | Object | No* | Index key specification |
+
+*One of `indexName` or `keys` is required.
+
+---
+
+### renameCollection
+
+Renames a collection. This operation is idempotent — if the source collection does not exist but the target does, it is skipped.
+
+```yaml
+- apply:
+    type: renameCollection
+    collection: oldName
+    parameters:
+      target: newName
+  rollback:
+    type: renameCollection
+    collection: newName
+    parameters:
+      target: oldName
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `target` | String | Yes | New collection name |
+| `options` | Object | No | Rename options |
+
+**Rename Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `dropTarget` | Boolean | If `true`, drops the target collection if it already exists |
+
+---
+
+### modifyCollection
+
+Modifies collection options, such as adding validation rules.
+
+```yaml
+- apply:
+    type: modifyCollection
+    collection: users
+    parameters:
+      validator:
+        $jsonSchema:
+          bsonType: "object"
+          required: ["email", "name"]
+          properties:
+            email:
+              bsonType: "string"
+              description: "must be a string and is required"
+            name:
+              bsonType: "string"
+              description: "must be a string and is required"
+      validationLevel: "moderate"
+      validationAction: "warn"
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `validator` | Object | No | JSON Schema validator |
+| `validationLevel` | String | No | `"off"`, `"moderate"`, or `"strict"` |
+| `validationAction` | String | No | `"error"` or `"warn"` |
+
+:::note
+At least one of `validator`, `validationLevel`, or `validationAction` must be provided.
+:::
+
+---
+
+### createView
+
+Creates a view based on an aggregation pipeline. This operation is idempotent — if the view already exists, it is skipped.
+
+```yaml
+- apply:
+    type: createView
+    collection: activeUsers
+    parameters:
+      viewOn: users
+      pipeline:
+        - $match:
+            status: "active"
+        - $project:
+            name: 1
+            email: 1
+  rollback:
+    type: dropView
+    collection: activeUsers
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `viewOn` | String | Yes | Source collection name |
+| `pipeline` | List | Yes | Aggregation pipeline stages |
+| `options` | Object | No | View options |
+
+**View Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `collation` | Object | Collation settings for string comparison |
+
+---
+
+### dropView
+
+Drops a view.
+
+```yaml
+- apply:
+    type: dropView
+    collection: activeUsers
+```
+
+**Parameters:** None required.
+
+---
+
+## Complete examples
+
+### Example 1: Setting up a users collection
+
+```yaml
+id: setup-users-collection
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createCollection
+      collection: users
+    rollback:
+      type: dropCollection
+      collection: users
+
+  - apply:
+      type: createIndex
+      collection: users
+      parameters:
+        keys:
+          email: 1
+        options:
+          name: "email_unique"
+          unique: true
+    rollback:
+      type: dropIndex
+      collection: users
+      parameters:
+        indexName: "email_unique"
+
+  - apply:
+      type: insert
+      collection: users
+      parameters:
+        documents:
+          - name: "Admin"
+            email: "admin@company.com"
+            roles: ["superuser"]
+          - name: "Support"
+            email: "support@company.com"
+            roles: ["readonly"]
+    rollback:
+      type: delete
+      collection: users
+      parameters:
+        filter: {}
+```
+
+### Example 2: Data migration with update
+
+```yaml
+id: migrate-user-status
+transactional: true
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: update
+      collection: users
+      parameters:
+        filter:
+          active: true
+        update:
+          $set:
+            status: "active"
+          $unset:
+            active: ""
+        multi: true
+    rollback:
+      type: update
+      collection: users
+      parameters:
+        filter:
+          status: "active"
+        update:
+          $set:
+            active: true
+          $unset:
+            status: ""
+        multi: true
+```
+
+### Example 3: Creating a view
+
+```yaml
+id: create-premium-customers-view
+template: mongodb-sync-template
+targetSystem:
+  id: "mongodb"
+
+steps:
+  - apply:
+      type: createView
+      collection: premiumCustomers
+      parameters:
+        viewOn: customers
+        pipeline:
+          - $match:
+              subscriptionTier: "premium"
+          - $project:
+              name: 1
+              email: 1
+              subscriptionTier: 1
+    rollback:
+      type: dropView
+      collection: premiumCustomers
+```
+
+## File naming convention
+
+Change files are executed in alphabetical order. Use a numeric prefix to control execution order:
+
+```
+_0001__create_users_collection.yaml
+_0002__seed_users.yaml
+_0003__create_indexes.yaml
+```
