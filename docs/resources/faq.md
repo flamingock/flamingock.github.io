@@ -136,6 +136,16 @@ sidebar_position: 160
 
     Both Mongock v4 (`@ChangeLog` + `@ChangeSet`) and Mongock v5 (`@ChangeUnit`) are supported. Legacy classes remain untouched as historical artifacts in both cases. For new work written after the migration, use Flamingock-native annotations: `@Change`, `@Apply`, `@Rollback`, `@FlamingockConstructor`.
 
+- **Can I migrate from an older version of Mongock (lower than v4)?**
+
+    Not directly. Flamingock's Mongock migration bridge covers Mongock v4 (`@ChangeLog` + `@ChangeSet`) and v5 (`@ChangeUnit`). Older Mongock versions (v3 and earlier) use annotations and audit formats that predate the supported bridge.
+
+    Recommended path:
+        1. Upgrade your existing application to **Mongock v4 or v5** first, following the official Mongock upgrade guidance. This typically requires minimal changes and preserves your audit history.
+        2. Once on v4 or v5, migrate to Flamingock using the [migration guide](coming-from-mongock.md).
+
+    If upgrading Mongock is not viable in your environment, contact the Flamingock team via GitHub discussions.
+
 
 ## Recovery strategies & safety
 
