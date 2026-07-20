@@ -84,7 +84,11 @@ sidebar_position: 160
 
 - **Where do I set MongoDB connection options like write concern or read preference?**
 
-    You can define these directly in the Audit Store config using dedicated methods (.withXXX methods). Refer to the [audit stores](../audit-stores/introduction.md) section for more info.
+     You can define these directly in the Audit Store config using dedicated methods (.withXXX methods). Refer to the [audit stores](../audit-stores/introduction.md) section for more info.
+
+- **Can multiple applications share a Community Audit Store backend?**
+
+     Yes. Applications can share the same physical database, cluster, or service, but each application must use different audit and lock repositories. A repository is a provider-specific table or collection, not a separate database, cluster, or connection. Configure unique repository names for each application; the default names are suitable only for a dedicated backend. This does not apply to Flamingock Cloud, which manages the audit store.
 
 - **Can I inject Spring beans or other services into my Changes?**
 
