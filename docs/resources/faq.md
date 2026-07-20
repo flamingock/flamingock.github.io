@@ -18,7 +18,7 @@ sidebar_position: 160
 
 - **Can I use Flamingock without Spring Boot?**
 
-    Yes. You can use Flamingock in any Java application by configuring it manually using the [`FlamingockBuilder`](../overview/quick-start#5-configure-flamingock-runtime). This approach is ideal for applications that do not rely on Spring Boot or that require finer control.
+    Yes. You can use Flamingock in any Java application by configuring it manually using the [`FlamingockBuilder`](../get-started/quick-start#5-configure-flamingock-runtime). This approach is ideal for applications that do not rely on Spring Boot or that require finer control.
 
 - **What Java version is required?**
 

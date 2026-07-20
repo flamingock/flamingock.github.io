@@ -67,7 +67,7 @@ These dependencies must be provided at target system creation time with **no glo
 
 ## Dependencies available to Changes
 
-Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+Changes can access dependencies through [dependency injection with fallback](../changes/apply-and-rollback-methods.md#where-parameters-come-from):
 
 1. **Target system context** (highest priority) - `Cluster`, `Bucket`, `TransactionAttemptContext`
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
