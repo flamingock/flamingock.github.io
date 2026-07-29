@@ -34,6 +34,7 @@ The audit store is **automatically provided and managed** by Flamingock Cloud. N
 Alternatively, you can configure your own audit store using one of the supported databases:
 
 - [MongoDB audit store](./community/mongodb-audit-store.md)
+- [MongoDB Reactive audit store](./community/mongodb-reactive-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
 - [Couchbase audit store](./community/couchbase-audit-store.md)
 - [SQL audit store](./community/sql-audit-store.md)

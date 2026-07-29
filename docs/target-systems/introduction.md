@@ -54,7 +54,9 @@ The standard choice for systems without native transaction support:
 These implementations leverage native transaction capabilities for automatic rollback:
 
 - [MongoDB target system](../target-systems/mongodb-target-system.md) - For MongoDB with the sync driver
+- [MongoDB Reactive target system](../target-systems/mongodb-reactive-target-system.md) - For MongoDB with the reactive streams driver
 - [MongoDB Spring Data target system](../target-systems/mongodb-springdata-target-system.md) - For MongoDB with Spring Data
+- [MongoDB Spring Data Reactive target system](../target-systems/mongodb-springdata-reactive-target-system.md) - For MongoDB with reactive Spring Data
 - [SQL target system](../target-systems/sql-target-system.md) - For relational databases (PostgreSQL, MySQL, etc.)
 - [DynamoDB target system](../target-systems/dynamodb-target-system.md) - For Amazon DynamoDB
 - [Couchbase target system](../target-systems/couchbase-target-system.md) - For Couchbase
