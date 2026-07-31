@@ -59,6 +59,7 @@ This regenerates Flamingock's per-module metadata in the new incremental format.
 - **Gradle** 7.4+
 - **Java** 8+
 
+See [Dependency requirements and compatibility](./dependency-requirements.md) for application-owned dependencies and compatibility notes.
 
 ## Quick start
 
