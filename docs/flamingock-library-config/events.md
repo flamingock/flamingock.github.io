@@ -237,7 +237,7 @@ class StageCompletedListener : ApplicationListener<SpringStageCompletedEvent> {
   </TabItem>
 </Tabs>
 
-## Event payload reference <VersionBadge version="1.4.0" />
+## Event payload reference <VersionBadge version="1.4.0" /> {#event-payload-reference}
 
 The pipeline-level events carry `ExecuteResponseData`; the stage-level events carry `StageResult`. The fields a typical listener reads are:
 

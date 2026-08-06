@@ -13,7 +13,7 @@ It applies **versioned, auditable changes** to the external systems your applica
 Unlike infrastructure-as-code tools, Flamingock runs **inside your application** (or via the **CLI**).
 It ensures these systems evolve **safely, consistently, and in sync with your code at runtime**.
 
-👉 For a deeper explanation, see the [Introduction](./get-started/Introduction)
+👉 For a deeper explanation, see the [Introduction](./get-started/introduction)
 
 ---
 
@@ -37,7 +37,7 @@ public class _0001__CreateUsersCollection {
 
 ## 🚀 Getting Started
 
-- 👉 [What is Flamingock?](./get-started/Introduction) – learn the core ideas and principles
+- 👉 [What is Flamingock?](./get-started/introduction) – learn the core ideas and principles
 - 👉 [Quick Start](./get-started/quick-start) – set up Flamingock in minutes
 - 👉 [Core Concepts](./get-started/core-concepts) – understand the building blocks
 - 👉 [FAQ](./resources/faq) – Frequently asked questions
