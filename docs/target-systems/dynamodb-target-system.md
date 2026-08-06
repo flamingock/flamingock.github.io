@@ -66,7 +66,7 @@ These dependencies must be provided at target system creation time with **no glo
 
 ## Dependencies available to Changes
 
-Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+Changes can access dependencies through [dependency injection with fallback](../changes/apply-and-rollback-methods.md#advanced-topics):
 
 1. **Target system context** (highest priority) - `DynamoDbClient`, `TransactWriteItemsEnhancedRequest.Builder`
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`

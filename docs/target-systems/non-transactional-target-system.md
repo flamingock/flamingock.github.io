@@ -57,7 +57,7 @@ var targetSystem = new NonTransactionalTargetSystem("system-name-id");
 
 ## Dependencies available to Changes
 
-Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+Changes can access dependencies through [dependency injection with fallback](../changes/apply-and-rollback-methods.md#advanced-topics):
 
 | Method | Description |
 |--------|-------------|

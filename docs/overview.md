@@ -37,7 +37,7 @@ public class _0001__CreateUsersCollection {
 
 ## 🚀 Getting Started
 
-- 👉 [What is Flamingock?](./get-started/introduction) – learn the core ideas and principles
+- 👉 [What is Flamingock?](./get-started/Introduction) – learn the core ideas and principles
 - 👉 [Quick Start](./get-started/quick-start) – set up Flamingock in minutes
 - 👉 [Core Concepts](./get-started/core-concepts) – understand the building blocks
 - 👉 [FAQ](./resources/faq) – Frequently asked questions
