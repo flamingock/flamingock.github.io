@@ -79,7 +79,7 @@ flamingock {
   </TabItem>
 </Tabs>
 
-
+See [Dependency requirements and compatibility](./dependency-requirements.md) for application-owned dependencies and compatibility notes.
 
 ## 2. Create target systems
 
