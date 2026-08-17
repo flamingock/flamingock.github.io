@@ -12,7 +12,7 @@ Command-line tool to execute Flamingock operations outside your application's no
 
 ## Overview
 
-The Flamingock CLI spawns your application JAR in a separate JVM process, runs the requested operation, and returns structured results. This means you can run changes in CI/CD pipelines, diagnose issues, and fix audit states — before, after, or outside your application lifecycle.
+The Flamingock CLI spawns your application JAR in a separate JVM process, runs the requested operation, and returns structured results. This means you can run changes in CI/CD pipelines, audit history, diagnose issues, and fix audit states — before, after, or outside your application lifecycle.
 
 ## Installation
 
@@ -115,6 +115,37 @@ flamingock execute apply --jar ./my-app.jar -J -Xmx512m -J -Xms256m
 flamingock execute apply --jar ./my-app.jar -J -Xmx1g -- --spring.profiles.active=staging
 ```
 
+### `audit list`
+
+List audit entries from the change history.
+
+:::note
+Enterprise feature. Requires Flamingock Cloud or Self-Hosted Edition.
+:::
+
+| Option       | Short | Required | Description                                                                 |
+|--------------|-------|----------|-------------------------------------------------------------------------------|
+| `--jar`      | `-j`  | Yes      | Path to the application JAR                                                 |
+| `--history`  |       | No       | Show full chronological history instead of snapshot                         |
+| `--since`    |       | No       | Filter entries since date (ISO-8601: `yyyy-MM-dd` or `yyyy-MM-ddTHH:mm:ss`) |
+| `--extended` | `-e`  | No       | Show extended information (execution ID, class, method, hostname)           |
+| `--java-opt` | `-J`  | No       | JVM argument for the spawned process (repeatable)                           |
+| `--`         |       | No       | Separator — everything after is passed as application arguments             |
+
+```bash
+# Current state (latest per change unit)
+flamingock audit list --jar ./my-app.jar
+
+# Full chronological history
+flamingock audit list --jar ./my-app.jar --history
+
+# Filter entries since a specific date
+flamingock audit list --jar ./my-app.jar --since 2025-01-01
+
+# Show extended information (execution ID, class, method, hostname)
+flamingock audit list --jar ./my-app.jar --extended
+```
+
 ### `audit fix`
 
 Fix audit state for a change with issues. After manually verifying or fixing the state, mark the change as resolved.
@@ -194,6 +225,25 @@ flamingock issue get --jar ./my-app.jar -c user-change-v2 --json
 | `130` | Interrupted (Ctrl+C)                                 |
 
 ## Example output
+
+### Audit list output
+
+```
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✗      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total entries: 3
+```
 
 ### Issue details output
 
@@ -292,3 +342,4 @@ If the CLI reports a missing entry point:
 If `issue list` shows no issues but you expect some:
 1. Verify you are connecting to the correct environment
 2. Check if issues were already resolved
+3. Use `audit list --history` to see all historical entries

@@ -350,22 +350,49 @@ After the first Flamingock run against a copy of your Mongock audit history, ver
 Instead of inspecting the store manually, use the Flamingock CLI against your application JAR as the source of truth:
 
 ```bash
+# Snapshot of the current audit state (Enterprise feature — Cloud or Self-Hosted Edition)
+flamingock audit list --jar ./my-app.jar
+
+# Optional: full audit history (Enterprise feature)
+flamingock audit list --jar ./my-app.jar --history
+
 # Detect inconsistent states that require attention
 flamingock issue list --jar ./my-app.jar
 ```
 
-Successful migration signal: `issue list` reports no issues — no failed or in-progress states left behind from the legacy Mongock changes.
+Example snapshot output:
+
+```text
+Audit Entries Snapshot (Latest per Change Unit):
+==================================================
+
+┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
+│ Change ID                    │ State  │ Author           │ Time                │
+├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
+│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
+│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
+│ seed-initial-data            │ ✓      │ data-team        │ 2025-01-07 10:15:25 │
+└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
+
+Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
+
+Total: 3 entries
+```
+
+Successful migration signal: legacy Mongock changes appear as executed, with no failed or in-progress states left behind.
 
 Practical verification flow:
 
 1. Run the application once with Flamingock enabled.
-2. Run `flamingock issue list --jar ./my-app.jar` and confirm no inconsistent audit states.
-3. Confirm previously pending legacy changes were applied (check application logs or the target system directly).
+2. Run `flamingock audit list --jar ./my-app.jar` (Enterprise) or check application logs / the target system directly.
+3. Confirm legacy Mongock changes that had already executed appear as executed and were not re-executed.
+4. Confirm previously pending legacy changes now appear as executed.
+5. Run `flamingock issue list --jar ./my-app.jar` and confirm no inconsistent audit states.
 
 If your application needs profiles, datasource URLs, or other runtime arguments, pass them through the CLI as well:
 
 ```bash
-flamingock issue list --jar ./my-app.jar -- --spring.profiles.active=staging
+flamingock audit list --jar ./my-app.jar -- --spring.profiles.active=staging
 ```
 
 ## Production recommendations
