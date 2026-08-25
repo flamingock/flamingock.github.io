@@ -119,8 +119,12 @@ flamingock execute apply --jar ./my-app.jar -J -Xmx1g -- --spring.profiles.activ
 
 List audit entries from the change history.
 
+:::note
+Enterprise feature. Requires Flamingock Cloud or Self-Hosted Edition.
+:::
+
 | Option       | Short | Required | Description                                                                 |
-|--------------|-------|----------|-----------------------------------------------------------------------------|
+|--------------|-------|----------|-------------------------------------------------------------------------------|
 | `--jar`      | `-j`  | Yes      | Path to the application JAR                                                 |
 | `--history`  |       | No       | Show full chronological history instead of snapshot                         |
 | `--since`    |       | No       | Filter entries since date (ISO-8601: `yyyy-MM-dd` or `yyyy-MM-ddTHH:mm:ss`) |
