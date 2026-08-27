@@ -1,6 +1,6 @@
 ---
 title: Couchbase
-sidebar_position: 6
+sidebar_position: 8
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
