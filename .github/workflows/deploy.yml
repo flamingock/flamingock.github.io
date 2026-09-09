@@ -1,9 +1,7 @@
-name: Deploy Flamingock Docs site
+name: Publish Flamingock Docs site
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch: {}
 
 jobs:
   deploy:
