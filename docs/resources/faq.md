@@ -9,7 +9,7 @@ sidebar_position: 160
 
     Choose template-based Changes to eliminate boilerplate for common tools and integrations (SQL DDL, SaaS/API, etc) and for your custom Changes by defining changes declaratively in YAML or JSON.
     Use code-based Changes when you need custom or conditional logic in Java.
-    See: [Template introduction](templates/templates-introduction.md)
+    See: [Template introduction](../templates/templates-introduction.md)
 
 - **Can I integrate Flamingock into a Spring Boot application?**
 
@@ -88,7 +88,7 @@ sidebar_position: 160
 
 - **Can multiple applications share a Community Audit Store backend?**
 
-    Yes. Applications can share the same physical database, cluster, or service, but each application must use different audit and lock repositories. A repository is a provider-specific table or collection, not a separate database, cluster, or connection. Configure unique repository names for each application; the default names are suitable only for a dedicated backend. This does not apply to Flamingock Cloud, which manages the audit store.
+    Yes. Applications can share the same physical database, cluster, or service, but each application must use different audit, lock, and journal resources. A repository is a provider-specific table or collection, not a separate database, cluster, or connection. Configure unique repository names for each application; the default names are suitable only for a dedicated backend. See the [Audit Stores](../audit-stores/introduction.md) guide for the canonical local-resource model.
 
 - **Can I inject Spring beans or other services into my Changes?**
 
@@ -117,7 +117,6 @@ sidebar_position: 160
     Flamingock is the direct evolution of Mongock. While it inherits the core idea of tracking and executing changes reliably, Flamingock is a complete architectural and conceptual redesign aimed at overcoming the limitations of Mongock.
 
     Some of the key advancements introduced by Flamingock include:
-        - **Cloud-native capabilities**: Support for cloud-managed storage and execution, enabling Flamingock to run in distributed, serverless, or ephemeral environments without additional setup.
         - **Execution stages and pipelines**: A structured way to group and orchestrate Changes by context, environment, or lifecycle stage.
         - **Modular architecture**: Clean separation of core, editions, templates, and integrations, enabling better extensibility and maintainability.
         - **Template-based Changes**: An additional declarative mechanism to define reusable changes without writing Java code, accelerating development and standardisation.
@@ -156,8 +155,8 @@ sidebar_position: 160
 - **What are recovery strategies and why do I need them?**
 
     Recovery strategies determine how Flamingock handles failures - the key differentiator from traditional tools that retry blindly or fail silently. You choose between:
-        - **MANUAL_INTERVENTION** (default): Stop and alert for human review when uncertain
-        - **ALWAYS_RETRY**: Continue automatically until successful for idempotent operations
+    - **MANUAL_INTERVENTION** (default): Stop and alert for human review when the recorded state requires investigation of the Target System
+    - **ALWAYS_RETRY**: Continue automatically until successful for idempotent operations
 
     This prevents silent data corruption and gives you operational control based on your risk tolerance.
 
@@ -168,7 +167,7 @@ sidebar_position: 160
     3. - **Investigation**: Check target system state (not audit store)
     4. - **Resolution**: `flamingock audit fix -c change-id --resolution APPLIED|ROLLED_BACK`
 
-    This structured workflow eliminates guesswork and provides complete audit trails.
+    This structured workflow keeps investigation focused on target-system state and current unresolved issues.
 
 - **Can I change recovery strategies after deployment?**
 
@@ -176,12 +175,12 @@ sidebar_position: 160
 
 - **How does Cloud Edition improve recovery without changing my code?**
 
-    Cloud Edition uses the same recovery strategies but provides enhanced outcomes through:
-        - **Intelligent automation**: Advanced reconciliation and marker mechanisms
-        - **Enhanced retry logic**: Sophisticated backoff and circuit breaker patterns
-        - **Automatic issue resolution**: Many failures requiring manual intervention in Community Audit Stores are resolved automatically
+    Cloud Edition uses the same recovery strategies and provides enhanced outcomes through:
+    - **Intelligent automation**: Advanced reconciliation and marker mechanisms
+    - **Enhanced retry logic**: Sophisticated backoff and circuit breaker patterns
+    - **Automatic issue resolution**: Many failures requiring manual intervention are resolved automatically
 
-    Your change definitions remain identical - Cloud Edition just delivers better results.
+    Your change definitions remain identical; Cloud Edition provides these additional capabilities.
 
 
 ## Enterprise & operational concerns
@@ -189,33 +188,30 @@ sidebar_position: 160
 - **How does Flamingock ensure data integrity in distributed systems?**
 
     Flamingock uses a dual-architecture separating target systems (where changes are applied) from audit store (execution tracking):
-        - **Complete audit trail**: Every change attempt recorded regardless of business system failures
-        - **Recovery capabilities**: CLI operates on audit state, you fix business systems
-        - **Compliance independence**: Audit integrity maintained during business system issues
-        - **Governance separation**: Business and compliance data have different access patterns
+    - **Latest recorded state**: Flamingock retains current control state for each Change
+    - **Recovery capabilities**: investigate target-system state, then resolve supported issues
 
 - **What compliance and audit capabilities does Flamingock provide?**
 
-    - **Complete execution history** with timestamp, author, system, and outcome
-    - **Issue tracking and resolution** workflows for failed changes
-    - **CLI-based audit management** for governance and compliance
-    - **Integration ready** for external observability platforms (ELK, Prometheus, Datadog)
-    - **Regulatory reporting** capabilities in Cloud Edition
+    - **Auditable execution** through versioned Changes and latest recorded state per Change
+    - **Issue tracking and resolution** workflows for failed Changes
+    - **Integration-ready** outcomes for external observability platforms
+    - **Cloud Edition (coming soon)**: Cloud Edition provides complete historical audit and event visibility, reporting, RBAC, and multi-environment governance alongside the required local resources
 
 - **How does Flamingock compare to traditional migration tools?**
 
-    | Aspect                    | Flyway/Liquibase   | Mongock                | Flamingock              |
-    |---------------------------|--------------------|------------------------|-------------------------|
-    | - **Focus**               | SQL databases      | MongoDB only           | All systems             |
-    | - **Distributed Systems** | ❌ Not designed for | ❌ Limited              | ✅ First-class support   |
-    | - **Non-transactional**   | ❌ No support       | ❌ Assumes transactions | ✅ Full support          |
-    | - **Failure Handling**    | Retry blindly      | Retry blindly          | Configurable strategies |
-    | - **Issue Resolution**    | Manual SQL         | None                   | CLI + Cloud automation  |
-    | - **Safety Default**      | None               | None                   | MANUAL_INTERVENTION     |
+    | Aspect                    | Flyway/Liquibase    | Mongock                 | Flamingock                     |
+    |---------------------------|---------------------|-------------------------|--------------------------------|
+    | - **Focus**               | SQL databases       | MongoDB only            | All systems                    |
+    | - **Distributed Systems** | ❌ Not designed for | ❌ Limited              | ✅ First-class support         |
+    | - **Non-transactional**   | ❌ No support       | ❌ Assumes transactions | ✅ Full support                |
+    | - **Failure Handling**    | Retry blindly       | Retry blindly           | Configurable strategies        |
+    | - **Issue Resolution**    | Manual SQL          | None                    | CLI + Cloud automation         |
+    | - **Safety Default**      | None                | None                    | MANUAL_INTERVENTION            |
 
 - **Can Flamingock handle multi-system coordination?**
 
-    Yes, Flamingock is designed for distributed systems. A single Change can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining a unified audit trail and recovery strategy.
+    Yes, Flamingock is designed for distributed systems. A single Change can coordinate changes across multiple target systems (databases, APIs, message queues) while maintaining current recorded state and a recovery strategy.
 
 - **How do I ensure my team adopts Flamingock safely?**
 
@@ -236,27 +232,25 @@ sidebar_position: 160
 - **Can I use Flamingock in microservices architectures?**
 
     Absolutely. Flamingock is designed for distributed systems:
-        - Each microservice can have its own Changes for its domain
-        - Shared audit store provides cross-service visibility (especially in Cloud Edition)
-        - CLI provides centralized operational control across all services
-        - Recovery strategies can be tailored per service's risk profile
+    - Each microservice can have its own Changes for its domain
+    - Each service keeps its Flamingock resources isolated from other services
+    - Cloud Edition, coming soon, provides cross-service visibility alongside those local resources
+    - Recovery strategies can be tailored per service's risk profile
 
 - **What are the organizational benefits of adopting Flamingock?**
 
     - **Risk reduction**: Prevent silent data corruption through safety-first defaults
     - **Team velocity**: Eliminate deployment bottlenecks with autonomous change management
     - **Operational excellence**: Centralized governance with distributed execution
-    - **Compliance automation**: Complete audit trails and governance workflows
+    - **Compliance automation**: Version-controlled Change definitions, current recorded state, and governance workflows; Cloud Edition provides complete historical audit visibility
     - **Reduced dependencies**: Teams control their domain without infrastructure dependencies
 
 - **How does Flamingock support regulatory compliance requirements?**
 
-    - **Complete audit trails** with immutable execution history
-    - **Governance workflows** for change approval and review
-    - **Issue resolution documentation** for regulatory reporting
-    - **CLI integration** for compliance automation
-    - **Separation of concerns** between business and compliance data
-    - **Cloud Edition features**: Advanced reporting, RBAC, multi-environment governance
+    - **Auditable Change definitions** through version control and review
+    - **Issue-resolution documentation** for controlled recovery
+    - **Separation of concerns** between business state and Flamingock control state
+    - **Cloud Edition (coming soon)**: Cloud Edition provides reporting, RBAC, and multi-environment governance alongside the required local resources
 
 
 ## Other

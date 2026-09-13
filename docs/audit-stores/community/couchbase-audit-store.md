@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Couchbase Audit Store
 
-The Couchbase audit store (`CouchbaseAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
+The Couchbase audit store (`CouchbaseAuditStore`) provides Flamingock's required local state and coordination resources across distributed deployments using Couchbase as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
@@ -54,12 +54,20 @@ A `CouchbaseAuditStore` must be created from an existing `CouchbaseTargetSystem`
 This ensures that both components point to the **same external Couchbase bucket**:
 
 - The **Target System** applies your business changes.
-- The **Audit Store** stores the execution history associated with those changes.
+- The **Audit Store** retains the latest state Flamingock recorded per Change, including a latest failure or uncertain state.
 
 Internally, the Audit Store takes the Target System’s connection settings (cluster + bucket name) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
 
 > For a full conceptual explanation of this relationship, see
 > **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+## Required resources
+
+This Couchbase Audit Store requires three provider-local collections:
+
+- an audit collection for the latest Flamingock-recorded state per Change;
+- a lock collection for distributed coordination; and
+- a journal collection for required internal Journal Events.
 
 Optional configurations can be added via `.withXXX()` methods.
 
@@ -71,14 +79,15 @@ Once created, you need to register this audit store with Flamingock. See [Regist
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration           | Method                           | Default              | Description                                   |
-|-------------------------|----------------------------------|----------------------|-----------------------------------------------|
-| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`               | Auto-create collections and indexes           |
-| `Scope Name`            | `.withScopeName(name)`           | `_default`           | Scope where audit collections will be created |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries             |
-| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Collection name for distributed locks         |
+| Configuration             | Method                             | Default                   | Description                                   |
+|---------------------------|------------------------------------|---------------------------|-----------------------------------------------|
+| `Auto Create`             | `.withAutoCreate(enabled)`         | `true`                    | Auto-create collections and indexes           |
+| `Scope Name`              | `.withScopeName(name)`             | `_default`                | Scope where audit collections will be created |
+| `Audit Repository Name`   | `.withAuditRepositoryName(name)`   | `flamingockAuditLog`      | Collection name for audit entries             |
+| `Lock Repository Name`    | `.withLockRepositoryName(name)`    | `flamingockLock`          | Collection name for distributed locks         |
+| `Journal Repository Name` | `.withJournalRepositoryName(name)` | `flamingockJournalEvents` | Collection name for required Journal Events   |
 
-The default names are suitable only when the Couchbase bucket is dedicated to one application. When applications share a bucket or cluster, configure unique audit and lock collection names for each application. Separate buckets, clusters, and connections are not required.
+The default names are suitable only when the Couchbase bucket is dedicated to one application. When applications share a bucket or cluster, configure unique audit, lock, and journal collection names for each application. Separate buckets, clusters, and connections are not required.
 
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
@@ -94,6 +103,7 @@ var auditStore = CouchbaseAuditStore.from(couchbaseTargetSystem)
     .withScopeName("custom-scope")                 // Optional configuration
     .withAuditRepositoryName("ordersServiceAuditLog")
     .withLockRepositoryName("ordersServiceLock")
+    .withJournalRepositoryName("ordersServiceJournalEvents")
     .withAutoCreate(true);                          // Optional configuration
 
 // Register with Flamingock
@@ -108,6 +118,11 @@ Flamingock.builder()
 - **Scope settings**: Uses explicit configuration via properties
 
 This architecture ensures explicit audit store configuration with no fallback dependencies.
+
+
+## Collection management
+
+When `autoCreate` is enabled (default), Flamingock creates the required collections and indexes, including the journal collection. When it is disabled, the required indexes are validated. Use unique collection names for every application when the bucket or cluster is shared.
 
 ## Next steps
 

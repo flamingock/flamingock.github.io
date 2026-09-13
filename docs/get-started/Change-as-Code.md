@@ -27,7 +27,7 @@ Modern applications increasingly span dozens of external systems—ranging from 
 - **Increased risk of human error**
   Pasting commands into a console or clicking UI checkboxes invites typos, misconfigurations, and stress during deployment windows.
 
-Flamingock's CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and a centralized audit trail.
+Flamingock's CaC approach solves these problems by treating every external-system change as first-class code—complete with version control, automated execution, and auditable outcomes.
 
 ## Four pillars of Change-as-Code
 
@@ -38,7 +38,7 @@ Flamingock's CaC approach solves these problems by treating every external-syste
    Flamingock scans and applies Changes at application startup or on-demand via the CLI. No manual intervention—just code running code.
 
 3. **Auditable & Traceable**
-   Every Change outcome is recorded in an audit store (your database or Flamingock Cloud). Teams can query "who ran what change, and when," ensuring full compliance.
+   Flamingock retains the latest recorded outcome for each Change and provides issue handling when that state is failed or uncertain. Cloud Edition is coming soon and provides a complete historical audit and event view.
 
 4. **Cross-Component Support**
    Whether it's SQL/NoSQL DDL, S3 buckets, Kafka topics, feature-flag toggles, or REST API calls—Flamingock treats them all as code. Your entire system evolves in lockstep.
@@ -65,7 +65,7 @@ public class _0001__EnableAutoSaveFeature {
 
 - **Versioned**: This code-based or template-based Change lives in your VCS.
 - **Automated**: Flamingock executes it in order (0005) at startup or via CLI.
-- **Auditable**: Upon success, an audit entry is written to your audit store.
+- **Auditable**: Flamingock retains the latest recorded outcome for the Change; Cloud Edition, coming soon, provides a complete historical audit and event view.
 - **Cross-Component**: The same pattern works for a DynamoDB schema change, a Kafka topic creation, or any REST API call.
 
 ## Illustration: CaC vs. IaC
@@ -304,13 +304,13 @@ rollback:
 </TabItem>
 </Tabs>
 
-Flamingock ensures these four steps run in sequence—never twice—and logs them in your audit store for future reference.
+Flamingock ensures these steps run in sequence and retains the latest recorded state for each Change.
 
 ## Change-as-Code checklist
 
 - ✅ **Change lives in VCS**: Every Change class (or YAML template) is versioned.
 - ✅ **Automated pipeline**: Flamingock applies changes automatically at startup or via CLI.
-- ✅ **Audit trail**: Query your audit store for a complete history of applied changes.
+- ✅ **Auditable outcomes**: Flamingock retains the latest recorded state for each Change and supports issue resolution.
 - ✅ **Rollback logic**: Each Change provides `@Rollback` to undo or compensate if needed.
 - ✅ **Consistent ordering**: All Changes follow a strict, declared ordering (via the `order` attribute).
 - ✅ **Cross-component**: You can target databases, SaaS APIs, feature flags, message systems—anything with a client API.

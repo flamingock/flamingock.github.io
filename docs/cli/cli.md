@@ -12,7 +12,7 @@ Command-line tool to execute Flamingock operations outside your application's no
 
 ## Overview
 
-The Flamingock CLI spawns your application JAR in a separate JVM process, runs the requested operation, and returns structured results. This means you can run changes in CI/CD pipelines, audit history, diagnose issues, and fix audit states — before, after, or outside your application lifecycle.
+The Flamingock CLI spawns your application JAR in a separate JVM process, runs the requested operation, and returns structured results. This means you can run changes in CI/CD pipelines, diagnose issues, and fix audit states — before, after, or outside your application lifecycle. Historical audit queries are available with Flamingock Cloud or Self-Hosted Edition.
 
 ## Installation
 
@@ -226,25 +226,6 @@ flamingock issue get --jar ./my-app.jar -c user-change-v2 --json
 
 ## Example output
 
-### Audit list output
-
-```
-Audit Entries Snapshot (Latest per Change Unit):
-==================================================
-
-┌──────────────────────────────┬────────┬──────────────────┬─────────────────────┐
-│ Change ID                    │ State  │ Author           │ Time                │
-├──────────────────────────────┼────────┼──────────────────┼─────────────────────┤
-│ create-users-collection      │ ✓      │ platform-team    │ 2025-01-07 10:15:23 │
-│ add-user-indexes             │ ✓      │ platform-team    │ 2025-01-07 10:15:24 │
-│ seed-initial-data            │ ✗      │ data-team        │ 2025-01-07 10:15:25 │
-└──────────────────────────────┴────────┴──────────────────┴─────────────────────┘
-
-Legend: ✓ = EXECUTED | ✗ = FAILED | ▶ = STARTED | ↩ = ROLLED_BACK
-
-Total entries: 3
-```
-
 ### Issue details output
 
 ```
@@ -342,4 +323,3 @@ If the CLI reports a missing entry point:
 If `issue list` shows no issues but you expect some:
 1. Verify you are connecting to the correct environment
 2. Check if issues were already resolved
-3. Use `audit list --history` to see all historical entries

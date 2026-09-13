@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # SQL Audit Store
 
-The SQL audit store (`SqlAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using any supported SQL database as the storage backend.
+The SQL audit store (`SqlAuditStore`) provides Flamingock's required local state and coordination resources across distributed deployments using any supported SQL database as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
@@ -20,19 +20,19 @@ Flamingock automatically detects the database vendor from the DataSource connect
 
 The following databases are supported:
 
-| Database     | Auto-detection | Notes                                    |
-|--------------|----------------|------------------------------------------|
-| MySQL        | ✅             | 5.7+ recommended                         |
-| MariaDB      | ✅             | 10.3+ recommended                        |
-| PostgreSQL   | ✅             | 12+ recommended                          |
-| SQLite       | ✅             | Suitable for testing and local development |
-| H2           | ✅             | Ideal for testing environments           |
-| SQL Server   | ✅             | 2017+ recommended                        |
-| Oracle       | ✅             | 19c+ recommended                         |
-| Sybase       | ✅             | ASE 16+ recommended                      |
-| Firebird     | ✅             | 3.0+ recommended                         |
-| Informix     | ✅             | 12.10+ recommended                       |
-| DB2          | ✅             | 11.5+ recommended                        |
+| Database   | Auto-detection | Notes                                      |
+|------------|----------------|--------------------------------------------|
+| MySQL      | ✅             | 5.7+ recommended                           |
+| MariaDB    | ✅             | 10.3+ recommended                          |
+| PostgreSQL | ✅             | 12+ recommended                            |
+| SQLite     | ✅             | Suitable for testing and local development |
+| H2         | ✅             | Ideal for testing environments             |
+| SQL Server | ✅             | 2017+ recommended                          |
+| Oracle     | ✅             | 19c+ recommended                           |
+| Sybase     | ✅             | ASE 16+ recommended                        |
+| Firebird   | ✅             | 3.0+ recommended                           |
+| Informix   | ✅             | 12.10+ recommended                         |
+| DB2        | ✅             | 11.5+ recommended                          |
 
 ## Installation
 
@@ -81,12 +81,20 @@ A `SqlAuditStore` must be created from an existing `SqlTargetSystem`.
 This ensures that both components point to the **same external SQL instance**:
 
 - The **Target System** applies your business changes.
-- The **Audit Store** stores the execution history associated with those changes.
+- The **Audit Store** retains the latest state Flamingock recorded per Change, including a latest failure or uncertain state.
 
 Internally, the Audit Store takes the Target System’s connection settings (SQL Datasource) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
 
 > For a full conceptual explanation of this relationship, see
 > **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+## Required resources
+
+This SQL Audit Store requires three provider-local tables:
+
+- an audit table for the latest Flamingock-recorded state per Change;
+- a lock table for distributed coordination; and
+- a journal table for required internal Journal Events.
 
 Optional configurations can be added via `.withXXX()` methods.
 
@@ -98,13 +106,14 @@ Once created, you need to register this audit store with Flamingock. See [Regist
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration           | Method                           | Default              | Description                           |
-|-------------------------|----------------------------------|----------------------|---------------------------------------|
-| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`               | Auto-create tables and indexes        |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries          |
-| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Table name for distributed locks      |
+| Configuration             | Method                             | Default                   | Description                            |
+|---------------------------|------------------------------------|---------------------------|----------------------------------------|
+| `Auto Create`             | `.withAutoCreate(enabled)`         | `true`                    | Auto-create tables and indexes         |
+| `Audit Repository Name`   | `.withAuditRepositoryName(name)`   | `flamingockAuditLog`      | Table name for audit entries           |
+| `Lock Repository Name`    | `.withLockRepositoryName(name)`    | `flamingockLock`          | Table name for distributed locks       |
+| `Journal Repository Name` | `.withJournalRepositoryName(name)` | `flamingockJournalEvents` | Table name for required Journal Events |
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or server, configure unique audit and lock table names for each application. Separate databases and connections are not required.
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or server, configure unique audit, lock, and journal table names for each application. Separate databases and connections are not required.
 
 ## Configuration example
 
@@ -117,7 +126,8 @@ SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
 var auditStore = SqlAuditStore.from(sqlTargetSystem)
     .withAutoCreate(true)                          // Optional configuration
     .withAuditRepositoryName("ordersServiceAuditLog")
-    .withLockRepositoryName("ordersServiceLock");
+    .withLockRepositoryName("ordersServiceLock")
+    .withJournalRepositoryName("ordersServiceJournalEvents");
 
 // Register with Flamingock
 Flamingock.builder()
@@ -127,7 +137,7 @@ Flamingock.builder()
 ```
 
 **Audit store configuration resolution:**
-- **SqlTargetSystem**: Must be provided via `from()` method. Gets `Datasource` from the target system.
+- **SqlTargetSystem**: Must be provided via `from()` method. Gets `DataSource` from the target system.
 - **Database dialect**: Automatically detected from DataSource vendor
 - **Table configurations**: Uses explicit configuration instead of defaults
 
@@ -169,16 +179,18 @@ var auditStore = SqlAuditStore.from(sqlTargetSystem)
 
 ## Schema management
 
-When `autoCreate` is enabled (default), Flamingock automatically creates the required tables. Use unique table names for every application when the database is shared:
+When `autoCreate` is enabled (default), Flamingock creates or validates the required tables and indexes, including the journal table. When it is disabled, the journal table must already exist and its required indexes must be valid. Use unique table names for every application when the database is shared:
 
-- **Audit table** (for example, `ordersServiceAuditLog`): Stores execution history
+- **Audit table** (for example, `ordersServiceAuditLog`): Stores the latest Flamingock-recorded state per Change
 - **Lock table** (for example, `ordersServiceLock`): Manages distributed locking
+- **Journal table** (for example, `ordersServiceJournalEvents`): Required internal Journal Events resource
 
 The SQL schemas are automatically optimized for each supported database dialect.
 
 :::tip Database Permissions
 Ensure your database user has `CREATE TABLE` and `CREATE INDEX` permissions when using `autoCreate=true`.
 :::
+
 
 ## Next steps
 
