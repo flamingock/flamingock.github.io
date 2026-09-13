@@ -350,13 +350,13 @@ After the first Flamingock run against a copy of your Mongock audit history, ver
 Instead of inspecting the store manually, use the Flamingock CLI against your application JAR as the source of truth:
 
 ```bash
-# Snapshot of the current audit state
+# Snapshot of the current audit state (Enterprise feature — Cloud or Self-Hosted Edition)
 flamingock audit list --jar ./my-app.jar
 
-# Optional: full audit history
+# Optional: full audit history (Enterprise feature)
 flamingock audit list --jar ./my-app.jar --history
 
-# Optional: detect inconsistent states that require attention
+# Detect inconsistent states that require attention
 flamingock issue list --jar ./my-app.jar
 ```
 
@@ -384,8 +384,8 @@ Successful migration signal: legacy Mongock changes appear as executed, with no 
 Practical verification flow:
 
 1. Run the application once with Flamingock enabled.
-2. Run `flamingock audit list --jar ./my-app.jar`.
-3. Confirm legacy Mongock changes that had already executed appear in the output and were not re-executed.
+2. Run `flamingock audit list --jar ./my-app.jar` (Enterprise) or check application logs / the target system directly.
+3. Confirm legacy Mongock changes that had already executed appear as executed and were not re-executed.
 4. Confirm previously pending legacy changes now appear as executed.
 5. Run `flamingock issue list --jar ./my-app.jar` and confirm no inconsistent audit states.
 
