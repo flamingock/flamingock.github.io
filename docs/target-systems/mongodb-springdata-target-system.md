@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Spring Data Target System
 
-The MongoDB Spring Data target system (`MongoDBSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. As a transactional target system, it integrates seamlessly with Spring's transaction management and supports automatic rollback through MongoDB's native transaction capabilities.
+The MongoDB Spring Data target system (`MongoDBSpringDataTargetSystem`) enables Flamingock to apply changes to MongoDB databases using Spring Data MongoDB. It integrates with Spring's transaction management by default, but transaction support can be disabled for deployments that do not provide it, such as standalone MongoDB servers.
 
 ## Version compatibility
 
@@ -48,6 +48,13 @@ var mongoTarget = new MongoDBSpringDataTargetSystem("user-database-id", mongoTem
 ```
 
 The constructor requires the target system name and MongoDB template. Optional configurations can be added via `.withXXX()` methods.
+
+For a standalone MongoDB server, explicitly disable transaction support:
+
+```java
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database-id", mongoTemplate)
+    .withTransactionsSupported(false);
+```
 
 :::info Register Target System
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
@@ -128,6 +135,24 @@ public class _0001__CreateUsers {
 3. **Lifecycle**: Spring's transaction infrastructure manages start, commit, and rollback automatically
 
 The transaction lifecycle is managed through Spring's transaction infrastructure, ensuring consistency with your existing Spring Data operations.
+
+### Disabling transaction support
+
+Transaction support is enabled by default. Disable it explicitly when the MongoDB deployment does not support transactions, such as when connecting to a standalone server:
+
+```java
+var mongoTarget = new MongoDBSpringDataTargetSystem("user-database-id", mongoTemplate)
+    .withTransactionsSupported(false);
+```
+
+When transaction support is disabled:
+
+- All Changes assigned to this target system use non-transactional execution, regardless of the value of `@Change(transactional)`.
+- Flamingock does not create Spring transaction infrastructure for the target system.
+- The injected `MongoTemplate` remains available, but its operations do not run inside a Flamingock-managed transaction.
+- If a Change fails, Flamingock uses its non-transactional rollback flow and invokes the Change's `@Rollback` method when available. MongoDB cannot provide an automatic transaction rollback in this mode.
+
+This setting applies to this target system instance only; there is no global transaction support setting.
 
 ## Available dependencies in Changes
 
