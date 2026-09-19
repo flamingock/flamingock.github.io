@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Sync Target System
 
-The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. As a transactional target system, it supports automatic rollback through MongoDB's native transaction capabilities.
+The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to apply changes to MongoDB databases using the official MongoDB Java sync driver. It uses MongoDB's native transaction capabilities by default, but transaction support can be disabled for deployments that do not provide them, such as standalone MongoDB servers.
 
 ## Version compatibility
 
@@ -15,7 +15,7 @@ The MongoDB Sync target system (`MongoDBSyncTargetSystem`) enables Flamingock to
 |-----------|-------------------|
 | MongoDB Java Driver | 4.0.0+ |
 
-MongoDB 4.0+ is required for transaction support.
+MongoDB 4.0+ is required for transaction support. The MongoDB deployment must also be configured to support transactions. For example, a standalone server does not support transactions and requires the [non-transactional configuration](#disabling-transaction-support).
 
 ## Installation
 
@@ -48,6 +48,13 @@ var mongoTarget = new MongoDBSyncTargetSystem("user-database-id", mongoClient, "
 
 The constructor requires the target system name, MongoDB client, and database name. Optional configurations can be added via `.withXXX()` methods.
 
+For a standalone MongoDB server, explicitly disable transaction support:
+
+```java
+var mongoTarget = new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb")
+    .withTransactionsSupported(false);
+```
+
 :::info Register Target System
 Once created, you need to register this target system with Flamingock. See [Registering target systems](introduction.md#registering-target-systems) for details.
 :::
@@ -67,9 +74,9 @@ These dependencies must be provided at target system creation time with **no glo
 
 ## Dependencies available to Changes
 
-Changes can access dependencies through [dependency injection with fallback](../changes/anatomy-and-structure.md#method-parameters-and-dependency-injection):
+Changes can access dependencies through [dependency injection with fallback](../changes/apply-and-rollback-methods.md#where-parameters-come-from):
 
-1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, `ClientSession`
+1. **Target system context** (highest priority) - `MongoClient`, `MongoDatabase`, and `ClientSession` when transaction support is enabled
 2. **Target system additional dependencies** - added via `.addDependency()` or `.setProperty()`
 3. **Global context** (fallback) - shared dependencies available to all target systems
 
@@ -97,7 +104,7 @@ Flamingock.builder()
 **Change dependency resolution for Changes in "user-database":**
 - **MongoClient**: From target system context (`productionMongoClient`)
 - **MongoDatabase**: From target system context (derived from `productionMongoClient` + `"userDb"`)
-- **ClientSession**: From target system context (created by Flamingock)
+- **ClientSession**: From target system context when transaction support is enabled (created by Flamingock)
 - **AuditService**: From target system additional dependencies
 - **EmailService**: From global context (fallback)
 - **LogService**: From global context (fallback)
@@ -132,6 +139,24 @@ public class _0001__CreateUsers {
 3. **Lifecycle**: Flamingock automatically starts the transaction, commits on success, or rolls back on failure
 
 Without the `ClientSession` parameter, operations will execute but won't participate in transactions.
+
+### Disabling transaction support
+
+Transaction support is enabled by default. Disable it explicitly when the MongoDB deployment does not support transactions, such as when connecting to a standalone server:
+
+```java
+var mongoTarget = new MongoDBSyncTargetSystem("user-database-id", mongoClient, "userDb")
+    .withTransactionsSupported(false);
+```
+
+When transaction support is disabled:
+
+- All Changes assigned to this target system use non-transactional execution, regardless of the value of `@Change(transactional)`.
+- Flamingock does not create a `ClientSession` or any MongoDB transaction infrastructure for the target system.
+- Changes must not declare a `ClientSession` dependency.
+- If a Change fails, Flamingock uses its non-transactional rollback flow and invokes the Change's `@Rollback` method when available. MongoDB cannot provide an automatic transaction rollback in this mode.
+
+This setting applies to this target system instance only; there is no global transaction support setting.
 
 ## Available dependencies in Changes
 

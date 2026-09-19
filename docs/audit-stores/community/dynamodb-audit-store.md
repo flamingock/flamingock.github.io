@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # DynamoDB Audit Store
 
-The DynamoDB audit store (`DynamoSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Amazon DynamoDB as the storage backend.
+The DynamoDB audit store (`DynamoDBAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Amazon DynamoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
@@ -56,7 +56,7 @@ This ensures that both components point to the **same external DynamoDB instance
 - The **Target System** applies your business changes.
 - The **Audit Store** stores the execution history associated with those changes.
 
-Internally, the Audit Store takes the Target System’s connection settings (DynamoClient) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
+Internally, the Audit Store reuses the `DynamoDbClient` supplied by the Target System while retaining responsibility for audit operations and execution history.
 
 > For a full conceptual explanation of this relationship, see
 > **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
@@ -79,6 +79,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries                 |
 | `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Table name for distributed locks             |
 
+The default names are suitable only when the DynamoDB backend is dedicated to one application. When applications share an AWS account or DynamoDB service, configure unique audit and lock table names for each application. Separate AWS accounts, services, and connections are not required.
+
 ⚠️ **Warning**: Adjust capacity units based on your workload. Under-provisioning may cause throttling.
 Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 
@@ -87,10 +89,12 @@ Consider using **ON_DEMAND** billing mode for unpredictable workloads.
 Here's a comprehensive example showing the configuration:
 
 ```java
-// Create a DynamodDB Target System
-DynamodDBTargetSystem dynamoDBTargetSystem = new DynamodDBTargetSystem("dynamodb", dynamoDbClient);
+// Create a DynamoDB Target System
+DynamoDBTargetSystem dynamoDBTargetSystem = new DynamoDBTargetSystem("dynamodb", dynamoDbClient);
 // Audit store configuration (mandatory via constructor)
-var auditStore = DynamoSyncAuditStore.from(dynamoDBTargetSystem)
+var auditStore = DynamoDBAuditStore.from(dynamoDBTargetSystem)
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock")
     .withReadCapacityUnits(10)     // Optional configuration
     .withWriteCapacityUnits(10);   // Optional configuration
 

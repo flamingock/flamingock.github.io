@@ -80,7 +80,7 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog`    | Collection name for audit entries     |
 | `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`        | Collection name for distributed locks |
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or cluster, configure unique audit and lock collection names for each application. Separate databases, clusters, and connections are not required.
 
 ## Configuration example
 
@@ -91,8 +91,10 @@ Here's a comprehensive example showing the configuration:
 MongoDBSyncTargetSystem mongoDbSyncTargetSystem = new MongoDBSyncTargetSystem("mongodb", mongoClient, auditDatabase);
 // Audit store configuration (mandatory via constructor)
 var auditStore = MongoDBSyncAuditStore.from(mongoDbSyncTargetSystem)
-    .withWriteConcern(WriteConcern.W1)         // Optional configuration
-    .withReadPreference(ReadPreference.secondary());  // Optional configuration
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock")
+    .withWriteConcern(WriteConcern.W1)                 // Optional configuration
+    .withReadPreference(ReadPreference.secondary());   // Optional configuration
 
 // Register with Flamingock
 Flamingock.builder()

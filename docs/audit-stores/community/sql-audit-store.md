@@ -104,7 +104,7 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Table name for audit entries          |
 | `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Table name for distributed locks      |
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases.
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or server, configure unique audit and lock table names for each application. Separate databases and connections are not required.
 
 ## Configuration example
 
@@ -114,10 +114,10 @@ Here's a comprehensive example showing the configuration:
 // Create a SQL Target System
 SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
 // Audit store configuration (mandatory via constructor)
-var auditStore = SqlAuditStore.from(couchbaseTargetSystem)
+var auditStore = SqlAuditStore.from(sqlTargetSystem)
     .withAutoCreate(true)                          // Optional configuration
-    .withAuditRepositoryName("custom_audit_log")   // Optional configuration
-    .withLockRepositoryName("custom_lock_table");  // Optional configuration
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock");
 
 // Register with Flamingock
 Flamingock.builder()
@@ -146,7 +146,9 @@ config.setDriverClassName("org.postgresql.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
 SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
-var auditStore = SqlAuditStore.from(sqlTargetSystem);
+var auditStore = SqlAuditStore.from(sqlTargetSystem)
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock");
 ```
 
 ### MySQL
@@ -160,15 +162,17 @@ config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
 DataSource dataSource = new HikariDataSource(config);
 SqlTargetSystem sqlTargetSystem = new SqlTargetSystem("sql", dataSource);
-var auditStore = SqlAuditStore.from(sqlTargetSystem);
+var auditStore = SqlAuditStore.from(sqlTargetSystem)
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock");
 ```
 
 ## Schema management
 
-When `autoCreate` is enabled (default), Flamingock automatically creates the required tables:
+When `autoCreate` is enabled (default), Flamingock automatically creates the required tables. Use unique table names for every application when the database is shared:
 
-- **Audit table** (default: `flamingockAuditLog`): Stores execution history
-- **Lock table** (default: `flamingockLock`): Manages distributed locking
+- **Audit table** (for example, `ordersServiceAuditLog`): Stores execution history
+- **Lock table** (for example, `ordersServiceLock`): Manages distributed locking
 
 The SQL schemas are automatically optimized for each supported database dialect.
 

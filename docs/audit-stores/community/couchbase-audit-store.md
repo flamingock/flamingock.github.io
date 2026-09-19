@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Couchbase Audit Store
 
-The Couchbase audit store (`CouchbaseSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
+The Couchbase audit store (`CouchbaseAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using Couchbase as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
@@ -78,6 +78,8 @@ These configurations can be customized via `.withXXX()` methods with **no global
 | `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog` | Collection name for audit entries             |
 | `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`     | Collection name for distributed locks         |
 
+The default names are suitable only when the Couchbase bucket is dedicated to one application. When applications share a bucket or cluster, configure unique audit and lock collection names for each application. Separate buckets, clusters, and connections are not required.
+
 ⚠️ **Warning**: Ensure your Couchbase user has permissions to create collections if `autoCreate` is enabled.
 
 ## Configuration example
@@ -88,9 +90,11 @@ Here's a comprehensive example showing the configuration:
 // Create a Couchbase Target System
 CouchbaseTargetSystem couchbaseTargetSystem = new CouchbaseTargetSystem("couchbase", cluster, "bucketName");
 // Audit store configuration (mandatory via constructor)
-var auditStore = CouchbaseSyncAuditStore.from(couchbaseTargetSystem)
-    .withScopeName("custom-scope")     // Optional configuration
-    .withAutoCreate(true);             // Optional configuration
+var auditStore = CouchbaseAuditStore.from(couchbaseTargetSystem)
+    .withScopeName("custom-scope")                 // Optional configuration
+    .withAuditRepositoryName("ordersServiceAuditLog")
+    .withLockRepositoryName("ordersServiceLock")
+    .withAutoCreate(true);                          // Optional configuration
 
 // Register with Flamingock
 Flamingock.builder()
