@@ -9,12 +9,12 @@ sidebar_position: 40
 Flamingock works with two closely related concepts:
 
 - The **Target System** — where your application applies real, versioned changes.
-- The **Audit Store** — where Flamingock records the execution history of those changes.
+- The **Audit Store** — where Flamingock keeps one mutable current-state record per Change.
 
-Although they are conceptually distinct, the Audit Store is not an entirely separate system.  
+Although they are conceptually distinct, the Audit Store is not an entirely separate system.
 Instead, it is **a specialized form of a Target System**, created from a Target System that supports this role and used exclusively for audit tracking.
 
-This relationship is not about sharing configuration: the Audit Store is built from a Target System because **both must point to the same external system**. A Target System represents an external system that Flamingock can modify, while the Audit Store represents *that same external system* in audit mode, used only to store execution history. Internally, the Audit Store derives its connection settings from the Target System but uses its own access handle, keeping audit operations isolated while ensuring both components operate on the same underlying environment.
+This relationship is not about sharing configuration: the Audit Store is built from a Target System because **both must point to the same external system**. A Target System represents an external system that Flamingock can modify, while the Audit Store represents *that same external system* in audit mode, used only for Flamingock's latest recorded state per Change. Internally, the Audit Store derives its connection settings from the Target System but uses its own access handle, keeping audit operations isolated while ensuring both components operate on the same underlying environment.
 
 This separation — yet tight relationship — is key to Flamingock’s safety model.
 
@@ -29,7 +29,7 @@ Flamingock can register multiple Target Systems, but only one of them is used as
 
 **Target System →**  The external system where Flamingock applies your changes (e.g., a database, a schema registry, object storage, or an API).
 
-**Audit Store →**  A Target System that supports audit tracking and is used to record what Flamingock executed.  
+**Audit Store →**  A Target System that supports audit tracking and is used to record what Flamingock executed.
 *(Only some Target Systems support this role.)*
 
 ---
@@ -47,36 +47,21 @@ Typical examples:
 - External configuration stores
 - REST APIs or service endpoints
 
-The Target System represents your *business system*:  
+The Target System represents your *business system*:
 it stores the data, schemas, state or configuration that your application relies on.
 
 Flamingock applies real changes here — safely, sequentially, and in a controlled manner.
 
-For setup details, see:  
+For setup details, see:
 **[Target Systems › Introduction](../target-systems/introduction.md)**
 
 ---
 
-## Audit Store: where execution is tracked
+## Audit Store: current Flamingock state
 
-The **Audit Store** is where Flamingock records the state of every changes:
+The **Audit Store** keeps one mutable current-state record per Change, updated with the latest state Flamingock recorded. A recorded state can be successful or may require investigation of the Target System before recovery can continue. It supports idempotency, distributed coordination, and recovery.
 
-- when it ran  
-- in what order  
-- in which environment  
-- its execution status  
-- and all relevant metadata
-
-Its purpose:
-
-- Ensure idempotency  
-- Prevent duplicate execution  
-- Provide a reliable audit trail  
-- Enable safe recovery after failures  
-- Give full visibility into system evolution  
-
-For setup details, see:  
-**[Audit Stores › Introduction](../audit-stores/introduction.md)**
+From `<VERSION>`, Journal Events capture internal transition events for synchronization with Flamingock Cloud. Every edition retains local audit, lock, and journal resources. Cloud Edition is coming soon and provides a complete historical audit and event view; see [Audit Stores](../audit-stores/introduction.md) for the architecture and provider setup.
 
 ---
 
@@ -86,11 +71,11 @@ Although conceptually separate, the Audit Store is **not a new database**, nor a
 
 Instead:
 
-### ✔ It is built from an existing Target System  
+### ✔ It is built from an existing Target System
 
-### ✔ It reuses the same driver and connection settings, but creates its own internal access handle 
+### ✔ It reuses the same driver and connection settings, but creates its own internal access handle
 
-### ✔ It adds only the minimal configuration needed for auditing  
+### ✔ It adds only the minimal configuration needed for auditing
 
 In practice, the Audit Store is simply:
 
@@ -103,41 +88,26 @@ but through **its own internal object**, ensuring isolation from the Target Syst
 
 ## Why separate the concepts?
 
-Even though the Audit Store is technically built from a Target System, separating the **concepts** gives you clear guarantees:
+Although the Audit Store is built from a Target System, separating the concepts keeps Flamingock's control state distinct from the business state changed by your application.
 
 ### 1. Different responsibilities
-- **Target System →** business data  
-- **Audit Store →** execution history  
 
-This prevents mixing operational data with audit metadata.
+- **Target System** holds the business data, configuration, or effects of a Change.
+- **Audit Store** keeps Flamingock's current control state for each Change.
+
+This keeps execution coordination and recovery state separate from application business data.
 
 ### 2. Predictable recovery
-If something fails halfway:
 
-- Flamingock consults the **Audit Store**, not the business system.
-- Flamingock knows exactly what ran and what hasn’t.
-- Flamingock can safely resume or stop.
+The recorded state helps Flamingock determine whether a Change is already applied or needs recovery. When a state requires investigation, determine the Change's actual effect in the Target System, then use the supported issue-resolution workflow.
 
-### 3. Governance and compliance
-Audit data often has:
+### 3. Operational isolation
 
-- different retention rules  
-- different permissions  
-- stricter access controls  
-- different visibility requirements  
+The Audit Store derives its connection settings from the supporting Target System but uses a dedicated internal access handle for audit operations. This keeps Flamingock's control operations isolated from business operations.
 
-The conceptual separation supports this.
+### 4. Governance and visibility
 
-### 4. Deployment flexibility
-You can store the audit history in:
-
-- **Flamingock Cloud**, or  
-- a local collection/table in the same Target System, or  
-- a separate Target System altogether  
-
-The model works consistently in all cases.
-
----
+The separation gives Flamingock a consistent control model across Target Systems. Flamingock Cloud complements that model with a complete historical audit and event view across services and environments.
 
 ## How it works (visual overview)
 
@@ -203,10 +173,10 @@ The model works consistently in all cases.
 
 **Summary of the flow:**
 
-1. **You define changes**  
-2. **Flamingock executes them safely**  
-3. **Target Systems evolve**  
-4. **Audit Store captures the complete execution history**  
+1. **You define changes**
+2. **Flamingock executes them safely**
+3. **Target Systems evolve**
+4. **Audit Store captures the execution result**
 
 This is the foundation of Flamingock’s safety guarantees.
 
@@ -215,19 +185,19 @@ This is the foundation of Flamingock’s safety guarantees.
 ## Key takeaways
 
 ### For developers
-- Target Systems → where changes actually happen  
-- Audit Store → automatically maintained by Flamingock  
+- Target Systems → where changes actually happen
+- Audit Store → automatically maintained by Flamingock
 - You never write to the Audit Store yourself
 
 ### For architects
-- Clean separation of business vs control responsibilities  
-- Consistent behaviour across environments  
+- Clean separation of business vs control responsibilities
+- Consistent behaviour across environments
 - Predictable recovery even in distributed systems
 
 ### For operations
-- Diagnose issues using audit data  
-- Always know the exact execution state  
-- Avoid duplicates and inconsistent partial updates  
+- Diagnose issues using audit data
+- Always know the exact execution state
+- Avoid duplicates and inconsistent partial updates
 
 ---
 
@@ -235,5 +205,5 @@ This is the foundation of Flamingock’s safety guarantees.
 
 > **Flamingock’s dual-system model (where the Audit Store is a specialization of the Target System) is what enables safe, predictable and auditable evolution of distributed systems.**
 
-It ensures that changes are applied once, tracked forever, and recoverable at any time — regardless of failures, concurrency, or distributed complexity.
+It supports safe, predictable, and auditable evolution, including recovery when the latest recorded state requires investigation of the Target System.
 

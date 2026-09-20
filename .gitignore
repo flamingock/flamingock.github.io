@@ -22,3 +22,5 @@ yarn-error.log*
 .vscode
 llms.txt
 .idea
+# Local Pi runtime state
+.atl/

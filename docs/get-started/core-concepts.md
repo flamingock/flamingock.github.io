@@ -48,11 +48,8 @@ The choice of strategy depends on whether your changes are idempotent and how cr
 For detailed configuration and implementation, see the [Recovery strategies](../safety-and-recovery/recovery-strategies.md) section.
 
 
-## Audit store
-The **audit store** is where Flamingock records metadata about change executions. Its purpose is to track which Changes have been executed, when they ran, and their outcomes. This ensures idempotency, enables rollbacks, and provides audit capabilities. The audit store is managed entirely by Flamingock - your code never directly interacts with it.
-  :::info
-  In Cloud Edition, the audit store is automatically provided - no configuration needed in your builder. Community Edition users must configure their own audit store.
-  :::
+## Audit Store
+The **Audit Store** retains the latest state Flamingock recorded per Change, including a latest failure or uncertain state. It supports idempotency, recovery, and auditability. From `<VERSION>`, Journal Events capture internal transition events for synchronization with Flamingock Cloud, and every edition retains local audit, lock, and journal resources. Cloud Edition is coming soon and provides a complete historical audit and event view. See [Audit Stores](../audit-stores/introduction.md) for the canonical architecture and setup.
 
 ## Target system  
 The **target system** is where your actual business changes are applied. These are the systems your Changes modify - databases, message queues, APIs, configuration services, etc. Each Change declares which target system it operates on.

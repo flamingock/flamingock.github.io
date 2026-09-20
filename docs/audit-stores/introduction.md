@@ -8,14 +8,17 @@ import TabItem from '@theme/TabItem';
 
 # Audit stores
 
-The audit store is Flamingock's dedicated system for tracking execution history, preventing duplicate executions, and ensuring safe system evolution.
+The Audit Store keeps one mutable current-state record per Change, updated with the latest state Flamingock recorded. This helps Flamingock prevent duplicate executions and evolve systems safely.
 
-## What is the audit store?
+## Architecture from `<VERSION>`
 
-The audit store tracks:
-- **Execution history**: Which Changes ran, when, and with what outcome
-- **Distributed locking**: Prevents concurrent executions across multiple instances
-- **Issue tracking**: Failed or uncertain executions requiring resolution
+| Resource         | Role                                                                           |
+|------------------|--------------------------------------------------------------------------------|
+| Audit resource   | Keeps one mutable current-state record per Change.                             |
+| Lock resource    | Coordinates distributed execution.                                             |
+| Journal resource | Captures internal transition events for synchronization with Flamingock Cloud. |
+
+This architecture applies from `<VERSION>`.
 
 ### Relationship with Target Systems
 Although they serve different purposes, the Audit Store is **built directly from a Target System**.
@@ -27,11 +30,8 @@ Unlike target systems (which your code modifies), the audit store is managed aut
 > **Conceptual overview**: For architectural understanding, see [Target systems vs audit store](../get-started/audit-store-vs-target-system.md)
 
 
-## Cloud audit store
-The audit store is **automatically provided and managed** by Flamingock Cloud. No configuration needed - just focus on your changes while Flamingock handles the audit infrastructure.
-
-## Community audit store
-Alternatively, you can configure your own audit store using one of the supported databases:
+## Required local Audit Store resources
+Every edition retains local Audit, lock, and journal resources. Community users configure those resources with one of the supported databases:
 
 - [MongoDB audit store](./community/mongodb-audit-store.md)
 - [DynamoDB audit store](./community/dynamodb-audit-store.md)
@@ -40,11 +40,11 @@ Alternatively, you can configure your own audit store using one of the supported
 
 ### Repository isolation
 
-Multiple applications can share the same physical Community Audit Store backend, such as a database, cluster, or service. Each application **must** use its own audit and lock repositories so its execution history and distributed locks remain isolated.
+Multiple applications can share the same physical Community Audit Store backend, such as a database, cluster, or service. Each application **must** use its own audit, lock, and journal resources so its Flamingock state and coordination remain isolated.
 
-A repository is provider-specific metadata storage: tables for SQL and DynamoDB, and collections for MongoDB and Couchbase. It does not require separate databases, clusters, or connections. The default repository names are appropriate only when the backend is dedicated to one application; configure unique application-specific names when the backend is shared.
+A repository is provider-specific metadata storage: tables for SQL and DynamoDB, and collections for MongoDB and Couchbase. It does not require separate databases, clusters, or connections. The default repository names are appropriate only when the backend is dedicated to one application; configure unique application-specific names for all three resources when the backend is shared.
 
-This configuration applies only to Community Audit Stores. Flamingock Cloud manages its audit store and repositories for you.
+Flamingock Cloud is coming soon. It provides a complete historical audit and event view while the local Audit Store, lock, and journal resources remain in place.
 
 
 ### Registering the Community audit store
@@ -61,10 +61,12 @@ public class App {
     // TargetSystem
     var targetSystem = new MongoDBSyncTargetSystem("mongodb-ts", mongoClient, "dbName");
 
-    // Create your audit store connection
+    // Create the Audit Store from the Target System. Configure its audit,
+    // lock, and journal resources with the verified provider guidance.
     var auditStore = MongoDBSyncAuditStore.from(targetSystem)
         .withAuditRepositoryName("ordersServiceAuditLog")
-        .withLockRepositoryName("ordersServiceLock");
+        .withLockRepositoryName("ordersServiceLock")
+        .withJournalRepositoryName("ordersServiceJournal");
 
     // Register with Flamingock
     Flamingock.builder()
@@ -85,7 +87,8 @@ For Spring Boot applications, register audit stores as beans:
 public AuditStore auditStore(MongoDBSyncTargetSystem mongoDBSyncTargetSystem) {
     return MongoDBSyncAuditStore.from(mongoDBSyncTargetSystem)
         .withAuditRepositoryName("ordersServiceAuditLog")
-        .withLockRepositoryName("ordersServiceLock");
+        .withLockRepositoryName("ordersServiceLock")
+        .withJournalRepositoryName("ordersServiceJournal");
 }
 
 // Flamingock Spring Boot auto-configuration will pick this up automatically

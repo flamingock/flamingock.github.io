@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # MongoDB Audit Store
 
-The MongoDB audit store (`MongoDBSyncAuditStore`) enables Flamingock to record execution history and ensure safe coordination across distributed deployments using MongoDB as the storage backend.
+The MongoDB audit store (`MongoDBSyncAuditStore`) provides Flamingock's required local state and coordination resources across distributed deployments using MongoDB as the storage backend.
 
 > For a conceptual explanation of the audit store vs target systems, see [Audit store vs target system](../../get-started/audit-store-vs-target-system.md).
 
@@ -54,12 +54,20 @@ A `MongoDBSyncAuditStore` must be created from an existing `MongoDBSyncTargetSys
 This ensures that both components point to the **same external MongoDB database**:
 
 - The **Target System** applies your business changes.
-- The **Audit Store** stores the execution history associated with those changes.
+- The **Audit Store** retains the latest state Flamingock recorded per Change, including a latest failure or uncertain state.
 
 Internally, the Audit Store takes the Target System’s connection settings (MongoClient + database name) and creates its **own dedicated access handle**, keeping audit operations isolated while still referring to the same physical system.
 
 > For a full conceptual explanation of this relationship, see
 > **[Target Systems vs Audit Store](../../get-started/audit-store-vs-target-system.md)**.
+
+## Required resources
+
+This MongoDB Audit Store requires three provider-local collections:
+
+- an audit collection for the latest Flamingock-recorded state per Change;
+- a lock collection for distributed coordination; and
+- a journal collection for required internal Journal Events.
 
 Optional configurations can be added via `.withXXX()` methods.
 
@@ -71,16 +79,17 @@ Once created, you need to register this audit store with Flamingock. See [Regist
 
 These configurations can be customized via `.withXXX()` methods with **no global context fallback**:
 
-| Configuration           | Method                           | Default                 | Description                           |
-|-------------------------|----------------------------------|-------------------------|---------------------------------------|
-| `Auto Create`           | `.withAutoCreate(enabled)`       | `true`                  | Auto-create collections and indexes   |
-| `WriteConcern`          | `.withWriteConcern(concern)`     | `MAJORITY` with journal | Write acknowledgment level            |
-| `ReadConcern`           | `.withReadConcern(concern)`      | `MAJORITY`              | Read isolation level                  |
-| `ReadPreference`        | `.withReadPreference(pref)`      | `PRIMARY`               | Server selection for reads            |
-| `Audit Repository Name` | `.withAuditRepositoryName(name)` | `flamingockAuditLog`    | Collection name for audit entries     |
-| `Lock Repository Name`  | `.withLockRepositoryName(name)`  | `flamingockLock`        | Collection name for distributed locks |
+| Configuration             | Method                                               | Default                   | Description                                     |
+|---------------------------|------------------------------------------------------|---------------------------|-------------------------------------------------|
+| `Auto Create`             | `.withAutoCreate(enabled)`                           | `true`                    | Auto-create collections and indexes             |
+| `WriteConcern`            | `.withWriteConcern(concern)`                         | `MAJORITY` with journal   | Write acknowledgment level                      |
+| `ReadConcern`             | `.withReadConcern(concern)`                          | `MAJORITY`                | Read isolation level                            |
+| `ReadPreference`          | `.withReadPreference(pref)`                          | `PRIMARY`                 | Server selection for reads                      |
+| `Audit Repository Name`   | `.withAuditRepositoryName(name)`                     | `flamingockAuditLog`      | Collection name for audit entries               |
+| `Lock Repository Name`    | `.withLockRepositoryName(name)`                      | `flamingockLock`          | Collection name for distributed locks           |
+| `Journal Repository Name` | `.withJournalRepositoryName(name)` | `flamingockJournalEvents` | Collection for required internal Journal Events |
 
-**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or cluster, configure unique audit and lock collection names for each application. Separate databases, clusters, and connections are not required.
+**Important**: These default values are optimized for maximum consistency and should ideally be left unchanged. Override them only for testing purposes or exceptional cases. Repository names are the exception: when applications share a database or cluster, configure unique audit, lock, and journal collection names for each application. Separate databases, clusters, and connections are not required.
 
 ## Configuration example
 
@@ -93,6 +102,7 @@ MongoDBSyncTargetSystem mongoDbSyncTargetSystem = new MongoDBSyncTargetSystem("m
 var auditStore = MongoDBSyncAuditStore.from(mongoDbSyncTargetSystem)
     .withAuditRepositoryName("ordersServiceAuditLog")
     .withLockRepositoryName("ordersServiceLock")
+    .withJournalRepositoryName("ordersServiceJournal")
     .withWriteConcern(WriteConcern.W1)                 // Optional configuration
     .withReadPreference(ReadPreference.secondary());   // Optional configuration
 

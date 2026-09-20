@@ -10,11 +10,11 @@ This guide shows you the minimum setup required to get Flamingock running. In ju
 
 Let's walk through a simple scenario: evolving your inventory service with a few typical changes:
 
-- Add a new column to a MySQL database  
-- Provision a new S3 bucket for product images  
-- Create a Kafka topic for stock updates  
+- Add a new column to a MySQL database
+- Provision a new S3 bucket for product images
+- Create a Kafka topic for stock updates
 
-Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.  
+Even in this basic example, Flamingock ensures all these changes are applied **safely, consistently, and audibly** at your application startup.
 This guide walks you through the process in 5 simple steps.
 
 
@@ -115,7 +115,7 @@ Changes can be:
 
 <Tabs groupId="change">
   <TabItem value="template_based" label="Template based" default>
- 
+
 ```yaml
 # File `_0001__CreateS3Bucket.yaml`
 id: add-product-category
@@ -164,7 +164,7 @@ For more details, see [Core concepts](core-concepts.md).
 
 ## 4. Configure stages
 
-Flamingock organizes your changes in stages.  
+Flamingock organizes your changes in stages.
 Most applications only need one stage:
 
 ```java
@@ -184,29 +184,30 @@ See [Stages](../flamingock-library-config/setup-and-stages.md) for more details 
 
 Finally, configure Flamingock before running your application.
 
-- **Community Audit Stores**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder
+- **Local Audit Store resources**: Set your audit store (MongoDB, DynamoDB, Couchbase, etc.) in the builder. Every edition requires local audit, lock, and journal resources; configure provider-specific resource names only where the provider guide documents them.
 
-- **Cloud Edition** (coming soon): Provide your API token, service name, and environment
+- **Cloud Edition**: Cloud Edition provides reporting, RBAC, multi-environment governance, and a complete historical audit and event view alongside the required local resources.
 
 <Tabs groupId="edition">
   <TabItem value="community" label="Community" default>
 
 ```java
 Flamingock.builder()
-  .setAuditStore(new MongoDBSyncAuditStore(mongoClient, mongoDatabase))
+  .setAuditStore(SqlAuditStore.from(sql))
   .addTargetSystems(sql, s3, kafka)
   .build()
   .run();
 ```
 
   </TabItem>
-  <TabItem value="cloud" label="Cloud (coming soon)">
+  <TabItem value="cloud" label="Cloud Edition (coming soon)">
 
 ```java
 Flamingock.builder()
-  .setApiToken("your-flamingock-api-token") 
+  .setApiToken("your-flamingock-api-token")
   .setEnvironment("dev")
   .setService("inventory-service")
+  .setAuditStore(SqlAuditStore.from(sql))
   .addTargetSystems(sql, s3, kafka)
   .build()
   .run();
@@ -221,9 +222,10 @@ Flamingock.builder()
 When your service starts, Flamingock automatically:
 
 1. Discovers your Changes
-2. Checks pending changes  
-3. Executes them safely in order
-4. Records everything in the audit store
+2. Checks which Changes are pending
+3. Executes them safely and in order
+4. Updates the Audit Store with the current state of each Change
+5. Records Journal Events for synchronization with Flamingock Cloud
 
 **If Flamingock cannot guarantee a safe outcome, it stops and alerts you. Safety first.**
 
